@@ -2721,3 +2721,268 @@ html {
         transition: none;
     }
 }
+
+/* ===== Dark Theme ===== */
+
+/* Dark theme color variables */
+body.dark-theme {
+    --color-primary: #FF5A5F;
+    --color-primary-dark: #FF385C;
+    --color-primary-light: #FF7B7F;
+    
+    /* Dark neutral colors */
+    --color-text: #E8E8E8;
+    --color-text-secondary: #B0B0B0;
+    --color-text-light: #717171;
+    --color-background: #1A1A1A;
+    --color-background-secondary: #2A2A2A;
+    --color-border: #3A3A3A;
+    --color-border-light: #2F2F2F;
+    
+    /* Functional colors for dark theme */
+    --color-success: #4CAF50;
+    --color-danger: #F44336;
+    --color-warning: #FFC043;
+    
+    /* Shadows for dark theme */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.3), 0 8px 16px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.4);
+    --shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Dark theme specific adjustments */
+body.dark-theme {
+    background: var(--color-background);
+    color: var(--color-text);
+}
+
+/* Recipe cards in dark theme */
+body.dark-theme .recipe-card {
+    background: var(--color-background-secondary);
+    border: 1px solid var(--color-border);
+}
+
+body.dark-theme .recipe-card:hover {
+    border-color: var(--color-border);
+    box-shadow: var(--shadow-hover);
+}
+
+/* Form inputs in dark theme */
+body.dark-theme input[type="text"],
+body.dark-theme input[type="number"],
+body.dark-theme textarea,
+body.dark-theme select {
+    background: var(--color-background-secondary);
+    color: var(--color-text);
+    border-color: var(--color-border);
+}
+
+body.dark-theme input[type="text"]:focus,
+body.dark-theme input[type="number"]:focus,
+body.dark-theme textarea:focus,
+body.dark-theme select:focus {
+    border-color: var(--color-primary);
+    background: var(--color-background);
+}
+
+/* Buttons in dark theme */
+body.dark-theme .btn-action {
+    background: var(--color-background-secondary);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+}
+
+body.dark-theme .btn-action:hover {
+    background: var(--color-background);
+    border-color: var(--color-primary);
+}
+
+body.dark-theme .btn-primary {
+    background: var(--color-primary);
+    color: white;
+}
+
+body.dark-theme .btn-primary:hover {
+    background: var(--color-primary-dark);
+}
+
+/* Filter chips in dark theme */
+body.dark-theme .filter-chip {
+    background: var(--color-background-secondary);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+}
+
+body.dark-theme .filter-chip:hover {
+    background: var(--color-background);
+    border-color: var(--color-primary);
+}
+
+body.dark-theme .filter-chip.active {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+/* Modal in dark theme */
+body.dark-theme .modal-content {
+    background: var(--color-background-secondary);
+    color: var(--color-text);
+}
+
+body.dark-theme .modal-header {
+    border-bottom-color: var(--color-border);
+}
+
+body.dark-theme .modal-footer {
+    border-top-color: var(--color-border);
+}
+
+/* Detail view in dark theme */
+body.dark-theme .recipe-detail {
+    background: var(--color-background);
+}
+
+body.dark-theme .detail-section {
+    background: var(--color-background-secondary);
+    border: 1px solid var(--color-border);
+}
+
+body.dark-theme .detail-metadata {
+    background: var(--color-background);
+}
+
+/* Gallery in dark theme */
+body.dark-theme .gallery-main {
+    background: var(--color-background);
+}
+
+body.dark-theme .gallery-nav-btn {
+    background: rgba(42, 42, 42, 0.95);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+}
+
+body.dark-theme .gallery-nav-btn:hover {
+    background: var(--color-background-secondary);
+    border-color: var(--color-primary);
+}
+
+body.dark-theme .gallery-thumbnail {
+    background: var(--color-background);
+    border-color: var(--color-border);
+}
+
+body.dark-theme .gallery-thumbnail.active {
+    border-color: var(--color-primary);
+}
+
+/* Image modal in dark theme */
+body.dark-theme .image-modal-overlay {
+    background: rgba(0, 0, 0, 0.95);
+}
+
+body.dark-theme .image-modal-close,
+body.dark-theme .image-modal-nav {
+    background: rgba(42, 42, 42, 0.95);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+}
+
+body.dark-theme .image-modal-close:hover,
+body.dark-theme .image-modal-nav:hover {
+    background: var(--color-background-secondary);
+    border-color: var(--color-primary);
+}
+
+/* Category management in dark theme */
+body.dark-theme .category-item {
+    background: var(--color-background-secondary);
+    border: 1px solid var(--color-border);
+}
+
+body.dark-theme .category-item:hover {
+    background: var(--color-background);
+}
+
+/* Emoji picker in dark theme */
+body.dark-theme .emoji-picker {
+    background: var(--color-background-secondary);
+    border-color: var(--color-border);
+}
+
+body.dark-theme .emoji-category-btn {
+    background: var(--color-background);
+    color: var(--color-text);
+}
+
+body.dark-theme .emoji-category-btn.active {
+    background: var(--color-primary);
+    color: white;
+}
+
+body.dark-theme .emoji-item:hover {
+    background: var(--color-background);
+}
+
+/* Ingredient and sequence items in dark theme */
+body.dark-theme .ingredient-item,
+body.dark-theme .sequence-item {
+    background: var(--color-background-secondary);
+    border: 1px solid var(--color-border);
+}
+
+body.dark-theme .ingredient-item:hover,
+body.dark-theme .sequence-item:hover {
+    background: var(--color-background);
+}
+
+/* Time input in dark theme */
+body.dark-theme .time-input-container {
+    background: var(--color-background-secondary);
+    border-color: var(--color-border);
+}
+
+body.dark-theme .time-unit-select {
+    background: var(--color-background);
+    color: var(--color-text);
+    border-color: var(--color-border);
+}
+
+/* Scrollbar in dark theme */
+body.dark-theme ::-webkit-scrollbar-track {
+    background: var(--color-background);
+}
+
+body.dark-theme ::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+}
+
+body.dark-theme ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-secondary);
+}
+
+/* Theme toggle button icon */
+#theme-toggle-btn {
+    transition: transform 0.3s ease;
+}
+
+#theme-toggle-btn:active {
+    transform: rotate(180deg);
+}
+
+/* Smooth transition for theme change */
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.recipe-card,
+.detail-section,
+.modal-content,
+.btn-action,
+input,
+textarea,
+select {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}

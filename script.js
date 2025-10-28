@@ -309,6 +309,9 @@ class RecipeApp {
             // Setup image modal
             this.setupImageModal();
 
+            // Initialize theme
+            this.initTheme();
+
             // Render filter chips dynamically
             this.renderFilterChips();
 
@@ -500,6 +503,14 @@ class RecipeApp {
             homeLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.goToHome();
+            });
+        }
+
+        // Theme toggle button
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', () => {
+                this.toggleTheme();
             });
         }
 
@@ -4800,6 +4811,48 @@ class RecipeApp {
         // Scroll to top
         window.scrollTo(0, 0);
     }
+
+    // ===== Theme Management =====
+
+    /**
+     * Initialize theme from localStorage
+     */
+    initTheme() {
+        const savedTheme = localStorage.getItem('recetario_theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            this.updateThemeButton(true);
+        } else {
+            document.body.classList.remove('dark-theme');
+            this.updateThemeButton(false);
+        }
+    }
+
+    /**
+     * Toggle between light and dark theme
+     */
+    toggleTheme() {
+        const isDark = document.body.classList.toggle('dark-theme');
+        localStorage.setItem('recetario_theme', isDark ? 'dark' : 'light');
+        this.updateThemeButton(isDark);
+        
+        // Show feedback
+        this.showSuccess(isDark ? '🌙 Tema oscuro activado' : '☀️ Tema claro activado', 2000);
+    }
+
+    /**
+     * Update theme button icon and text
+     * @param {boolean} isDark - Whether dark theme is active
+     */
+    updateThemeButton(isDark) {
+        const themeBtn = document.getElementById('theme-toggle-btn');
+        if (themeBtn) {
+            themeBtn.innerHTML = isDark ? '☀️ Tema' : '🌙 Tema';
+            themeBtn.title = isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro';
+        }
+    }
+
+    // ===== End Theme Management =====
 
     /**
      * Show error message to user with toast notification

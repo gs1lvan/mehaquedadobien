@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Tema Oscuro</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .demo-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-md);
+            background: var(--color-background-secondary);
+        }
+        .demo-section h2 {
+            margin-top: 0;
+            color: var(--color-text);
+        }
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+        .color-swatch {
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .theme-toggle-demo {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-toggle-demo">
+        <button id="theme-toggle" class="btn-primary" style="font-size: 18px; padding: 12px 24px;">
+            🌙 Cambiar Tema
+        </button>
+    </div>
+
+    <div class="container">
+        <h1 style="text-align: center; margin: 40px 0;">🎨 Demostración de Tema Oscuro</h1>
+
+        <!-- Color Palette -->
+        <div class="demo-section">
+            <h2>Paleta de Colores</h2>
+            <div class="demo-grid">
+                <div class="color-swatch" style="background: var(--color-primary); color: white;">
+                    Primary
+                </div>
+                <div class="color-swatch" style="background: var(--color-background); color: var(--color-text); border: 1px solid var(--color-border);">
+                    Background
+                </div>
+                <div class="color-swatch" style="background: var(--color-background-secondary); color: var(--color-text);">
+                    Background Secondary
+                </div>
+                <div class="color-swatch" style="background: var(--color-text); color: var(--color-background);">
+                    Text
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="demo-section">
+            <h2>Botones</h2>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button class="btn-primary">Botón Primary</button>
+                <button class="btn-action">Botón Action</button>
+                <button class="btn-action btn-danger">Botón Danger</button>
+                <button class="btn-action" disabled>Botón Disabled</button>
+            </div>
+        </div>
+
+        <!-- Form Inputs -->
+        <div class="demo-section">
+            <h2>Formularios</h2>
+            <div style="max-width: 500px;">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--color-text);">Nombre de la receta</label>
+                    <input type="text" placeholder="Ej: Paella valenciana" style="width: 100%;">
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--color-text);">Categoría</label>
+                    <select style="width: 100%;">
+                        <option>Seleccionar categoría</option>
+                        <option>Carne</option>
+                        <option>Verdura</option>
+                        <option>Pescado</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--color-text);">Método de preparación</label>
+                    <textarea placeholder="Describe cómo preparar la receta..." rows="4" style="width: 100%;"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Chips -->
+        <div class="demo-section">
+            <h2>Chips de Filtro</h2>
+            <div class="filter-chips">
+                <button class="filter-chip active">Todas</button>
+                <button class="filter-chip">🥩 Carne</button>
+                <button class="filter-chip">🥬 Verdura</button>
+                <button class="filter-chip">🐟 Pescado</button>
+                <button class="filter-chip">🍎 Fruta</button>
+            </div>
+        </div>
+
+        <!-- Recipe Cards -->
+        <div class="demo-section">
+            <h2>Tarjetas de Receta</h2>
+            <div class="recipes-grid">
+                <div class="recipe-card">
+                    <div class="recipe-image" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 200px;"></div>
+                    <div class="recipe-content">
+                        <h3 class="recipe-name">Paella Valenciana</h3>
+                        <span class="recipe-category" data-category="carne">🥩 Carne</span>
+                        <p class="recipe-preview">Arroz, pollo, conejo, judías verdes...</p>
+                    </div>
+                </div>
+                <div class="recipe-card">
+                    <div class="recipe-image" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); height: 200px;"></div>
+                    <div class="recipe-content">
+                        <h3 class="recipe-name">Ensalada César</h3>
+                        <span class="recipe-category" data-category="verdura">🥬 Verdura</span>
+                        <p class="recipe-preview">Lechuga romana, pollo, parmesano...</p>
+                    </div>
+                </div>
+                <div class="recipe-card">
+                    <div class="recipe-image" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); height: 200px;"></div>
+                    <div class="recipe-content">
+                        <h3 class="recipe-name">Salmón al Horno</h3>
+                        <span class="recipe-category" data-category="pescado">🐟 Pescado</span>
+                        <p class="recipe-preview">Salmón, limón, hierbas aromáticas...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gallery Demo -->
+        <div class="demo-section">
+            <h2>Galería de Fotos</h2>
+            <div class="photo-gallery">
+                <div class="gallery-main">
+                    <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 48px; font-weight: bold;">
+                        Foto 1
+                    </div>
+                    <button class="gallery-nav-btn gallery-nav-prev">‹</button>
+                    <button class="gallery-nav-btn gallery-nav-next">›</button>
+                    <div class="gallery-indicator">
+                        <span class="gallery-indicator-current">1</span> / 
+                        <span class="gallery-indicator-total">3</span>
+                    </div>
+                </div>
+                <div class="gallery-thumbnails">
+                    <button class="gallery-thumbnail active">
+                        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                    </button>
+                    <button class="gallery-thumbnail">
+                        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+                    </button>
+                    <button class="gallery-thumbnail">
+                        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail Section -->
+        <div class="demo-section">
+            <h2>Sección de Detalle</h2>
+            <div class="detail-section">
+                <h3 class="detail-section-title">📝 Ingredientes</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="padding: 12px; margin: 8px 0; background: var(--color-background); border-radius: 8px; display: flex; justify-content: space-between;">
+                        <span>Arroz</span>
+                        <span style="color: var(--color-text-secondary);">400 g</span>
+                    </li>
+                    <li style="padding: 12px; margin: 8px 0; background: var(--color-background); border-radius: 8px; display: flex; justify-content: space-between;">
+                        <span>Pollo</span>
+                        <span style="color: var(--color-text-secondary);">500 g</span>
+                    </li>
+                    <li style="padding: 12px; margin: 8px 0; background: var(--color-background); border-radius: 8px; display: flex; justify-content: space-between;">
+                        <span>Azafrán</span>
+                        <span style="color: var(--color-text-secondary);">1 pizca</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Metadata -->
+        <div class="demo-section">
+            <h2>Metadatos</h2>
+            <div class="detail-metadata">
+                <div class="metadata-grid">
+                    <div class="metadata-item">
+                        <span class="metadata-label">Creada</span>
+                        <span class="metadata-value">28 de octubre de 2025, 14:30</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="metadata-label">Actualizada</span>
+                        <span class="metadata-value">28 de octubre de 2025, 15:45</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="metadata-label">ID</span>
+                        <span class="metadata-value">abc123def456</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="height: 100px;"></div>
+    </div>
+
+    <script>
+        // Simple theme toggle for demo
+        const themeToggle = document.getElementById('theme-toggle');
+        
+        // Load saved theme
+        const savedTheme = localStorage.getItem('demo_theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeToggle.innerHTML = '☀️ Cambiar Tema';
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.body.classList.toggle('dark-theme');
+            localStorage.setItem('demo_theme', isDark ? 'dark' : 'light');
+            themeToggle.innerHTML = isDark ? '☀️ Cambiar Tema' : '🌙 Cambiar Tema';
+        });
+    </script>
+</body>
+</html>
