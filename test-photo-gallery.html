@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Photo Gallery</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .test-pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .test-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Photo Gallery Tests</h1>
+
+    <!-- Test 1: Gallery with 2+ images -->
+    <div class="test-section">
+        <h2>Test 1: Galería con múltiples imágenes (3 fotos)</h2>
+        <div id="test1-results"></div>
+        <div class="test-container" id="test1-container"></div>
+        <button onclick="runTest1()">Ejecutar Test 1</button>
+    </div>
+
+    <!-- Test 2: Single image -->
+    <div class="test-section">
+        <h2>Test 2: Imagen única (1 foto)</h2>
+        <div id="test2-results"></div>
+        <div class="test-container" id="test2-container"></div>
+        <button onclick="runTest2()">Ejecutar Test 2</button>
+    </div>
+
+    <!-- Test 3: No images -->
+    <div class="test-section">
+        <h2>Test 3: Sin imágenes (0 fotos)</h2>
+        <div id="test3-results"></div>
+        <div class="test-container" id="test3-container"></div>
+        <button onclick="runTest3()">Ejecutar Test 3</button>
+    </div>
+
+    <!-- Test 4: Navigation -->
+    <div class="test-section">
+        <h2>Test 4: Navegación (5 fotos)</h2>
+        <div id="test4-results"></div>
+        <div class="test-container" id="test4-container"></div>
+        <button onclick="runTest4()">Ejecutar Test 4</button>
+        <div style="margin-top: 10px;">
+            <button onclick="testNavigateNext()">Siguiente →</button>
+            <button onclick="testNavigatePrevious()">← Anterior</button>
+            <button onclick="testNavigateToImage(2)">Ir a foto 3</button>
+        </div>
+    </div>
+
+    <!-- Test 5: Keyboard navigation -->
+    <div class="test-section">
+        <h2>Test 5: Navegación por teclado</h2>
+        <div id="test5-results"></div>
+        <div class="test-container" id="test5-container"></div>
+        <button onclick="runTest5()">Ejecutar Test 5</button>
+        <div class="test-info" style="margin-top: 10px;">
+            <strong>Instrucciones:</strong> Haz click en la galería y usa las teclas:
+            <ul>
+                <li>← Flecha Izquierda: Foto anterior</li>
+                <li>→ Flecha Derecha: Foto siguiente</li>
+                <li>Home: Primera foto</li>
+                <li>End: Última foto</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Test 6: Thumbnail clicks -->
+    <div class="test-section">
+        <h2>Test 6: Click en miniaturas</h2>
+        <div id="test6-results"></div>
+        <div class="test-container" id="test6-container"></div>
+        <button onclick="runTest6()">Ejecutar Test 6</button>
+        <div class="test-info" style="margin-top: 10px;">
+            <strong>Instrucciones:</strong> Haz click en las miniaturas para cambiar la imagen principal
+        </div>
+    </div>
+
+    <!-- Run all tests -->
+    <div style="margin: 40px 0; text-align: center;">
+        <button onclick="runAllTests()" style="background: #007bff; color: white; font-size: 16px; padding: 15px 30px;">
+            ▶️ Ejecutar Todos los Tests
+        </button>
+    </div>
+
+    <script src="models.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Create mock app instance
+        let app;
+
+        // Helper function to create mock images
+        function createMockImages(count) {
+            const images = [];
+            const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8'];
+            
+            for (let i = 0; i < count; i++) {
+                // Create a simple colored canvas as image data
+                const canvas = document.createElement('canvas');
+                canvas.width = 400;
+                canvas.height = 300;
+                const ctx = canvas.getContext('2d');
+                
+                // Fill with color
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fillRect(0, 0, 400, 300);
+                
+                // Add text
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 48px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(`Foto ${i + 1}`, 200, 150);
+                
+                images.push(new MediaFile({
+                    name: `foto-${i + 1}.jpg`,
+                    data: canvas.toDataURL('image/jpeg'),
+                    type: 'image/jpeg',
+                    size: 50000
+                }));
+            }
+            
+            return images;
+        }
+
+        // Helper function to display test result
+        function displayResult(containerId, message, pass) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = pass ? 'test-pass' : 'test-fail';
+            div.textContent = (pass ? '✓ ' : '✗ ') + message;
+            container.appendChild(div);
+        }
+
+        // Test 1: Gallery with 2+ images
+        function runTest1() {
+            const resultsContainer = document.getElementById('test1-results');
+            const testContainer = document.getElementById('test1-container');
+            resultsContainer.innerHTML = '';
+            testContainer.innerHTML = '';
+
+            try {
+                app = new RecipeApp();
+                const images = createMockImages(3);
+                const gallery = app.renderPhotoGallery(images, 'Receta de Prueba');
+
+                if (gallery) {
+                    testContainer.appendChild(gallery);
+                    
+                    // Check gallery structure
+                    const hasGalleryClass = gallery.classList.contains('photo-gallery');
+                    displayResult('test1-results', 'Galería tiene clase "photo-gallery"', hasGalleryClass);
+                    
+                    const mainArea = gallery.querySelector('.gallery-main');
+                    displayResult('test1-results', 'Área principal existe', !!mainArea);
+                    
+                    const mainImage = gallery.querySelector('.gallery-main-image');
+                    displayResult('test1-results', 'Imagen principal existe', !!mainImage);
+                    
+                    const prevBtn = gallery.querySelector('.gallery-nav-prev');
+                    const nextBtn = gallery.querySelector('.gallery-nav-next');
+                    displayResult('test1-results', 'Botones de navegación existen', !!(prevBtn && nextBtn));
+                    
+                    const indicator = gallery.querySelector('.gallery-indicator');
+                    displayResult('test1-results', 'Indicador de posición existe', !!indicator);
+                    
+                    const indicatorText = indicator ? indicator.textContent.trim() : '';
+                    displayResult('test1-results', 'Indicador muestra "1 / 3"', indicatorText.includes('1') && indicatorText.includes('3'));
+                    
+                    const thumbnails = gallery.querySelectorAll('.gallery-thumbnail');
+                    displayResult('test1-results', `Se muestran 3 miniaturas`, thumbnails.length === 3);
+                    
+                    const activeThumbnail = gallery.querySelector('.gallery-thumbnail.active');
+                    displayResult('test1-results', 'Primera miniatura está activa', !!activeThumbnail);
+                    
+                    displayResult('test1-results', '✅ Test 1 completado exitosamente', true);
+                } else {
+                    displayResult('test1-results', 'Error: No se pudo crear la galería', false);
+                }
+            } catch (error) {
+                displayResult('test1-results', `Error: ${error.message}`, false);
+            }
+        }
+
+        // Test 2: Single image
+        function runTest2() {
+            const resultsContainer = document.getElementById('test2-results');
+            const testContainer = document.getElementById('test2-container');
+            resultsContainer.innerHTML = '';
+            testContainer.innerHTML = '';
+
+            try {
+                app = new RecipeApp();
+                const images = createMockImages(1);
+                const element = app.renderPhotoGallery(images, 'Receta con 1 Foto');
+
+                if (element) {
+                    testContainer.appendChild(element);
+                    
+                    // Should render single image, not gallery
+                    const isGallery = element.classList.contains('photo-gallery');
+                    displayResult('test2-results', 'NO es una galería (es imagen única)', !isGallery);
+                    
+                    const isSingleImage = element.classList.contains('detail-gallery-item');
+                    displayResult('test2-results', 'Es un elemento de imagen única', isSingleImage);
+                    
+                    const img = element.querySelector('img');
+                    displayResult('test2-results', 'Contiene una imagen', !!img);
+                    
+                    displayResult('test2-results', '✅ Test 2 completado exitosamente', true);
+                } else {
+                    displayResult('test2-results', 'Error: No se pudo crear el elemento', false);
+                }
+            } catch (error) {
+                displayResult('test2-results', `Error: ${error.message}`, false);
+            }
+        }
+
+        // Test 3: No images
+        function runTest3() {
+            const resultsContainer = document.getElementById('test3-results');
+            const testContainer = document.getElementById('test3-container');
+            resultsContainer.innerHTML = '';
+            testContainer.innerHTML = '';
+
+            try {
+                app = new RecipeApp();
+                
+                // Test with empty array
+                const result1 = app.renderPhotoGallery([], 'Receta sin Fotos');
+                displayResult('test3-results', 'Array vacío retorna null', result1 === null);
+                
+                // Test with null
+                const result2 = app.renderPhotoGallery(null, 'Receta sin Fotos');
+                displayResult('test3-results', 'null retorna null', result2 === null);
+                
+                // Test with undefined
+                const result3 = app.renderPhotoGallery(undefined, 'Receta sin Fotos');
+                displayResult('test3-results', 'undefined retorna null', result3 === null);
+                
+                displayResult('test3-results', '✅ Test 3 completado exitosamente', true);
+            } catch (error) {
+                displayResult('test3-results', `Error: ${error.message}`, false);
+            }
+        }
+
+        // Test 4: Navigation
+        function runTest4() {
+            const resultsContainer = document.getElementById('test4-results');
+            const testContainer = document.getElementById('test4-container');
+            resultsContainer.innerHTML = '';
+            testContainer.innerHTML = '';
+
+            try {
+                app = new RecipeApp();
+                const images = createMockImages(5);
+                const gallery = app.renderPhotoGallery(images, 'Receta con 5 Fotos');
+
+                if (gallery) {
+                    testContainer.appendChild(gallery);
+                    
+                    displayResult('test4-results', 'Galería creada con 5 fotos', true);
+                    displayResult('test4-results', 'Estado inicial: índice = 0', app.galleryState.currentIndex === 0);
+                    
+                    // Test next navigation
+                    app.navigateNext();
+                    displayResult('test4-results', 'navigateNext(): índice = 1', app.galleryState.currentIndex === 1);
+                    
+                    const indicator1 = gallery.querySelector('.gallery-indicator-current').textContent;
+                    displayResult('test4-results', 'Indicador actualizado a "2"', indicator1 === '2');
+                    
+                    // Test previous navigation
+                    app.navigatePrevious();
+                    displayResult('test4-results', 'navigatePrevious(): índice = 0', app.galleryState.currentIndex === 0);
+                    
+                    // Test circular navigation (last to first)
+                    app.navigateToImage(4); // Go to last
+                    app.navigateNext(); // Should wrap to first
+                    displayResult('test4-results', 'Navegación circular (última → primera)', app.galleryState.currentIndex === 0);
+                    
+                    // Test circular navigation (first to last)
+                    app.navigatePrevious(); // Should wrap to last
+                    displayResult('test4-results', 'Navegación circular (primera → última)', app.galleryState.currentIndex === 4);
+                    
+                    displayResult('test4-results', '✅ Test 4 completado exitosamente', true);
+                } else {
+                    displayResult('test4-results', 'Error: No se pudo crear la galería', false);
+                }
+            } catch (error) {
+                displayResult('test4-results', `Error: ${error.message}`, false);
+            }
+        }
+
+        // Test 5: Keyboard navigation
+        function runTest5() {
+            const resultsContainer = document.getElementById('test5-results');
+            const testContainer = document.getElementById('test5-container');
+            resultsContainer.innerHTML = '';
+            testContainer.innerHTML = '';
+
+            try {
+                app = new RecipeApp();
+                const images = createMockImages(4);
+                const gallery = app.renderPhotoGallery(images, 'Receta con 4 Fotos');
+
+                if (gallery) {
+                    testContainer.appendChild(gallery);
+                    gallery.tabIndex = 0; // Make focusable
+                    gallery.focus();
+                    
+                    displayResult('test5-results', 'Galería creada y enfocada', true);
+                    displayResult('test5-results', 'Usa las teclas de flecha para probar la navegación', true);
+                    
+                    // Add visual feedback for keyboard events
+                    gallery.addEventListener('keydown', (e) => {
+                        const keyName = e.key;
+                        const currentIndex = app.galleryState.currentIndex;
+                        displayResult('test5-results', `Tecla presionada: ${keyName} → Foto ${currentIndex + 1}`, true);
+                    });
+                    
+                    displayResult('test5-results', '✅ Test 5 listo para prueba manual', true);
+                } else {
+                    displayResult('test5-results', 'Error: No se pudo crear la galería', false);
+                }
+            } catch (error) {
+                displayResult('test5-results', `Error: ${error.message}`, false);
+            }
+        }
+
+        // Test 6: Thumbnail clicks
+        function runTest6() {
+            const resultsContainer = document.getElementById('test6-results');
+            const testContainer = document.getElementById('test6-container');
+            resultsContainer.innerHTML = '';
+            testContainer.innerHTML = '';
+
+            try {
+                app = new RecipeApp();
+                const images = createMockImages(4);
+                const gallery = app.renderPhotoGallery(images, 'Receta con 4 Fotos');
+
+                if (gallery) {
+                    testContainer.appendChild(gallery);
+                    
+                    displayResult('test6-results', 'Galería creada con 4 fotos', true);
+                    
+                    // Add click listeners to track thumbnail clicks
+                    const thumbnails = gallery.querySelectorAll('.gallery-thumbnail');
+                    thumbnails.forEach((thumb, index) => {
+                        thumb.addEventListener('click', () => {
+                            setTimeout(() => {
+                                const currentIndex = app.galleryState.currentIndex;
+                                const isCorrect = currentIndex === index;
+                                displayResult('test6-results', 
+                                    `Click en miniatura ${index + 1} → ${isCorrect ? '✓' : '✗'} Foto ${currentIndex + 1}`, 
+                                    isCorrect);
+                            }, 100);
+                        });
+                    });
+                    
+                    displayResult('test6-results', '✅ Test 6 listo para prueba manual', true);
+                } else {
+                    displayResult('test6-results', 'Error: No se pudo crear la galería', false);
+                }
+            } catch (error) {
+                displayResult('test6-results', `Error: ${error.message}`, false);
+            }
+        }
+
+        // Helper functions for Test 4 buttons
+        function testNavigateNext() {
+            if (app) {
+                app.navigateNext();
+                const index = app.galleryState.currentIndex;
+                displayResult('test4-results', `Navegado a foto ${index + 1}`, true);
+            }
+        }
+
+        function testNavigatePrevious() {
+            if (app) {
+                app.navigatePrevious();
+                const index = app.galleryState.currentIndex;
+                displayResult('test4-results', `Navegado a foto ${index + 1}`, true);
+            }
+        }
+
+        function testNavigateToImage(index) {
+            if (app) {
+                app.navigateToImage(index);
+                const currentIndex = app.galleryState.currentIndex;
+                displayResult('test4-results', `Navegado a foto ${currentIndex + 1}`, currentIndex === index);
+            }
+        }
+
+        // Run all tests
+        function runAllTests() {
+            console.log('Running all tests...');
+            runTest1();
+            setTimeout(() => runTest2(), 500);
+            setTimeout(() => runTest3(), 1000);
+            setTimeout(() => runTest4(), 1500);
+            setTimeout(() => runTest5(), 2000);
+            setTimeout(() => runTest6(), 2500);
+        }
+
+        // Auto-run tests on load
+        window.addEventListener('load', () => {
+            console.log('Page loaded. Ready to run tests.');
+        });
+    </script>
+</body>
+</html>

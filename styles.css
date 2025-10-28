@@ -2452,3 +2452,272 @@ html {
 #home-link:hover {
     opacity: 0.7;
 }
+
+/* ===== Photo Gallery - Recipe Detail ===== */
+
+/* Gallery Container */
+.photo-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    width: 100%;
+}
+
+/* Main Image Area */
+.gallery-main {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--color-background-secondary);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.gallery-main-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+}
+
+.gallery-main-image:hover {
+    opacity: 0.95;
+}
+
+/* Navigation Buttons */
+.gallery-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text);
+    z-index: 2;
+}
+
+.gallery-nav-prev {
+    left: var(--spacing-md);
+}
+
+.gallery-nav-next {
+    right: var(--spacing-md);
+}
+
+.gallery-nav-btn:hover {
+    background: white;
+    box-shadow: var(--shadow-md);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.gallery-nav-btn:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.gallery-nav-btn:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Position Indicator */
+.gallery-indicator {
+    position: absolute;
+    bottom: var(--spacing-md);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.gallery-indicator-current {
+    font-weight: var(--font-weight-bold);
+}
+
+/* Thumbnails Container */
+.gallery-thumbnails {
+    display: flex;
+    gap: var(--spacing-sm);
+    overflow-x: auto;
+    padding: var(--spacing-xs) 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+}
+
+.gallery-thumbnails::-webkit-scrollbar {
+    height: 6px;
+}
+
+.gallery-thumbnails::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.gallery-thumbnails::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+}
+
+.gallery-thumbnails::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-secondary);
+}
+
+/* Thumbnail Buttons */
+.gallery-thumbnail {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    border: 2px solid transparent;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--color-background-secondary);
+    padding: 0;
+}
+
+.gallery-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.gallery-thumbnail:hover {
+    border-color: var(--color-primary-light);
+    transform: scale(1.05);
+}
+
+.gallery-thumbnail:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.gallery-thumbnail.active {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.gallery-thumbnail.active:hover {
+    border-color: var(--color-primary-dark);
+}
+
+/* Fallback for browsers without aspect-ratio support */
+@supports not (aspect-ratio: 16 / 9) {
+    .gallery-main {
+        position: relative;
+        padding-bottom: 56.25%; /* 16:9 ratio */
+        height: 0;
+    }
+    
+    .gallery-main-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .gallery-nav-btn,
+    .gallery-indicator {
+        position: absolute;
+    }
+}
+
+/* Responsive Design - Mobile */
+@media (max-width: 768px) {
+    .gallery-main {
+        aspect-ratio: 4 / 3;
+    }
+    
+    @supports not (aspect-ratio: 4 / 3) {
+        .gallery-main {
+            padding-bottom: 75%; /* 4:3 ratio */
+        }
+    }
+    
+    .gallery-nav-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 20px;
+    }
+    
+    .gallery-nav-prev {
+        left: var(--spacing-sm);
+    }
+    
+    .gallery-nav-next {
+        right: var(--spacing-sm);
+    }
+    
+    .gallery-thumbnail {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .gallery-indicator {
+        font-size: 0.75rem;
+        padding: 4px 12px;
+        bottom: var(--spacing-sm);
+    }
+}
+
+/* Responsive Design - Tablet */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .gallery-thumbnail {
+        width: 70px;
+        height: 70px;
+    }
+}
+
+/* Image Loading Placeholder */
+.gallery-main-image[src=""],
+.gallery-main-image:not([src]) {
+    background: var(--color-background-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gallery-main-image[src=""]::before,
+.gallery-main-image:not([src])::before {
+    content: '📷';
+    font-size: 3rem;
+    opacity: 0.3;
+}
+
+/* Accessibility - High Contrast Mode */
+@media (prefers-contrast: high) {
+    .gallery-nav-btn {
+        background: white;
+        border: 2px solid var(--color-text);
+    }
+    
+    .gallery-thumbnail.active {
+        border-width: 3px;
+    }
+}
+
+/* Accessibility - Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .gallery-main-image,
+    .gallery-nav-btn,
+    .gallery-thumbnail {
+        transition: none;
+    }
+}

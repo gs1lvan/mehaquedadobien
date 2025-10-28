@@ -279,6 +279,14 @@ class RecipeApp {
         this.modalImages = []; // Images for modal navigation
         this.currentImageIndex = 0; // Current image index in modal
 
+        // Photo gallery state
+        this.galleryState = {
+            images: [],
+            currentIndex: 0,
+            totalImages: 0,
+            recipeName: ''
+        };
+
         this.init();
     }
 
@@ -3645,7 +3653,7 @@ class RecipeApp {
         this.renderDetailSequences(recipe.additionSequences, recipe.ingredients);
 
         // Multimedia
-        this.renderDetailMultimedia(recipe.images, recipe.videos);
+        this.renderDetailMultimedia(recipe.images, recipe.videos, recipe.name);
 
         // Metadata
         this.renderDetailMetadata(recipe);
@@ -3833,13 +3841,334 @@ class RecipeApp {
         });
     }
 
+    // ===== Photo Gallery Methods =====
+
+    /**
+     * Render photo gallery for recipes with multiple images
+     * Requirements: 1.1, 1.2
+     * @param {MediaFile[]} images - Array of images
+     * @param {string} recipeName - Name of the recipe for alt text
+     * @returns {HTMLElement|null} Gallery element or null
+     */
+    renderPhotoGallery(images, recipeName = '') {
+        // Validation
+        if (!images || !Array.isArray(images) || images.length === 0) {
+            console.warn('[PhotoGallery] No images provided');
+            return null;
+        }
+
+        // If only 1 image, use traditional rendering
+        if (images.length === 1) {
+            return this.renderSingleImage(images[0], recipeName);
+        }
+
+        // Initialize gallery state for 2+ images
+        this.galleryState = {
+            images: images,
+            currentIndex: 0,
+            totalImages: images.length,
+            recipeName: recipeName
+        };
+
+        // Create gallery container
+        const galleryContainer = document.createElement('div');
+        galleryContainer.className = 'photo-gallery';
+        galleryContainer.setAttribute('role', 'region');
+        galleryContainer.setAttribute('aria-label', 'Galería de fotos de la receta');
+
+        // Render main area
+        const mainArea = this.renderGalleryMain(images[0], 0, images.length, recipeName);
+        galleryContainer.appendChild(mainArea);
+
+        // Render thumbnails
+        const thumbnails = this.renderGalleryThumbnails(images, 0, recipeName);
+        galleryContainer.appendChild(thumbnails);
+
+        // Setup navigation event listeners
+        this.setupGalleryNavigation(galleryContainer);
+
+        return galleryContainer;
+    }
+
+    /**
+     * Render single image (traditional rendering for 1 image)
+     * Requirements: 1.2
+     * @param {MediaFile} image - Image to display
+     * @param {string} recipeName - Name of the recipe for alt text
+     * @returns {HTMLElement} Image element
+     */
+    renderSingleImage(image, recipeName = '') {
+        const item = document.createElement('div');
+        item.className = 'detail-gallery-item';
+
+        const img = document.createElement('img');
+        img.src = image.data;
+        img.alt = recipeName ? `${recipeName} - Foto` : image.name;
+        img.className = 'detail-gallery-image';
+
+        // Handle image load error
+        img.addEventListener('error', () => {
+            console.warn('[PhotoGallery] Failed to load image:', image.name);
+            img.alt = 'Imagen no disponible';
+        });
+
+        item.appendChild(img);
+
+        // Add click to open modal
+        item.addEventListener('click', () => {
+            this.openImageModal([image], 0);
+        });
+
+        return item;
+    }
+
+    /**
+     * Render gallery main area with image and controls
+     * Requirements: 1.4, 2.1, 2.2, 4.2, 4.4
+     * @param {MediaFile} image - Current image to display
+     * @param {number} index - Current image index
+     * @param {number} total - Total number of images
+     * @param {string} recipeName - Name of the recipe for alt text
+     * @returns {HTMLElement} Main area element
+     */
+    renderGalleryMain(image, index, total, recipeName = '') {
+        const mainArea = document.createElement('div');
+        mainArea.className = 'gallery-main';
+        mainArea.setAttribute('role', 'img');
+        mainArea.setAttribute('aria-label', 'Imagen principal');
+
+        // Main image
+        const img = document.createElement('img');
+        img.src = image.data;
+        img.alt = recipeName ? `${recipeName} - Foto ${index + 1}` : `Foto ${index + 1}`;
+        img.className = 'gallery-main-image';
+        img.id = 'gallery-main-image';
+
+        // Handle image load error
+        img.addEventListener('error', () => {
+            console.warn('[PhotoGallery] Failed to load image:', image.name);
+            img.alt = 'Imagen no disponible';
+            img.style.background = 'var(--color-background-secondary)';
+        });
+
+        // Add click to open modal
+        img.addEventListener('click', () => {
+            this.openImageModal(this.galleryState.images, index);
+        });
+
+        mainArea.appendChild(img);
+
+        // Previous button
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'gallery-nav-btn gallery-nav-prev';
+        prevBtn.setAttribute('aria-label', 'Ver foto anterior');
+        prevBtn.setAttribute('aria-controls', 'gallery-main-image');
+        prevBtn.textContent = '‹';
+        mainArea.appendChild(prevBtn);
+
+        // Next button
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'gallery-nav-btn gallery-nav-next';
+        nextBtn.setAttribute('aria-label', 'Ver foto siguiente');
+        nextBtn.setAttribute('aria-controls', 'gallery-main-image');
+        nextBtn.textContent = '›';
+        mainArea.appendChild(nextBtn);
+
+        // Position indicator
+        const indicator = document.createElement('div');
+        indicator.className = 'gallery-indicator';
+        indicator.innerHTML = `
+            <span class="gallery-indicator-current">${index + 1}</span> / 
+            <span class="gallery-indicator-total">${total}</span>
+        `;
+        mainArea.appendChild(indicator);
+
+        return mainArea;
+    }
+
+    /**
+     * Render gallery thumbnails
+     * Requirements: 1.3, 4.2, 4.3
+     * @param {MediaFile[]} images - Array of images
+     * @param {number} activeIndex - Index of active image
+     * @param {string} recipeName - Name of the recipe for alt text
+     * @returns {HTMLElement} Thumbnails container
+     */
+    renderGalleryThumbnails(images, activeIndex, recipeName = '') {
+        const container = document.createElement('div');
+        container.className = 'gallery-thumbnails';
+        container.setAttribute('role', 'tablist');
+        container.setAttribute('aria-label', 'Miniaturas de fotos');
+
+        images.forEach((image, index) => {
+            const button = document.createElement('button');
+            button.className = 'gallery-thumbnail';
+            button.setAttribute('role', 'tab');
+            button.setAttribute('aria-label', `Foto ${index + 1} de ${images.length}`);
+            button.dataset.index = index;
+
+            if (index === activeIndex) {
+                button.classList.add('active');
+                button.setAttribute('aria-selected', 'true');
+            } else {
+                button.setAttribute('aria-selected', 'false');
+            }
+
+            const img = document.createElement('img');
+            // Lazy load thumbnails far from active index
+            if (Math.abs(index - activeIndex) > 3) {
+                img.loading = 'lazy';
+            }
+            img.src = image.data;
+            img.alt = '';
+            img.draggable = false;
+
+            button.appendChild(img);
+            container.appendChild(button);
+        });
+
+        return container;
+    }
+
+    /**
+     * Setup gallery navigation event listeners
+     * Requirements: 2.1, 2.2, 4.1, 4.3
+     * @param {HTMLElement} galleryContainer - Gallery container element
+     */
+    setupGalleryNavigation(galleryContainer) {
+        // Previous button
+        const prevBtn = galleryContainer.querySelector('.gallery-nav-prev');
+        if (prevBtn) {
+            prevBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.navigatePrevious();
+            });
+        }
+
+        // Next button
+        const nextBtn = galleryContainer.querySelector('.gallery-nav-next');
+        if (nextBtn) {
+            nextBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.navigateNext();
+            });
+        }
+
+        // Thumbnail clicks
+        const thumbnails = galleryContainer.querySelectorAll('.gallery-thumbnail');
+        thumbnails.forEach(thumbnail => {
+            thumbnail.addEventListener('click', () => {
+                const index = parseInt(thumbnail.dataset.index);
+                this.navigateToImage(index);
+            });
+        });
+
+        // Keyboard navigation
+        galleryContainer.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    this.navigatePrevious();
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    this.navigateNext();
+                    break;
+                case 'Home':
+                    e.preventDefault();
+                    this.navigateToImage(0);
+                    break;
+                case 'End':
+                    e.preventDefault();
+                    this.navigateToImage(this.galleryState.totalImages - 1);
+                    break;
+            }
+        });
+    }
+
+    /**
+     * Navigate to specific image
+     * Requirements: 2.1, 2.5, 4.3
+     * @param {number} index - Image index to navigate to
+     */
+    navigateToImage(index) {
+        // Validate index
+        if (index < 0 || index >= this.galleryState.totalImages) {
+            console.error('[PhotoGallery] Invalid index:', index);
+            return;
+        }
+
+        // Update state
+        this.galleryState.currentIndex = index;
+
+        // Update main image
+        const mainImage = document.getElementById('gallery-main-image');
+        if (mainImage) {
+            const image = this.galleryState.images[index];
+            mainImage.src = image.data;
+            mainImage.alt = this.galleryState.recipeName 
+                ? `${this.galleryState.recipeName} - Foto ${index + 1}` 
+                : `Foto ${index + 1}`;
+        }
+
+        // Update indicator
+        const indicatorCurrent = document.querySelector('.gallery-indicator-current');
+        if (indicatorCurrent) {
+            indicatorCurrent.textContent = index + 1;
+        }
+
+        // Update thumbnails
+        const thumbnails = document.querySelectorAll('.gallery-thumbnail');
+        thumbnails.forEach((thumbnail, i) => {
+            if (i === index) {
+                thumbnail.classList.add('active');
+                thumbnail.setAttribute('aria-selected', 'true');
+                // Scroll thumbnail into view
+                thumbnail.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            } else {
+                thumbnail.classList.remove('active');
+                thumbnail.setAttribute('aria-selected', 'false');
+            }
+        });
+
+        // Maintain focus if on thumbnail
+        const activeElement = document.activeElement;
+        if (activeElement && activeElement.classList.contains('gallery-thumbnail')) {
+            const newThumbnail = document.querySelector(`.gallery-thumbnail[data-index="${index}"]`);
+            if (newThumbnail) {
+                newThumbnail.focus();
+            }
+        }
+    }
+
+    /**
+     * Navigate to next image (circular)
+     * Requirements: 2.1, 2.2, 2.3, 2.4
+     */
+    navigateNext() {
+        const nextIndex = (this.galleryState.currentIndex + 1) % this.galleryState.totalImages;
+        this.navigateToImage(nextIndex);
+    }
+
+    /**
+     * Navigate to previous image (circular)
+     * Requirements: 2.1, 2.2, 2.3, 2.4
+     */
+    navigatePrevious() {
+        const prevIndex = (this.galleryState.currentIndex - 1 + this.galleryState.totalImages) % this.galleryState.totalImages;
+        this.navigateToImage(prevIndex);
+    }
+
+    // ===== End Photo Gallery Methods =====
+
     /**
      * Render detail multimedia
-     * Requirements: 5.5, 9.4
+     * Requirements: 5.5, 9.4, 1.1, 1.2
      * @param {MediaFile[]} images - Images to display
      * @param {MediaFile[]} videos - Videos to display
+     * @param {string} recipeName - Name of the recipe for alt text
      */
-    renderDetailMultimedia(images, videos) {
+    renderDetailMultimedia(images, videos, recipeName = '') {
         const sectionElement = document.getElementById('detail-multimedia-section');
         const imagesGallery = document.getElementById('detail-images-gallery');
         const videosGallery = document.getElementById('detail-videos-gallery');
@@ -3860,28 +4189,22 @@ class RecipeApp {
 
         sectionElement.style.display = 'block';
 
-        // Render images
+        // NUEVO: Render images using gallery for 2+ images
         if (hasImages) {
-            images.forEach((image, index) => {
-                const item = document.createElement('div');
-                item.className = 'detail-gallery-item';
-
-                const img = document.createElement('img');
-                img.src = image.data;
-                img.alt = image.name;
-                img.className = 'detail-gallery-image';
-
-                item.appendChild(img);
-                imagesGallery.appendChild(item);
-
-                // Add click to open modal
-                item.addEventListener('click', () => {
-                    this.openImageModal(images, index);
-                });
-            });
+            if (images.length >= 2) {
+                // Use photo gallery for multiple images
+                const gallery = this.renderPhotoGallery(images, recipeName);
+                if (gallery) {
+                    imagesGallery.appendChild(gallery);
+                }
+            } else {
+                // Use traditional rendering for single image
+                const singleImage = this.renderSingleImage(images[0], recipeName);
+                imagesGallery.appendChild(singleImage);
+            }
         }
 
-        // Render videos
+        // Render videos (unchanged)
         if (hasVideos) {
             videos.forEach(video => {
                 const item = document.createElement('div');
