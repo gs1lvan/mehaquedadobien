@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test: RecipeApp Initialization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+        }
+        .pass {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .fail {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test: RecipeApp Initialization and Navigation</h1>
+    <p>This test verifies that the RecipeApp class initializes correctly and the navigation system works.</p>
+
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Manual Navigation Tests</h2>
+        <p>Click these buttons to test navigation:</p>
+        <button onclick="testShowForm()">Show Recipe Form</button>
+        <button onclick="testCloseForm()">Close Form</button>
+        <button onclick="testShowList()">Show Recipe List</button>
+        <div id="navigation-status" class="test-result info" style="margin-top: 10px;">
+            Current View: <span id="current-view">-</span>
+        </div>
+    </div>
+
+    <script src="models.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Wait for app to initialize
+        setTimeout(() => {
+            runTests();
+        }, 1000);
+
+        function runTests() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '';
+
+            // Test 1: RecipeApp instance exists
+            addTestResult(
+                'RecipeApp instance created',
+                typeof window.recipeApp !== 'undefined',
+                'window.recipeApp should be defined'
+            );
+
+            // Test 2: RecipeApp has required properties
+            if (window.recipeApp) {
+                addTestResult(
+                    'RecipeApp has storageManager',
+                    window.recipeApp.storageManager instanceof StorageManager,
+                    'storageManager should be an instance of StorageManager'
+                );
+
+                addTestResult(
+                    'RecipeApp has recipes array',
+                    Array.isArray(window.recipeApp.recipes),
+                    'recipes should be an array'
+                );
+
+                addTestResult(
+                    'RecipeApp has currentView state',
+                    typeof window.recipeApp.currentView === 'string',
+                    'currentView should be a string'
+                );
+
+                addTestResult(
+                    'RecipeApp has activeFilters',
+                    window.recipeApp.activeFilters instanceof Set,
+                    'activeFilters should be a Set'
+                );
+
+                // Test 3: RecipeApp has required methods
+                const requiredMethods = [
+                    'init',
+                    'loadRecipes',
+                    'setupEventListeners',
+                    'showRecipeForm',
+                    'closeRecipeForm',
+                    'showRecipeDetail',
+                    'closeRecipeDetail',
+                    'renderRecipeList',
+                    'filterRecipes',
+                    'saveRecipe',
+                    'duplicateRecipe',
+                    'deleteRecipe',
+                    'exportRecipeToXML',
+                    'exportRecipeToPDF'
+                ];
+
+                requiredMethods.forEach(method => {
+                    addTestResult(
+                        `RecipeApp has ${method} method`,
+                        typeof window.recipeApp[method] === 'function',
+                        `${method} should be a function`
+                    );
+                });
+
+                // Test 4: Initial view state
+                addTestResult(
+                    'Initial view is "list"',
+                    window.recipeApp.currentView === 'list',
+                    'currentView should be "list" initially'
+                );
+
+                // Test 5: StorageManager initialized
+                addTestResult(
+                    'StorageManager has db property',
+                    window.recipeApp.storageManager.db !== null,
+                    'StorageManager.db should be initialized'
+                );
+
+                // Update current view display
+                updateViewStatus();
+            }
+        }
+
+        function addTestResult(testName, passed, message) {
+            const results = document.getElementById('test-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${passed ? 'pass' : 'fail'}`;
+            resultDiv.innerHTML = `
+                <strong>${passed ? '✅' : '❌'} ${testName}</strong><br>
+                <small>${message}</small>
+            `;
+            results.appendChild(resultDiv);
+        }
+
+        function updateViewStatus() {
+            const viewSpan = document.getElementById('current-view');
+            if (window.recipeApp) {
+                viewSpan.textContent = window.recipeApp.currentView;
+            }
+        }
+
+        function testShowForm() {
+            if (window.recipeApp) {
+                window.recipeApp.showRecipeForm();
+                updateViewStatus();
+                alert('Form view should now be visible. Check currentView: ' + window.recipeApp.currentView);
+            }
+        }
+
+        function testCloseForm() {
+            if (window.recipeApp) {
+                window.recipeApp.closeRecipeForm();
+                updateViewStatus();
+                alert('Form closed. Check currentView: ' + window.recipeApp.currentView);
+            }
+        }
+
+        function testShowList() {
+            if (window.recipeApp) {
+                window.recipeApp.closeRecipeDetail();
+                window.recipeApp.closeRecipeForm();
+                updateViewStatus();
+                alert('List view should now be visible. Check currentView: ' + window.recipeApp.currentView);
+            }
+        }
+
+        // Update view status every second
+        setInterval(updateViewStatus, 1000);
+    </script>
+</body>
+</html>

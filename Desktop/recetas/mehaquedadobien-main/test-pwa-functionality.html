@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test PWA Functionality - Recetario Personal</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+        }
+        h2 {
+            color: #764ba2;
+            font-size: 1.2rem;
+            margin-top: 0;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 5px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 4px solid #667eea;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test PWA Functionality - Recetario Personal</h1>
+    
+    <div class="test-section">
+        <h2>1. Service Worker Registration</h2>
+        <div id="sw-status" class="status info">Verificando...</div>
+        <div id="sw-details"></div>
+        <button onclick="checkServiceWorker()">Verificar Service Worker</button>
+        <button onclick="unregisterServiceWorker()">Desregistrar SW</button>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Manifest Configuration</h2>
+        <div id="manifest-status" class="status info">Verificando...</div>
+        <div id="manifest-details"></div>
+        <button onclick="checkManifest()">Verificar Manifest</button>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Cache Storage</h2>
+        <div id="cache-status" class="status info">Verificando...</div>
+        <div id="cache-details"></div>
+        <button onclick="checkCaches()">Verificar Caches</button>
+        <button onclick="clearCaches()">Limpiar Caches</button>
+    </div>
+
+    <div class="test-section">
+        <h2>4. PWA Install Prompt</h2>
+        <div id="install-status" class="status info">Esperando evento beforeinstallprompt...</div>
+        <div id="install-details"></div>
+        <button onclick="checkInstallability()">Verificar Instalabilidad</button>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Offline Capability</h2>
+        <div id="offline-status" class="status info">Verificando...</div>
+        <div id="offline-details"></div>
+        <button onclick="testOfflineMode()">Simular Modo Offline</button>
+    </div>
+
+    <div class="test-section">
+        <h2>6. Update Detection</h2>
+        <div id="update-status" class="status info">Verificando...</div>
+        <div id="update-details"></div>
+        <button onclick="checkForUpdates()">Buscar Actualizaciones</button>
+    </div>
+
+    <script>
+        // Test 1: Service Worker Registration
+        async function checkServiceWorker() {
+            const statusEl = document.getElementById('sw-status');
+            const detailsEl = document.getElementById('sw-details');
+            
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    
+                    if (registration) {
+                        statusEl.className = 'status success';
+                        statusEl.textContent = '✅ Service Worker registrado correctamente';
+                        
+                        let details = '<div class="test-result">';
+                        details += `<strong>Scope:</strong> ${registration.scope}<br>`;
+                        details += `<strong>Estado:</strong> ${registration.active ? 'Activo' : 'Inactivo'}<br>`;
+                        details += `<strong>Instalando:</strong> ${registration.installing ? 'Sí' : 'No'}<br>`;
+                        details += `<strong>Esperando:</strong> ${registration.waiting ? 'Sí' : 'No'}<br>`;
+                        details += '</div>';
+                        detailsEl.innerHTML = details;
+                    } else {
+                        statusEl.className = 'status error';
+                        statusEl.textContent = '❌ Service Worker no registrado';
+                        detailsEl.innerHTML = '<p>Intenta registrar el SW desde la página principal (index.html)</p>';
+                    }
+                } catch (error) {
+                    statusEl.className = 'status error';
+                    statusEl.textContent = '❌ Error al verificar Service Worker';
+                    detailsEl.innerHTML = `<pre>${error.message}</pre>`;
+                }
+            } else {
+                statusEl.className = 'status error';
+                statusEl.textContent = '❌ Service Worker no soportado en este navegador';
+            }
+        }
+
+        async function unregisterServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                const registration = await navigator.serviceWorker.getRegistration();
+                if (registration) {
+                    await registration.unregister();
+                    alert('Service Worker desregistrado. Recarga la página.');
+                    location.reload();
+                }
+            }
+        }
+
+        // Test 2: Manifest Configuration
+        async function checkManifest() {
+            const statusEl = document.getElementById('manifest-status');
+            const detailsEl = document.getElementById('manifest-details');
+            
+            try {
+                const response = await fetch('./manifest.json');
+                const manifest = await response.json();
+                
+                statusEl.className = 'status success';
+                statusEl.textContent = '✅ Manifest cargado correctamente';
+                
+                let details = '<div class="test-result">';
+                details += `<strong>Nombre:</strong> ${manifest.name}<br>`;
+                details += `<strong>Nombre corto:</strong> ${manifest.short_name}<br>`;
+                details += `<strong>Descripción:</strong> ${manifest.description}<br>`;
+                details += `<strong>Display:</strong> ${manifest.display}<br>`;
+                details += `<strong>Theme color:</strong> ${manifest.theme_color}<br>`;
+                details += `<strong>Iconos:</strong> ${manifest.icons.length}<br>`;
+                details += `<strong>Categorías:</strong> ${manifest.categories.join(', ')}<br>`;
+                details += '</div>';
+                detailsEl.innerHTML = details;
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = '❌ Error al cargar manifest';
+                detailsEl.innerHTML = `<pre>${error.message}</pre>`;
+            }
+        }
+
+        // Test 3: Cache Storage
+        async function checkCaches() {
+            const statusEl = document.getElementById('cache-status');
+            const detailsEl = document.getElementById('cache-details');
+            
+            if ('caches' in window) {
+                try {
+                    const cacheNames = await caches.keys();
+                    
+                    if (cacheNames.length > 0) {
+                        statusEl.className = 'status success';
+                        statusEl.textContent = `✅ ${cacheNames.length} cache(s) encontrado(s)`;
+                        
+                        let details = '<div class="test-result">';
+                        for (const cacheName of cacheNames) {
+                            const cache = await caches.open(cacheName);
+                            const keys = await cache.keys();
+                            details += `<strong>${cacheName}:</strong> ${keys.length} recursos<br>`;
+                            details += '<ul style="margin: 5px 0; padding-left: 20px;">';
+                            keys.slice(0, 5).forEach(request => {
+                                details += `<li style="font-size: 0.85rem;">${request.url.split('/').pop()}</li>`;
+                            });
+                            if (keys.length > 5) {
+                                details += `<li style="font-size: 0.85rem;">... y ${keys.length - 5} más</li>`;
+                            }
+                            details += '</ul>';
+                        }
+                        details += '</div>';
+                        detailsEl.innerHTML = details;
+                    } else {
+                        statusEl.className = 'status info';
+                        statusEl.textContent = 'ℹ️ No hay caches disponibles';
+                        detailsEl.innerHTML = '<p>El Service Worker aún no ha cacheado recursos. Visita index.html primero.</p>';
+                    }
+                } catch (error) {
+                    statusEl.className = 'status error';
+                    statusEl.textContent = '❌ Error al verificar caches';
+                    detailsEl.innerHTML = `<pre>${error.message}</pre>`;
+                }
+            } else {
+                statusEl.className = 'status error';
+                statusEl.textContent = '❌ Cache API no soportada';
+            }
+        }
+
+        async function clearCaches() {
+            if ('caches' in window) {
+                const cacheNames = await caches.keys();
+                await Promise.all(cacheNames.map(name => caches.delete(name)));
+                alert('Todos los caches eliminados. Recarga la página.');
+                location.reload();
+            }
+        }
+
+        // Test 4: PWA Install Prompt
+        function checkInstallability() {
+            const statusEl = document.getElementById('install-status');
+            const detailsEl = document.getElementById('install-details');
+            
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                               window.navigator.standalone === true;
+            
+            if (isStandalone) {
+                statusEl.className = 'status success';
+                statusEl.textContent = '✅ PWA ya instalada (modo standalone)';
+                detailsEl.innerHTML = '<p>La aplicación está corriendo como PWA instalada.</p>';
+            } else {
+                statusEl.className = 'status info';
+                statusEl.textContent = 'ℹ️ PWA no instalada';
+                detailsEl.innerHTML = '<p>La aplicación puede ser instalada. El prompt aparecerá automáticamente si cumple los requisitos.</p>';
+            }
+        }
+
+        // Listen for install prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            const statusEl = document.getElementById('install-status');
+            const detailsEl = document.getElementById('install-details');
+            
+            statusEl.className = 'status success';
+            statusEl.textContent = '✅ Evento beforeinstallprompt detectado';
+            detailsEl.innerHTML = '<p>La PWA puede ser instalada. El prompt está disponible.</p>';
+        });
+
+        // Test 5: Offline Capability
+        async function testOfflineMode() {
+            const statusEl = document.getElementById('offline-status');
+            const detailsEl = document.getElementById('offline-details');
+            
+            statusEl.className = 'status info';
+            statusEl.textContent = 'ℹ️ Probando modo offline...';
+            
+            // Check if we're online
+            if (navigator.onLine) {
+                detailsEl.innerHTML = '<p>Actualmente ONLINE. Para probar offline:<br>1. Abre DevTools<br>2. Ve a Network tab<br>3. Marca "Offline"<br>4. Recarga la página</p>';
+            } else {
+                statusEl.className = 'status success';
+                statusEl.textContent = '✅ Modo offline activo';
+                detailsEl.innerHTML = '<p>La aplicación está funcionando sin conexión gracias al Service Worker.</p>';
+            }
+        }
+
+        // Test 6: Update Detection
+        async function checkForUpdates() {
+            const statusEl = document.getElementById('update-status');
+            const detailsEl = document.getElementById('update-details');
+            
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    
+                    if (registration) {
+                        statusEl.className = 'status info';
+                        statusEl.textContent = 'ℹ️ Buscando actualizaciones...';
+                        
+                        await registration.update();
+                        
+                        if (registration.waiting) {
+                            statusEl.className = 'status success';
+                            statusEl.textContent = '✅ Actualización disponible';
+                            detailsEl.innerHTML = '<p>Hay una nueva versión esperando. Cierra todas las pestañas y vuelve a abrir.</p>';
+                        } else {
+                            statusEl.className = 'status success';
+                            statusEl.textContent = '✅ Aplicación actualizada';
+                            detailsEl.innerHTML = '<p>No hay actualizaciones disponibles. Estás usando la última versión.</p>';
+                        }
+                    } else {
+                        statusEl.className = 'status error';
+                        statusEl.textContent = '❌ Service Worker no registrado';
+                    }
+                } catch (error) {
+                    statusEl.className = 'status error';
+                    statusEl.textContent = '❌ Error al buscar actualizaciones';
+                    detailsEl.innerHTML = `<pre>${error.message}</pre>`;
+                }
+            }
+        }
+
+        // Auto-run tests on load
+        window.addEventListener('load', () => {
+            checkServiceWorker();
+            checkManifest();
+            checkCaches();
+            checkInstallability();
+        });
+
+        // Monitor online/offline status
+        window.addEventListener('online', () => {
+            const statusEl = document.getElementById('offline-status');
+            statusEl.className = 'status success';
+            statusEl.textContent = '✅ Conexión restaurada';
+        });
+
+        window.addEventListener('offline', () => {
+            const statusEl = document.getElementById('offline-status');
+            statusEl.className = 'status info';
+            statusEl.textContent = 'ℹ️ Modo offline activo';
+        });
+    </script>
+</body>
+</html>

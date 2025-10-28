@@ -1,0 +1,15 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="192" height="192" rx="24" fill="#667eea"/>
+<!-- Recipe book -->
+<rect x="48" y="40" width="96" height="112" rx="4" fill="#ffffff"/>
+<rect x="48" y="40" width="8" height="112" fill="#764ba2"/>
+<!-- Book pages -->
+<line x1="64" y1="64" x2="128" y2="64" stroke="#667eea" stroke-width="3" stroke-linecap="round"/>
+<line x1="64" y1="80" x2="120" y2="80" stroke="#667eea" stroke-width="3" stroke-linecap="round"/>
+<line x1="64" y1="96" x2="128" y2="96" stroke="#667eea" stroke-width="3" stroke-linecap="round"/>
+<line x1="64" y1="112" x2="112" y2="112" stroke="#667eea" stroke-width="3" stroke-linecap="round"/>
+<!-- Chef hat icon -->
+<ellipse cx="96" cy="128" rx="16" ry="8" fill="#764ba2"/>
+<rect x="80" y="120" width="32" height="16" rx="2" fill="#764ba2"/>
+<ellipse cx="96" cy="120" rx="20" ry="12" fill="#ffffff"/>
+</svg>

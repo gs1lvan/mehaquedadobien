@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Selector de Emojis</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            padding: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #222;
+            border-bottom: 3px solid #FF385C;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f7f7f7;
+            border-radius: 8px;
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #FF385C;
+        }
+        .feature {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #4ECDC4;
+            border-radius: 4px;
+        }
+        .feature h3 {
+            margin-top: 0;
+            color: #4ECDC4;
+        }
+        .emoji-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .emoji-category-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+        .emoji-category-box h4 {
+            margin: 0 0 10px 0;
+            color: #FF385C;
+        }
+        .emoji-list {
+            font-size: 1.5rem;
+            line-height: 2;
+        }
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        code {
+            background: #e8e8e8;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 8px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        .checklist li:before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test - Selector Visual de Emojis</h1>
+    
+    <div class="success">
+        <strong>✅ Funcionalidad Implementada</strong><br>
+        El selector visual de emojis está completamente implementado con más de 500 emojis organizados en 5 categorías.
+    </div>
+
+    <div class="test-section">
+        <h2>📋 Checklist de Pruebas</h2>
+        <ul class="checklist">
+            <li>Abrir la aplicación y hacer clic en "🏷️ Categorías"</li>
+            <li>Verificar que el campo de emoji muestra 🐱 por defecto</li>
+            <li>Verificar que el selector de emojis está visible debajo del campo</li>
+            <li>Navegar por las 5 categorías (Comida, Animales, Naturaleza, Deportes, Objetos)</li>
+            <li>Hacer clic en diferentes emojis y verificar que se insertan en el campo</li>
+            <li>Verificar el efecto hover (zoom) al pasar el mouse sobre los emojis</li>
+            <li>Verificar que el emoji seleccionado se marca visualmente</li>
+            <li>Crear una categoría sin seleccionar emoji y verificar que usa 🐱</li>
+            <li>Crear una categoría con emoji personalizado (ej: 🦎 para Reptiles)</li>
+            <li>Editar una categoría y verificar que el emoji actual está seleccionado</li>
+            <li>Cambiar el emoji en edición y guardar</li>
+            <li>Verificar que el nuevo emoji se muestra en la lista y filtros</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Casos de Prueba Específicos</h2>
+        
+        <div class="feature">
+            <h3>1. Categoría "Reptiles" con 🦎</h3>
+            <p><strong>Pasos:</strong></p>
+            <ol>
+                <li>Crear nueva categoría</li>
+                <li>Nombre: "Reptiles"</li>
+                <li>Navegar a sección "🐾 Animales"</li>
+                <li>Buscar y hacer clic en 🦎</li>
+                <li>Seleccionar un color</li>
+                <li>Guardar</li>
+            </ol>
+            <p><strong>Resultado esperado:</strong> Categoría creada con emoji 🦎</p>
+        </div>
+
+        <div class="feature">
+            <h3>2. Categoría "Postres" con 🍰</h3>
+            <p><strong>Pasos:</strong></p>
+            <ol>
+                <li>Crear nueva categoría</li>
+                <li>Nombre: "Postres"</li>
+                <li>Navegar a sección "🍕 Comida"</li>
+                <li>Hacer clic en 🍰</li>
+                <li>Guardar</li>
+            </ol>
+            <p><strong>Resultado esperado:</strong> Categoría creada con emoji 🍰</p>
+        </div>
+
+        <div class="feature">
+            <h3>3. Categoría sin Emoji (usa default)</h3>
+            <p><strong>Pasos:</strong></p>
+            <ol>
+                <li>Crear nueva categoría</li>
+                <li>Nombre: "Test"</li>
+                <li>NO seleccionar ningún emoji</li>
+                <li>Guardar</li>
+            </ol>
+            <p><strong>Resultado esperado:</strong> Categoría creada con emoji 🐱 (default)</p>
+        </div>
+
+        <div class="feature">
+            <h3>4. Cambiar Emoji en Edición</h3>
+            <p><strong>Pasos:</strong></p>
+            <ol>
+                <li>Crear categoría con emoji 🍕</li>
+                <li>Editar la categoría</li>
+                <li>Verificar que 🍕 está seleccionado en el picker</li>
+                <li>Cambiar a 🍔</li>
+                <li>Guardar</li>
+            </ol>
+            <p><strong>Resultado esperado:</strong> Categoría actualizada con emoji 🍔</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎨 Categorías de Emojis Disponibles</h2>
+        
+        <div class="emoji-showcase">
+            <div class="emoji-category-box">
+                <h4>🍕 Comida (60+)</h4>
+                <div class="emoji-list">
+                    🍕 🍔 🍟 🌭 🍿 🥓 🥚 🍳 🥞 🍞 🥐 🧀 🥗 🌮 🌯 🥪 🍖 🍗 🥩 🍱 🍜 🍣 🍤 🥘 🍲 🥧 🍰 🎂 🧁 🍮 🍭 🍬 🍫 🍩 🍪
+                </div>
+            </div>
+            
+            <div class="emoji-category-box">
+                <h4>🐾 Animales (100+)</h4>
+                <div class="emoji-list">
+                    🐶 🐱 🐭 🐹 🐰 🦊 🐻 🐼 🐨 🐯 🦁 🐮 🐷 🐸 🐵 🐔 🐧 🐦 🐤 🦆 🦅 🦉 🐺 🐗 🐴 🦄 🐝 🦋 🐌 🐞 🐢 🐍 🦎 🦖 🐙 🦑 🐡 🐠 🐟 🐬 🐳 🐋 🦈 🐊
+                </div>
+            </div>
+            
+            <div class="emoji-category-box">
+                <h4>🌿 Naturaleza (60+)</h4>
+                <div class="emoji-list">
+                    🌱 🌿 ☘️ 🍀 🍃 🍂 🍁 🍄 🌾 💐 🌷 🌹 🌺 🌸 🌼 🌻 🌞 🌝 🌙 🌎 🌍 🌏 ⭐ 🌟 ✨ ⚡ 🔥 🌈 ☀️ ☁️ 🌧️ ⛈️ ❄️ ☃️ 💨 💧 💦 🌊
+                </div>
+            </div>
+            
+            <div class="emoji-category-box">
+                <h4>⚽ Deportes (50+)</h4>
+                <div class="emoji-list">
+                    ⚽ 🏀 🏈 ⚾ 🎾 🏐 🏉 🎱 🏓 🏸 🏒 🏑 🏏 ⛳ 🏹 🎣 🥊 🥋 🛹 🛼 ⛸️ 🥌 🎿 🏂 🏋️ 🤸 ⛹️ 🏌️ 🏇 🧘 🏊 🚣 🧗 🚴 🚵 🏆 🥇 🥈 🥉
+                </div>
+            </div>
+            
+            <div class="emoji-category-box">
+                <h4>🎭 Objetos (250+)</h4>
+                <div class="emoji-list">
+                    🎨 🎭 🎪 🎬 🎤 🎧 🎼 🎹 🎸 🎻 🎲 🎯 🎮 🧩 🧸 👓 🕶️ 👔 👕 👗 👠 👑 🎩 🎓 💄 💍 💎 📱 💻 📷 📸 📺 🔍 💡 📚 📖 📝 💰 💳 ✉️ 📦 ✏️ 📁 📅 📊 📌 📎 ✂️ 🔒 🔑 🔨 🔧 🔩 ⚙️
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info">
+        <strong>ℹ️ Información Técnica:</strong>
+        <ul>
+            <li><strong>Total de emojis:</strong> Más de 500</li>
+            <li><strong>Categorías:</strong> 5 (Comida, Animales, Naturaleza, Deportes, Objetos)</li>
+            <li><strong>Emoji por defecto:</strong> 🐱</li>
+            <li><strong>Campo de entrada:</strong> Solo lectura (readonly)</li>
+            <li><strong>Selección:</strong> Click en emoji del selector</li>
+            <li><strong>Scroll:</strong> Máximo 300px de altura con scroll vertical</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 Verificaciones de UI</h2>
+        <ul class="checklist">
+            <li>El selector tiene un fondo gris claro distintivo</li>
+            <li>Los emojis están organizados en grids responsivos</li>
+            <li>Cada categoría tiene un título claro (ej: "🍕 Comida")</li>
+            <li>Los emojis tienen tamaño adecuado (1.5rem)</li>
+            <li>El hover hace zoom en el emoji (scale 1.2)</li>
+            <li>El emoji seleccionado tiene borde rojo</li>
+            <li>El selector tiene scroll si el contenido es largo</li>
+            <li>El campo de emoji es de solo lectura (no se puede escribir)</li>
+            <li>El placeholder muestra 🐱</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>📱 Pruebas Responsive</h2>
+        <ul class="checklist">
+            <li>Probar en pantalla de escritorio (1920px)</li>
+            <li>Probar en tablet (768px)</li>
+            <li>Probar en móvil (375px)</li>
+            <li>Verificar que el grid se adapta correctamente</li>
+            <li>Verificar que el scroll funciona en móvil</li>
+            <li>Verificar que los emojis son clickeables en touch</li>
+        </ul>
+    </div>
+
+    <div class="success">
+        <strong>✅ Ventajas del Selector Visual:</strong>
+        <ul>
+            <li>✅ Más de 500 emojis disponibles</li>
+            <li>✅ Organización intuitiva por categorías</li>
+            <li>✅ No requiere conocer códigos de emoji</li>
+            <li>✅ Búsqueda visual rápida</li>
+            <li>✅ Efecto hover atractivo</li>
+            <li>✅ Indicador visual de selección</li>
+            <li>✅ Emoji por defecto garantizado (🐱)</li>
+            <li>✅ Compatible con todos los navegadores modernos</li>
+            <li>✅ Diseño responsive</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Ejemplos de Categorías Creativas</h2>
+        <div class="feature">
+            <ul>
+                <li><strong>Reptiles</strong> 🦎 - Para recetas con ingredientes exóticos</li>
+                <li><strong>Postres</strong> 🍰 - Dulces y tartas</li>
+                <li><strong>Bebidas</strong> 🥤 - Jugos, batidos, cócteles</li>
+                <li><strong>Fitness</strong> 🏋️ - Comidas saludables</li>
+                <li><strong>Plantas</strong> 🌱 - Recetas veganas</li>
+                <li><strong>Picante</strong> 🌶️ - Comidas con chile</li>
+                <li><strong>Mariscos</strong> 🦐 - Pescados y mariscos</li>
+                <li><strong>Pasta</strong> 🍝 - Todo tipo de pastas</li>
+                <li><strong>Sopas</strong> 🍲 - Caldos y cremas</li>
+                <li><strong>Panadería</strong> 🥖 - Panes y masas</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>

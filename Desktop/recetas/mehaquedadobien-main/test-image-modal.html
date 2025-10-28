@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Modal de Imágenes</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #222;
+        }
+        .test-images {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 16px;
+        }
+        .test-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .test-image:hover {
+            transform: scale(1.05);
+        }
+        .test-description {
+            color: #717171;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 style="text-align: center; margin-bottom: 40px;">🖼️ Test - Modal de Imágenes</h1>
+        
+        <div class="test-section">
+            <h2 class="test-title">✅ Funcionalidad Implementada</h2>
+            <p class="test-description">
+                Se ha implementado un modal elegante para ampliar las imágenes de las recetas. 
+                Las características incluyen:
+            </p>
+            <ul style="color: #717171; line-height: 1.8;">
+                <li>✨ Modal con overlay oscuro y efecto blur</li>
+                <li>🖼️ Imagen ampliada centrada con animación suave</li>
+                <li>❌ Botón de cerrar en la esquina superior</li>
+                <li>◀️ ▶️ Navegación entre múltiples imágenes</li>
+                <li>⌨️ Soporte de teclado (Escape para cerrar, flechas para navegar)</li>
+                <li>📱 Diseño responsive para móviles</li>
+                <li>🎯 Click en overlay para cerrar</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2 class="test-title">🎯 Dónde Funciona</h2>
+            <p class="test-description">El modal de imágenes se activa en dos lugares:</p>
+            <ol style="color: #717171; line-height: 1.8;">
+                <li><strong>Tarjetas de recetas:</strong> Al hacer clic en la imagen de una tarjeta de receta en la vista de lista</li>
+                <li><strong>Vista de detalle:</strong> Al hacer clic en cualquier imagen de la galería multimedia de una receta</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h2 class="test-title">🧪 Cómo Probar</h2>
+            <p class="test-description">Para probar la funcionalidad:</p>
+            <ol style="color: #717171; line-height: 1.8;">
+                <li>Abre la aplicación principal (index.html)</li>
+                <li>Crea una receta con una o más imágenes</li>
+                <li>En la vista de lista, haz clic en la imagen de la tarjeta</li>
+                <li>Verás el modal con la imagen ampliada</li>
+                <li>Si hay múltiples imágenes, usa los botones de navegación o las flechas del teclado</li>
+                <li>Cierra el modal con el botón X, la tecla Escape, o haciendo clic fuera de la imagen</li>
+                <li>También puedes abrir el detalle de la receta y hacer clic en las imágenes de la galería</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h2 class="test-title">💡 Mejoras Implementadas</h2>
+            <p class="test-description">Cambios respecto al comportamiento anterior:</p>
+            <ul style="color: #717171; line-height: 1.8;">
+                <li><strong>Antes:</strong> Las imágenes se abrían en una nueva pestaña</li>
+                <li><strong>Ahora:</strong> Se abren en un modal elegante dentro de la aplicación</li>
+                <li><strong>Ventaja:</strong> Mejor experiencia de usuario, más rápido, y permite navegar entre imágenes sin salir de la app</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2 class="test-title">📝 Archivos Modificados</h2>
+            <ul style="color: #717171; line-height: 1.8;">
+                <li><code>index.html</code> - Agregado el HTML del modal</li>
+                <li><code>styles.css</code> - Agregados estilos del modal con animaciones</li>
+                <li><code>script.js</code> - Agregada lógica del modal y navegación</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <a href="index.html" class="btn-primary" style="display: inline-block; text-decoration: none;">
+                🚀 Ir a la Aplicación Principal
+            </a>
+        </div>
+    </div>
+
+    <!-- Image Modal (para demostración visual) -->
+    <div id="image-modal" class="image-modal hidden">
+        <div class="image-modal-overlay"></div>
+        <div class="image-modal-content">
+            <button id="close-modal-btn" class="image-modal-close" title="Cerrar">✕</button>
+            <button id="prev-image-btn" class="image-modal-nav image-modal-prev" title="Anterior">‹</button>
+            <button id="next-image-btn" class="image-modal-nav image-modal-next" title="Siguiente">›</button>
+            <img id="modal-image" class="image-modal-img" src="" alt="">
+            <div id="modal-image-counter" class="image-modal-counter"></div>
+        </div>
+    </div>
+</body>
+</html>
