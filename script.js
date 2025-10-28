@@ -546,18 +546,6 @@ class RecipeApp {
             });
         }
 
-        // Share all button
-        const shareAllBtn = document.getElementById('share-all-btn');
-        if (shareAllBtn) {
-            // Show share button only if Web Share API is supported
-            if (navigator.share && navigator.canShare) {
-                shareAllBtn.style.display = 'inline-flex';
-            }
-            shareAllBtn.addEventListener('click', () => {
-                this.handleShareAllClick();
-            });
-        }
-
         // XML file input
         const xmlFileInput = document.getElementById('xml-file-input');
         if (xmlFileInput) {
@@ -4468,18 +4456,6 @@ class RecipeApp {
             };
         }
 
-        // Share recipe button
-        const shareRecipeBtn = document.getElementById('share-recipe-btn');
-        if (shareRecipeBtn) {
-            // Show share button only if Web Share API is supported
-            if (navigator.share && navigator.canShare) {
-                shareRecipeBtn.style.display = 'inline-flex';
-            }
-            shareRecipeBtn.onclick = () => {
-                this.shareRecipe(recipe.id);
-            };
-        }
-
         // Export PDF button
         const exportPdfBtn = document.getElementById('export-pdf-btn');
         if (exportPdfBtn) {
@@ -4708,77 +4684,6 @@ class RecipeApp {
             if (exportBtn) {
                 exportBtn.disabled = false;
                 exportBtn.textContent = '📄 XML';
-            }
-        }
-    }
-
-    /**
-     * Share recipe using Web Share API
-     * @param {string} recipeId - Recipe ID to share
-     */
-    async shareRecipe(recipeId) {
-        try {
-            // Find the recipe
-            const recipe = this.recipes.find(r => r.id === recipeId);
-
-            if (!recipe) {
-                throw new Error('Receta no encontrada');
-            }
-
-            // Show loading state
-            const shareBtn = document.getElementById('share-recipe-btn');
-            const originalText = shareBtn?.textContent;
-            if (shareBtn) {
-                shareBtn.disabled = true;
-                shareBtn.textContent = '⏳ Preparando...';
-            }
-
-            // Generate XML for the recipe
-            const xmlString = XMLExporter.generateXML(recipe);
-
-            // Create filename
-            const safeName = recipe.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-            const filename = `receta_${safeName}.xml`;
-
-            // Create a File object from the XML string
-            const file = new File([xmlString], filename, { type: 'application/xml' });
-
-            // Check if we can share files
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                // Share using Web Share API
-                await navigator.share({
-                    title: recipe.name,
-                    text: `Receta: ${recipe.name}`,
-                    files: [file]
-                });
-
-                this.showSuccess('¡Receta compartida exitosamente!');
-            } else {
-                // Fallback: download the file
-                this.showWarning('Tu navegador no soporta compartir archivos. Descargando en su lugar...');
-                XMLExporter.downloadXML(xmlString, filename);
-            }
-
-            // Restore button state
-            if (shareBtn) {
-                shareBtn.disabled = false;
-                shareBtn.textContent = originalText;
-            }
-
-        } catch (error) {
-            // User cancelled or error occurred
-            if (error.name === 'AbortError') {
-                console.log('[Share] User cancelled share');
-            } else {
-                console.error('[Share] Error sharing recipe:', error);
-                this.showError('Error al compartir la receta: ' + error.message);
-            }
-
-            // Restore button state
-            const shareBtn = document.getElementById('share-recipe-btn');
-            if (shareBtn) {
-                shareBtn.disabled = false;
-                shareBtn.textContent = '🔗 Compartir';
             }
         }
     }
@@ -5264,101 +5169,6 @@ class RecipeApp {
             if (exportBtn) {
                 exportBtn.disabled = false;
                 exportBtn.textContent = '📤 Exportar Todas';
-            }
-        }
-    }
-
-    /**
-     * Handle share all recipes click using Web Share API
-     */
-    async handleShareAllClick() {
-        try {
-            // Determine which recipes to share
-            const recipesToShare = this.activeFilters.size > 0 ?
-                this.filterRecipes() :
-                this.recipes;
-
-            if (recipesToShare.length === 0) {
-                this.showWarning('No hay recetas para compartir');
-                return;
-            }
-
-            // Show loading state
-            const shareBtn = document.getElementById('share-all-btn');
-            const originalText = shareBtn?.textContent;
-            if (shareBtn) {
-                shareBtn.disabled = true;
-                shareBtn.textContent = '⏳ Preparando...';
-            }
-
-            // Generate XML
-            const xmlDoc = document.implementation.createDocument(null, 'recipes');
-            const root = xmlDoc.documentElement;
-
-            // Add metadata attributes
-            root.setAttribute('count', recipesToShare.length.toString());
-            root.setAttribute('exported', new Date().toISOString());
-
-            // Add each recipe
-            recipesToShare.forEach(recipe => {
-                const recipeXML = XMLExporter.generateXML(recipe);
-                const parser = new DOMParser();
-                const recipeDoc = parser.parseFromString(recipeXML, 'text/xml');
-                const recipeElement = recipeDoc.documentElement;
-
-                // Import the recipe element into our document
-                const importedRecipe = xmlDoc.importNode(recipeElement, true);
-                root.appendChild(importedRecipe);
-            });
-
-            // Serialize to string
-            const serializer = new XMLSerializer();
-            let xmlString = serializer.serializeToString(xmlDoc);
-            xmlString = '<?xml version="1.0" encoding="UTF-8"?>\n' + xmlString;
-
-            // Create filename
-            const date = new Date().toISOString().split('T')[0];
-            const filename = `recetas_${recipesToShare.length}_${date}.xml`;
-
-            // Create a File object from the XML string
-            const file = new File([xmlString], filename, { type: 'application/xml' });
-
-            // Check if we can share files
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                // Share using Web Share API
-                await navigator.share({
-                    title: `${recipesToShare.length} Receta${recipesToShare.length > 1 ? 's' : ''}`,
-                    text: `Compartiendo ${recipesToShare.length} receta${recipesToShare.length > 1 ? 's' : ''} desde mehaquedadobien`,
-                    files: [file]
-                });
-
-                this.showSuccess('¡Recetas compartidas exitosamente!');
-            } else {
-                // Fallback: download the file
-                this.showWarning('Tu navegador no soporta compartir archivos. Descargando en su lugar...');
-                XMLExporter.downloadXML(xmlString, filename);
-            }
-
-            // Restore button state
-            if (shareBtn) {
-                shareBtn.disabled = false;
-                shareBtn.textContent = originalText;
-            }
-
-        } catch (error) {
-            // User cancelled or error occurred
-            if (error.name === 'AbortError') {
-                console.log('[Share] User cancelled share');
-            } else {
-                console.error('[Share] Error sharing recipes:', error);
-                this.showError('Error al compartir recetas: ' + error.message);
-            }
-
-            // Restore button state
-            const shareBtn = document.getElementById('share-all-btn');
-            if (shareBtn) {
-                shareBtn.disabled = false;
-                shareBtn.textContent = '🔗 Compartir';
             }
         }
     }
