@@ -1520,6 +1520,9 @@ class RecipeApp {
             return;
         }
 
+        // Show header actions when in list view
+        this.showHeaderActions();
+
         // Get filtered recipes
         const filteredRecipes = this.filterRecipes();
 
@@ -1664,6 +1667,9 @@ class RecipeApp {
             detailView.classList.add('hidden');
         }
 
+        // Hide header actions when in form view
+        this.hideHeaderActions();
+
         // Hide filter bar
         const filterBar = document.getElementById('filter-bar');
         if (filterBar) {
@@ -1731,6 +1737,9 @@ class RecipeApp {
         if (filterBar) {
             filterBar.classList.remove('hidden');
         }
+
+        // Show header actions when closing form
+        this.showHeaderActions();
 
         // Reset form
         this.resetForm();
@@ -3582,6 +3591,9 @@ class RecipeApp {
             return;
         }
 
+        // Hide header actions when viewing recipe detail
+        this.hideHeaderActions();
+
         // Hide list and form views
         const listView = document.getElementById('recipe-list-view');
         const formView = document.getElementById('recipe-form-view');
@@ -4767,6 +4779,9 @@ class RecipeApp {
             filterBar.classList.remove('hidden');
         }
 
+        // Show header actions when returning to home
+        this.showHeaderActions();
+
         // Reset form if we were in form view
         if (this.currentView === 'form') {
             this.resetForm();
@@ -4784,6 +4799,9 @@ class RecipeApp {
      * Close recipe detail and return to list view
      */
     closeRecipeDetail() {
+        // Show header actions when closing detail
+        this.showHeaderActions();
+
         // Hide detail view
         const detailView = document.getElementById('recipe-detail-view');
         if (detailView) {
@@ -4851,6 +4869,32 @@ class RecipeApp {
     }
 
     // ===== End Theme Management =====
+
+    // ===== Header Actions Visibility =====
+
+    /**
+     * Show header actions (buttons in header)
+     * Called when in list view
+     */
+    showHeaderActions() {
+        const headerActions = document.getElementById('header-actions');
+        if (headerActions) {
+            headerActions.style.display = 'flex';
+        }
+    }
+
+    /**
+     * Hide header actions (buttons in header)
+     * Called when in detail or form view
+     */
+    hideHeaderActions() {
+        const headerActions = document.getElementById('header-actions');
+        if (headerActions) {
+            headerActions.style.display = 'none';
+        }
+    }
+
+    // ===== End Header Actions Visibility =====
 
     /**
      * Show error message to user with toast notification

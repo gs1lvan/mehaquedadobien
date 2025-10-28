@@ -6,7 +6,8 @@
 
 **Última actualización:** Octubre 2025  
 **Estado:** Producción - Funcional  
-**Tecnologías:** Vanilla JavaScript, IndexedDB, localStorage, jsPDF
+**Tecnologías:** Vanilla JavaScript, IndexedDB, localStorage, jsPDF, Web Share API  
+**Nuevas funcionalidades:** Galería de fotos, Tema oscuro, Compartir recetas, Detección de duplicados
 
 ---
 
@@ -26,7 +27,8 @@ mehaquedadobien-main/
 │   ├── unified-time-input/
 │   ├── custom-categories/
 │   ├── hospital-food-filter/
-│   └── xml-import-functionality/
+│   ├── xml-import-functionality/
+│   └── recipe-photo-gallery/
 └── test-*.html             # Archivos de prueba
 
 Archivos de documentación:
@@ -55,7 +57,10 @@ Archivos de documentación:
     ingredients: Array<Ingredient>,      // Ingredientes del formulario
     sequences: Array<Sequence>,          // Secuencias del formulario
     images: Array<MediaFile>,            // Imágenes del formulario
-    videos: Array<MediaFile>             // Videos del formulario
+    videos: Array<MediaFile>,            // Videos del formulario
+    galleryState: Object,                // Estado de galería de fotos
+    modalImages: Array<MediaFile>,       // Imágenes para modal
+    currentImageIndex: number            // Índice de imagen actual en modal
 }
 ```
 
@@ -84,7 +89,14 @@ Archivos de documentación:
 ```javascript
 PREDEFINED_CATEGORIES = [
     { id: 'carne', name: 'Carne', emoji: '🥩', color: '#D93B30', isPredefined: true },
-    // ... 10 categorías predefinidas
+    { id: 'verdura', name: 'Verdura', emoji: '🥬', color: '#008A05', isPredefined: true },
+    { id: 'pescado', name: 'Pescado', emoji: '🐟', color: '#0073CF', isPredefined: true },
+    { id: 'fruta', name: 'Fruta', emoji: '🍎', color: '#FF8C00', isPredefined: true },
+    { id: 'cereales', name: 'Cereales', emoji: '🌾', color: '#C4A053', isPredefined: true },
+    { id: 'con-huevo', name: 'Con huevo', emoji: '🥚', color: '#FFD700', isPredefined: true },
+    { id: 'pollo', name: 'Pollo', emoji: '🐔', color: '#FFA500', isPredefined: true },
+    { id: 'escabeche', name: 'Escabeche', emoji: '🥒', color: '#32CD32', isPredefined: true }
+    // 8 categorías predefinidas (se eliminaron: hospital, mix, sin-categoria)
 ];
 
 CATEGORY_COLORS = [
@@ -293,6 +305,19 @@ Si IndexedDB no está disponible, usa localStorage con key `recetario_recipes`.
 - Modal de ampliación para imágenes
 - Navegación entre imágenes (teclado y botones)
 - Badge de tiempo total en imágenes
+
+### ✅ Galería de Fotos (NUEVO)
+- Galería compacta para recetas con 2+ imágenes
+- Imagen principal grande con controles de navegación
+- Miniaturas navegables con scroll horizontal
+- Indicador de posición (1/5, 2/5, etc.)
+- Navegación circular (última → primera)
+- Navegación por teclado (flechas, Home, End)
+- Responsive (16:9 en desktop, 4:3 en móvil)
+- Lazy loading de miniaturas
+- Integración con modal existente
+- Accesible (ARIA, lectores de pantalla)
+- Fallback para navegadores sin aspect-ratio
 
 ### ✅ Categorías Personalizadas
 - 10 categorías predefinidas (no editables/eliminables)
