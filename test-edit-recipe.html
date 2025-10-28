@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Editar Receta - Recetario Personal</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .test-container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+        }
+        .test-title {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .test-pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .btn-test {
+            margin: 5px;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-test:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test: Editar Receta</h1>
+        <p>Este test verifica la funcionalidad de edición de recetas (Tarea 12)</p>
+
+        <div class="test-section">
+            <h2 class="test-title">Requisitos a Verificar</h2>
+            <ul>
+                <li>✓ Cargar datos de receta existente en el formulario (Req 6.1)</li>
+                <li>✓ Permitir modificación de todos los campos (Req 6.2)</li>
+                <li>✓ Mantener ID original al actualizar (Req 6.3, 6.5)</li>
+                <li>✓ Actualizar timestamp updatedAt (Req 6.3)</li>
+                <li>✓ Implementar cancelación que descarta cambios (Req 6.4)</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2 class="test-title">Paso 1: Crear Receta de Prueba</h2>
+            <button class="btn-test" onclick="createTestRecipe()">Crear Receta de Prueba</button>
+            <div id="create-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="test-title">Paso 2: Verificar Carga en Formulario</h2>
+            <button class="btn-test" onclick="testLoadRecipeIntoForm()">Probar Carga de Datos</button>
+            <div id="load-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="test-title">Paso 3: Verificar Edición y Guardado</h2>
+            <button class="btn-test" onclick="testEditAndSave()">Probar Edición</button>
+            <div id="edit-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="test-title">Paso 4: Verificar Cancelación</h2>
+            <button class="btn-test" onclick="testCancellation()">Probar Cancelación</button>
+            <div id="cancel-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="test-title">Paso 5: Limpiar</h2>
+            <button class="btn-test" onclick="cleanup()">Limpiar Datos de Prueba</button>
+            <div id="cleanup-result"></div>
+        </div>
+    </div>
+
+    <script src="models.js"></script>
+    <script src="script.js"></script>
+    <script>
+        let testRecipeId = null;
+        let app = null;
+
+        // Wait for app to initialize
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                app = window.recipeApp || new RecipeApp();
+                console.log('App initialized for testing');
+            }, 500);
+        });
+
+        async function createTestRecipe() {
+            const resultDiv = document.getElementById('create-result');
+            resultDiv.innerHTML = '<div class="test-info">Creando receta de prueba...</div>';
+
+            try {
+                // Create test recipe
+                const recipe = new Recipe({
+                    name: 'Receta de Prueba para Edición',
+                    category: 'carne',
+                    preparationMethod: 'Método original de preparación',
+                    ingredients: [
+                        new Ingredient({ name: 'Ingrediente 1', quantity: 100, unit: 'g', order: 0 }),
+                        new Ingredient({ name: 'Ingrediente 2', quantity: 200, unit: 'ml', order: 1 })
+                    ],
+                    additionSequences: [
+                        new Sequence({ step: 1, ingredientIds: [], description: 'Secuencia original' })
+                    ],
+                    images: [],
+                    videos: [],
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                });
+
+                // Save recipe
+                const recipeId = await app.storageManager.saveRecipe(recipe);
+                testRecipeId = recipeId;
+
+                // Reload recipes
+                await app.loadRecipes();
+                app.renderRecipeList();
+
+                resultDiv.innerHTML = `
+                    <div class="test-pass">
+                        ✓ Receta creada exitosamente<br>
+                        ID: ${recipeId}<br>
+                        Nombre: ${recipe.name}<br>
+                        Categoría: ${recipe.category}<br>
+                        Ingredientes: ${recipe.ingredients.length}<br>
+                        Secuencias: ${recipe.additionSequences.length}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="test-fail">✗ Error: ${error.message}</div>`;
+                console.error(error);
+            }
+        }
+
+        async function testLoadRecipeIntoForm() {
+            const resultDiv = document.getElementById('load-result');
+            
+            if (!testRecipeId) {
+                resultDiv.innerHTML = '<div class="test-fail">✗ Primero crea una receta de prueba</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="test-info">Cargando receta en formulario...</div>';
+
+            try {
+                // Load recipe into form
+                app.showRecipeForm(testRecipeId);
+
+                // Wait for form to load
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Verify form fields are populated
+                const nameInput = document.getElementById('recipe-name');
+                const categorySelect = document.getElementById('recipe-category');
+                const methodTextarea = document.getElementById('preparation-method');
+
+                const checks = [];
+                checks.push({ 
+                    name: 'Nombre cargado', 
+                    pass: nameInput.value === 'Receta de Prueba para Edición' 
+                });
+                checks.push({ 
+                    name: 'Categoría cargada', 
+                    pass: categorySelect.value === 'carne' 
+                });
+                checks.push({ 
+                    name: 'Método cargado', 
+                    pass: methodTextarea.value === 'Método original de preparación' 
+                });
+                checks.push({ 
+                    name: 'Ingredientes cargados', 
+                    pass: app.ingredients.length === 2 
+                });
+                checks.push({ 
+                    name: 'Secuencias cargadas', 
+                    pass: app.sequences.length === 1 
+                });
+
+                const allPassed = checks.every(c => c.pass);
+                const resultsHtml = checks.map(c => 
+                    `${c.pass ? '✓' : '✗'} ${c.name}`
+                ).join('<br>');
+
+                resultDiv.innerHTML = `
+                    <div class="${allPassed ? 'test-pass' : 'test-fail'}">
+                        ${resultsHtml}
+                    </div>
+                `;
+
+                // Close form
+                app.closeRecipeForm();
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="test-fail">✗ Error: ${error.message}</div>`;
+                console.error(error);
+            }
+        }
+
+        async function testEditAndSave() {
+            const resultDiv = document.getElementById('edit-result');
+            
+            if (!testRecipeId) {
+                resultDiv.innerHTML = '<div class="test-fail">✗ Primero crea una receta de prueba</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="test-info">Editando y guardando receta...</div>';
+
+            try {
+                // Get original recipe
+                const originalRecipe = app.recipes.find(r => r.id === testRecipeId);
+                const originalUpdatedAt = originalRecipe.updatedAt.getTime();
+                const originalId = originalRecipe.id;
+
+                // Load recipe into form
+                app.showRecipeForm(testRecipeId);
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Modify fields
+                document.getElementById('recipe-name').value = 'Receta EDITADA';
+                document.getElementById('recipe-category').value = 'pescado';
+                document.getElementById('preparation-method').value = 'Método MODIFICADO';
+
+                // Save changes
+                await app.handleFormSubmit();
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Reload recipes
+                await app.loadRecipes();
+
+                // Verify changes
+                const editedRecipe = app.recipes.find(r => r.id === testRecipeId);
+                
+                const checks = [];
+                checks.push({ 
+                    name: 'ID mantenido', 
+                    pass: editedRecipe.id === originalId 
+                });
+                checks.push({ 
+                    name: 'Nombre actualizado', 
+                    pass: editedRecipe.name === 'Receta EDITADA' 
+                });
+                checks.push({ 
+                    name: 'Categoría actualizada', 
+                    pass: editedRecipe.category === 'pescado' 
+                });
+                checks.push({ 
+                    name: 'Método actualizado', 
+                    pass: editedRecipe.preparationMethod === 'Método MODIFICADO' 
+                });
+                checks.push({ 
+                    name: 'updatedAt actualizado', 
+                    pass: editedRecipe.updatedAt.getTime() > originalUpdatedAt 
+                });
+                checks.push({ 
+                    name: 'createdAt mantenido', 
+                    pass: editedRecipe.createdAt.getTime() === originalRecipe.createdAt.getTime() 
+                });
+
+                const allPassed = checks.every(c => c.pass);
+                const resultsHtml = checks.map(c => 
+                    `${c.pass ? '✓' : '✗'} ${c.name}`
+                ).join('<br>');
+
+                resultDiv.innerHTML = `
+                    <div class="${allPassed ? 'test-pass' : 'test-fail'}">
+                        ${resultsHtml}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="test-fail">✗ Error: ${error.message}</div>`;
+                console.error(error);
+            }
+        }
+
+        async function testCancellation() {
+            const resultDiv = document.getElementById('cancel-result');
+            
+            if (!testRecipeId) {
+                resultDiv.innerHTML = '<div class="test-fail">✗ Primero crea una receta de prueba</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="test-info">Probando cancelación...</div>';
+
+            try {
+                // Get original recipe
+                const originalRecipe = app.recipes.find(r => r.id === testRecipeId);
+                const originalName = originalRecipe.name;
+
+                // Load recipe into form
+                app.showRecipeForm(testRecipeId);
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Modify field
+                document.getElementById('recipe-name').value = 'Nombre que NO debe guardarse';
+
+                // Cancel (simulate clicking cancel button)
+                // Override confirm to auto-accept
+                const originalConfirm = window.confirm;
+                window.confirm = () => true;
+                
+                app.closeRecipeForm();
+                
+                window.confirm = originalConfirm;
+
+                // Verify recipe wasn't changed
+                await app.loadRecipes();
+                const unchangedRecipe = app.recipes.find(r => r.id === testRecipeId);
+
+                const checks = [];
+                checks.push({ 
+                    name: 'Cambios descartados', 
+                    pass: unchangedRecipe.name === originalName 
+                });
+                checks.push({ 
+                    name: 'Formulario cerrado', 
+                    pass: app.currentView === 'list' 
+                });
+
+                const allPassed = checks.every(c => c.pass);
+                const resultsHtml = checks.map(c => 
+                    `${c.pass ? '✓' : '✗'} ${c.name}`
+                ).join('<br>');
+
+                resultDiv.innerHTML = `
+                    <div class="${allPassed ? 'test-pass' : 'test-fail'}">
+                        ${resultsHtml}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="test-fail">✗ Error: ${error.message}</div>`;
+                console.error(error);
+            }
+        }
+
+        async function cleanup() {
+            const resultDiv = document.getElementById('cleanup-result');
+            resultDiv.innerHTML = '<div class="test-info">Limpiando...</div>';
+
+            try {
+                if (testRecipeId) {
+                    await app.storageManager.deleteRecipe(testRecipeId);
+                    await app.loadRecipes();
+                    app.renderRecipeList();
+                    testRecipeId = null;
+                }
+
+                resultDiv.innerHTML = '<div class="test-pass">✓ Datos de prueba eliminados</div>';
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="test-fail">✗ Error: ${error.message}</div>`;
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>

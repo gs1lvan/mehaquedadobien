@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Guardar Receta - Recetario Personal</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .test-container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .test-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .test-result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .test-result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-result.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .recipe-preview {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            border: 2px solid #667eea;
+        }
+        .recipe-preview h4 {
+            margin-top: 15px;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+        .recipe-preview ul {
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="recipe-header">
+            <div class="header-content">
+                <h1>🧪 Test Guardar Receta</h1>
+            </div>
+        </header>
+
+        <div class="test-container">
+            <div class="test-section">
+                <h2 class="test-title">1. Test Guardar Receta Nueva</h2>
+                <p>Este test crea una receta completa con ingredientes, secuencias y la guarda en IndexedDB</p>
+                <button onclick="testSaveNewRecipe()" class="btn-primary">Ejecutar Test</button>
+                <div id="test-save-new" class="test-result" style="display: none;"></div>
+            </div>
+
+            <div class="test-section">
+                <h2 class="test-title">2. Test Actualizar Receta Existente</h2>
+                <p>Este test carga una receta, la modifica y la guarda nuevamente</p>
+                <button onclick="testUpdateRecipe()" class="btn-primary">Ejecutar Test</button>
+                <div id="test-update" class="test-result" style="display: none;"></div>
+            </div>
+
+            <div class="test-section">
+                <h2 class="test-title">3. Test Validación de Datos</h2>
+                <p>Este test verifica que se validen correctamente los datos antes de guardar</p>
+                <button onclick="testValidation()" class="btn-primary">Ejecutar Test</button>
+                <div id="test-validation" class="test-result" style="display: none;"></div>
+            </div>
+
+            <div class="test-section">
+                <h2 class="test-title">4. Ver Todas las Recetas Guardadas</h2>
+                <button onclick="showAllRecipes()" class="btn-primary">Mostrar Recetas</button>
+                <div id="all-recipes" class="test-result" style="display: none;"></div>
+            </div>
+
+            <div class="test-section">
+                <h2 class="test-title">5. Limpiar Base de Datos</h2>
+                <p style="color: #dc3545; font-weight: bold;">⚠️ Esto eliminará todas las recetas guardadas</p>
+                <button onclick="clearDatabase()" class="btn-secondary">Limpiar BD</button>
+                <div id="clear-result" class="test-result" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="models.js"></script>
+    <script src="script.js"></script>
+    <script>
+        let app;
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', async () => {
+            app = new RecipeApp();
+            // Wait for initialization
+            await new Promise(resolve => setTimeout(resolve, 500));
+        });
+
+        // Test 1: Save new recipe
+        async function testSaveNewRecipe() {
+            const resultDiv = document.getElementById('test-save-new');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result info';
+            resultDiv.textContent = '⏳ Guardando receta...';
+
+            try {
+                // Create test recipe data
+                const formData = {
+                    name: 'Paella Valenciana de Prueba',
+                    category: 'mix',
+                    preparationMethod: 'Sofreír el pollo y las verduras. Añadir el arroz y el caldo. Cocinar a fuego medio durante 20 minutos.',
+                    ingredients: [
+                        new Ingredient({
+                            name: 'Arroz',
+                            quantity: 400,
+                            unit: 'g',
+                            order: 0
+                        }),
+                        new Ingredient({
+                            name: 'Pollo',
+                            quantity: 500,
+                            unit: 'g',
+                            order: 1
+                        }),
+                        new Ingredient({
+                            name: 'Pimiento rojo',
+                            quantity: 2,
+                            unit: 'unidad',
+                            order: 2
+                        }),
+                        new Ingredient({
+                            name: 'Caldo de pollo',
+                            quantity: 1,
+                            unit: 'l',
+                            order: 3
+                        })
+                    ],
+                    additionSequences: [
+                        new Sequence({
+                            step: 1,
+                            ingredientIds: [],
+                            description: 'Sofreír el pollo hasta dorar'
+                        }),
+                        new Sequence({
+                            step: 2,
+                            ingredientIds: [],
+                            description: 'Añadir el pimiento y cocinar 5 minutos'
+                        }),
+                        new Sequence({
+                            step: 3,
+                            ingredientIds: [],
+                            description: 'Incorporar el arroz y el caldo, cocinar 20 minutos'
+                        })
+                    ],
+                    images: [],
+                    videos: []
+                };
+
+                // Save recipe
+                const recipeId = await app.saveRecipe(formData);
+
+                // Reload recipes
+                await app.loadRecipes();
+
+                // Find saved recipe
+                const savedRecipe = app.recipes.find(r => r.id === recipeId);
+
+                if (!savedRecipe) {
+                    throw new Error('Receta no encontrada después de guardar');
+                }
+
+                // Verify data
+                if (savedRecipe.name !== formData.name) {
+                    throw new Error('El nombre no coincide');
+                }
+                if (savedRecipe.category !== formData.category) {
+                    throw new Error('La categoría no coincide');
+                }
+                if (savedRecipe.ingredients.length !== formData.ingredients.length) {
+                    throw new Error('El número de ingredientes no coincide');
+                }
+                if (savedRecipe.additionSequences.length !== formData.additionSequences.length) {
+                    throw new Error('El número de secuencias no coincide');
+                }
+
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = `✅ Receta guardada exitosamente!
+
+ID: ${recipeId}
+Nombre: ${savedRecipe.name}
+Categoría: ${savedRecipe.category}
+Ingredientes: ${savedRecipe.ingredients.length}
+Secuencias: ${savedRecipe.additionSequences.length}
+Creada: ${savedRecipe.createdAt.toLocaleString()}
+Actualizada: ${savedRecipe.updatedAt.toLocaleString()}
+
+<div class="recipe-preview">
+<strong>Vista previa de la receta:</strong>
+<h4>Ingredientes:</h4>
+<ul>
+${savedRecipe.ingredients.map(ing => `<li>${ing.name}: ${ing.quantity} ${ing.unit}</li>`).join('')}
+</ul>
+<h4>Método de preparación:</h4>
+<p>${savedRecipe.preparationMethod}</p>
+<h4>Secuencias:</h4>
+<ol>
+${savedRecipe.additionSequences.map(seq => `<li>${seq.description}</li>`).join('')}
+</ol>
+</div>`;
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.textContent = '❌ Error: ' + error.message + '\n\n' + error.stack;
+            }
+        }
+
+        // Test 2: Update existing recipe
+        async function testUpdateRecipe() {
+            const resultDiv = document.getElementById('test-update');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result info';
+            resultDiv.textContent = '⏳ Actualizando receta...';
+
+            try {
+                // First, ensure we have at least one recipe
+                await app.loadRecipes();
+                
+                if (app.recipes.length === 0) {
+                    throw new Error('No hay recetas para actualizar. Ejecuta primero el Test 1.');
+                }
+
+                // Get first recipe
+                const originalRecipe = app.recipes[0];
+                const originalUpdatedAt = originalRecipe.updatedAt;
+
+                // Wait a bit to ensure timestamp difference
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                // Modify recipe data
+                const formData = {
+                    name: originalRecipe.name + ' (Modificada)',
+                    category: originalRecipe.category === 'carne' ? 'verdura' : 'carne',
+                    preparationMethod: originalRecipe.preparationMethod + '\n\nNOTA: Receta modificada en test.',
+                    ingredients: [...originalRecipe.ingredients],
+                    additionSequences: [...originalRecipe.additionSequences],
+                    images: [...originalRecipe.images],
+                    videos: [...originalRecipe.videos]
+                };
+
+                // Add a new ingredient
+                formData.ingredients.push(new Ingredient({
+                    name: 'Ingrediente Nuevo',
+                    quantity: 100,
+                    unit: 'g',
+                    order: formData.ingredients.length
+                }));
+
+                // Set current recipe ID for editing
+                app.currentRecipeId = originalRecipe.id;
+
+                // Save updated recipe
+                const recipeId = await app.saveRecipe(formData);
+
+                // Reload recipes
+                await app.loadRecipes();
+
+                // Find updated recipe
+                const updatedRecipe = app.recipes.find(r => r.id === recipeId);
+
+                if (!updatedRecipe) {
+                    throw new Error('Receta no encontrada después de actualizar');
+                }
+
+                // Verify updates
+                if (updatedRecipe.id !== originalRecipe.id) {
+                    throw new Error('El ID cambió (no debería)');
+                }
+                if (updatedRecipe.name !== formData.name) {
+                    throw new Error('El nombre no se actualizó');
+                }
+                if (updatedRecipe.ingredients.length !== formData.ingredients.length) {
+                    throw new Error('Los ingredientes no se actualizaron');
+                }
+                if (updatedRecipe.updatedAt <= originalUpdatedAt) {
+                    throw new Error('El timestamp updatedAt no se actualizó');
+                }
+
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = `✅ Receta actualizada exitosamente!
+
+ID: ${recipeId}
+Nombre original: ${originalRecipe.name}
+Nombre nuevo: ${updatedRecipe.name}
+Ingredientes originales: ${originalRecipe.ingredients.length}
+Ingredientes nuevos: ${updatedRecipe.ingredients.length}
+Actualizada: ${updatedRecipe.updatedAt.toLocaleString()}
+
+<div class="recipe-preview">
+<strong>Cambios realizados:</strong>
+<ul>
+<li>Nombre modificado</li>
+<li>Categoría cambiada de "${originalRecipe.category}" a "${updatedRecipe.category}"</li>
+<li>Añadido 1 ingrediente nuevo</li>
+<li>Método de preparación actualizado</li>
+</ul>
+</div>`;
+
+                // Reset current recipe ID
+                app.currentRecipeId = null;
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.textContent = '❌ Error: ' + error.message + '\n\n' + error.stack;
+                app.currentRecipeId = null;
+            }
+        }
+
+        // Test 3: Validation
+        async function testValidation() {
+            const resultDiv = document.getElementById('test-validation');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result info';
+            resultDiv.textContent = '⏳ Probando validaciones...';
+
+            try {
+                let results = [];
+
+                // Test 1: Empty name
+                try {
+                    await app.saveRecipe({
+                        name: '',
+                        category: null,
+                        preparationMethod: '',
+                        ingredients: [],
+                        additionSequences: [],
+                        images: [],
+                        videos: []
+                    });
+                    results.push('❌ Nombre vacío fue aceptado (no debería)');
+                } catch (error) {
+                    results.push('✅ Nombre vacío correctamente rechazado');
+                }
+
+                // Test 2: Whitespace-only name
+                try {
+                    await app.saveRecipe({
+                        name: '   ',
+                        category: null,
+                        preparationMethod: '',
+                        ingredients: [],
+                        additionSequences: [],
+                        images: [],
+                        videos: []
+                    });
+                    results.push('❌ Nombre con solo espacios fue aceptado (no debería)');
+                } catch (error) {
+                    results.push('✅ Nombre con solo espacios correctamente rechazado');
+                }
+
+                // Test 3: Valid minimal recipe
+                try {
+                    const recipeId = await app.saveRecipe({
+                        name: 'Receta Mínima de Validación',
+                        category: null,
+                        preparationMethod: '',
+                        ingredients: [],
+                        additionSequences: [],
+                        images: [],
+                        videos: []
+                    });
+                    results.push('✅ Receta mínima válida aceptada (ID: ' + recipeId.substring(0, 8) + '...)');
+                    
+                    // Clean up
+                    await app.storageManager.deleteRecipe(recipeId);
+                } catch (error) {
+                    results.push('❌ Receta mínima válida rechazada: ' + error.message);
+                }
+
+                resultDiv.className = 'test-result success';
+                resultDiv.textContent = results.join('\n');
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.textContent = '❌ Error en tests de validación: ' + error.message;
+            }
+        }
+
+        // Show all recipes
+        async function showAllRecipes() {
+            const resultDiv = document.getElementById('all-recipes');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result info';
+            resultDiv.textContent = '⏳ Cargando recetas...';
+
+            try {
+                await app.loadRecipes();
+
+                if (app.recipes.length === 0) {
+                    resultDiv.className = 'test-result info';
+                    resultDiv.textContent = 'ℹ️ No hay recetas guardadas en la base de datos';
+                    return;
+                }
+
+                let html = `📚 Total de recetas: ${app.recipes.length}\n\n`;
+
+                app.recipes.forEach((recipe, index) => {
+                    html += `<div class="recipe-preview">
+<strong>${index + 1}. ${recipe.name}</strong>
+ID: ${recipe.id}
+Categoría: ${recipe.category || 'Sin categoría'}
+Ingredientes: ${recipe.ingredients.length}
+Secuencias: ${recipe.additionSequences.length}
+Imágenes: ${recipe.images.length}
+Videos: ${recipe.videos.length}
+Creada: ${recipe.createdAt.toLocaleString()}
+Actualizada: ${recipe.updatedAt.toLocaleString()}
+</div>`;
+                });
+
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.textContent = '❌ Error: ' + error.message;
+            }
+        }
+
+        // Clear database
+        async function clearDatabase() {
+            if (!confirm('⚠️ ¿Estás seguro de que quieres eliminar TODAS las recetas?\n\nEsta acción no se puede deshacer.')) {
+                return;
+            }
+
+            const resultDiv = document.getElementById('clear-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result info';
+            resultDiv.textContent = '⏳ Eliminando todas las recetas...';
+
+            try {
+                await app.storageManager.clearAllRecipes();
+                await app.loadRecipes();
+
+                resultDiv.className = 'test-result success';
+                resultDiv.textContent = '✅ Base de datos limpiada exitosamente\n\nRecetas restantes: ' + app.recipes.length;
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.textContent = '❌ Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

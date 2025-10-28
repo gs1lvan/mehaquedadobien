@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Ingredientes - Recetario Personal</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .test-controls {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #ffc107;
+        }
+        .test-controls h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .test-controls button {
+            margin: 5px;
+        }
+        .test-info {
+            background: #d1ecf1;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            border-left: 4px solid #0c5460;
+        }
+        .test-info ul {
+            margin: 10px 0 0 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="recipe-header">
+            <div class="header-content">
+                <h1>🍳 Test de Gestión de Ingredientes</h1>
+            </div>
+        </header>
+
+        <main>
+            <div class="test-controls">
+                <h3>Controles de Prueba</h3>
+                <button id="test-add-ingredients" class="btn-primary">Añadir Ingredientes de Prueba</button>
+                <button id="test-clear-ingredients" class="btn-secondary">Limpiar Ingredientes</button>
+                <button id="test-show-data" class="btn-secondary">Mostrar Datos JSON</button>
+                
+                <div class="test-info">
+                    <strong>Instrucciones de Prueba:</strong>
+                    <ul>
+                        <li><strong>Añadir:</strong> Usa el formulario para añadir ingredientes manualmente</li>
+                        <li><strong>Editar:</strong> Haz clic en el botón ✎ para editar un ingrediente</li>
+                        <li><strong>Eliminar:</strong> Haz clic en el botón 🗑 para eliminar un ingrediente</li>
+                        <li><strong>Reordenar:</strong> Usa los botones ↑ y ↓ para cambiar el orden</li>
+                        <li><strong>Validación:</strong> Intenta añadir un ingrediente sin nombre o cantidad</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Recipe Form -->
+            <section id="recipe-form-view" class="recipe-form">
+                <div class="form-header">
+                    <h2 id="form-title">Gestión de Ingredientes</h2>
+                </div>
+
+                <form id="recipe-form" class="recipe-form-content">
+                    <!-- Ingredients Section -->
+                    <div class="form-section">
+                        <h3 class="section-title">Ingredientes</h3>
+                        <div id="ingredients-container">
+                            <!-- Add ingredient form -->
+                            <div class="ingredient-add-form">
+                                <div class="ingredient-inputs">
+                                    <div class="ingredient-input-group">
+                                        <label for="ingredient-name">Nombre</label>
+                                        <input 
+                                            type="text" 
+                                            id="ingredient-name" 
+                                            class="form-input ingredient-input" 
+                                            placeholder="Ej: Pollo"
+                                        >
+                                    </div>
+                                    <div class="ingredient-input-group">
+                                        <label for="ingredient-quantity">Cantidad</label>
+                                        <input 
+                                            type="number" 
+                                            id="ingredient-quantity" 
+                                            class="form-input ingredient-input" 
+                                            placeholder="500"
+                                            min="0"
+                                            step="0.01"
+                                        >
+                                    </div>
+                                    <div class="ingredient-input-group">
+                                        <label for="ingredient-unit">Unidad</label>
+                                        <select id="ingredient-unit" class="form-select ingredient-input">
+                                            <option value="">Seleccionar</option>
+                                            <option value="g">g (gramos)</option>
+                                            <option value="kg">kg (kilogramos)</option>
+                                            <option value="ml">ml (mililitros)</option>
+                                            <option value="l">l (litros)</option>
+                                            <option value="taza">taza</option>
+                                            <option value="cucharada">cucharada</option>
+                                            <option value="cucharadita">cucharadita</option>
+                                            <option value="pizca">pizca</option>
+                                            <option value="unidad">unidad</option>
+                                            <option value="al gusto">al gusto</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type="button" id="add-ingredient-btn" class="btn-add-ingredient">
+                                    ➕ Añadir Ingrediente
+                                </button>
+                                <span class="error-message" id="ingredient-error"></span>
+                            </div>
+
+                            <!-- Ingredients list -->
+                            <div id="ingredients-list" class="ingredients-list">
+                                <!-- Ingredients will be dynamically added here -->
+                            </div>
+                            
+                            <div id="ingredients-empty" class="ingredients-empty">
+                                <p>No hay ingredientes añadidos. Añade el primer ingrediente usando el formulario de arriba.</p>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script src="models.js"></script>
+    <script>
+        // Test script for ingredient management
+        class TestIngredientsApp {
+            constructor() {
+                this.ingredients = [];
+                this.editingIngredientId = null;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.setupIngredientEventListeners();
+                this.renderIngredientsList();
+            }
+
+            setupEventListeners() {
+                // Test controls
+                document.getElementById('test-add-ingredients').addEventListener('click', () => {
+                    this.addTestIngredients();
+                });
+
+                document.getElementById('test-clear-ingredients').addEventListener('click', () => {
+                    this.clearIngredients();
+                });
+
+                document.getElementById('test-show-data').addEventListener('click', () => {
+                    this.showIngredientsData();
+                });
+            }
+
+            setupIngredientEventListeners() {
+                // Add ingredient button
+                const addIngredientBtn = document.getElementById('add-ingredient-btn');
+                if (addIngredientBtn) {
+                    addIngredientBtn.addEventListener('click', () => {
+                        this.handleAddIngredient();
+                    });
+                }
+
+                // Allow Enter key to add ingredient
+                const ingredientInputs = document.querySelectorAll('.ingredient-input');
+                ingredientInputs.forEach(input => {
+                    input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            this.handleAddIngredient();
+                        }
+                    });
+                });
+            }
+
+            handleAddIngredient() {
+                const nameInput = document.getElementById('ingredient-name');
+                const quantityInput = document.getElementById('ingredient-quantity');
+                const unitSelect = document.getElementById('ingredient-unit');
+                const errorMessage = document.getElementById('ingredient-error');
+
+                if (!nameInput || !quantityInput || !unitSelect || !errorMessage) {
+                    return;
+                }
+
+                const name = nameInput.value.trim();
+                const quantity = parseFloat(quantityInput.value);
+                const unit = unitSelect.value;
+
+                // Validate
+                errorMessage.textContent = '';
+
+                if (!name) {
+                    errorMessage.textContent = 'El nombre del ingrediente es obligatorio';
+                    nameInput.focus();
+                    return;
+                }
+
+                if (!quantity || quantity <= 0) {
+                    errorMessage.textContent = 'La cantidad debe ser un número mayor que 0';
+                    quantityInput.focus();
+                    return;
+                }
+
+                if (!unit) {
+                    errorMessage.textContent = 'Debes seleccionar una unidad';
+                    unitSelect.focus();
+                    return;
+                }
+
+                // Create ingredient
+                const ingredient = new Ingredient({
+                    name: name,
+                    quantity: quantity,
+                    unit: unit,
+                    order: this.ingredients.length
+                });
+
+                this.ingredients.push(ingredient);
+
+                // Clear inputs
+                nameInput.value = '';
+                quantityInput.value = '';
+                unitSelect.value = '';
+                nameInput.focus();
+
+                this.renderIngredientsList();
+            }
+
+            renderIngredientsList() {
+                const ingredientsList = document.getElementById('ingredients-list');
+                const ingredientsEmpty = document.getElementById('ingredients-empty');
+
+                if (!ingredientsList || !ingredientsEmpty) {
+                    return;
+                }
+
+                ingredientsList.innerHTML = '';
+
+                if (this.ingredients.length === 0) {
+                    ingredientsEmpty.classList.remove('hidden');
+                    return;
+                }
+
+                ingredientsEmpty.classList.add('hidden');
+
+                this.ingredients.forEach((ingredient, index) => {
+                    const item = this.createIngredientItem(ingredient, index);
+                    ingredientsList.appendChild(item);
+                });
+            }
+
+            createIngredientItem(ingredient, index) {
+                const item = document.createElement('div');
+                item.className = 'ingredient-item';
+                item.dataset.ingredientId = ingredient.id;
+
+                const isEditing = this.editingIngredientId === ingredient.id;
+
+                if (isEditing) {
+                    item.classList.add('editing');
+                }
+
+                const orderDiv = document.createElement('div');
+                orderDiv.className = 'ingredient-order';
+                orderDiv.textContent = (index + 1) + '.';
+
+                if (isEditing) {
+                    // Edit mode
+                    const editForm = document.createElement('div');
+                    editForm.className = 'ingredient-edit-form';
+
+                    const nameInput = document.createElement('input');
+                    nameInput.type = 'text';
+                    nameInput.className = 'form-input';
+                    nameInput.value = ingredient.name;
+
+                    const quantityInput = document.createElement('input');
+                    quantityInput.type = 'number';
+                    quantityInput.className = 'form-input';
+                    quantityInput.value = ingredient.quantity;
+                    quantityInput.min = '0';
+                    quantityInput.step = '0.01';
+
+                    const unitSelect = document.createElement('select');
+                    unitSelect.className = 'form-select';
+
+                    const units = [
+                        { value: '', label: 'Seleccionar' },
+                        { value: 'g', label: 'g (gramos)' },
+                        { value: 'kg', label: 'kg (kilogramos)' },
+                        { value: 'ml', label: 'ml (mililitros)' },
+                        { value: 'l', label: 'l (litros)' },
+                        { value: 'taza', label: 'taza' },
+                        { value: 'cucharada', label: 'cucharada' },
+                        { value: 'cucharadita', label: 'cucharadita' },
+                        { value: 'pizca', label: 'pizca' },
+                        { value: 'unidad', label: 'unidad' },
+                        { value: 'al gusto', label: 'al gusto' }
+                    ];
+
+                    units.forEach(unit => {
+                        const option = document.createElement('option');
+                        option.value = unit.value;
+                        option.textContent = unit.label;
+                        if (unit.value === ingredient.unit) {
+                            option.selected = true;
+                        }
+                        unitSelect.appendChild(option);
+                    });
+
+                    editForm.appendChild(nameInput);
+                    editForm.appendChild(quantityInput);
+                    editForm.appendChild(unitSelect);
+
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.className = 'ingredient-actions';
+
+                    const saveBtn = document.createElement('button');
+                    saveBtn.type = 'button';
+                    saveBtn.className = 'btn-ingredient-action btn-save';
+                    saveBtn.textContent = '✓';
+                    saveBtn.title = 'Guardar';
+                    saveBtn.addEventListener('click', () => {
+                        this.handleSaveIngredient(ingredient.id, {
+                            name: nameInput.value.trim(),
+                            quantity: parseFloat(quantityInput.value),
+                            unit: unitSelect.value
+                        });
+                    });
+
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.type = 'button';
+                    cancelBtn.className = 'btn-ingredient-action btn-cancel';
+                    cancelBtn.textContent = '✕';
+                    cancelBtn.title = 'Cancelar';
+                    cancelBtn.addEventListener('click', () => {
+                        this.handleCancelEditIngredient();
+                    });
+
+                    actionsDiv.appendChild(saveBtn);
+                    actionsDiv.appendChild(cancelBtn);
+
+                    item.appendChild(orderDiv);
+                    item.appendChild(editForm);
+                    item.appendChild(actionsDiv);
+                } else {
+                    // View mode
+                    const infoDiv = document.createElement('div');
+                    infoDiv.className = 'ingredient-info';
+
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'ingredient-name';
+                    nameDiv.textContent = ingredient.name;
+
+                    const quantityDiv = document.createElement('div');
+                    quantityDiv.className = 'ingredient-quantity';
+                    quantityDiv.textContent = `${ingredient.quantity} ${ingredient.unit}`;
+
+                    infoDiv.appendChild(nameDiv);
+                    infoDiv.appendChild(quantityDiv);
+
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.className = 'ingredient-actions';
+
+                    const upBtn = document.createElement('button');
+                    upBtn.type = 'button';
+                    upBtn.className = 'btn-ingredient-action btn-up';
+                    upBtn.textContent = '↑';
+                    upBtn.title = 'Mover arriba';
+                    upBtn.disabled = index === 0;
+                    upBtn.addEventListener('click', () => {
+                        this.handleMoveIngredient(index, 'up');
+                    });
+
+                    const downBtn = document.createElement('button');
+                    downBtn.type = 'button';
+                    downBtn.className = 'btn-ingredient-action btn-down';
+                    downBtn.textContent = '↓';
+                    downBtn.title = 'Mover abajo';
+                    downBtn.disabled = index === this.ingredients.length - 1;
+                    downBtn.addEventListener('click', () => {
+                        this.handleMoveIngredient(index, 'down');
+                    });
+
+                    const editBtn = document.createElement('button');
+                    editBtn.type = 'button';
+                    editBtn.className = 'btn-ingredient-action btn-edit';
+                    editBtn.textContent = '✎';
+                    editBtn.title = 'Editar';
+                    editBtn.addEventListener('click', () => {
+                        this.handleEditIngredient(ingredient.id);
+                    });
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.type = 'button';
+                    deleteBtn.className = 'btn-ingredient-action btn-delete';
+                    deleteBtn.textContent = '🗑';
+                    deleteBtn.title = 'Eliminar';
+                    deleteBtn.addEventListener('click', () => {
+                        this.handleDeleteIngredient(ingredient.id);
+                    });
+
+                    actionsDiv.appendChild(upBtn);
+                    actionsDiv.appendChild(downBtn);
+                    actionsDiv.appendChild(editBtn);
+                    actionsDiv.appendChild(deleteBtn);
+
+                    item.appendChild(orderDiv);
+                    item.appendChild(infoDiv);
+                    item.appendChild(actionsDiv);
+                }
+
+                return item;
+            }
+
+            handleEditIngredient(ingredientId) {
+                this.editingIngredientId = ingredientId;
+                this.renderIngredientsList();
+            }
+
+            handleSaveIngredient(ingredientId, data) {
+                if (!data.name || !data.name.trim()) {
+                    alert('El nombre del ingrediente es obligatorio');
+                    return;
+                }
+
+                if (!data.quantity || data.quantity <= 0) {
+                    alert('La cantidad debe ser un número mayor que 0');
+                    return;
+                }
+
+                if (!data.unit) {
+                    alert('Debes seleccionar una unidad');
+                    return;
+                }
+
+                const ingredient = this.ingredients.find(ing => ing.id === ingredientId);
+                if (ingredient) {
+                    ingredient.name = data.name.trim();
+                    ingredient.quantity = data.quantity;
+                    ingredient.unit = data.unit;
+                }
+
+                this.editingIngredientId = null;
+                this.renderIngredientsList();
+            }
+
+            handleCancelEditIngredient() {
+                this.editingIngredientId = null;
+                this.renderIngredientsList();
+            }
+
+            handleDeleteIngredient(ingredientId) {
+                if (!confirm('¿Estás seguro de que quieres eliminar este ingrediente?')) {
+                    return;
+                }
+
+                this.ingredients = this.ingredients.filter(ing => ing.id !== ingredientId);
+
+                this.ingredients.forEach((ing, index) => {
+                    ing.order = index;
+                });
+
+                this.renderIngredientsList();
+            }
+
+            handleMoveIngredient(index, direction) {
+                if (direction === 'up' && index > 0) {
+                    [this.ingredients[index], this.ingredients[index - 1]] = 
+                    [this.ingredients[index - 1], this.ingredients[index]];
+                } else if (direction === 'down' && index < this.ingredients.length - 1) {
+                    [this.ingredients[index], this.ingredients[index + 1]] = 
+                    [this.ingredients[index + 1], this.ingredients[index]];
+                }
+
+                this.ingredients.forEach((ing, idx) => {
+                    ing.order = idx;
+                });
+
+                this.renderIngredientsList();
+            }
+
+            // Test methods
+            addTestIngredients() {
+                const testIngredients = [
+                    { name: 'Pollo', quantity: 500, unit: 'g' },
+                    { name: 'Arroz', quantity: 300, unit: 'g' },
+                    { name: 'Cebolla', quantity: 2, unit: 'unidad' },
+                    { name: 'Aceite de oliva', quantity: 3, unit: 'cucharada' },
+                    { name: 'Sal', quantity: 1, unit: 'pizca' }
+                ];
+
+                testIngredients.forEach(data => {
+                    const ingredient = new Ingredient({
+                        name: data.name,
+                        quantity: data.quantity,
+                        unit: data.unit,
+                        order: this.ingredients.length
+                    });
+                    this.ingredients.push(ingredient);
+                });
+
+                this.renderIngredientsList();
+                alert('✅ Se añadieron 5 ingredientes de prueba');
+            }
+
+            clearIngredients() {
+                if (this.ingredients.length === 0) {
+                    alert('No hay ingredientes para limpiar');
+                    return;
+                }
+
+                if (confirm('¿Estás seguro de que quieres eliminar todos los ingredientes?')) {
+                    this.ingredients = [];
+                    this.renderIngredientsList();
+                    alert('✅ Todos los ingredientes han sido eliminados');
+                }
+            }
+
+            showIngredientsData() {
+                if (this.ingredients.length === 0) {
+                    alert('No hay ingredientes para mostrar');
+                    return;
+                }
+
+                const data = this.ingredients.map(ing => ing.toJSON());
+                console.log('Ingredientes:', data);
+                alert('📋 Datos de ingredientes:\n\n' + JSON.stringify(data, null, 2) + '\n\n(Ver consola para más detalles)');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new TestIngredientsApp();
+        });
+    </script>
+</body>
+</html>

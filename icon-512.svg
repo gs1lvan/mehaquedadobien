@@ -1,0 +1,17 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="512" height="512" rx="64" fill="#667eea"/>
+<!-- Recipe book -->
+<rect x="128" y="96" width="256" height="320" rx="8" fill="#ffffff"/>
+<rect x="128" y="96" width="24" height="320" fill="#764ba2"/>
+<!-- Book pages -->
+<line x1="176" y1="160" x2="352" y2="160" stroke="#667eea" stroke-width="8" stroke-linecap="round"/>
+<line x1="176" y1="200" x2="336" y2="200" stroke="#667eea" stroke-width="8" stroke-linecap="round"/>
+<line x1="176" y1="240" x2="352" y2="240" stroke="#667eea" stroke-width="8" stroke-linecap="round"/>
+<line x1="176" y1="280" x2="320" y2="280" stroke="#667eea" stroke-width="8" stroke-linecap="round"/>
+<line x1="176" y1="320" x2="352" y2="320" stroke="#667eea" stroke-width="8" stroke-linecap="round"/>
+<line x1="176" y1="360" x2="304" y2="360" stroke="#667eea" stroke-width="8" stroke-linecap="round"/>
+<!-- Chef hat icon -->
+<ellipse cx="256" cy="360" rx="48" ry="24" fill="#764ba2"/>
+<rect x="208" y="336" width="96" height="48" rx="4" fill="#764ba2"/>
+<ellipse cx="256" cy="336" rx="56" ry="32" fill="#ffffff"/>
+</svg>

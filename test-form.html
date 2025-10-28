@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Form - Recetario Personal</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .test-controls {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #ffc107;
+        }
+        .test-controls h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .test-controls button {
+            margin: 5px;
+        }
+        .test-info {
+            background: #d1ecf1;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            border-left: 4px solid #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="recipe-header">
+            <div class="header-content">
+                <h1>🍳 Test de Formulario</h1>
+            </div>
+        </header>
+
+        <main>
+            <div class="test-controls">
+                <h3>Controles de Prueba</h3>
+                <button id="test-new-recipe" class="btn-primary">Crear Nueva Receta</button>
+                <button id="test-edit-recipe" class="btn-secondary">Editar Receta Existente</button>
+                <button id="test-validation" class="btn-secondary">Probar Validación</button>
+                <button id="test-cancel" class="btn-secondary">Probar Cancelar</button>
+                
+                <div class="test-info">
+                    <strong>Instrucciones:</strong>
+                    <ul>
+                        <li>Haz clic en "Crear Nueva Receta" para abrir el formulario vacío</li>
+                        <li>Haz clic en "Editar Receta Existente" para cargar datos de prueba</li>
+                        <li>Haz clic en "Probar Validación" para ver validación de nombre obligatorio</li>
+                        <li>Haz clic en "Probar Cancelar" para probar el descarte de cambios</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Recipe Form -->
+            <section id="recipe-form-view" class="recipe-form hidden">
+                <div class="form-header">
+                    <h2 id="form-title">Nueva Receta</h2>
+                    <button id="close-form-btn" class="btn-icon" title="Cerrar">✕</button>
+                </div>
+
+                <form id="recipe-form" class="recipe-form-content">
+                    <!-- Basic Information Section -->
+                    <div class="form-section">
+                        <h3 class="section-title">Información Básica</h3>
+                        
+                        <div class="form-group">
+                            <label for="recipe-name" class="required">Nombre de la receta</label>
+                            <input 
+                                type="text" 
+                                id="recipe-name" 
+                                name="name" 
+                                class="form-input" 
+                                placeholder="Ej: Paella Valenciana"
+                                required
+                                maxlength="100"
+                            >
+                            <span class="error-message" id="name-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="recipe-category">Categoría</label>
+                            <select id="recipe-category" name="category" class="form-select">
+                                <option value="">Sin categoría</option>
+                                <option value="carne">🥩 Carne</option>
+                                <option value="verdura">🥬 Verdura</option>
+                                <option value="pescado">🐟 Pescado</option>
+                                <option value="fruta">🍎 Fruta</option>
+                                <option value="cereales">🌾 Cereales</option>
+                                <option value="mix">🍲 Mix</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Preparation Method Section -->
+                    <div class="form-section">
+                        <h3 class="section-title">Método de Preparación</h3>
+                        
+                        <div class="form-group">
+                            <label for="preparation-method">Instrucciones</label>
+                            <textarea 
+                                id="preparation-method" 
+                                name="preparationMethod" 
+                                class="form-textarea"
+                                placeholder="Describe los pasos para preparar esta receta..."
+                                rows="8"
+                            ></textarea>
+                            <span class="helper-text">Escribe las instrucciones detalladas para preparar tu receta</span>
+                        </div>
+                    </div>
+
+                    <!-- Ingredients Section (Placeholder for Task 7) -->
+                    <div class="form-section">
+                        <h3 class="section-title">Ingredientes</h3>
+                        <div id="ingredients-container">
+                            <p class="placeholder-text">La gestión de ingredientes se implementará en la siguiente tarea</p>
+                        </div>
+                    </div>
+
+                    <!-- Addition Sequences Section (Placeholder for Task 8) -->
+                    <div class="form-section">
+                        <h3 class="section-title">Secuencias de Adición</h3>
+                        <div id="sequences-container">
+                            <p class="placeholder-text">Las secuencias de adición se implementarán en la siguiente tarea</p>
+                        </div>
+                    </div>
+
+                    <!-- Multimedia Section (Placeholder for Task 9) -->
+                    <div class="form-section">
+                        <h3 class="section-title">Multimedia</h3>
+                        <div id="multimedia-container">
+                            <p class="placeholder-text">La carga de imágenes y videos se implementará en la siguiente tarea</p>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="button" id="cancel-form-btn" class="btn-secondary">
+                            Cancelar
+                        </button>
+                        <button type="submit" id="save-recipe-btn" class="btn-primary">
+                            💾 Guardar Receta
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script src="models.js"></script>
+    <script>
+        // Test script for form functionality
+        class TestFormApp {
+            constructor() {
+                this.currentView = 'test';
+                this.currentRecipeId = null;
+                this.formInitialState = null;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.setupFormEventListeners();
+            }
+
+            setupEventListeners() {
+                // Test controls
+                document.getElementById('test-new-recipe').addEventListener('click', () => {
+                    this.showRecipeForm();
+                });
+
+                document.getElementById('test-edit-recipe').addEventListener('click', () => {
+                    this.testEditRecipe();
+                });
+
+                document.getElementById('test-validation').addEventListener('click', () => {
+                    this.testValidation();
+                });
+
+                document.getElementById('test-cancel').addEventListener('click', () => {
+                    this.testCancel();
+                });
+            }
+
+            setupFormEventListeners() {
+                // Close form button
+                document.getElementById('close-form-btn').addEventListener('click', () => {
+                    this.closeRecipeForm();
+                });
+
+                // Cancel form button
+                document.getElementById('cancel-form-btn').addEventListener('click', () => {
+                    this.closeRecipeForm();
+                });
+
+                // Form submission
+                document.getElementById('recipe-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleFormSubmit();
+                });
+
+                // Name field validation
+                const nameInput = document.getElementById('recipe-name');
+                nameInput.addEventListener('input', () => {
+                    this.validateNameField();
+                });
+                nameInput.addEventListener('blur', () => {
+                    this.validateNameField();
+                });
+            }
+
+            showRecipeForm(recipeId = null) {
+                const formView = document.getElementById('recipe-form-view');
+                formView.classList.remove('hidden');
+
+                const formTitle = document.getElementById('form-title');
+                formTitle.textContent = recipeId ? 'Editar Receta' : 'Nueva Receta';
+
+                this.resetForm();
+
+                if (recipeId) {
+                    this.loadRecipeIntoForm(recipeId);
+                }
+
+                this.currentView = 'form';
+                this.currentRecipeId = recipeId;
+
+                window.scrollTo(0, 0);
+            }
+
+            closeRecipeForm() {
+                if (this.hasUnsavedChanges()) {
+                    if (!confirm('¿Descartar los cambios no guardados?')) {
+                        return;
+                    }
+                }
+
+                const formView = document.getElementById('recipe-form-view');
+                formView.classList.add('hidden');
+
+                this.resetForm();
+                this.currentView = 'test';
+                this.currentRecipeId = null;
+
+                window.scrollTo(0, 0);
+            }
+
+            resetForm() {
+                const form = document.getElementById('recipe-form');
+                form.reset();
+
+                const errorMessage = document.getElementById('name-error');
+                errorMessage.textContent = '';
+
+                const nameInput = document.getElementById('recipe-name');
+                nameInput.classList.remove('invalid');
+
+                this.formInitialState = this.getFormState();
+            }
+
+            getFormState() {
+                return {
+                    name: document.getElementById('recipe-name')?.value || '',
+                    category: document.getElementById('recipe-category')?.value || '',
+                    preparationMethod: document.getElementById('preparation-method')?.value || ''
+                };
+            }
+
+            hasUnsavedChanges() {
+                if (!this.formInitialState) {
+                    return false;
+                }
+                const currentState = this.getFormState();
+                return JSON.stringify(currentState) !== JSON.stringify(this.formInitialState);
+            }
+
+            validateNameField() {
+                const nameInput = document.getElementById('recipe-name');
+                const errorMessage = document.getElementById('name-error');
+
+                const name = nameInput.value.trim();
+
+                if (name === '') {
+                    errorMessage.textContent = 'El nombre de la receta es obligatorio';
+                    nameInput.classList.add('invalid');
+                    return false;
+                }
+
+                if (name.length < 3) {
+                    errorMessage.textContent = 'El nombre debe tener al menos 3 caracteres';
+                    nameInput.classList.add('invalid');
+                    return false;
+                }
+
+                errorMessage.textContent = '';
+                nameInput.classList.remove('invalid');
+                return true;
+            }
+
+            handleFormSubmit() {
+                if (!this.validateNameField()) {
+                    document.getElementById('recipe-name')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+
+                const formData = this.getFormData();
+
+                const saveBtn = document.getElementById('save-recipe-btn');
+                const originalText = saveBtn.textContent;
+                saveBtn.disabled = true;
+                saveBtn.textContent = '💾 Guardando...';
+
+                setTimeout(() => {
+                    alert('✅ Formulario válido!\n\nDatos capturados:\n' +
+                          'Nombre: ' + formData.name + '\n' +
+                          'Categoría: ' + (formData.category || 'Sin categoría') + '\n' +
+                          'Método: ' + (formData.preparationMethod ? formData.preparationMethod.substring(0, 50) + '...' : 'Sin método'));
+
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = originalText;
+
+                    this.closeRecipeForm();
+                }, 500);
+            }
+
+            getFormData() {
+                return {
+                    name: document.getElementById('recipe-name')?.value.trim() || '',
+                    category: document.getElementById('recipe-category')?.value || null,
+                    preparationMethod: document.getElementById('preparation-method')?.value.trim() || ''
+                };
+            }
+
+            loadRecipeIntoForm(recipeId) {
+                // Simulate loading recipe data
+                const testRecipe = {
+                    id: 'test-123',
+                    name: 'Paella Valenciana',
+                    category: 'mix',
+                    preparationMethod: 'Calentar el aceite en una paellera. Añadir el pollo y el conejo, dorar. Agregar las verduras y sofreír. Incorporar el arroz y el caldo. Cocinar a fuego medio durante 18-20 minutos.'
+                };
+
+                document.getElementById('recipe-name').value = testRecipe.name;
+                document.getElementById('recipe-category').value = testRecipe.category;
+                document.getElementById('preparation-method').value = testRecipe.preparationMethod;
+
+                this.formInitialState = this.getFormState();
+            }
+
+            // Test methods
+            testEditRecipe() {
+                this.showRecipeForm('test-123');
+            }
+
+            testValidation() {
+                this.showRecipeForm();
+                setTimeout(() => {
+                    alert('Intenta enviar el formulario sin llenar el nombre para ver la validación en acción.');
+                }, 500);
+            }
+
+            testCancel() {
+                this.showRecipeForm();
+                setTimeout(() => {
+                    document.getElementById('recipe-name').value = 'Test Recipe';
+                    alert('Ahora intenta cerrar el formulario. Deberías ver una confirmación porque hay cambios sin guardar.');
+                }, 500);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new TestFormApp();
+        });
+    </script>
+</body>
+</html>
