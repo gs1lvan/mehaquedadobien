@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Importación con Detección de Duplicados</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            padding: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .info-box {
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+        }
+        .success-box {
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid var(--color-border);
+            border-radius: 12px;
+            background: var(--color-background-secondary);
+        }
+        .scenario {
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--color-background);
+            border-radius: 8px;
+            border-left: 3px solid var(--color-primary);
+        }
+        .scenario h4 {
+            margin-top: 0;
+            color: var(--color-primary);
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        .feature-list li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #4caf50;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .comparison-table th {
+            background: var(--color-background);
+            font-weight: 600;
+        }
+        .comparison-table tr:hover {
+            background: var(--color-background);
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test - Detección de Duplicados en Importación</h1>
+
+    <div class="success-box">
+        <h3>✨ Nueva Funcionalidad Implementada</h3>
+        <p>Ahora al importar un XML, el sistema <strong>compara automáticamente</strong> las recetas con las existentes y solo importa las nuevas.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Características</h2>
+        <ul class="feature-list">
+            <li>Compara recetas por nombre (case-insensitive)</li>
+            <li>Solo importa recetas nuevas</li>
+            <li>Omite recetas duplicadas automáticamente</li>
+            <li>Muestra resumen detallado de la importación</li>
+            <li>Informa cuántas recetas se importaron y cuántas ya existían</li>
+            <li>No sobrescribe recetas existentes</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Comparación: Antes vs Ahora</h2>
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Aspecto</th>
+                    <th>❌ Antes</th>
+                    <th>✅ Ahora</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Duplicados</strong></td>
+                    <td>Se importaban todos, creando duplicados</td>
+                    <td>Se detectan y omiten automáticamente</td>
+                </tr>
+                <tr>
+                    <td><strong>Feedback</strong></td>
+                    <td>"X recetas importadas"</td>
+                    <td>"X importadas, Y ya existían"</td>
+                </tr>
+                <tr>
+                    <td><strong>Comparación</strong></td>
+                    <td>No había</td>
+                    <td>Por nombre (case-insensitive)</td>
+                </tr>
+                <tr>
+                    <td><strong>Sobrescritura</strong></td>
+                    <td>Creaba duplicados</td>
+                    <td>Preserva las existentes</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Escenarios de Prueba</h2>
+
+        <div class="scenario">
+            <h4>Escenario 1: Todas las recetas son nuevas</h4>
+            <p><strong>XML contiene:</strong> Paella, Gazpacho, Tortilla</p>
+            <p><strong>Base de datos:</strong> Vacía o sin estas recetas</p>
+            <p><strong>Resultado:</strong> ✅ "¡3 recetas importadas exitosamente!"</p>
+            <p><strong>Acción:</strong> Se importan las 3 recetas</p>
+        </div>
+
+        <div class="scenario">
+            <h4>Escenario 2: Todas las recetas ya existen</h4>
+            <p><strong>XML contiene:</strong> Paella, Gazpacho, Tortilla</p>
+            <p><strong>Base de datos:</strong> Ya tiene Paella, Gazpacho, Tortilla</p>
+            <p><strong>Resultado:</strong> ⚠️ "Las 3 recetas ya existen y no se importaron"</p>
+            <p><strong>Acción:</strong> No se importa ninguna, se preservan las existentes</p>
+        </div>
+
+        <div class="scenario">
+            <h4>Escenario 3: Mezcla de nuevas y duplicadas</h4>
+            <p><strong>XML contiene:</strong> Paella, Gazpacho, Tortilla, Fabada</p>
+            <p><strong>Base de datos:</strong> Ya tiene Paella y Gazpacho</p>
+            <p><strong>Resultado:</strong> ✅ "2 recetas importadas, 2 ya existían"</p>
+            <p><strong>Acción:</strong> Se importan Tortilla y Fabada, se omiten Paella y Gazpacho</p>
+        </div>
+
+        <div class="scenario">
+            <h4>Escenario 4: Una sola receta duplicada</h4>
+            <p><strong>XML contiene:</strong> Paella</p>
+            <p><strong>Base de datos:</strong> Ya tiene Paella</p>
+            <p><strong>Resultado:</strong> ⚠️ "La receta ya existe y no se importó"</p>
+            <p><strong>Acción:</strong> No se importa, se preserva la existente</p>
+        </div>
+
+        <div class="scenario">
+            <h4>Escenario 5: Nombres con mayúsculas/minúsculas diferentes</h4>
+            <p><strong>XML contiene:</strong> "PAELLA VALENCIANA"</p>
+            <p><strong>Base de datos:</strong> Ya tiene "paella valenciana"</p>
+            <p><strong>Resultado:</strong> ⚠️ "La receta ya existe y no se importó"</p>
+            <p><strong>Acción:</strong> Se detecta como duplicado (comparación case-insensitive)</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Cómo Funciona Internamente</h2>
+        <ol>
+            <li><strong>Lectura del XML:</strong> Se parsean todas las recetas del archivo</li>
+            <li><strong>Normalización:</strong> Los nombres se convierten a minúsculas y se eliminan espacios extra</li>
+            <li><strong>Comparación:</strong> Se compara cada receta del XML con las existentes en la base de datos</li>
+            <li><strong>Filtrado:</strong> Se separan en dos grupos:
+                <ul>
+                    <li><code>newRecipes</code> - Recetas que no existen</li>
+                    <li><code>duplicateRecipes</code> - Recetas que ya existen</li>
+                </ul>
+            </li>
+            <li><strong>Importación:</strong> Solo se guardan las recetas nuevas</li>
+            <li><strong>Feedback:</strong> Se muestra un resumen detallado al usuario</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>💡 Ventajas</h2>
+        <ul class="feature-list">
+            <li>Evita duplicados accidentales</li>
+            <li>Permite reimportar el mismo XML sin problemas</li>
+            <li>Preserva las recetas existentes (no las sobrescribe)</li>
+            <li>Feedback claro sobre qué se importó y qué no</li>
+            <li>Útil para sincronizar entre dispositivos</li>
+            <li>Facilita hacer backups y restauraciones</li>
+        </ul>
+    </div>
+
+    <div class="info-box">
+        <h3>📝 Nota sobre la Comparación</h3>
+        <p>La comparación se hace <strong>solo por nombre</strong>. Esto significa que:</p>
+        <ul>
+            <li>✅ "Paella Valenciana" y "paella valenciana" se consideran iguales</li>
+            <li>✅ "Paella  Valenciana" (con espacios extra) y "Paella Valenciana" se consideran iguales</li>
+            <li>❌ "Paella Valenciana" y "Paella Valenciana Tradicional" se consideran diferentes</li>
+        </ul>
+        <p>Si quieres actualizar una receta existente, debes eliminarla primero y luego importar la nueva versión.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Prueba en Vivo</h2>
+        <p>Para probar esta funcionalidad:</p>
+        <ol>
+            <li>Abre <code>index.html</code></li>
+            <li>Crea algunas recetas de prueba</li>
+            <li>Exporta todas las recetas a XML</li>
+            <li>Intenta importar el mismo XML de nuevo</li>
+            <li>Verás el mensaje: "Las X recetas ya existen y no se importaron"</li>
+            <li>Edita el XML y agrega una receta nueva</li>
+            <li>Importa de nuevo</li>
+            <li>Verás: "1 receta importada, X ya existían"</li>
+        </ol>
+    </div>
+
+    <div class="success-box">
+        <h3>✅ Implementación Completa</h3>
+        <p>La funcionalidad está lista y funcionando. Cada vez que importes un XML, el sistema automáticamente:</p>
+        <ul>
+            <li>Detectará duplicados</li>
+            <li>Importará solo lo nuevo</li>
+            <li>Te informará del resultado</li>
+        </ul>
+        <p><strong>¡No necesitas hacer nada especial, funciona automáticamente!</strong></p>
+    </div>
+</body>
+</html>

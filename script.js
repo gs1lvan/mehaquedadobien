@@ -9,11 +9,9 @@ const PREDEFINED_CATEGORIES = [
     { id: 'pescado', name: 'Pescado', emoji: '🐟', color: '#0073CF', isPredefined: true },
     { id: 'fruta', name: 'Fruta', emoji: '🍎', color: '#FF8C00', isPredefined: true },
     { id: 'cereales', name: 'Cereales', emoji: '🌾', color: '#C4A053', isPredefined: true },
-    { id: 'mix', name: 'Mix', emoji: '🍲', color: '#8B5CF6', isPredefined: true },
     { id: 'con-huevo', name: 'Con huevo', emoji: '🥚', color: '#FFD700', isPredefined: true },
     { id: 'pollo', name: 'Pollo', emoji: '🐔', color: '#FFA500', isPredefined: true },
-    { id: 'escabeche', name: 'Escabeche', emoji: '🥒', color: '#32CD32', isPredefined: true },
-    { id: 'hospital', name: 'Hospital', emoji: '🏥', color: '#FF6B6B', isPredefined: true }
+    { id: 'escabeche', name: 'Escabeche', emoji: '🥒', color: '#32CD32', isPredefined: true }
 ];
 
 /**
@@ -5033,9 +5031,27 @@ class RecipeApp {
 
             console.log('[Import] Import completed:', result.summary);
 
+            // Filter out duplicate recipes (compare by name)
+            const existingRecipeNames = new Set(
+                this.recipes.map(r => r.name.toLowerCase().trim())
+            );
+            
+            const newRecipes = [];
+            const duplicateRecipes = [];
+            
+            for (const recipe of result.successful) {
+                const recipeName = recipe.name.toLowerCase().trim();
+                if (existingRecipeNames.has(recipeName)) {
+                    duplicateRecipes.push(recipe);
+                    console.log('[Import] Skipping duplicate recipe:', recipe.name);
+                } else {
+                    newRecipes.push(recipe);
+                }
+            }
+            
             // Check for unknown categories and create them automatically
             const unknownCategories = new Set();
-            for (const recipe of result.successful) {
+            for (const recipe of newRecipes) {
                 if (recipe.category && !this.categoryManager.getCategoryById(recipe.category)) {
                     unknownCategories.add(recipe.category);
                 }
@@ -5055,10 +5071,16 @@ class RecipeApp {
                 }
             }
             
-            // Save imported recipes to storage
-            for (const recipe of result.successful) {
+            // Save only new recipes to storage
+            for (const recipe of newRecipes) {
                 await this.storageManager.saveRecipe(recipe);
             }
+            
+            // Update result summary with duplicate info
+            result.summary.imported = newRecipes.length;
+            result.summary.duplicates = duplicateRecipes.length;
+            result.successful = newRecipes;
+            result.duplicates = duplicateRecipes;
 
             // Reload recipes and update UI
             await this.loadRecipes();
@@ -5092,17 +5114,37 @@ class RecipeApp {
      * @param {Object} result - Import result object
      */
     showImportSummary(result) {
-        const { summary, failed } = result;
+        const { summary, failed, duplicates } = result;
+        const hasDuplicates = duplicates && duplicates.length > 0;
 
-        if (summary.errors === 0) {
-            // All successful
+        if (summary.errors === 0 && !hasDuplicates) {
+            // All successful, no duplicates
             const message = summary.imported === 1 ?
                 '¡Receta importada exitosamente!' :
                 `¡${summary.imported} recetas importadas exitosamente!`;
             this.showSuccess(message);
+        } else if (summary.errors === 0 && hasDuplicates) {
+            // All successful but some duplicates skipped
+            if (summary.imported === 0) {
+                // All were duplicates
+                const message = duplicates.length === 1 ?
+                    'La receta ya existe y no se importó' :
+                    `Las ${duplicates.length} recetas ya existen y no se importaron`;
+                this.showWarning(message);
+            } else {
+                // Some imported, some duplicates
+                const message = `${summary.imported} receta${summary.imported > 1 ? 's' : ''} importada${summary.imported > 1 ? 's' : ''}, ${duplicates.length} ya exist${duplicates.length > 1 ? 'ían' : 'ía'}`;
+                this.showSuccess(message);
+            }
+            
+            // Log duplicate names
+            console.log('[Import] Recetas duplicadas omitidas:', duplicates.map(r => r.name));
         } else if (summary.imported > 0) {
-            // Partial success
-            const message = `${summary.imported} recetas importadas, ${summary.errors} con errores`;
+            // Partial success with errors
+            let message = `${summary.imported} recetas importadas, ${summary.errors} con errores`;
+            if (hasDuplicates) {
+                message += `, ${duplicates.length} duplicadas`;
+            }
             this.showWarning(message);
 
             // Log detailed errors

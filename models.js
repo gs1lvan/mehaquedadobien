@@ -1117,11 +1117,9 @@ class PDFExporter {
                     'pescado': '🐟 Pescado',
                     'fruta': '🍎 Fruta',
                     'cereales': '🌾 Cereales',
-                    'mix': '🍲 Mix',
                     'con-huevo': '🥚 Con huevo',
                     'pollo': '🐔 Pollo',
-                    'escabeche': '🥒 Escabeche',
-                    'hospital': '🏥 Hospital'
+                    'escabeche': '🥒 Escabeche'
                 };
                 const categoryLabel = categoryLabels[recipe.category] || recipe.category;
                 doc.text(`Categoría: ${categoryLabel}`, margin, yPosition);
