@@ -320,7 +320,9 @@ Si IndexedDB no está disponible, usa localStorage con key `recetario_recipes`.
 - Fallback para navegadores sin aspect-ratio
 
 ### ✅ Categorías Personalizadas
-- 10 categorías predefinidas (no editables/eliminables)
+- 8 categorías predefinidas (no editables/eliminables)
+  - Carne, Verdura, Pescado, Fruta, Cereales, Con huevo, Pollo, Escabeche
+  - Eliminadas: Hospital, Mix, Sin categoría
 - Crear categorías con nombre, emoji y color
 - Selector visual de emojis organizado por categorías (comida, animales, naturaleza, deportes, objetos)
 - Más de 500 emojis disponibles para elegir
@@ -358,6 +360,48 @@ Si IndexedDB no está disponible, usa localStorage con key `recetario_recipes`.
 - Importar desde XML (una o múltiples recetas)
 - Creación automática de categorías desconocidas
 - Resumen de importación con errores
+- **Detección de duplicados en importación (NUEVO)**
+  - Compara recetas por nombre (case-insensitive)
+  - Solo importa recetas nuevas
+  - Omite duplicados automáticamente
+  - Resumen detallado: "X importadas, Y ya existían"
+  - Preserva recetas existentes
+
+### ✅ Compartir Recetas (NUEVO)
+- Botón "🔗 Compartir" usando Web Share API
+- Compartir receta individual desde vista de detalle
+- Compartir todas las recetas desde lista
+- Compartir a través de apps nativas:
+  - Google Drive
+  - Gmail / Email
+  - WhatsApp
+  - Otras apps instaladas
+- Fallback automático a descarga si no hay soporte
+- Solo visible en navegadores compatibles
+- Funciona en móvil y desktop (Chrome, Edge, Safari)
+
+### ✅ Tema Oscuro (NUEVO)
+- Botón "🌙 Tema" en header
+- Cambio instantáneo entre claro y oscuro
+- Paleta de colores optimizada para tema oscuro
+- Persistencia de preferencia en localStorage
+- Transiciones suaves (0.3s)
+- Todos los componentes adaptados:
+  - Tarjetas de recetas
+  - Formularios
+  - Botones y chips
+  - Modales
+  - Galería de fotos
+  - Vista de detalle
+- Soporte para prefers-contrast y prefers-reduced-motion
+- Contraste WCAG AA cumplido
+
+### ✅ Interfaz Adaptativa (NUEVO)
+- Botones del header se ocultan en vista de detalle
+- Botones del header se ocultan en formulario
+- Solo visible el logo (funciona como botón de inicio)
+- Botones reaparecen al volver a la lista
+- Interfaz más limpia y enfocada en el contenido
 
 ### ✅ PWA
 - Instalable en dispositivos
@@ -515,10 +559,31 @@ Si IndexedDB no está disponible, usa localStorage con key `recetario_recipes`.
 
 **Estado:** Implementado (categoría predefinida)
 
-### 4. xml-import-functionality
+### 4. xml-import-functionality ✅
 **Objetivo:** Importación de recetas desde XML
 
-**Estado:** Implementado con creación automática de categorías
+**Estado:** Implementado con creación automática de categorías y detección de duplicados
+
+**Mejoras recientes:**
+- Detección de duplicados por nombre
+- Solo importa recetas nuevas
+- Resumen detallado de importación
+
+### 5. recipe-photo-gallery ✅
+**Objetivo:** Galería de fotos compacta para recetas con múltiples imágenes
+
+**Archivos:**
+- `.kiro/specs/recipe-photo-gallery/requirements.md`
+- `.kiro/specs/recipe-photo-gallery/design.md`
+- `.kiro/specs/recipe-photo-gallery/tasks.md`
+
+**Implementación:**
+- Galería con imagen principal y miniaturas
+- Navegación circular con botones y teclado
+- Responsive (16:9 desktop, 4:3 móvil)
+- Lazy loading de miniaturas
+- Accesibilidad completa (ARIA, teclado)
+- Integración con modal existente
 
 ---
 
@@ -545,6 +610,39 @@ Documentación y casos de prueba para categorías:
 - Persistencia
 - Filtrado
 
+### test-photo-gallery.html (NUEVO)
+Prueba la galería de fotos:
+- Renderizado con múltiples imágenes
+- Renderizado con imagen única
+- Navegación (next/previous/circular)
+- Navegación por teclado
+- Click en miniaturas
+- Indicador de posición
+
+### test-dark-theme.html (NUEVO)
+Demo completa del tema oscuro:
+- Paleta de colores
+- Botones y formularios
+- Tarjetas de recetas
+- Galería de fotos
+- Chips de filtro
+- Metadatos
+- Toggle de tema
+
+### test-share-functionality.html (NUEVO)
+Prueba la funcionalidad de compartir:
+- Compartir receta individual
+- Compartir múltiples recetas
+- Fallback a descarga
+- Compatibilidad de navegadores
+
+### test-import-duplicates.html (NUEVO)
+Documentación de detección de duplicados:
+- Escenarios de prueba
+- Comparación case-insensitive
+- Mensajes de feedback
+- Casos edge
+
 ### Otros archivos test-*.html
 - test-additional-info.html
 - test-image-modal.html
@@ -562,9 +660,9 @@ Documentación y casos de prueba para categorías:
 ## Problemas Conocidos y Limitaciones
 
 ### 1. Edición de Categorías
-**Estado:** Placeholder implementado  
-**Descripción:** El botón de editar muestra mensaje "Función de edición en desarrollo"  
-**Solución futura:** Implementar formulario de edición inline o modal
+**Estado:** ✅ RESUELTO  
+**Descripción:** Implementado formulario de edición completo con modal  
+**Funcionalidad:** Editar nombre, emoji y color de categorías personalizadas
 
 ### 2. Tamaño de Multimedia
 **Limitación:** 10MB por archivo  
@@ -581,53 +679,55 @@ Documentación y casos de prueba para categorías:
 **Razón:** Permitir categorías dinámicas  
 **Impacto:** Cualquier string es válido como categoría
 
+### 5. Web Share API
+**Limitación:** Requiere HTTPS o localhost  
+**Navegadores:** No soportado en Firefox Desktop  
+**Mitigación:** Fallback automático a descarga de archivo
+
+### 6. Detección de Duplicados en Importación
+**Método:** Comparación por nombre únicamente  
+**Limitación:** "Paella Valenciana" ≠ "Paella Valenciana Tradicional"  
+**Nota:** Para actualizar una receta, eliminar la existente primero
+
 ---
 
 ## Próximas Mejoras Sugeridas
 
 ### Alta Prioridad
-1. **Implementar edición completa de categorías**
-   - Formulario de edición
-   - Actualización de recetas afectadas
-   - Validación de cambios
-
-2. **Búsqueda de recetas**
+1. **Búsqueda de recetas**
    - Por nombre
    - Por ingredientes
    - Por autor
 
-3. **Ordenamiento de recetas**
+2. **Ordenamiento de recetas**
    - Por nombre (A-Z, Z-A)
    - Por fecha (más reciente, más antigua)
    - Por categoría
 
 ### Media Prioridad
-4. **Reordenar categorías**
+3. **Reordenar categorías**
    - Drag & drop en modal
    - Persistir orden personalizado
 
-5. **Más opciones de emoji**
-   - Selector de emoji visual
-   - Búsqueda de emojis
-
-6. **Etiquetas adicionales**
+4. **Etiquetas adicionales**
    - Tags libres (ej: "vegetariano", "rápido")
    - Filtrado por tags
 
-7. **Favoritos**
+5. **Favoritos**
    - Marcar recetas como favoritas
    - Filtro de favoritos
 
 ### Baja Prioridad
-8. **Modo oscuro**
-   - Toggle en configuración
-   - Persistir preferencia
+6. **Sincronización en la nube**
+   - Firebase/Supabase
+   - Backup automático
+   - Acceso multi-dispositivo
 
-9. **Compartir recetas**
-   - Generar enlace
-   - QR code
+7. **Compartir con enlace**
+   - Generar enlace público
+   - QR code para compartir
 
-10. **Estadísticas**
+8. **Estadísticas**
     - Recetas por categoría (gráfico)
     - Ingredientes más usados
     - Recetas más recientes
@@ -765,7 +865,38 @@ La aplicación usa console.log con prefijos:
 
 ## Changelog Reciente
 
-### Octubre 2025
+### Octubre 2025 - Actualización Mayor
+**Nuevas Funcionalidades:**
+- ✅ **Galería de fotos** - Vista compacta para recetas con múltiples imágenes
+  - Imagen principal con miniaturas navegables
+  - Navegación circular con teclado y botones
+  - Responsive y accesible
+  - Lazy loading de miniaturas
+- ✅ **Tema oscuro** - Toggle entre tema claro y oscuro
+  - Paleta de colores optimizada
+  - Persistencia de preferencia
+  - Transiciones suaves
+  - Todos los componentes adaptados
+- ✅ **Compartir recetas** - Web Share API
+  - Compartir a Drive, Gmail, WhatsApp, etc.
+  - Fallback automático a descarga
+  - Funciona en móvil y desktop
+- ✅ **Detección de duplicados** - En importación XML
+  - Compara por nombre (case-insensitive)
+  - Solo importa recetas nuevas
+  - Resumen detallado
+- ✅ **Interfaz adaptativa** - Botones del header
+  - Se ocultan en vista de detalle
+  - Se ocultan en formulario
+  - Interfaz más limpia y enfocada
+
+**Mejoras:**
+- ✅ Eliminadas categorías: Hospital, Mix, Sin categoría
+- ✅ Textos de botones más descriptivos
+- ✅ Mejor feedback en importación
+- ✅ Optimización de rendimiento en galería
+
+**Anteriores:**
 - ✅ Implementado sistema de tiempo unificado
 - ✅ Implementado gestión de categorías personalizadas
 - ✅ Agregados campos de autor e historia
@@ -776,7 +907,54 @@ La aplicación usa console.log con prefijos:
 
 ---
 
+## Resumen de Funcionalidades Principales
+
+### 🎨 Interfaz y UX
+- ✅ Diseño Airbnb-inspired
+- ✅ Tema claro y oscuro
+- ✅ Responsive (móvil, tablet, desktop)
+- ✅ PWA instalable
+- ✅ Interfaz adaptativa (oculta botones en detalle)
+
+### 📝 Gestión de Recetas
+- ✅ Crear, editar, eliminar, duplicar
+- ✅ Ingredientes con reordenamiento
+- ✅ Secuencias de adición con duración
+- ✅ Campos de autor e historia
+- ✅ Validación de formularios
+
+### 🏷️ Categorías
+- ✅ 8 categorías predefinidas
+- ✅ Categorías personalizadas ilimitadas
+- ✅ Selector de emoji (500+ opciones)
+- ✅ Paleta de 12 colores
+- ✅ Edición completa
+- ✅ Filtrado por categoría
+
+### 📸 Multimedia
+- ✅ Imágenes y videos
+- ✅ Galería compacta (2+ fotos)
+- ✅ Modal con navegación
+- ✅ Lazy loading
+- ✅ Límite 10MB por archivo
+
+### 📤 Exportar/Importar
+- ✅ Exportar a XML y PDF
+- ✅ Importar desde XML
+- ✅ Detección de duplicados
+- ✅ Compartir con Web Share API
+- ✅ Creación automática de categorías
+
+### 💾 Almacenamiento
+- ✅ IndexedDB (principal)
+- ✅ localStorage (fallback)
+- ✅ Persistencia local
+- ✅ Sin necesidad de servidor
+
+---
+
 **Fin del Informe Técnico**
 
 *Última actualización: Octubre 2025*
-*Versión del documento: 1.0*
+*Versión del documento: 2.0*
+*Nuevas funcionalidades: Galería de fotos, Tema oscuro, Compartir, Detección de duplicados*
