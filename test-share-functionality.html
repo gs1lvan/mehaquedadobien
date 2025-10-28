@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Funcionalidad de Compartir</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .info-box {
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+        }
+        .success-box {
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+        }
+        .warning-box {
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid var(--color-border);
+            border-radius: 12px;
+            background: var(--color-background-secondary);
+        }
+        .button-demo {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        .feature-list li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #4caf50;
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔗 Test - Funcionalidad de Compartir</h1>
+
+    <div class="info-box">
+        <h3>📱 Web Share API</h3>
+        <p>Esta funcionalidad usa la <strong>Web Share API</strong> del navegador para compartir archivos XML de recetas.</p>
+        <p><strong>Estado de soporte:</strong> <span id="support-status"></span></p>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Características Implementadas</h2>
+        <ul class="feature-list">
+            <li>Botón "🔗 Compartir" en el header (junto a "Exportar todas las recetas")</li>
+            <li>Botón "🔗 Compartir" en la vista de detalle de cada receta</li>
+            <li>Compartir a través de apps nativas (Drive, Gmail, WhatsApp, etc.)</li>
+            <li>Fallback automático a descarga si el navegador no soporta compartir</li>
+            <li>Solo visible en navegadores compatibles</li>
+            <li>Funciona en móvil y desktop (Chrome, Edge, Safari)</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Prueba la Funcionalidad</h2>
+        
+        <div class="button-demo">
+            <button id="test-share-single" class="btn-primary">
+                🔗 Compartir 1 Receta
+            </button>
+            <button id="test-share-multiple" class="btn-primary">
+                🔗 Compartir 3 Recetas
+            </button>
+            <button id="test-fallback" class="btn-action">
+                📥 Probar Fallback (Descarga)
+            </button>
+        </div>
+
+        <div id="test-result" style="margin-top: 20px;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📋 Cómo Usar</h2>
+        <ol>
+            <li><strong>En la lista de recetas:</strong>
+                <ul>
+                    <li>Click en "🔗 Compartir" (junto a "Exportar todas las recetas")</li>
+                    <li>Comparte todas las recetas o las filtradas</li>
+                </ul>
+            </li>
+            <li><strong>En el detalle de una receta:</strong>
+                <ul>
+                    <li>Click en "🔗 Compartir" (junto a los botones de exportar)</li>
+                    <li>Comparte solo esa receta</li>
+                </ul>
+            </li>
+            <li><strong>Elige dónde compartir:</strong>
+                <ul>
+                    <li>📧 Gmail / Email</li>
+                    <li>💾 Google Drive</li>
+                    <li>💬 WhatsApp</li>
+                    <li>📱 Otras apps instaladas</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>🌐 Compatibilidad de Navegadores</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: var(--color-background); border-bottom: 2px solid var(--color-border);">
+                    <th style="padding: 12px; text-align: left;">Navegador</th>
+                    <th style="padding: 12px; text-align: center;">Desktop</th>
+                    <th style="padding: 12px; text-align: center;">Móvil</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid var(--color-border);">
+                    <td style="padding: 12px;">Chrome</td>
+                    <td style="padding: 12px; text-align: center;">✅ v89+</td>
+                    <td style="padding: 12px; text-align: center;">✅ v61+</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--color-border);">
+                    <td style="padding: 12px;">Edge</td>
+                    <td style="padding: 12px; text-align: center;">✅ v89+</td>
+                    <td style="padding: 12px; text-align: center;">✅</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--color-border);">
+                    <td style="padding: 12px;">Safari</td>
+                    <td style="padding: 12px; text-align: center;">✅ v12.1+</td>
+                    <td style="padding: 12px; text-align: center;">✅ v12.2+</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--color-border);">
+                    <td style="padding: 12px;">Firefox</td>
+                    <td style="padding: 12px; text-align: center;">❌</td>
+                    <td style="padding: 12px; text-align: center;">✅ v71+</td>
+                </tr>
+            </tbody>
+        </table>
+        <p style="margin-top: 12px; color: var(--color-text-secondary); font-size: 0.9em;">
+            * En navegadores no compatibles, se descarga el archivo automáticamente
+        </p>
+    </div>
+
+    <div class="warning-box">
+        <h3>⚠️ Nota Importante</h3>
+        <p>La funcionalidad de compartir <strong>requiere HTTPS</strong> o <strong>localhost</strong> para funcionar por razones de seguridad.</p>
+        <p>Si abres el archivo directamente con <code>file://</code>, solo verás el fallback de descarga.</p>
+    </div>
+
+    <script>
+        // Check Web Share API support
+        const supportStatus = document.getElementById('support-status');
+        const testResult = document.getElementById('test-result');
+
+        function showResult(message, type = 'info') {
+            const colors = {
+                success: '#4caf50',
+                error: '#f44336',
+                info: '#2196f3'
+            };
+            testResult.innerHTML = `
+                <div style="padding: 12px; border-radius: 8px; background: ${colors[type]}22; border-left: 4px solid ${colors[type]}; color: ${colors[type]};">
+                    ${message}
+                </div>
+            `;
+        }
+
+        if (navigator.share) {
+            if (navigator.canShare) {
+                supportStatus.innerHTML = '<strong style="color: #4caf50;">✅ Totalmente Soportado</strong> (Web Share API con archivos)';
+            } else {
+                supportStatus.innerHTML = '<strong style="color: #ff9800;">⚠️ Parcialmente Soportado</strong> (Web Share API sin archivos)';
+            }
+        } else {
+            supportStatus.innerHTML = '<strong style="color: #f44336;">❌ No Soportado</strong> (Se usará descarga automática)';
+        }
+
+        // Create mock XML content
+        function createMockXML(recipeName) {
+            return `<?xml version="1.0" encoding="UTF-8"?>
+<recipe>
+    <name>${recipeName}</name>
+    <category>carne</category>
+    <totalTime>45 minutos</totalTime>
+    <preparationMethod>Método de preparación de ejemplo...</preparationMethod>
+    <ingredients>
+        <ingredient>
+            <name>Ingrediente 1</name>
+            <quantity>200</quantity>
+            <unit>g</unit>
+        </ingredient>
+    </ingredients>
+</recipe>`;
+        }
+
+        // Test single recipe share
+        document.getElementById('test-share-single').addEventListener('click', async () => {
+            try {
+                const xmlContent = createMockXML('Paella Valenciana');
+                const file = new File([xmlContent], 'receta_paella.xml', { type: 'application/xml' });
+
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        title: 'Paella Valenciana',
+                        text: 'Receta: Paella Valenciana',
+                        files: [file]
+                    });
+                    showResult('✅ ¡Receta compartida exitosamente!', 'success');
+                } else {
+                    showResult('⚠️ Tu navegador no soporta compartir archivos. Usa el botón de fallback.', 'error');
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    showResult('ℹ️ Compartir cancelado por el usuario', 'info');
+                } else {
+                    showResult('❌ Error: ' + error.message, 'error');
+                }
+            }
+        });
+
+        // Test multiple recipes share
+        document.getElementById('test-share-multiple').addEventListener('click', async () => {
+            try {
+                const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<recipes count="3" exported="${new Date().toISOString()}">
+    ${createMockXML('Paella')}
+    ${createMockXML('Gazpacho')}
+    ${createMockXML('Tortilla')}
+</recipes>`;
+                const file = new File([xmlContent], 'recetas_3_2025-10-28.xml', { type: 'application/xml' });
+
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        title: '3 Recetas',
+                        text: 'Compartiendo 3 recetas desde mehaquedadobien',
+                        files: [file]
+                    });
+                    showResult('✅ ¡3 recetas compartidas exitosamente!', 'success');
+                } else {
+                    showResult('⚠️ Tu navegador no soporta compartir archivos. Usa el botón de fallback.', 'error');
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    showResult('ℹ️ Compartir cancelado por el usuario', 'info');
+                } else {
+                    showResult('❌ Error: ' + error.message, 'error');
+                }
+            }
+        });
+
+        // Test fallback (download)
+        document.getElementById('test-fallback').addEventListener('click', () => {
+            const xmlContent = createMockXML('Receta de Prueba');
+            const blob = new Blob([xmlContent], { type: 'application/xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'receta_prueba.xml';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showResult('✅ Archivo descargado (fallback funcionando correctamente)', 'success');
+        });
+    </script>
+</body>
+</html>
