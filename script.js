@@ -3930,6 +3930,12 @@ class RecipeApp {
         if (listView) listView.classList.add('hidden');
         if (formView) formView.classList.add('hidden');
 
+        // Hide filter toggle container
+        const filterToggleContainer = document.querySelector('.filter-toggle-container');
+        if (filterToggleContainer) {
+            filterToggleContainer.classList.add('hidden');
+        }
+
         // Hide filter bars
         const filterBar = document.getElementById('filter-bar');
         if (filterBar) {
@@ -5158,6 +5164,12 @@ class RecipeApp {
         const listView = document.getElementById('recipe-list-view');
         if (listView) {
             listView.classList.remove('hidden');
+        }
+
+        // Show filter toggle container
+        const filterToggleContainer = document.querySelector('.filter-toggle-container');
+        if (filterToggleContainer) {
+            filterToggleContainer.classList.remove('hidden');
         }
 
         // Show filter bars
