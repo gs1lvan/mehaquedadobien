@@ -2650,17 +2650,13 @@ class RecipeApp {
             return;
         }
 
-        if (!unit) {
-            errorMessage.textContent = 'Debes seleccionar una unidad';
-            unitSelect.focus();
-            return;
-        }
+        // Unit is now optional - can be empty
 
         // Create new ingredient
         const ingredient = new Ingredient({
             name: name,
             quantity: quantity || 0,
-            unit: unit,
+            unit: unit || '',
             order: this.ingredients.length
         });
 
@@ -2926,17 +2922,14 @@ class RecipeApp {
             return;
         }
 
-        if (!data.unit) {
-            alert('Debes seleccionar una unidad');
-            return;
-        }
+        // Unit is now optional - can be empty
 
         // Find and update ingredient
         const ingredient = this.ingredients.find(ing => ing.id === ingredientId);
         if (ingredient) {
             ingredient.name = data.name.trim();
             ingredient.quantity = data.quantity || 0;
-            ingredient.unit = data.unit;
+            ingredient.unit = data.unit || '';
         }
 
         // Exit edit mode
