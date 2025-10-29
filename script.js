@@ -560,6 +560,64 @@ class RecipeApp {
             });
         }
 
+        // Mobile menu button
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                mobileMenu.classList.toggle('active');
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                    mobileMenu.classList.remove('active');
+                }
+            });
+        }
+
+        // Mobile menu items
+        const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+        if (mobileThemeToggle) {
+            mobileThemeToggle.addEventListener('click', () => {
+                this.toggleTheme();
+                mobileMenu.classList.remove('active');
+            });
+        }
+
+        const mobileManageCategories = document.getElementById('mobile-manage-categories');
+        if (mobileManageCategories) {
+            mobileManageCategories.addEventListener('click', () => {
+                this.showCategoryModal();
+                mobileMenu.classList.remove('active');
+            });
+        }
+
+        const mobileImportXml = document.getElementById('mobile-import-xml');
+        if (mobileImportXml) {
+            mobileImportXml.addEventListener('click', () => {
+                this.handleImportXMLClick();
+                mobileMenu.classList.remove('active');
+            });
+        }
+
+        const mobileExportAll = document.getElementById('mobile-export-all');
+        if (mobileExportAll) {
+            mobileExportAll.addEventListener('click', () => {
+                this.handleExportAllClick();
+                mobileMenu.classList.remove('active');
+            });
+        }
+
+        const mobileNewRecipe = document.getElementById('mobile-new-recipe');
+        if (mobileNewRecipe) {
+            mobileNewRecipe.addEventListener('click', () => {
+                this.showRecipeForm();
+                mobileMenu.classList.remove('active');
+            });
+        }
+
         // Close category modal button
         const closeCategoryModalBtn = document.getElementById('close-category-modal');
         if (closeCategoryModalBtn) {
@@ -4711,7 +4769,7 @@ class RecipeApp {
      * Requirements: 12.1, 12.2, 12.3, 12.4, 12.5
      * @param {string} recipeId - Recipe ID to export
      */
-    exportRecipeToPDF(recipeId) {
+    async exportRecipeToPDF(recipeId) {
         try {
             // Find the recipe
             const recipe = this.recipes.find(r => r.id === recipeId);
@@ -4729,7 +4787,7 @@ class RecipeApp {
             }
 
             // Export recipe using PDFExporter
-            PDFExporter.exportRecipe(recipe);
+            await PDFExporter.exportRecipe(recipe);
 
             console.log('Recipe exported to PDF successfully:', recipeId);
 
@@ -4873,6 +4931,12 @@ class RecipeApp {
         if (themeBtn) {
             themeBtn.innerHTML = isDark ? '☀️ Tema' : '🌙 Tema';
             themeBtn.title = isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro';
+        }
+        
+        // Update mobile theme button
+        const mobileThemeBtn = document.getElementById('mobile-theme-toggle');
+        if (mobileThemeBtn) {
+            mobileThemeBtn.innerHTML = isDark ? '☀️ Tema' : '🌙 Tema';
         }
     }
 

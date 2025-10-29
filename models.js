@@ -1059,9 +1059,9 @@ class PDFExporter {
      * Generate PDF from a recipe
      * Requirements: 12.1, 12.2, 12.3, 12.4
      * @param {Recipe} recipe - Recipe to export
-     * @returns {jsPDF} PDF document
+     * @returns {Promise<jsPDF>} PDF document
      */
-    static generatePDF(recipe) {
+    static async generatePDF(recipe) {
         try {
             // Validate input
             if (!recipe || !(recipe instanceof Recipe)) {
@@ -1083,11 +1083,16 @@ class PDFExporter {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
+            // Set default font to Times for a more elegant, editorial style
+            doc.setFont('times', 'normal');
+            
             let yPosition = 20;
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
             const margin = 20;
-            const contentWidth = pageWidth - (margin * 2);
+            // Content width is 55% of page width
+            const contentWidth = pageWidth * 0.55;
+            const maxLineWidth = contentWidth;
 
             // Helper function to check if we need a new page
             const checkPageBreak = (requiredSpace) => {
@@ -1100,179 +1105,208 @@ class PDFExporter {
             };
 
             // Header - Recipe Name and Time on same line
-            doc.setFontSize(18);
+            doc.setFontSize(24);
             doc.setFont(undefined, 'bold');
-            doc.text(recipe.name, margin, yPosition);
+            doc.text(recipe.name, margin, yPosition, { align: 'left' });
             
-            // Total Time aligned to the right on same line
+            // Add time total right after the title with different style (smaller, small caps effect)
             if (recipe.totalTime && recipe.totalTime.trim() !== '') {
-                doc.setFontSize(10);
-                doc.setFont(undefined, 'normal');
-                doc.setTextColor(100, 100, 100);
-                const timeText = `Tiempo Total: ${recipe.totalTime}`;
-                const timeWidth = doc.getTextWidth(timeText);
-                doc.text(timeText, pageWidth - margin - timeWidth, yPosition);
-                doc.setTextColor(0, 0, 0);
+                const titleWidth = doc.getTextWidth(recipe.name);
+                doc.setFontSize(14); // Smaller size
+                doc.setFont(undefined, 'normal'); // Light/normal weight
+                doc.setTextColor(128, 128, 128); // Gray color
+                // Convert to uppercase for small caps effect
+                const timeText = ` - TIEMPO TOTAL: ${recipe.totalTime.toUpperCase()}`;
+                doc.text(timeText, margin + titleWidth, yPosition, { align: 'left' });
+                doc.setTextColor(0, 0, 0); // Reset to black
+                doc.setFontSize(24); // Reset font size
             }
             
-            yPosition += 10; // Increased space after header
+            yPosition += 5; // Reduced space after header (between title and image)
 
-            // Images section - only first image, maintaining aspect ratio
+            // Save starting Y position for image and ingredients side-by-side layout
+            const sectionStartY = yPosition;
+            let imageHeight = 0;
+            let actualImageWidth = 0; // Store actual image width
+            let ingredientsHeight = 0;
+
+            // Images section - only first image, 50% width, cropped to fixed height
             if (recipe.images && recipe.images.length > 0) {
                 checkPageBreak(70);
                 
                 // Add only the first image
                 const image = recipe.images[0];
-                const maxImageWidth = contentWidth * 0.5; // 50% of page width
-                const maxImageHeight = 70;
+                // Fixed dimensions for image
+                const targetWidth = pageWidth * 0.50; // 50% of page width
+                const targetHeight = 60; // Fixed height in mm
                 
                 try {
-                    // Create temporary image to get dimensions
+                    // Create image element
                     const img = new Image();
                     img.src = image.data;
                     
-                    // Calculate dimensions maintaining aspect ratio
-                    let imgWidth = maxImageWidth;
-                    let imgHeight = maxImageHeight;
-                    
-                    if (img.width && img.height) {
-                        const aspectRatio = img.width / img.height;
-                        if (aspectRatio > 1) {
-                            // Landscape
-                            imgHeight = imgWidth / aspectRatio;
+                    // Wait for image to load to get dimensions
+                    await new Promise((resolve) => {
+                        if (img.complete) {
+                            resolve();
                         } else {
-                            // Portrait
-                            imgWidth = imgHeight * aspectRatio;
+                            img.onload = resolve;
                         }
+                    });
+                    
+                    // Create canvas for cropping
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Calculate dimensions to fill target area (cover mode)
+                    const targetAspect = targetWidth / targetHeight;
+                    const imgAspect = img.width / img.height;
+                    
+                    let sourceWidth, sourceHeight, sourceX, sourceY;
+                    
+                    if (imgAspect > targetAspect) {
+                        // Image is wider - crop sides
+                        sourceHeight = img.height;
+                        sourceWidth = img.height * targetAspect;
+                        sourceX = (img.width - sourceWidth) / 2;
+                        sourceY = 0;
+                    } else {
+                        // Image is taller - crop top and bottom
+                        sourceWidth = img.width;
+                        sourceHeight = img.width / targetAspect;
+                        sourceX = 0;
+                        sourceY = (img.height - sourceHeight) / 2;
                     }
                     
-                    // Add frame with padding - aligned with text (no left offset)
-                    const framePadding = 2; // 5px ≈ 2mm in PDF
-                    const frameX = margin; // Aligned with text margin
+                    // Set canvas size to target dimensions (in pixels, will scale)
+                    canvas.width = 800; // High resolution
+                    canvas.height = 800 * (targetHeight / targetWidth);
+                    
+                    // Draw cropped image
+                    ctx.drawImage(
+                        img,
+                        sourceX, sourceY, sourceWidth, sourceHeight, // Source rectangle
+                        0, 0, canvas.width, canvas.height // Destination rectangle
+                    );
+                    
+                    // Convert canvas to base64
+                    const croppedImageData = canvas.toDataURL('image/jpeg', 0.92);
+                    
+                    // Add frame with padding
+                    const framePadding = 2;
+                    const frameX = margin;
                     const frameY = yPosition;
-                    const frameWidth = imgWidth + (framePadding * 2);
-                    const frameHeight = imgHeight + (framePadding * 2);
+                    const frameWidth = targetWidth + (framePadding * 2);
+                    const frameHeight = targetHeight + (framePadding * 2);
                     
                     // Draw frame background (light gray)
                     doc.setFillColor(245, 245, 245);
                     doc.rect(frameX, frameY, frameWidth, frameHeight, 'F');
                     
-                    // Add image on top of frame (with padding inside)
-                    doc.addImage(image.data, 'JPEG', margin + framePadding, yPosition + framePadding, imgWidth, imgHeight);
+                    // Add cropped image
+                    doc.addImage(croppedImageData, 'JPEG', margin + framePadding, yPosition + framePadding, targetWidth, targetHeight);
                     
                     // Add frame border
                     doc.setDrawColor(200, 200, 200);
                     doc.setLineWidth(0.3);
                     doc.rect(frameX, frameY, frameWidth, frameHeight);
                     
-                    yPosition += frameHeight + 10; // Increased space after image (same as before)
+                    imageHeight = frameHeight;
+                    actualImageWidth = frameWidth;
+                    // Don't move yPosition yet - ingredients will be beside the image
                 } catch (error) {
                     console.warn('Could not add image to PDF:', error);
                 }
             }
 
-            // Ingredients Section
-            checkPageBreak(15);
+            // Ingredients Section - positioned to the right of the image
+            const ingredientsX = margin + actualImageWidth + 5; // Start after actual image with 5mm gap
+            const ingredientsWidth = pageWidth - ingredientsX - margin; // Remaining width
+            let ingredientsY = sectionStartY; // Start at same height as image
+
+            // Calculate ingredients height first
+            const ingredientsPadding = 3;
+            let tempY = ingredientsY + ingredientsPadding + 6; // Title space
+            
+            if (recipe.ingredients && recipe.ingredients.length > 0) {
+                tempY += recipe.ingredients.length * 5; // Each ingredient line
+            } else {
+                tempY += 5; // "No ingredients" message
+            }
+            tempY += ingredientsPadding;
+            ingredientsHeight = tempY - ingredientsY;
+
+            // Draw ingredients background box (light gray)
+            doc.setFillColor(240, 240, 240);
+            doc.rect(ingredientsX, ingredientsY, ingredientsWidth, ingredientsHeight, 'F');
+            
+            // Draw ingredients border
+            doc.setDrawColor(200, 200, 200);
+            doc.setLineWidth(0.3);
+            doc.rect(ingredientsX, ingredientsY, ingredientsWidth, ingredientsHeight);
+
+            // Add ingredients title
+            ingredientsY += ingredientsPadding;
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
-            doc.text('Ingredientes', margin, yPosition);
-            yPosition += 6;
+            doc.text('Ingredientes', ingredientsX + 3, ingredientsY + 4, { align: 'left' });
+            ingredientsY += 6;
 
+            // Add ingredients list
             doc.setFontSize(9);
             doc.setFont(undefined, 'normal');
 
             if (recipe.ingredients && recipe.ingredients.length > 0) {
                 recipe.ingredients.forEach((ingredient, index) => {
-                    checkPageBreak(5);
                     const ingredientText = `${index + 1}. ${ingredient.name} - ${ingredient.quantity} ${ingredient.unit}`;
-                    doc.text(ingredientText, margin + 3, yPosition);
-                    yPosition += 5;
+                    doc.text(ingredientText, ingredientsX + 5, ingredientsY + 4, { align: 'left' });
+                    ingredientsY += 5;
                 });
             } else {
                 doc.setTextColor(150, 150, 150);
-                doc.text('No hay ingredientes definidos', margin + 3, yPosition);
+                doc.text('No hay ingredientes definidos', ingredientsX + 5, ingredientsY + 4, { align: 'left' });
                 doc.setTextColor(0, 0, 0);
-                yPosition += 5;
+                ingredientsY += 5;
             }
 
-            yPosition += 3;
+            // Move yPosition to after the tallest element (image or ingredients box)
+            const ingredientsTotalHeight = ingredientsY + ingredientsPadding - sectionStartY;
+            yPosition = sectionStartY + Math.max(imageHeight, ingredientsTotalHeight) + 10;
 
             // Preparation Method Section
             checkPageBreak(15);
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
-            doc.text('Método de Preparación', margin, yPosition);
+            doc.text('Método de Preparación', margin, yPosition, { align: 'left' });
             yPosition += 6;
 
             doc.setFontSize(9);
             doc.setFont(undefined, 'normal');
 
             if (recipe.preparationMethod && recipe.preparationMethod.trim() !== '') {
-                // Split text into lines that fit the page width
-                const methodLines = doc.splitTextToSize(recipe.preparationMethod, contentWidth);
-                methodLines.forEach(line => {
+                // Split text into lines that fit the page width (55% width, fully justified)
+                const methodLines = doc.splitTextToSize(recipe.preparationMethod, maxLineWidth);
+                methodLines.forEach((line) => {
                     checkPageBreak(5);
-                    doc.text(line, margin, yPosition);
+                    // Justify ALL lines (including last one)
+                    doc.text(line, margin, yPosition, { align: 'justify', maxWidth: maxLineWidth });
                     yPosition += 5;
                 });
             } else {
                 doc.setTextColor(150, 150, 150);
-                doc.text('No hay método de preparación definido', margin, yPosition);
+                doc.text('No hay método de preparación definido', margin, yPosition, { align: 'left' });
                 doc.setTextColor(0, 0, 0);
                 yPosition += 5;
             }
 
             yPosition += 3;
 
-            // Additional Information Section (Author and History)
-            const hasAuthor = recipe.author && recipe.author.trim() !== '';
-            const hasHistory = recipe.history && recipe.history.trim() !== '';
-            
-            if (hasAuthor || hasHistory) {
-                checkPageBreak(15);
-                doc.setFontSize(12);
-                doc.setFont(undefined, 'bold');
-                doc.text('Información de Interés', margin, yPosition);
-                yPosition += 6;
-
-                doc.setFontSize(9);
-                doc.setFont(undefined, 'normal');
-
-                // Author
-                if (hasAuthor) {
-                    checkPageBreak(5);
-                    doc.setFont(undefined, 'bold');
-                    doc.text('Autor:', margin + 3, yPosition);
-                    doc.setFont(undefined, 'normal');
-                    doc.text(recipe.author, margin + 20, yPosition);
-                    yPosition += 6;
-                }
-
-                // History
-                if (hasHistory) {
-                    checkPageBreak(5);
-                    doc.setFont(undefined, 'bold');
-                    doc.text('Historia:', margin + 3, yPosition);
-                    yPosition += 5;
-                    
-                    doc.setFont(undefined, 'normal');
-                    const historyLines = doc.splitTextToSize(recipe.history, contentWidth - 3);
-                    historyLines.forEach(line => {
-                        checkPageBreak(5);
-                        doc.text(line, margin + 3, yPosition);
-                        yPosition += 5;
-                    });
-                }
-
-                yPosition += 3;
-            }
-
             // Addition Sequences Section
             if (recipe.additionSequences && recipe.additionSequences.length > 0) {
                 checkPageBreak(15);
                 doc.setFontSize(12);
                 doc.setFont(undefined, 'bold');
-                doc.text('Secuencias de Adición', margin, yPosition);
+                doc.text('Secuencias de Adición', margin, yPosition, { align: 'left' });
                 yPosition += 6;
 
                 doc.setFontSize(9);
@@ -1283,7 +1317,7 @@ class PDFExporter {
                     
                     // Sequence number
                     doc.setFont(undefined, 'bold');
-                    doc.text(`Paso ${index + 1}:`, margin + 3, yPosition);
+                    doc.text(`Paso ${index + 1}:`, margin + 3, yPosition, { align: 'left' });
                     yPosition += 5;
                     
                     doc.setFont(undefined, 'normal');
@@ -1300,7 +1334,7 @@ class PDFExporter {
                         
                         if (ingredientNames) {
                             doc.setTextColor(100, 100, 100);
-                            doc.text(`Ingredientes: ${ingredientNames}`, margin + 6, yPosition);
+                            doc.text(`Ingredientes: ${ingredientNames}`, margin + 6, yPosition, { align: 'left' });
                             doc.setTextColor(0, 0, 0);
                             yPosition += 5;
                         }
@@ -1308,10 +1342,11 @@ class PDFExporter {
                     
                     // Description (before duration)
                     if (sequence.description) {
-                        const descLines = doc.splitTextToSize(sequence.description, contentWidth - 6);
-                        descLines.forEach(line => {
+                        const descLines = doc.splitTextToSize(sequence.description, maxLineWidth - 6);
+                        descLines.forEach((line) => {
                             checkPageBreak(5);
-                            doc.text(line, margin + 6, yPosition);
+                            // Justify ALL lines (including last one)
+                            doc.text(line, margin + 6, yPosition, { align: 'justify', maxWidth: maxLineWidth - 6 });
                             yPosition += 5;
                         });
                     }
@@ -1334,7 +1369,7 @@ class PDFExporter {
                         
                         if (parts.length > 0) {
                             doc.setFont(undefined, 'bold');
-                            doc.text(`Duración: ${parts.join(' ')}`, margin + 6, yPosition);
+                            doc.text(`Duración: ${parts.join(' ')}`, margin + 6, yPosition, { align: 'left' });
                             doc.setFont(undefined, 'normal');
                             yPosition += 5;
                         }
@@ -1344,12 +1379,218 @@ class PDFExporter {
                 });
             }
 
+            // Additional Information Section (Author and History) - MOVED TO END
+            const hasAuthor = recipe.author && recipe.author.trim() !== '';
+            const hasHistory = recipe.history && recipe.history.trim() !== '';
+            
+            if (hasAuthor || hasHistory) {
+                checkPageBreak(15);
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                doc.text('Información de Interés', margin, yPosition, { align: 'left' });
+                yPosition += 6;
+
+                doc.setFontSize(9);
+                doc.setFont(undefined, 'normal');
+
+                // Author
+                if (hasAuthor) {
+                    checkPageBreak(5);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Autor:', margin + 3, yPosition, { align: 'left' });
+                    doc.setFont(undefined, 'normal');
+                    doc.text(recipe.author, margin + 20, yPosition, { align: 'left' });
+                    yPosition += 6;
+                }
+
+                // History
+                if (hasHistory) {
+                    checkPageBreak(5);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Historia:', margin + 3, yPosition, { align: 'left' });
+                    yPosition += 5;
+                    
+                    doc.setFont(undefined, 'normal');
+                    const historyLines = doc.splitTextToSize(recipe.history, maxLineWidth - 3);
+                    historyLines.forEach((line) => {
+                        checkPageBreak(5);
+                        // Justify ALL lines (including last one)
+                        doc.text(line, margin + 3, yPosition, { align: 'justify', maxWidth: maxLineWidth - 3 });
+                        yPosition += 5;
+                    });
+                }
+
+                yPosition += 3;
+            }
+
+            // Additional Images Section - Show remaining images (2nd onwards) in 2-column layout
+            if (recipe.images && recipe.images.length > 1) {
+                // Process images from index 1 onwards (skip first image)
+                const remainingImages = recipe.images.slice(1);
+                const imageWidth = (maxLineWidth - 5) / 2; // Two images side by side with 5mm gap
+                const imageHeight = 50; // Fixed height for gallery images
+                
+                // Check if we have enough space for title + at least one row of images
+                // If not, move to next page to keep title with images
+                const requiredSpace = 8 + imageHeight + 10; // title height + image height + margins
+                checkPageBreak(requiredSpace);
+                
+                yPosition += 5;
+                
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                doc.text('Galería de Imágenes', margin, yPosition, { align: 'left' });
+                yPosition += 8;
+                
+                for (let i = 0; i < remainingImages.length; i += 2) {
+                    // Only check page break for subsequent rows (not the first one)
+                    if (i > 0) {
+                        checkPageBreak(imageHeight + 10);
+                    }
+                    
+                    const rowStartY = yPosition;
+                    
+                    // First image in row (left)
+                    const img1 = remainingImages[i];
+                    try {
+                        const imgElement1 = new Image();
+                        imgElement1.src = img1.data;
+                        
+                        await new Promise((resolve) => {
+                            if (imgElement1.complete) resolve();
+                            else imgElement1.onload = resolve;
+                        });
+                        
+                        // Create canvas for cropping
+                        const canvas1 = document.createElement('canvas');
+                        const ctx1 = canvas1.getContext('2d');
+                        
+                        const targetAspect = imageWidth / imageHeight;
+                        const imgAspect1 = imgElement1.width / imgElement1.height;
+                        
+                        let sourceWidth1, sourceHeight1, sourceX1, sourceY1;
+                        
+                        if (imgAspect1 > targetAspect) {
+                            sourceHeight1 = imgElement1.height;
+                            sourceWidth1 = imgElement1.height * targetAspect;
+                            sourceX1 = (imgElement1.width - sourceWidth1) / 2;
+                            sourceY1 = 0;
+                        } else {
+                            sourceWidth1 = imgElement1.width;
+                            sourceHeight1 = imgElement1.width / targetAspect;
+                            sourceX1 = 0;
+                            sourceY1 = (imgElement1.height - sourceHeight1) / 2;
+                        }
+                        
+                        canvas1.width = 600;
+                        canvas1.height = 600 * (imageHeight / imageWidth);
+                        
+                        ctx1.drawImage(
+                            imgElement1,
+                            sourceX1, sourceY1, sourceWidth1, sourceHeight1,
+                            0, 0, canvas1.width, canvas1.height
+                        );
+                        
+                        const croppedData1 = canvas1.toDataURL('image/jpeg', 0.90);
+                        
+                        // Add frame for first image
+                        const framePadding = 2;
+                        const frameX1 = margin;
+                        const frameY1 = yPosition;
+                        const frameWidth1 = imageWidth + (framePadding * 2);
+                        const frameHeight1 = imageHeight + (framePadding * 2);
+                        
+                        // Draw frame background (light gray)
+                        doc.setFillColor(245, 245, 245);
+                        doc.rect(frameX1, frameY1, frameWidth1, frameHeight1, 'F');
+                        
+                        // Add image
+                        doc.addImage(croppedData1, 'JPEG', margin + framePadding, yPosition + framePadding, imageWidth, imageHeight);
+                        
+                        // Add frame border
+                        doc.setDrawColor(200, 200, 200);
+                        doc.setLineWidth(0.3);
+                        doc.rect(frameX1, frameY1, frameWidth1, frameHeight1);
+                    } catch (error) {
+                        console.warn('Could not add gallery image:', error);
+                    }
+                    
+                    // Second image in row (right) - if exists
+                    if (i + 1 < remainingImages.length) {
+                        const img2 = remainingImages[i + 1];
+                        try {
+                            const imgElement2 = new Image();
+                            imgElement2.src = img2.data;
+                            
+                            await new Promise((resolve) => {
+                                if (imgElement2.complete) resolve();
+                                else imgElement2.onload = resolve;
+                            });
+                            
+                            const canvas2 = document.createElement('canvas');
+                            const ctx2 = canvas2.getContext('2d');
+                            
+                            const targetAspect = imageWidth / imageHeight;
+                            const imgAspect2 = imgElement2.width / imgElement2.height;
+                            
+                            let sourceWidth2, sourceHeight2, sourceX2, sourceY2;
+                            
+                            if (imgAspect2 > targetAspect) {
+                                sourceHeight2 = imgElement2.height;
+                                sourceWidth2 = imgElement2.height * targetAspect;
+                                sourceX2 = (imgElement2.width - sourceWidth2) / 2;
+                                sourceY2 = 0;
+                            } else {
+                                sourceWidth2 = imgElement2.width;
+                                sourceHeight2 = imgElement2.width / targetAspect;
+                                sourceX2 = 0;
+                                sourceY2 = (imgElement2.height - sourceHeight2) / 2;
+                            }
+                            
+                            canvas2.width = 600;
+                            canvas2.height = 600 * (imageHeight / imageWidth);
+                            
+                            ctx2.drawImage(
+                                imgElement2,
+                                sourceX2, sourceY2, sourceWidth2, sourceHeight2,
+                                0, 0, canvas2.width, canvas2.height
+                            );
+                            
+                            const croppedData2 = canvas2.toDataURL('image/jpeg', 0.90);
+                            const secondImageX = margin + imageWidth + 5; // 5mm gap
+                            
+                            // Add frame for second image
+                            const framePadding = 2;
+                            const frameX2 = secondImageX;
+                            const frameY2 = yPosition;
+                            const frameWidth2 = imageWidth + (framePadding * 2);
+                            const frameHeight2 = imageHeight + (framePadding * 2);
+                            
+                            // Draw frame background (light gray)
+                            doc.setFillColor(245, 245, 245);
+                            doc.rect(frameX2, frameY2, frameWidth2, frameHeight2, 'F');
+                            
+                            // Add image
+                            doc.addImage(croppedData2, 'JPEG', secondImageX + framePadding, yPosition + framePadding, imageWidth, imageHeight);
+                            
+                            // Add frame border
+                            doc.setDrawColor(200, 200, 200);
+                            doc.setLineWidth(0.3);
+                            doc.rect(frameX2, frameY2, frameWidth2, frameHeight2);
+                        } catch (error) {
+                            console.warn('Could not add gallery image:', error);
+                        }
+                    }
+                    
+                    yPosition += imageHeight + 4 + 8; // Move down for next row (image + frame padding + gap)
+                }
+            }
+
             // Footer with metadata
             const footerY = pageHeight - 15;
             doc.setFontSize(8);
             doc.setTextColor(150, 150, 150);
-            doc.text(`Creada: ${recipe.createdAt.toLocaleDateString('es-ES')}`, margin, footerY);
-            doc.text(`ID: ${recipe.id}`, pageWidth - margin - 50, footerY);
+            doc.text(`Creada: ${recipe.createdAt.toLocaleDateString('es-ES')}`, margin, footerY, { align: 'left' });
 
             return doc;
 
@@ -1387,12 +1628,12 @@ class PDFExporter {
      * Export recipe to PDF and download
      * Requirements: 12.1, 12.2, 12.3, 12.4, 12.5
      * @param {Recipe} recipe - Recipe to export
-     * @returns {jsPDF} PDF document
+     * @returns {Promise<jsPDF>} PDF document
      */
-    static exportRecipe(recipe) {
+    static async exportRecipe(recipe) {
         try {
             // Generate PDF
-            const doc = this.generatePDF(recipe);
+            const doc = await this.generatePDF(recipe);
             
             // Create filename
             const sanitizedName = recipe.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();

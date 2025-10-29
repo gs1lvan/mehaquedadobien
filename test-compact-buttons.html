@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Botones Compactos</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .test-container {
+            background: var(--color-background);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-lg);
+            border: 1px solid var(--color-border);
+        }
+        h2 {
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text);
+        }
+        .comparison {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+        .comparison-item {
+            padding: var(--spacing-md);
+            background: var(--color-background-secondary);
+            border-radius: var(--radius-sm);
+        }
+        .comparison-item h3 {
+            margin-top: 0;
+            margin-bottom: var(--spacing-sm);
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test de Botones Compactos</h1>
+    
+    <div class="test-container">
+        <h2>Comparación: Antes vs Ahora</h2>
+        
+        <div class="comparison">
+            <div class="comparison-item">
+                <h3>ANTES (con iconos y bold)</h3>
+                <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
+                    <button class="btn-action" style="font-weight: var(--font-weight-semibold);">✎ Editar</button>
+                    <button class="btn-action" style="font-weight: var(--font-weight-semibold);">📋 Duplicar</button>
+                    <button class="btn-action btn-danger" style="font-weight: var(--font-weight-semibold);">🗑 Eliminar</button>
+                    <button class="btn-action" style="font-weight: var(--font-weight-semibold);">📄 Exportar esta receta</button>
+                    <button class="btn-action" style="font-weight: var(--font-weight-semibold);">📑 PDF</button>
+                </div>
+            </div>
+            
+            <div class="comparison-item">
+                <h3>AHORA (sin iconos, tipografía normal, más compactos)</h3>
+                <div class="detail-actions">
+                    <button class="btn-action btn-action-compact">Editar</button>
+                    <button class="btn-action btn-action-compact">Duplicar</button>
+                    <button class="btn-action btn-action-compact btn-danger">Eliminar</button>
+                    <button class="btn-action btn-action-compact">Exportar XML</button>
+                    <button class="btn-action btn-action-compact">PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Vista de Detalle de Receta (simulación)</h2>
+        <div style="background: var(--color-background-secondary); padding: var(--spacing-lg); border-radius: var(--radius-md);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--spacing-lg); gap: var(--spacing-md);">
+                <div>
+                    <h2 style="margin: 0; color: var(--color-text);">Paella Valenciana</h2>
+                </div>
+                <div class="detail-actions">
+                    <button class="btn-action btn-action-compact">Editar</button>
+                    <button class="btn-action btn-action-compact">Duplicar</button>
+                    <button class="btn-action btn-action-compact btn-danger">Eliminar</button>
+                    <button class="btn-action btn-action-compact">Exportar XML</button>
+                    <button class="btn-action btn-action-compact">PDF</button>
+                </div>
+            </div>
+            
+            <div style="color: var(--color-text-secondary); font-size: 0.875rem;">
+                <p>Los botones ahora ocupan menos espacio y tienen un aspecto más limpio y discreto.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Características de los Botones Compactos</h2>
+        <ul style="color: var(--color-text-secondary); line-height: 1.8;">
+            <li>✓ Sin iconos emoji - más limpio y profesional</li>
+            <li>✓ Padding reducido: 6px 12px (antes: 10px 16px)</li>
+            <li>✓ Font-size: 0.8125rem (antes: 0.875rem)</li>
+            <li>✓ Font-weight: normal (antes: semibold)</li>
+            <li>✓ Gap reducido entre botones: xs (antes: sm)</li>
+            <li>✓ Texto más corto: "Exportar XML" en vez de "Exportar esta receta"</li>
+            <li>✓ Mantienen funcionalidad hover y estados</li>
+        </ul>
+    </div>
+
+    <div class="test-container">
+        <h2>Responsive - Móvil</h2>
+        <div style="max-width: 400px; margin: 0 auto; background: var(--color-background-secondary); padding: var(--spacing-md); border-radius: var(--radius-md);">
+            <h3 style="font-size: 1rem; margin-top: 0;">Receta de Ejemplo</h3>
+            <div class="detail-actions">
+                <button class="btn-action btn-action-compact">Editar</button>
+                <button class="btn-action btn-action-compact">Duplicar</button>
+                <button class="btn-action btn-action-compact btn-danger">Eliminar</button>
+                <button class="btn-action btn-action-compact">Exportar XML</button>
+                <button class="btn-action btn-action-compact">PDF</button>
+            </div>
+            <p style="margin-top: var(--spacing-md); font-size: 0.75rem; color: var(--color-text-secondary);">
+                Los botones se ajustan automáticamente en pantallas pequeñas
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle for testing
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 't' || e.key === 'T') {
+                document.body.classList.toggle('dark-theme');
+            }
+        });
+        
+        console.log('💡 Presiona "T" para cambiar entre tema claro y oscuro');
+    </script>
+</body>
+</html>

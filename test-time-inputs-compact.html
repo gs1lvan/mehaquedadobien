@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Inputs de Tiempo Compactos</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-container {
+            background: var(--color-background);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-lg);
+            border: 1px solid var(--color-border);
+        }
+        h2 {
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text);
+        }
+        .comparison {
+            display: flex;
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-md);
+        }
+        .comparison > div {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test de Inputs de Tiempo Compactos</h1>
+    
+    <div class="test-container">
+        <h2>Información Básica - Tiempo Total</h2>
+        <div class="form-group">
+            <label>Tiempo Total</label>
+            <div class="time-input-group">
+                <div class="time-input-item">
+                    <span class="time-label">Horas</span>
+                    <input type="number" class="form-input time-input" placeholder="0" min="0" max="24" value="2">
+                </div>
+                <div class="time-input-item">
+                    <span class="time-label">Minutos</span>
+                    <input type="number" class="form-input time-input" placeholder="0" min="0" max="60" value="30">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Secuencias de Adición - Duración (opcional)</h2>
+        <div class="form-group">
+            <label>Duración (opcional)</label>
+            <div class="time-input-group">
+                <div class="time-input-item">
+                    <span class="time-label">Horas</span>
+                    <input type="number" class="form-input time-input" placeholder="0" min="0" max="24" value="0">
+                </div>
+                <div class="time-input-item">
+                    <span class="time-label">Minutos</span>
+                    <input type="number" class="form-input time-input" placeholder="0" min="0" max="60" value="15">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Prueba con valores de 3 cifras</h2>
+        <div class="form-group">
+            <label>Tiempo Total</label>
+            <div class="time-input-group">
+                <div class="time-input-item">
+                    <span class="time-label">Horas</span>
+                    <input type="number" class="form-input time-input" placeholder="0" min="0" max="999" value="123">
+                </div>
+                <div class="time-input-item">
+                    <span class="time-label">Minutos</span>
+                    <input type="number" class="form-input time-input" placeholder="0" min="0" max="999" value="456">
+                </div>
+            </div>
+        </div>
+        <p style="margin-top: var(--spacing-sm); color: var(--color-text-secondary); font-size: 0.875rem;">
+            ✓ Los campos ahora son más estrechos (60px) y pueden contener hasta 3 cifras
+        </p>
+    </div>
+
+    <div class="test-container">
+        <h2>Comparación Visual</h2>
+        <div class="comparison">
+            <div>
+                <h3 style="font-size: 0.875rem; color: var(--color-text-secondary); margin-bottom: var(--spacing-sm);">Antes (conceptual)</h3>
+                <div style="padding: var(--spacing-sm); background: var(--color-background-secondary); border-radius: var(--radius-sm);">
+                    <div style="display: flex; gap: var(--spacing-md); align-items: center;">
+                        <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                            <span style="padding: 8px 14px; background: var(--color-background-secondary); border: 1px solid var(--color-border); border-radius: 20px; font-size: 0.875rem;">Horas</span>
+                            <input type="number" style="width: 80px; padding: 10px 12px; text-align: center;" value="2">
+                        </div>
+                        <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                            <span style="padding: 8px 14px; background: var(--color-background-secondary); border: 1px solid var(--color-border); border-radius: 20px; font-size: 0.875rem;">Minutos</span>
+                            <input type="number" style="width: 80px; padding: 10px 12px; text-align: center;" value="30">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h3 style="font-size: 0.875rem; color: var(--color-text-secondary); margin-bottom: var(--spacing-sm);">Ahora (nuevo)</h3>
+                <div style="padding: var(--spacing-sm); background: var(--color-background-secondary); border-radius: var(--radius-sm);">
+                    <div class="time-input-group">
+                        <div class="time-input-item">
+                            <span class="time-label">Horas</span>
+                            <input type="number" class="form-input time-input" value="2">
+                        </div>
+                        <div class="time-input-item">
+                            <span class="time-label">Minutos</span>
+                            <input type="number" class="form-input time-input" value="30">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ul style="margin-top: var(--spacing-md); color: var(--color-text-secondary); font-size: 0.875rem; line-height: 1.6;">
+            <li>✓ Campos más estrechos (60px vs 80px)</li>
+            <li>✓ Sin recuadro en las etiquetas</li>
+            <li>✓ Etiquetas con color secundario más discreto</li>
+            <li>✓ Menos espacio vertical (padding reducido)</li>
+            <li>✓ Diseño más limpio y compacto</li>
+        </ul>
+    </div>
+
+    <div class="test-container">
+        <h2>Múltiples campos en un formulario</h2>
+        <div class="form-group">
+            <label>Tiempo de Preparación</label>
+            <div class="time-input-group">
+                <div class="time-input-item">
+                    <span class="time-label">Horas</span>
+                    <input type="number" class="form-input time-input" placeholder="0" value="1">
+                </div>
+                <div class="time-input-item">
+                    <span class="time-label">Minutos</span>
+                    <input type="number" class="form-input time-input" placeholder="0" value="15">
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Tiempo de Cocción</label>
+            <div class="time-input-group">
+                <div class="time-input-item">
+                    <span class="time-label">Horas</span>
+                    <input type="number" class="form-input time-input" placeholder="0" value="0">
+                </div>
+                <div class="time-input-item">
+                    <span class="time-label">Minutos</span>
+                    <input type="number" class="form-input time-input" placeholder="0" value="45">
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Header Layout</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-container {
+            background: var(--color-background);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-lg);
+            border: 1px solid var(--color-border);
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test - Nuevo Layout del Header</h1>
+    
+    <div class="test-container">
+        <h2 style="margin-top: 0; color: var(--color-text); margin-bottom: var(--spacing-md);">Vista de Detalle de Receta</h2>
+        
+        <div class="detail-header">
+            <button id="back-to-list-btn" class="btn-icon" title="Volver a la lista">◀</button>
+            <div class="detail-header-content">
+                <div style="display: flex; align-items: center; gap: var(--spacing-sm); flex-wrap: wrap; margin-bottom: var(--spacing-sm);">
+                    <h2 id="detail-recipe-name">Paella Valenciana</h2>
+                    <span class="recipe-total-time">⏱️ 1h 30min</span>
+                </div>
+                <div class="detail-actions">
+                    <button class="btn-action btn-action-compact">Editar</button>
+                    <button class="btn-action btn-action-compact">Duplicar</button>
+                    <button class="btn-action btn-action-compact btn-danger">Eliminar</button>
+                    <button class="btn-action btn-action-compact">Exportar XML</button>
+                    <button class="btn-action btn-action-compact">PDF</button>
+                </div>
+            </div>
+        </div>
+
+        <div style="color: var(--color-text-secondary); font-size: 0.875rem; margin-top: var(--spacing-lg);">
+            <p><strong>Características del nuevo layout:</strong></p>
+            <ul style="line-height: 1.8;">
+                <li>✓ Botón "◀" a la izquierda</li>
+                <li>✓ Nombre de la receta y tiempo total en la primera línea</li>
+                <li>✓ Botones de acción debajo del nombre</li>
+                <li>✓ Todo alineado a la izquierda</li>
+                <li>✓ Layout vertical y compacto</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2 style="margin-top: 0; color: var(--color-text); margin-bottom: var(--spacing-md);">Con nombre largo</h2>
+        
+        <div class="detail-header">
+            <button class="btn-icon" title="Volver a la lista">◀</button>
+            <div class="detail-header-content">
+                <div style="display: flex; align-items: center; gap: var(--spacing-sm); flex-wrap: wrap; margin-bottom: var(--spacing-sm);">
+                    <h2>Arroz con Pollo al Estilo Tradicional de la Abuela con Verduras Frescas</h2>
+                    <span class="recipe-total-time">⏱️ 2h 15min</span>
+                </div>
+                <div class="detail-actions">
+                    <button class="btn-action btn-action-compact">Editar</button>
+                    <button class="btn-action btn-action-compact">Duplicar</button>
+                    <button class="btn-action btn-action-compact btn-danger">Eliminar</button>
+                    <button class="btn-action btn-action-compact">Exportar XML</button>
+                    <button class="btn-action btn-action-compact">PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2 style="margin-top: 0; color: var(--color-text); margin-bottom: var(--spacing-md);">Sin tiempo total</h2>
+        
+        <div class="detail-header">
+            <button class="btn-icon" title="Volver a la lista">◀</button>
+            <div class="detail-header-content">
+                <div style="display: flex; align-items: center; gap: var(--spacing-sm); flex-wrap: wrap; margin-bottom: var(--spacing-sm);">
+                    <h2>Ensalada César</h2>
+                </div>
+                <div class="detail-actions">
+                    <button class="btn-action btn-action-compact">Editar</button>
+                    <button class="btn-action btn-action-compact">Duplicar</button>
+                    <button class="btn-action btn-action-compact btn-danger">Eliminar</button>
+                    <button class="btn-action btn-action-compact">Exportar XML</button>
+                    <button class="btn-action btn-action-compact">PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container" style="max-width: 400px;">
+        <h2 style="margin-top: 0; color: var(--color-text); margin-bottom: var(--spacing-md);">Vista Móvil (simulación)</h2>
+        
+        <div class="detail-header">
+            <button class="btn-icon" title="Volver a la lista">◀</button>
+            <div class="detail-header-content">
+                <div style="display: flex; align-items: center; gap: var(--spacing-sm); flex-wrap: wrap; margin-bottom: var(--spacing-sm);">
+                    <h2 style="font-size: 1.5rem;">Tortilla de Patatas</h2>
+                    <span class="recipe-total-time">⏱️ 45min</span>
+                </div>
+                <div class="detail-actions" style="width: 100%;">
+                    <button class="btn-action btn-action-compact">Editar</button>
+                    <button class="btn-action btn-action-compact">Duplicar</button>
+                    <button class="btn-action btn-action-compact btn-danger">Eliminar</button>
+                    <button class="btn-action btn-action-compact">Exportar XML</button>
+                    <button class="btn-action btn-action-compact">PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle for testing
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 't' || e.key === 'T') {
+                document.body.classList.toggle('dark-theme');
+            }
+        });
+        
+        console.log('💡 Presiona "T" para cambiar entre tema claro y oscuro');
+    </script>
+</body>
+</html>

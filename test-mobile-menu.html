@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Menú Móvil</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        .test-info {
+            padding: var(--spacing-lg);
+            background: var(--color-background-secondary);
+            margin: var(--spacing-lg);
+            border-radius: var(--radius-md);
+        }
+        .test-info h2 {
+            margin-top: 0;
+            color: var(--color-text);
+        }
+        .test-info ul {
+            color: var(--color-text-secondary);
+            line-height: 1.8;
+        }
+        .viewport-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--color-primary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: bold;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="recipe-header">
+            <div class="header-content">
+                <h1>🍳 mehaquedadobien</h1>
+                
+                <!-- Mobile menu button -->
+                <button id="mobile-menu-btn" class="mobile-menu-btn" title="Menú">
+                    <span class="hamburger-icon">☰</span>
+                </button>
+                
+                <!-- Desktop actions -->
+                <div class="header-actions" id="header-actions">
+                    <button id="theme-toggle-btn" class="btn-action" title="Cambiar tema">
+                        🌙 Tema
+                    </button>
+                    <button id="manage-categories-btn" class="btn-action" title="Gestionar categorías">
+                        🏷️ Categorías
+                    </button>
+                    <button id="import-xml-btn" class="btn-action" title="Importar recetas desde XML">
+                        📥 Importar receta
+                    </button>
+                    <button id="export-all-btn" class="btn-action" title="Exportar todas las recetas">
+                        📤 Exportar todas las recetas
+                    </button>
+                    <button id="new-recipe-btn" class="btn-primary">
+                        ➕ Nueva Receta
+                    </button>
+                </div>
+                
+                <!-- Mobile dropdown menu -->
+                <div id="mobile-menu" class="mobile-menu">
+                    <button id="mobile-theme-toggle" class="mobile-menu-item">
+                        🌙 Tema
+                    </button>
+                    <button id="mobile-manage-categories" class="mobile-menu-item">
+                        🏷️ Categorías
+                    </button>
+                    <button id="mobile-import-xml" class="mobile-menu-item">
+                        📥 Importar receta
+                    </button>
+                    <button id="mobile-export-all" class="mobile-menu-item">
+                        📤 Exportar todas las recetas
+                    </button>
+                    <button id="mobile-new-recipe" class="mobile-menu-item mobile-menu-item-primary">
+                        ➕ Nueva Receta
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="test-info">
+            <h2>🧪 Test del Menú Móvil</h2>
+            <p><strong>Instrucciones:</strong></p>
+            <ul>
+                <li><strong>En escritorio (> 767px):</strong> Verás todos los botones en el header</li>
+                <li><strong>En móvil (≤ 767px):</strong> Verás solo el botón hamburguesa (☰)</li>
+                <li>Click en el botón hamburguesa para abrir el menú desplegable</li>
+                <li>Click fuera del menú para cerrarlo</li>
+                <li>Redimensiona la ventana del navegador para probar ambos modos</li>
+            </ul>
+            
+            <p><strong>Características:</strong></p>
+            <ul>
+                <li>✓ Menú desplegable con todas las opciones</li>
+                <li>✓ Botón "Nueva Receta" destacado en color primario</li>
+                <li>✓ Cierre automático al hacer click fuera</li>
+                <li>✓ Cierre automático al seleccionar una opción</li>
+                <li>✓ Diseño limpio y accesible</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="viewport-indicator" id="viewport-indicator">
+        Desktop
+    </div>
+
+    <script>
+        // Mobile menu functionality
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                mobileMenu.classList.toggle('active');
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                    mobileMenu.classList.remove('active');
+                }
+            });
+        }
+
+        // Mobile menu items - close menu on click
+        const mobileMenuItems = document.querySelectorAll('.mobile-menu-item');
+        mobileMenuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                alert('Opción seleccionada: ' + item.textContent.trim());
+                mobileMenu.classList.remove('active');
+            });
+        });
+
+        // Theme toggle
+        const themeBtn = document.getElementById('theme-toggle-btn');
+        const mobileThemeBtn = document.getElementById('mobile-theme-toggle');
+        
+        function toggleTheme() {
+            const isDark = document.body.classList.toggle('dark-theme');
+            const icon = isDark ? '☀️' : '🌙';
+            if (themeBtn) themeBtn.innerHTML = icon + ' Tema';
+            if (mobileThemeBtn) mobileThemeBtn.innerHTML = icon + ' Tema';
+        }
+        
+        if (themeBtn) {
+            themeBtn.addEventListener('click', toggleTheme);
+        }
+        if (mobileThemeBtn) {
+            mobileThemeBtn.addEventListener('click', () => {
+                toggleTheme();
+                mobileMenu.classList.remove('active');
+            });
+        }
+
+        // Viewport indicator
+        function updateViewportIndicator() {
+            const indicator = document.getElementById('viewport-indicator');
+            const width = window.innerWidth;
+            if (width <= 767) {
+                indicator.textContent = `Móvil (${width}px)`;
+                indicator.style.background = 'var(--color-primary)';
+            } else if (width <= 1024) {
+                indicator.textContent = `Tablet (${width}px)`;
+                indicator.style.background = '#ff9800';
+            } else {
+                indicator.textContent = `Desktop (${width}px)`;
+                indicator.style.background = '#4caf50';
+            }
+        }
+
+        updateViewportIndicator();
+        window.addEventListener('resize', updateViewportIndicator);
+    </script>
+</body>
+</html>
