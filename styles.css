@@ -1498,13 +1498,17 @@ main {
 
 .detail-sequence-content {
     flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
 }
 
 .detail-sequence-ingredients {
     display: flex;
     flex-wrap: wrap;
     gap: var(--spacing-xs);
-    margin-bottom: var(--spacing-xs);
+    align-items: center;
 }
 
 .detail-sequence-ingredient-tag {
@@ -1517,17 +1521,25 @@ main {
     border: 1px solid var(--color-border-light);
 }
 
+.detail-sequence-separator {
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-bold);
+    padding: 0 var(--spacing-xs);
+}
+
 .detail-sequence-duration {
     color: var(--color-text);
     font-size: 0.875rem;
     font-weight: var(--font-weight-semibold);
-    margin-bottom: var(--spacing-xs);
+    white-space: nowrap;
 }
 
 .detail-sequence-description {
     color: var(--color-text-secondary);
     font-size: 0.875rem;
     line-height: 1.5;
+    flex: 1;
+    min-width: 200px;
 }
 
 .detail-gallery {

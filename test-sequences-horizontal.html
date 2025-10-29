@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Secuencias Horizontales</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-container {
+            background: var(--color-background);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-lg);
+        }
+        h2 {
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text);
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test de Secuencias en Layout Horizontal</h1>
+    
+    <div class="test-container">
+        <h2>Caso 1: Secuencia completa (ingredientes + descripción + duración)</h2>
+        <div class="detail-sequences-list">
+            <div class="detail-sequence-item">
+                <div class="detail-sequence-number">1</div>
+                <div class="detail-sequence-content">
+                    <div class="detail-sequence-ingredients">
+                        <span class="detail-sequence-ingredient-tag">Aceite</span>
+                        <span class="detail-sequence-ingredient-tag">Ajo</span>
+                        <span class="detail-sequence-ingredient-tag">Cebolla</span>
+                    </div>
+                    <span class="detail-sequence-separator">•</span>
+                    <div class="detail-sequence-description">
+                        Sofreír el ajo y la cebolla en aceite hasta que estén dorados
+                    </div>
+                    <div class="detail-sequence-duration">⏱️ 5 min</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Caso 2: Sin duración</h2>
+        <div class="detail-sequences-list">
+            <div class="detail-sequence-item">
+                <div class="detail-sequence-number">2</div>
+                <div class="detail-sequence-content">
+                    <div class="detail-sequence-ingredients">
+                        <span class="detail-sequence-ingredient-tag">Tomate</span>
+                        <span class="detail-sequence-ingredient-tag">Pimiento</span>
+                    </div>
+                    <span class="detail-sequence-separator">•</span>
+                    <div class="detail-sequence-description">
+                        Agregar el tomate y el pimiento cortados en cubos
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Caso 3: Solo ingredientes y duración</h2>
+        <div class="detail-sequences-list">
+            <div class="detail-sequence-item">
+                <div class="detail-sequence-number">3</div>
+                <div class="detail-sequence-content">
+                    <div class="detail-sequence-ingredients">
+                        <span class="detail-sequence-ingredient-tag">Arroz</span>
+                        <span class="detail-sequence-ingredient-tag">Caldo</span>
+                    </div>
+                    <div class="detail-sequence-duration">⏱️ 20 min</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Caso 4: Muchos ingredientes (wrap)</h2>
+        <div class="detail-sequences-list">
+            <div class="detail-sequence-item">
+                <div class="detail-sequence-number">4</div>
+                <div class="detail-sequence-content">
+                    <div class="detail-sequence-ingredients">
+                        <span class="detail-sequence-ingredient-tag">Harina</span>
+                        <span class="detail-sequence-ingredient-tag">Huevos</span>
+                        <span class="detail-sequence-ingredient-tag">Leche</span>
+                        <span class="detail-sequence-ingredient-tag">Azúcar</span>
+                        <span class="detail-sequence-ingredient-tag">Mantequilla</span>
+                        <span class="detail-sequence-ingredient-tag">Vainilla</span>
+                    </div>
+                    <span class="detail-sequence-separator">•</span>
+                    <div class="detail-sequence-description">
+                        Mezclar todos los ingredientes secos primero, luego agregar los líquidos poco a poco
+                    </div>
+                    <div class="detail-sequence-duration">⏱️ 3 min</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Caso 5: Múltiples secuencias</h2>
+        <div class="detail-sequences-list">
+            <div class="detail-sequence-item">
+                <div class="detail-sequence-number">1</div>
+                <div class="detail-sequence-content">
+                    <div class="detail-sequence-ingredients">
+                        <span class="detail-sequence-ingredient-tag">Pasta</span>
+                    </div>
+                    <span class="detail-sequence-separator">•</span>
+                    <div class="detail-sequence-description">
+                        Hervir la pasta en agua con sal
+                    </div>
+                    <div class="detail-sequence-duration">⏱️ 10 min</div>
+                </div>
+            </div>
+            
+            <div class="detail-sequence-item">
+                <div class="detail-sequence-number">2</div>
+                <div class="detail-sequence-content">
+                    <div class="detail-sequence-ingredients">
+                        <span class="detail-sequence-ingredient-tag">Salsa</span>
+                        <span class="detail-sequence-ingredient-tag">Queso</span>
+                    </div>
+                    <span class="detail-sequence-separator">•</span>
+                    <div class="detail-sequence-description">
+                        Mezclar la pasta escurrida con la salsa y el queso rallado
+                    </div>
+                    <div class="detail-sequence-duration">⏱️ 2 min</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

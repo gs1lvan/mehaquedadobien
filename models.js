@@ -1099,176 +1099,192 @@ class PDFExporter {
                 return false;
             };
 
-            // Header - Recipe Name
-            doc.setFontSize(24);
+            // Header - Recipe Name and Time on same line
+            doc.setFontSize(18);
             doc.setFont(undefined, 'bold');
             doc.text(recipe.name, margin, yPosition);
-            yPosition += 12;
-
-            // Category and Total Time
-            doc.setFontSize(12);
-            doc.setFont(undefined, 'normal');
-            doc.setTextColor(100, 100, 100);
             
-            if (recipe.category) {
-                const categoryLabels = {
-                    'carne': '🥩 Carne',
-                    'verdura': '🥬 Verdura',
-                    'pescado': '🐟 Pescado',
-                    'fruta': '🍎 Fruta',
-                    'cereales': '🌾 Cereales',
-                    'con-huevo': '🥚 Con huevo',
-                    'pollo': '🐔 Pollo',
-                    'escabeche': '🥒 Escabeche'
-                };
-                const categoryLabel = categoryLabels[recipe.category] || recipe.category;
-                doc.text(`Categoría: ${categoryLabel}`, margin, yPosition);
-                yPosition += 8;
-            }
-            
+            // Total Time aligned to the right on same line
             if (recipe.totalTime && recipe.totalTime.trim() !== '') {
-                doc.text(`⏱️ Tiempo Total: ${recipe.totalTime}`, margin, yPosition);
-                yPosition += 8;
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'normal');
+                doc.setTextColor(100, 100, 100);
+                const timeText = `Tiempo Total: ${recipe.totalTime}`;
+                const timeWidth = doc.getTextWidth(timeText);
+                doc.text(timeText, pageWidth - margin - timeWidth, yPosition);
+                doc.setTextColor(0, 0, 0);
             }
+            
+            yPosition += 10; // Increased space after header
 
-            doc.setTextColor(0, 0, 0);
-            yPosition += 5;
-
-            // Images section
+            // Images section - only first image, maintaining aspect ratio
             if (recipe.images && recipe.images.length > 0) {
-                checkPageBreak(60);
+                checkPageBreak(70);
                 
-                // Add first image (or up to 2 images)
-                const imagesToShow = recipe.images.slice(0, 2);
-                const imageWidth = imagesToShow.length === 1 ? 80 : 70;
-                const imageHeight = 60;
+                // Add only the first image
+                const image = recipe.images[0];
+                const maxImageWidth = contentWidth * 0.5; // 50% of page width
+                const maxImageHeight = 70;
                 
-                imagesToShow.forEach((image, index) => {
-                    try {
-                        const xPos = margin + (index * (imageWidth + 10));
-                        doc.addImage(image.data, 'JPEG', xPos, yPosition, imageWidth, imageHeight);
-                    } catch (error) {
-                        console.warn('Could not add image to PDF:', error);
+                try {
+                    // Create temporary image to get dimensions
+                    const img = new Image();
+                    img.src = image.data;
+                    
+                    // Calculate dimensions maintaining aspect ratio
+                    let imgWidth = maxImageWidth;
+                    let imgHeight = maxImageHeight;
+                    
+                    if (img.width && img.height) {
+                        const aspectRatio = img.width / img.height;
+                        if (aspectRatio > 1) {
+                            // Landscape
+                            imgHeight = imgWidth / aspectRatio;
+                        } else {
+                            // Portrait
+                            imgWidth = imgHeight * aspectRatio;
+                        }
                     }
-                });
-                
-                yPosition += imageHeight + 10;
+                    
+                    // Add frame with padding - aligned with text (no left offset)
+                    const framePadding = 2; // 5px ≈ 2mm in PDF
+                    const frameX = margin; // Aligned with text margin
+                    const frameY = yPosition;
+                    const frameWidth = imgWidth + (framePadding * 2);
+                    const frameHeight = imgHeight + (framePadding * 2);
+                    
+                    // Draw frame background (light gray)
+                    doc.setFillColor(245, 245, 245);
+                    doc.rect(frameX, frameY, frameWidth, frameHeight, 'F');
+                    
+                    // Add image on top of frame (with padding inside)
+                    doc.addImage(image.data, 'JPEG', margin + framePadding, yPosition + framePadding, imgWidth, imgHeight);
+                    
+                    // Add frame border
+                    doc.setDrawColor(200, 200, 200);
+                    doc.setLineWidth(0.3);
+                    doc.rect(frameX, frameY, frameWidth, frameHeight);
+                    
+                    yPosition += frameHeight + 10; // Increased space after image (same as before)
+                } catch (error) {
+                    console.warn('Could not add image to PDF:', error);
+                }
             }
 
             // Ingredients Section
-            checkPageBreak(20);
-            doc.setFontSize(16);
+            checkPageBreak(15);
+            doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
             doc.text('Ingredientes', margin, yPosition);
-            yPosition += 8;
+            yPosition += 6;
 
-            doc.setFontSize(11);
+            doc.setFontSize(9);
             doc.setFont(undefined, 'normal');
 
             if (recipe.ingredients && recipe.ingredients.length > 0) {
                 recipe.ingredients.forEach((ingredient, index) => {
-                    checkPageBreak(8);
+                    checkPageBreak(5);
                     const ingredientText = `${index + 1}. ${ingredient.name} - ${ingredient.quantity} ${ingredient.unit}`;
-                    doc.text(ingredientText, margin + 5, yPosition);
-                    yPosition += 6;
+                    doc.text(ingredientText, margin + 3, yPosition);
+                    yPosition += 5;
                 });
             } else {
                 doc.setTextColor(150, 150, 150);
-                doc.text('No hay ingredientes definidos', margin + 5, yPosition);
+                doc.text('No hay ingredientes definidos', margin + 3, yPosition);
                 doc.setTextColor(0, 0, 0);
-                yPosition += 6;
+                yPosition += 5;
             }
 
-            yPosition += 5;
+            yPosition += 3;
 
             // Preparation Method Section
-            checkPageBreak(20);
-            doc.setFontSize(16);
+            checkPageBreak(15);
+            doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
             doc.text('Método de Preparación', margin, yPosition);
-            yPosition += 8;
+            yPosition += 6;
 
-            doc.setFontSize(11);
+            doc.setFontSize(9);
             doc.setFont(undefined, 'normal');
 
             if (recipe.preparationMethod && recipe.preparationMethod.trim() !== '') {
                 // Split text into lines that fit the page width
                 const methodLines = doc.splitTextToSize(recipe.preparationMethod, contentWidth);
                 methodLines.forEach(line => {
-                    checkPageBreak(6);
+                    checkPageBreak(5);
                     doc.text(line, margin, yPosition);
-                    yPosition += 6;
+                    yPosition += 5;
                 });
             } else {
                 doc.setTextColor(150, 150, 150);
                 doc.text('No hay método de preparación definido', margin, yPosition);
                 doc.setTextColor(0, 0, 0);
-                yPosition += 6;
+                yPosition += 5;
             }
 
-            yPosition += 5;
+            yPosition += 3;
 
             // Additional Information Section (Author and History)
             const hasAuthor = recipe.author && recipe.author.trim() !== '';
             const hasHistory = recipe.history && recipe.history.trim() !== '';
             
             if (hasAuthor || hasHistory) {
-                checkPageBreak(20);
-                doc.setFontSize(16);
+                checkPageBreak(15);
+                doc.setFontSize(12);
                 doc.setFont(undefined, 'bold');
                 doc.text('Información de Interés', margin, yPosition);
-                yPosition += 8;
+                yPosition += 6;
 
-                doc.setFontSize(11);
+                doc.setFontSize(9);
                 doc.setFont(undefined, 'normal');
 
                 // Author
                 if (hasAuthor) {
-                    checkPageBreak(8);
+                    checkPageBreak(5);
                     doc.setFont(undefined, 'bold');
-                    doc.text('Autor:', margin + 5, yPosition);
+                    doc.text('Autor:', margin + 3, yPosition);
                     doc.setFont(undefined, 'normal');
-                    doc.text(recipe.author, margin + 25, yPosition);
-                    yPosition += 8;
+                    doc.text(recipe.author, margin + 20, yPosition);
+                    yPosition += 6;
                 }
 
                 // History
                 if (hasHistory) {
-                    checkPageBreak(8);
+                    checkPageBreak(5);
                     doc.setFont(undefined, 'bold');
-                    doc.text('Historia:', margin + 5, yPosition);
-                    yPosition += 6;
+                    doc.text('Historia:', margin + 3, yPosition);
+                    yPosition += 5;
                     
                     doc.setFont(undefined, 'normal');
-                    const historyLines = doc.splitTextToSize(recipe.history, contentWidth - 5);
+                    const historyLines = doc.splitTextToSize(recipe.history, contentWidth - 3);
                     historyLines.forEach(line => {
-                        checkPageBreak(6);
-                        doc.text(line, margin + 5, yPosition);
-                        yPosition += 6;
+                        checkPageBreak(5);
+                        doc.text(line, margin + 3, yPosition);
+                        yPosition += 5;
                     });
                 }
 
-                yPosition += 5;
+                yPosition += 3;
             }
 
             // Addition Sequences Section
             if (recipe.additionSequences && recipe.additionSequences.length > 0) {
-                checkPageBreak(20);
-                doc.setFontSize(16);
+                checkPageBreak(15);
+                doc.setFontSize(12);
                 doc.setFont(undefined, 'bold');
                 doc.text('Secuencias de Adición', margin, yPosition);
-                yPosition += 8;
+                yPosition += 6;
 
-                doc.setFontSize(11);
+                doc.setFontSize(9);
                 doc.setFont(undefined, 'normal');
 
                 recipe.additionSequences.forEach((sequence, index) => {
-                    checkPageBreak(15);
+                    checkPageBreak(10);
                     
                     // Sequence number
                     doc.setFont(undefined, 'bold');
-                    doc.text(`Paso ${index + 1}:`, margin + 5, yPosition);
-                    yPosition += 6;
+                    doc.text(`Paso ${index + 1}:`, margin + 3, yPosition);
+                    yPosition += 5;
                     
                     doc.setFont(undefined, 'normal');
                     
@@ -1284,13 +1300,23 @@ class PDFExporter {
                         
                         if (ingredientNames) {
                             doc.setTextColor(100, 100, 100);
-                            doc.text(`Ingredientes: ${ingredientNames}`, margin + 10, yPosition);
+                            doc.text(`Ingredientes: ${ingredientNames}`, margin + 6, yPosition);
                             doc.setTextColor(0, 0, 0);
-                            yPosition += 6;
+                            yPosition += 5;
                         }
                     }
                     
-                    // Duration
+                    // Description (before duration)
+                    if (sequence.description) {
+                        const descLines = doc.splitTextToSize(sequence.description, contentWidth - 6);
+                        descLines.forEach(line => {
+                            checkPageBreak(5);
+                            doc.text(line, margin + 6, yPosition);
+                            yPosition += 5;
+                        });
+                    }
+                    
+                    // Duration (last, without icon)
                     if (sequence.duration && sequence.duration.trim() !== '') {
                         // Format duration for display
                         const hoursMatch = sequence.duration.match(/(\d+)\s*h/);
@@ -1308,23 +1334,13 @@ class PDFExporter {
                         
                         if (parts.length > 0) {
                             doc.setFont(undefined, 'bold');
-                            doc.text(`⏱️ ${parts.join(' ')}`, margin + 10, yPosition);
+                            doc.text(`Duración: ${parts.join(' ')}`, margin + 6, yPosition);
                             doc.setFont(undefined, 'normal');
-                            yPosition += 6;
+                            yPosition += 5;
                         }
                     }
                     
-                    // Description
-                    if (sequence.description) {
-                        const descLines = doc.splitTextToSize(sequence.description, contentWidth - 10);
-                        descLines.forEach(line => {
-                            checkPageBreak(6);
-                            doc.text(line, margin + 10, yPosition);
-                            yPosition += 6;
-                        });
-                    }
-                    
-                    yPosition += 3;
+                    yPosition += 2;
                 });
             }
 

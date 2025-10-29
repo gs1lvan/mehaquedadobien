@@ -3839,6 +3839,14 @@ class RecipeApp {
                 contentDiv.appendChild(ingredientsDiv);
             }
 
+            // Separator (visual divider between ingredients and description)
+            if (sequence.ingredientIds && sequence.ingredientIds.length > 0 && sequence.description) {
+                const separator = document.createElement('span');
+                separator.className = 'detail-sequence-separator';
+                separator.textContent = '•';
+                contentDiv.appendChild(separator);
+            }
+
             // Description
             if (sequence.description) {
                 const descriptionDiv = document.createElement('div');
