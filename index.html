@@ -112,6 +112,9 @@
                     <button class="filter-chip" data-category="escabeche">
                         🥒 Escabeche
                     </button>
+                    <button class="filter-chip" data-category="caravana">
+                        🚐 Caravana
+                    </button>
                 </div>
             </section>
 
@@ -140,13 +143,15 @@
                     <button class="filter-chip" data-time="180">
                         ⏱️ 3h
                     </button>
-                    <button class="filter-chip" data-time="none">
-                        ❓ Sin tiempo
-                    </button>
                 </div>
             </section>
             </div>
             <!-- End filters container -->
+
+            <!-- Recipe counter -->
+            <div id="recipe-counter" class="recipe-counter">
+                <span id="recipe-count-text">0 recetas</span>
+            </div>
 
             <!-- Recipe grid -->
             <section id="recipe-list-view" class="recipe-list">
@@ -185,6 +190,7 @@
                         <div style="display: flex; align-items: center; gap: var(--spacing-sm); flex-wrap: wrap; margin-bottom: var(--spacing-sm);">
                             <h2 id="detail-recipe-name">Nombre de la Receta</h2>
                             <span id="detail-total-time" class="recipe-total-time" style="display: none;"></span>
+                            <span id="detail-caravan-badge" class="recipe-caravan-badge" style="display: none;">🚐 Apto para Caravana</span>
                         </div>
                         <div class="detail-actions">
                             <button id="edit-recipe-btn" class="btn-action btn-action-compact" title="Editar">Editar</button>
@@ -317,7 +323,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Tiempo Total (opcional)</label>
+                            <label class="required">Tiempo Total</label>
                             <div class="time-input-group">
                                 <div class="time-input-item">
                                     <span class="time-label">Horas</span>
@@ -344,7 +350,20 @@
                                     >
                                 </div>
                             </div>
-                            <span class="helper-text">Tiempo aproximado para preparar la receta completa</span>
+                            <span class="helper-text">Especifica al menos horas o minutos (ej: solo "30" minutos es válido)</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input 
+                                    type="checkbox" 
+                                    id="recipe-caravan-friendly" 
+                                    name="caravanFriendly"
+                                    class="form-checkbox"
+                                >
+                                <span>🚐 Apto para Caravana</span>
+                            </label>
+                            <span class="helper-text">Marca esta opción si la receta es adecuada para preparar en caravana</span>
                         </div>
                     </div>
 
@@ -358,7 +377,7 @@
                                 id="preparation-method" 
                                 name="preparationMethod" 
                                 class="form-textarea"
-                                placeholder="Describe los pasos para preparar esta receta..."
+                                placeholder="Usa el dictado por voz de tu móvil, o... escribe"
                                 rows="4"
                                 autocomplete="off"
                             ></textarea>
@@ -368,8 +387,10 @@
 
                     <!-- Additional Information Section -->
                     <div class="form-section">
-                        <h3 class="section-title">Información de Interés</h3>
-                        
+                        <h3 class="section-title collapsible-title" id="additional-info-section-title">
+                            <span class="collapse-icon">▼</span> Información de Interés
+                        </h3>
+                        <div id="additional-info-collapsible-content" class="collapsible-content">
                         <div class="form-group">
                             <label for="recipe-author">Autor</label>
                             <input 
@@ -396,11 +417,15 @@
                             ></textarea>
                             <span class="helper-text">Comparte el origen, anécdotas o recuerdos relacionados con esta receta (opcional)</span>
                         </div>
+                        </div>
                     </div>
 
                     <!-- Ingredients Section -->
                     <div class="form-section">
-                        <h3 class="section-title">Ingredientes</h3>
+                        <h3 class="section-title collapsible-title" id="ingredients-section-title">
+                            <span class="collapse-icon">▼</span> Ingredientes
+                        </h3>
+                        <div id="ingredients-collapsible-content" class="collapsible-content">
                         <div id="ingredients-container">
                             <!-- Add ingredient form -->
                             <div class="ingredient-add-form">
@@ -459,13 +484,17 @@
                                 <p>No hay ingredientes añadidos. Añade el primer ingrediente usando el formulario de arriba.</p>
                             </div>
                         </div>
+                        </div>
                     </div>
 
                     <!-- Addition Sequences Section -->
                     <div class="form-section">
-                        <h3 class="section-title">Secuencias de Adición</h3>
-                        <p class="helper-text" style="margin-bottom: var(--spacing-md);">Define el orden en que se deben añadir los ingredientes durante la preparación</p>
-                        <div id="sequences-container">
+                        <h3 class="section-title collapsible-title" id="sequences-section-title">
+                            <span class="collapse-icon">▼</span> Secuencias de Adición
+                        </h3>
+                        <div id="sequences-collapsible-content" class="collapsible-content">
+                            <p class="helper-text" style="margin-bottom: var(--spacing-md);">Define el orden en que se deben añadir los ingredientes durante la preparación</p>
+                            <div id="sequences-container">
                             <!-- Add sequence form -->
                             <div class="sequence-add-form">
                                 <div class="sequence-form-content">
@@ -485,6 +514,23 @@
                                             rows="4"
                                             autocomplete="off"
                                         ></textarea>
+                                        <div class="cooking-actions-buttons">
+                                            <button type="button" class="cooking-action-btn" data-action="A la plancha">A la plancha</button>
+                                            <button type="button" class="cooking-action-btn" data-action="Añadir">Añadir</button>
+                                            <button type="button" class="cooking-action-btn" data-action="Cocer">Cocer</button>
+                                            <button type="button" class="cooking-action-btn" data-action="Cocinar al vapor">Cocinar al vapor</button>
+                                            <button type="button" class="cooking-action-btn" data-action="Desglasar">Desglasar</button>
+                                            <button type="button" class="cooking-action-btn" data-action="Freír">Freír</button>
+                                            <button type="button" class="cooking-action-btn" data-action="Gratinar">Gratinar</button>
+                                            <button type="button" class="cooking-action-btn" data-action="Guisar">Guisar</button>
+                                            <button type="button" class="cooking-action-btn" data-action="Hornear">Hornear</button>
+                                            <button type="button" class="cooking-action-btn" data-action="Rebozar">Rebozar</button>
+                                            <button type="button" class="cooking-action-btn" data-action="Reducir">Reducir</button>
+                                            <button type="button" class="cooking-action-btn" data-action="Rehogar">Rehogar</button>
+                                            <button type="button" class="cooking-action-btn" data-action="Reposar">Reposar</button>
+                                            <button type="button" class="cooking-action-btn" data-action="Saltear">Saltear</button>
+                                            <button type="button" class="cooking-action-btn" data-action="Tostar">Tostar</button>
+                                        </div>
                                     </div>
                                     <div class="sequence-input-group">
                                         <label>Duración (opcional)</label>
@@ -531,6 +577,7 @@
                             <div id="sequences-empty" class="sequences-empty">
                                 <p>No hay secuencias definidas. Las secuencias son opcionales pero ayudan a especificar el orden de adición de ingredientes.</p>
                             </div>
+                        </div>
                         </div>
                     </div>
 
@@ -648,30 +695,6 @@
                                         <!-- Emojis will be added here -->
                                     </div>
                                 </div>
-                                <div class="emoji-category">
-                                    <span class="emoji-category-label">🐾 Animales</span>
-                                    <div class="emoji-grid" data-category="animals">
-                                        <!-- Emojis will be added here -->
-                                    </div>
-                                </div>
-                                <div class="emoji-category">
-                                    <span class="emoji-category-label">🌿 Naturaleza</span>
-                                    <div class="emoji-grid" data-category="nature">
-                                        <!-- Emojis will be added here -->
-                                    </div>
-                                </div>
-                                <div class="emoji-category">
-                                    <span class="emoji-category-label">⚽ Deportes</span>
-                                    <div class="emoji-grid" data-category="sports">
-                                        <!-- Emojis will be added here -->
-                                    </div>
-                                </div>
-                                <div class="emoji-category">
-                                    <span class="emoji-category-label">🎭 Objetos</span>
-                                    <div class="emoji-grid" data-category="objects">
-                                        <!-- Emojis will be added here -->
-                                    </div>
-                                </div>
                             </div>
                         </div>
                         
@@ -739,30 +762,6 @@
                             <div class="emoji-category">
                                 <span class="emoji-category-label">🍕 Comida</span>
                                 <div class="emoji-grid" data-category="food">
-                                    <!-- Emojis will be added here -->
-                                </div>
-                            </div>
-                            <div class="emoji-category">
-                                <span class="emoji-category-label">🐾 Animales</span>
-                                <div class="emoji-grid" data-category="animals">
-                                    <!-- Emojis will be added here -->
-                                </div>
-                            </div>
-                            <div class="emoji-category">
-                                <span class="emoji-category-label">🌿 Naturaleza</span>
-                                <div class="emoji-grid" data-category="nature">
-                                    <!-- Emojis will be added here -->
-                                </div>
-                            </div>
-                            <div class="emoji-category">
-                                <span class="emoji-category-label">⚽ Deportes</span>
-                                <div class="emoji-grid" data-category="sports">
-                                    <!-- Emojis will be added here -->
-                                </div>
-                            </div>
-                            <div class="emoji-category">
-                                <span class="emoji-category-label">🎭 Objetos</span>
-                                <div class="emoji-grid" data-category="objects">
                                     <!-- Emojis will be added here -->
                                 </div>
                             </div>

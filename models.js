@@ -135,6 +135,7 @@ class Recipe {
         this.name = data.name || '';
         this.category = data.category || null; // 'carne', 'verdura', 'pescado', 'fruta', 'cereales', 'mix', null
         this.totalTime = data.totalTime || ''; // Optional total time field
+        this.caravanFriendly = data.caravanFriendly || false; // Apto para Caravana
         this.ingredients = data.ingredients ? data.ingredients.map(i => 
             i instanceof Ingredient ? i : new Ingredient(i)
         ) : [];
@@ -187,6 +188,7 @@ class Recipe {
             name: this.name,
             category: this.category,
             totalTime: this.totalTime,
+            caravanFriendly: this.caravanFriendly,
             ingredients: this.ingredients.map(i => i.toJSON()),
             preparationMethod: this.preparationMethod,
             author: this.author,

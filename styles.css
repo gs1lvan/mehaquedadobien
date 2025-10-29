@@ -80,11 +80,11 @@ body {
     padding: var(--spacing-lg);
 }
 
-/* ===== Header - Airbnb Style ===== */
+/* ===== Header - Airbnb Style (Compressed) ===== */
 .recipe-header {
     background: var(--color-background);
-    padding: var(--spacing-lg) 0;
-    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-sm) 0;
+    margin-bottom: var(--spacing-md);
     border-bottom: 1px solid var(--color-border-light);
 }
 
@@ -92,15 +92,15 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: var(--spacing-md);
+    flex-wrap: nowrap;
+    gap: var(--spacing-sm);
 }
 
 .header-actions {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
-    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    flex-wrap: nowrap;
 }
 
 /* Mobile menu button - hidden by default */
@@ -181,11 +181,12 @@ body {
 }
 
 .recipe-header h1 {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: var(--font-weight-bold);
     color: var(--color-text);
     margin: 0;
     letter-spacing: -0.02em;
+    white-space: nowrap;
 }
 
 .recipe-header p {
@@ -224,13 +225,14 @@ main {
     background: linear-gradient(to right, var(--color-primary), var(--color-primary-light));
     color: var(--color-background);
     border: none;
-    padding: 14px 24px;
+    padding: 6px 16px;
     border-radius: var(--radius-sm);
-    font-size: 1rem;
+    font-size: 0.875rem;
     font-weight: var(--font-weight-semibold);
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    white-space: nowrap;
 }
 
 .btn-primary:hover {
@@ -405,6 +407,13 @@ main {
     border-color: var(--color-text);
 }
 
+/* Mark categories available for current time filter */
+.filter-chip.has-time-recipes:not(.active) {
+    border-color: var(--color-primary);
+    border-width: 2px;
+    font-weight: var(--font-weight-semibold);
+}
+
 .filter-chip[data-category="carne"].active {
     background: var(--color-carne);
     border-color: var(--color-carne);
@@ -451,9 +460,24 @@ main {
     border-color: var(--color-escabeche);
 }
 
+/* ===== Recipe Counter ===== */
+.recipe-counter {
+    margin-top: var(--spacing-xs);
+    margin-bottom: var(--spacing-xs);
+    padding: 0;
+    background: transparent;
+    display: inline-block;
+}
+
+.recipe-counter #recipe-count-text {
+    font-size: 0.8125rem;
+    font-weight: var(--font-weight-normal);
+    color: var(--color-text-secondary);
+}
+
 /* ===== Recipe Grid - Airbnb Card Style ===== */
 .recipe-list {
-    margin-top: var(--spacing-xl);
+    margin-top: var(--spacing-md);
 }
 
 .recipes-grid {
@@ -697,6 +721,42 @@ main {
     color: var(--color-text);
     margin-bottom: var(--spacing-md);
     letter-spacing: -0.01em;
+}
+
+/* Collapsible Section Styles */
+.collapsible-title {
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    transition: color 0.2s ease;
+}
+
+.collapsible-title:hover {
+    color: var(--color-primary);
+}
+
+.collapse-icon {
+    display: inline-block;
+    transition: transform 0.3s ease;
+    font-size: 0.875rem;
+}
+
+.collapsible-title.collapsed .collapse-icon {
+    transform: rotate(-90deg);
+}
+
+.collapsible-content {
+    max-height: 5000px;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    opacity: 1;
+}
+
+.collapsible-content.collapsed {
+    max-height: 0;
+    opacity: 0;
 }
 
 .form-group {
@@ -1075,6 +1135,37 @@ main {
 
 .sequence-input {
     padding: 10px 12px;
+}
+
+/* Cooking action buttons */
+.cooking-actions-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: var(--spacing-sm);
+}
+
+.cooking-action-btn {
+    background: var(--color-background-secondary);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border-light);
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.cooking-action-btn:hover {
+    background: var(--color-border-light);
+    color: var(--color-text);
+    border-color: var(--color-border);
+}
+
+.cooking-action-btn:active {
+    transform: scale(0.95);
 }
 
 /* Ingredient chips for sequences */
@@ -1520,12 +1611,13 @@ main {
     background: var(--color-background);
     color: var(--color-text);
     border: 1px solid var(--color-border);
-    padding: 10px 16px;
+    padding: 6px 12px;
     border-radius: var(--radius-sm);
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: var(--font-weight-semibold);
     cursor: pointer;
     transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .btn-action:hover {
@@ -1593,6 +1685,17 @@ main {
 }
 
 .recipe-total-time {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-semibold);
+    background: var(--color-background-secondary);
+    color: var(--color-text);
+    border: 1px solid var(--color-border-light);
+}
+
+.recipe-caravan-badge {
     display: inline-block;
     padding: 6px 12px;
     border-radius: var(--radius-sm);

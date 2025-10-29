@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test: Apto para Caravana</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            line-height: 1.6;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #FF385C;
+            border-bottom: 3px solid #FF385C;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #222;
+            margin-top: 30px;
+            padding: 10px;
+            background: #f7f7f7;
+            border-left: 4px solid #FF385C;
+        }
+        .test-case {
+            background: #f9f9f9;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #4ECDC4;
+        }
+        .note {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #2196F3;
+        }
+        .success {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚐 Test: Apto para Caravana</h1>
+        
+        <div class="note">
+            <strong>📋 Objetivo:</strong> Implementar una funcionalidad que permita marcar recetas como 
+            "Aptas para Caravana" y filtrarlas mediante una categoría especial en los filtros.
+        </div>
+
+        <h2>✨ Funcionalidad Implementada</h2>
+        <ul class="feature-list">
+            <li><strong>Checkbox en formulario:</strong> "🚐 Apto para Caravana" debajo de Tiempo Total</li>
+            <li><strong>Categoría especial:</strong> "Caravana" en el filtro de alimentos</li>
+            <li><strong>Filtrado especial:</strong> Muestra recetas con caravanFriendly = true</li>
+            <li><strong>Persistencia:</strong> Se guarda en el modelo Recipe</li>
+            <li><strong>Edición:</strong> Se carga correctamente al editar</li>
+        </ul>
+
+        <h2>🧪 Casos de Prueba</h2>
+
+        <div class="test-case">
+            <h3>Test 1: Crear Receta Apta para Caravana</h3>
+            <p><strong>Pasos:</strong></p>
+            <ol>
+                <li>Click en "➕ Nueva Receta"</li>
+                <li>Rellenar nombre: "Ensalada de Pasta"</li>
+                <li>Rellenar tiempo: 0 horas, 20 minutos</li>
+                <li>Marcar checkbox "🚐 Apto para Caravana"</li>
+                <li>Guardar receta</li>
+            </ol>
+            <p><strong class="success">✓ Resultado Esperado:</strong></p>
+            <ul>
+                <li>Receta se guarda con caravanFriendly = true</li>
+                <li>Aparece en la lista de recetas</li>
+            </ul>
+        </div>
+
+        <div class="test-case">
+            <h3>Test 2: Filtrar por Caravana</h3>
+            <p><strong>Pasos:</strong></p>
+            <ol>
+                <li>Crear 3 recetas:
+                    <ul>
+                        <li>Receta A: Apta para caravana ✓</li>
+                        <li>Receta B: NO apta para caravana</li>
+                        <li>Receta C: Apta para caravana ✓</li>
+                    </ul>
+                </li>
+                <li>Click en "🔍 Filtros"</li>
+                <li>Click en chip "🚐 Caravana"</li>
+            </ol>
+            <p><strong class="success">✓ Resultado Esperado:</strong></p>
+            <ul>
+                <li>Solo se muestran Receta A y Receta C</li>
+                <li>Receta B está oculta</li>
+                <li>Contador muestra "2 recetas"</li>
+            </ul>
+        </div>
+
+        <div class="test-case">
+            <h3>Test 3: Editar Receta y Cambiar Estado</h3>
+            <p><strong>Pasos:</strong></p>
+            <ol>
+                <li>Crear receta SIN marcar "Apto para Caravana"</li>
+                <li>Editar la receta</li>
+                <li>Verificar que checkbox está desmarcado</li>
+                <li>Marcar el checkbox</li>
+                <li>Guardar cambios</li>
+                <li>Filtrar por "Caravana"</li>
+            </ol>
+            <p><strong class="success">✓ Resultado Esperado:</strong></p>
+            <ul>
+                <li>Checkbox se carga correctamente (desmarcado)</li>
+                <li>Al marcar y guardar, se actualiza caravanFriendly = true</li>
+                <li>La receta aparece al filtrar por Caravana</li>
+            </ul>
+        </div>
+
+        <div class="test-case">
+            <h3>Test 4: Combinar Filtros</h3>
+            <p><strong>Pasos:</strong></p>
+            <ol>
+                <li>Crear recetas:
+                    <ul>
+                        <li>Ensalada (Verdura) - Apta caravana ✓</li>
+                        <li>Pollo asado (Pollo) - Apta caravana ✓</li>
+                        <li>Sopa (Verdura) - NO apta caravana</li>
+                    </ul>
+                </li>
+                <li>Activar filtro "Verdura"</li>
+                <li>Activar filtro "Caravana"</li>
+            </ol>
+            <p><strong class="success">✓ Resultado Esperado:</strong></p>
+            <ul>
+                <li>Se muestran: Ensalada (cumple ambos) y Pollo asado (apta caravana)</li>
+                <li>Sopa NO se muestra (no es apta caravana)</li>
+                <li>Los filtros funcionan con lógica OR</li>
+            </ul>
+        </div>
+
+        <h2>🔧 Implementación Técnica</h2>
+
+        <div class="note">
+            <h3>1. Modelo de Datos (models.js)</h3>
+            <pre style="background: #263238; color: #aed581; padding: 15px; border-radius: 4px; overflow-x: auto;">
+class Recipe {
+    constructor(data = {}) {
+        this.id = data.id || generateUUID();
+        this.name = data.name || '';
+        this.category = data.category || null;
+        this.totalTime = data.totalTime || '';
+        this.caravanFriendly = data.caravanFriendly || false; // ← NUEVO
+        // ... resto de campos
+    }
+}</pre>
+
+            <h3>2. HTML - Checkbox en Formulario (index.html)</h3>
+            <pre style="background: #263238; color: #aed581; padding: 15px; border-radius: 4px; overflow-x: auto;">
+&lt;div class="form-group"&gt;
+    &lt;label class="checkbox-label"&gt;
+        &lt;input 
+            type="checkbox" 
+            id="recipe-caravan-friendly" 
+            name="caravanFriendly"
+            class="form-checkbox"
+        &gt;
+        &lt;span&gt;🚐 Apto para Caravana&lt;/span&gt;
+    &lt;/label&gt;
+    &lt;span class="helper-text"&gt;
+        Marca esta opción si la receta es adecuada para preparar en caravana
+    &lt;/span&gt;
+&lt;/div&gt;</pre>
+
+            <h3>3. JavaScript - Capturar Valor (script.js)</h3>
+            <pre style="background: #263238; color: #aed581; padding: 15px; border-radius: 4px; overflow-x: auto;">
+getFormData() {
+    return {
+        name: document.getElementById('recipe-name')?.value.trim() || '',
+        category: document.getElementById('recipe-category')?.value || null,
+        totalTime: this.parseTimeInput('recipe'),
+        caravanFriendly: document.getElementById('recipe-caravan-friendly')?.checked || false,
+        // ... resto de campos
+    };
+}</pre>
+
+            <h3>4. JavaScript - Cargar en Edición (script.js)</h3>
+            <pre style="background: #263238; color: #aed581; padding: 15px; border-radius: 4px; overflow-x: auto;">
+async loadRecipeIntoForm(recipeId) {
+    const recipe = this.recipes.find(r => r.id === recipeId);
+    
+    // Populate caravan friendly checkbox
+    const caravanCheckbox = document.getElementById('recipe-caravan-friendly');
+    if (caravanCheckbox) {
+        caravanCheckbox.checked = recipe.caravanFriendly || false;
+    }
+    // ... resto de campos
+}</pre>
+
+            <h3>5. JavaScript - Filtrado Especial (script.js)</h3>
+            <pre style="background: #263238; color: #aed581; padding: 15px; border-radius: 4px; overflow-x: auto;">
+filterRecipes() {
+    let filtered = this.recipes;
+
+    if (this.activeFilters.size > 0) {
+        filtered = filtered.filter(recipe => {
+            // Handle "caravana" filter - special case
+            if (this.activeFilters.has('caravana')) {
+                if (recipe.caravanFriendly === true) {
+                    return true;
+                }
+            }
+            
+            // ... resto de filtros
+        });
+    }
+    
+    return filtered;
+}</pre>
+
+            <h3>6. Categoría Predefinida (script.js)</h3>
+            <pre style="background: #263238; color: #aed581; padding: 15px; border-radius: 4px; overflow-x: auto;">
+const PREDEFINED_CATEGORIES = [
+    // ... otras categorías
+    { 
+        id: 'caravana', 
+        name: 'Caravana', 
+        emoji: '🚐', 
+        color: '#6B7280', 
+        isPredefined: true, 
+        isSpecial: true  // ← Marca como especial
+    }
+];</pre>
+        </div>
+
+        <h2>🎯 Características Especiales</h2>
+        <div class="note">
+            <ul class="feature-list">
+                <li><strong>Filtro independiente:</strong> No depende del campo "category"</li>
+                <li><strong>Lógica OR:</strong> Se combina con otros filtros de categoría</li>
+                <li><strong>Campo booleano:</strong> true/false, no string</li>
+                <li><strong>Persistente:</strong> Se guarda en IndexedDB/localStorage</li>
+                <li><strong>Exportable:</strong> Se incluye en XML y PDF</li>
+            </ul>
+        </div>
+
+        <h2>📝 Diferencias con Categorías Normales</h2>
+        <div class="test-case">
+            <h3>Categoría Normal (ej: "Verdura")</h3>
+            <ul>
+                <li>Se guarda en el campo <code>recipe.category</code></li>
+                <li>Una receta solo puede tener UNA categoría</li>
+                <li>Filtrado: <code>recipe.category === 'verdura'</code></li>
+            </ul>
+
+            <h3>Categoría Especial "Caravana"</h3>
+            <ul>
+                <li>Se guarda en el campo <code>recipe.caravanFriendly</code> (booleano)</li>
+                <li>Una receta puede ser "Verdura" Y "Apta para Caravana"</li>
+                <li>Filtrado: <code>recipe.caravanFriendly === true</code></li>
+                <li>Independiente de la categoría principal</li>
+            </ul>
+        </div>
+
+        <h2>✅ Checklist de Verificación</h2>
+        <div class="test-case">
+            <ol>
+                <li>☐ Checkbox aparece en formulario de crear receta</li>
+                <li>☐ Checkbox aparece en formulario de editar receta</li>
+                <li>☐ Chip "🚐 Caravana" aparece en filtros</li>
+                <li>☐ Al marcar checkbox y guardar, se persiste el valor</li>
+                <li>☐ Al editar, el checkbox muestra el valor correcto</li>
+                <li>☐ Filtrar por Caravana muestra solo recetas marcadas</li>
+                <li>☐ Combinar con otros filtros funciona correctamente</li>
+                <li>☐ Exportar a XML incluye el campo caravanFriendly</li>
+                <li>☐ Importar desde XML carga el campo correctamente</li>
+            </ol>
+        </div>
+
+        <div class="note" style="margin-top: 40px; background: #e8f5e9; border-color: #4CAF50;">
+            <strong style="color: #2e7d32;">✅ Estado: IMPLEMENTADO</strong><br>
+            La funcionalidad "Apto para Caravana" está completamente implementada y lista para usar.
+            Las recetas pueden marcarse como aptas para caravana y filtrarse mediante la categoría especial "🚐 Caravana".
+        </div>
+    </div>
+</body>
+</html>

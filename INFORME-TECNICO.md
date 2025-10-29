@@ -2,12 +2,12 @@
 
 ## Resumen Ejecutivo
 
-**mehaquedadobien** es una Progressive Web App (PWA) para gestión de recetas personales con almacenamiento local. La aplicación permite crear, editar, eliminar y organizar recetas con ingredientes, secuencias de preparación, multimedia y categorías personalizables.
 
+**mehaquedadobien** es una Progressive Web App (PWA) para gestión de recetas personales con almacenamiento local. La aplicación permite crear, editar, eliminar y organizar recetas con ingredientes, secuencias de preparación, multimedia y categorías personalizables.
 **Última actualización:** Octubre 2025  
 **Estado:** Producción - Funcional  
 **Tecnologías:** Vanilla JavaScript, IndexedDB, localStorage, jsPDF, Web Share API  
-**Nuevas funcionalidades:** Galería de fotos, Tema oscuro, Compartir recetas, Detección de duplicados
+**Nuevas funcionalidades:** Galería de fotos, Tema oscuro, Co<!--  -->mpartir recetas, Detección de duplicados
 
 ---
 
@@ -294,7 +294,12 @@ Si IndexedDB no está disponible, usa localStorage con key `recetario_recipes`.
 ### ✅ Secuencias de Adición
 - Selección de ingredientes con chips clickeables
 - Descripción de cada paso
-- Duración con campos de horas/minutos
+- Duración con campos de horas/minutos (opcional)
+- Botones de acceso rápido para acciones comunes:
+  - A la plancha, Cocer, Cocinar, Cocinar al vapor
+  - Desglasar, Freír, Gratinar, Guisar
+  - Hornear, Rebozar, Reducir, Rehogar
+  - **Reposar** (nuevo), Saltear
 - Reordenar, editar y eliminar
 
 ### ✅ Multimedia
@@ -346,12 +351,15 @@ Si IndexedDB no está disponible, usa localStorage con key `recetario_recipes`.
 
 ### ✅ Tiempo Unificado
 - Campos separados de horas/minutos
+- **Tiempo Total: OBLIGATORIO** (ambos campos requeridos)
+- Duración de Secuencias: opcional
 - Formato de almacenamiento: "Xh Ymin"
 - Formato de visualización: "X horas Y minutos"
-- Usado en: Tiempo Total y Duración de Secuencias
 - Validación: horas 0-24, minutos 0-60
 - Validación en tiempo real: campos inválidos se marcan con borde rojo y fondo rojo claro
+- Validación en formulario: impide guardar si falta tiempo total
 - Tooltip informativo al pasar el mouse sobre campos inválidos
+- Importante para filtros de tiempo
 
 ### ✅ Exportación/Importación
 - Exportar receta individual a XML
@@ -889,12 +897,22 @@ La aplicación usa console.log con prefijos:
   - Se ocultan en vista de detalle
   - Se ocultan en formulario
   - Interfaz más limpia y enfocada
+- ✅ **Tiempo Total obligatorio** - Campos requeridos
+  - Horas y minutos son ahora obligatorios
+  - Validación en formulario antes de guardar
+  - Importante para filtros de tiempo
+- ✅ **Botón "Reposar"** - Nueva acción en secuencias
+  - Añadido a botones de acceso rápido
+  - Disponible en Secuencias de Adición
+  - Ordenado alfabéticamente con otras acciones
 
 **Mejoras:**
 - ✅ Eliminadas categorías: Hospital, Mix, Sin categoría
 - ✅ Textos de botones más descriptivos
 - ✅ Mejor feedback en importación
 - ✅ Optimización de rendimiento en galería
+- ✅ Validación mejorada de campos de tiempo
+- ✅ Más opciones de acciones de cocina
 
 **Anteriores:**
 - ✅ Implementado sistema de tiempo unificado

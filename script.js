@@ -11,7 +11,8 @@ const PREDEFINED_CATEGORIES = [
     { id: 'cereales', name: 'Cereales', emoji: '🌾', color: '#C4A053', isPredefined: true },
     { id: 'con-huevo', name: 'Con huevo', emoji: '🥚', color: '#FFD700', isPredefined: true },
     { id: 'pollo', name: 'Pollo', emoji: '🐔', color: '#FFA500', isPredefined: true },
-    { id: 'escabeche', name: 'Escabeche', emoji: '🥒', color: '#32CD32', isPredefined: true }
+    { id: 'escabeche', name: 'Escabeche', emoji: '🥒', color: '#32CD32', isPredefined: true },
+    { id: 'caravana', name: 'Caravana', emoji: '🚐', color: '#6B7280', isPredefined: true, isSpecial: true }
 ];
 
 /**
@@ -27,11 +28,7 @@ const CATEGORY_COLORS = [
  * Emoji collections by category
  */
 const EMOJI_CATEGORIES = {
-    food: ['🍕', '🍔', '🍟', '🌭', '🍿', '🧂', '🥓', '🥚', '🍳', '🧇', '🥞', '🧈', '🍞', '🥐', '🥖', '🥨', '🥯', '🧀', '🥗', '🥙', '🌮', '🌯', '🥪', '🍖', '🍗', '🥩', '🍠', '🥟', '🍱', '🍘', '🍙', '🍚', '🍛', '🍜', '🦪', '🍣', '🍤', '🍥', '🥮', '🍢', '🧆', '🥘', '🍲', '🫕', '🥣', '🥧', '🍰', '🎂', '🧁', '🍮', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🌰', '🥜', '🍯'],
-    animals: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🙈', '🙉', '🙊', '🐒', '🐔', '🐧', '🐦', '🐤', '🐣', '🐥', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🦍', '🦧', '🐘', '🦛', '🦏', '🐪', '🐫', '🦒', '🦘', '🐃', '🐂', '🐄', '🐎', '🐖', '🐏', '🐑', '🦙', '🐐', '🦌', '🐕', '🐩', '🦮', '🐈', '🐓', '🦃', '🦚', '🦜', '🦢', '🦩', '🕊️', '🐇', '🦝', '🦨', '🦡', '🦦', '🦥', '🐁', '🐀', '🐿️', '🦔'],
-    nature: ['🌱', '🌿', '☘️', '🍀', '🎍', '🎋', '🍃', '🍂', '🍁', '🍄', '🌾', '💐', '🌷', '🌹', '🥀', '🌺', '🌸', '🌼', '🌻', '🌞', '🌝', '🌛', '🌜', '🌚', '🌕', '🌖', '🌗', '🌘', '🌑', '🌒', '🌓', '🌔', '🌙', '🌎', '🌍', '🌏', '🪐', '💫', '⭐', '🌟', '✨', '⚡', '☄️', '💥', '🔥', '🌪️', '🌈', '☀️', '🌤️', '⛅', '🌥️', '☁️', '🌦️', '🌧️', '⛈️', '🌩️', '🌨️', '❄️', '☃️', '⛄', '🌬️', '💨', '💧', '💦', '☔', '🌊'],
-    sports: ['⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🪀', '🏓', '🏸', '🏒', '🏑', '🥍', '🏏', '🥅', '⛳', '🪁', '🏹', '🎣', '🤿', '🥊', '🥋', '🎽', '🛹', '🛼', '🛷', '⛸️', '🥌', '🎿', '⛷️', '🏂', '🪂', '🏋️', '🤼', '🤸', '🤺', '⛹️', '🤾', '🏌️', '🏇', '🧘', '🏊', '🤽', '🚣', '🧗', '🚴', '🚵', '🎖️', '🏆', '🥇', '🥈', '🥉', '🏅', '🎗️'],
-    objects: ['⚽', '🎨', '🎭', '🎪', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁', '🎷', '🎺', '🎸', '🪕', '🎻', '🎲', '♟️', '🎯', '🎳', '🎮', '🎰', '🧩', '🧸', '🪅', '🪆', '🖼️', '🧵', '🪡', '🧶', '🪢', '👓', '🕶️', '🥽', '🥼', '🦺', '👔', '👕', '👖', '🧣', '🧤', '🧥', '🧦', '👗', '👘', '🥻', '🩱', '🩲', '🩳', '👙', '👚', '👛', '👜', '👝', '🎒', '👞', '👟', '🥾', '🥿', '👠', '👡', '🩰', '👢', '👑', '👒', '🎩', '🎓', '🧢', '⛑️', '📿', '💄', '💍', '💎', '🔇', '🔈', '🔉', '🔊', '📢', '📣', '📯', '🔔', '🔕', '🎵', '🎶', '🎙️', '🎚️', '🎛️', '📻', '📱', '📲', '☎️', '📞', '📟', '📠', '🔋', '🔌', '💻', '🖥️', '🖨️', '⌨️', '🖱️', '🖲️', '💾', '💿', '📀', '🧮', '🎥', '🎞️', '📽️', '📺', '📷', '📸', '📹', '📼', '🔍', '🔎', '🕯️', '💡', '🔦', '🏮', '🪔', '📔', '📕', '📖', '📗', '📘', '📙', '📚', '📓', '📒', '📃', '📜', '📄', '📰', '🗞️', '📑', '🔖', '🏷️', '💰', '🪙', '💴', '💵', '💶', '💷', '💸', '💳', '🧾', '✉️', '📧', '📨', '📩', '📤', '📥', '📦', '📫', '📪', '📬', '📭', '📮', '🗳️', '✏️', '✒️', '🖋️', '🖊️', '🖌️', '🖍️', '📝', '📁', '📂', '🗂️', '📅', '📆', '🗒️', '🗓️', '📇', '📈', '📉', '📊', '📋', '📌', '📍', '📎', '🖇️', '📏', '📐', '✂️', '🗃️', '🗄️', '🗑️', '🔒', '🔓', '🔏', '🔐', '🔑', '🗝️', '🔨', '🪓', '⛏️', '⚒️', '🛠️', '🗡️', '⚔️', '🔫', '🪃', '🏹', '🛡️', '🪚', '🔧', '🪛', '🔩', '⚙️', '🗜️', '⚖️', '🦯', '🔗', '⛓️', '🪝', '🧰', '🧲', '🪜', '⚗️', '🧪', '🧫', '🧬', '🔬', '🔭', '📡', '💉', '🩸', '💊', '🩹', '🩺', '🚪', '🛗', '🪞', '🪟', '🛏️', '🛋️', '🪑', '🚽', '🪠', '🚿', '🛁', '🪤', '🪒', '🧴', '🧷', '🧹', '🧺', '🧻', '🪣', '🧼', '🪥', '🧽', '🧯', '🛒', '🚬', '⚰️', '🪦', '⚱️', '🗿', '🪧']
+    food: ['🍕', '🍔', '🍟', '🌭', '🍿', '🧂', '🥓', '🥚', '🍳', '🧇', '🥞', '🧈', '🍞', '🥐', '🥖', '🥨', '🥯', '🧀', '🥗', '🥙', '🌮', '🌯', '🥪', '🍖', '🍗', '🥩', '🍠', '🥟', '🍱', '🍘', '🍙', '🍚', '🍛', '🍜', '🦪', '🍣', '🍤', '🍥', '🥮', '🍢', '🧆', '🥘', '🍲', '🫕', '🥣', '🥧', '🍰', '🎂', '🧁', '🍮', '🍭', '🍬', '🍫', '🍩', '🍪', '🌰', '🥜', '🍯', '🍎', '🍏', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🫑', '🌽', '🥕', '🫒', '🧄', '🧅', '🥔', '🍠', '🫘', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🦴', '🌭', '🍔', '🍟', '🍕', '🫓', '🥪', '🥙', '🧆', '🌮', '🌯', '🫔', '🥗', '🥘', '🫕', '🥫', '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙', '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨', '🍦', '🥧', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🌰', '🥜', '🫘', '🍯', '🥛', '🍼', '🫖', '☕', '🍵', '🧃', '🥤', '🧋', '🍶', '🍺', '🍻', '🥂', '🍷', '🥃', '🍸', '🍹', '🧉', '🍾', '🧊', '🥄', '🍴', '🍽️', '🥣', '🥡', '🥢', '🧂', '🚐']
 };
 
 /**
@@ -501,6 +498,10 @@ class RecipeApp {
             // Shuffle recipes randomly on load
             this.recipes = this.shuffleArray(this.recipes);
             console.log(`Loaded ${this.recipes.length} recipes (shuffled)`);
+            
+            // Debug: Check caravanFriendly values
+            const caravanRecipes = this.recipes.filter(r => r.caravanFriendly === true);
+            console.log(`[DEBUG] Recipes with caravanFriendly=true: ${caravanRecipes.length}`, caravanRecipes.map(r => r.name));
         } catch (error) {
             console.error('Failed to load recipes:', error);
             this.showError('Error al cargar las recetas: ' + error.message);
@@ -735,16 +736,6 @@ class RecipeApp {
             chip.style.setProperty('--category-color', category.color);
             filterChipsContainer.appendChild(chip);
         });
-        
-        // "Sin categoría" chip
-        const noCatChip = document.createElement('button');
-        noCatChip.className = 'filter-chip';
-        if (this.activeFilters.has('sin-categoria')) {
-            noCatChip.classList.add('active');
-        }
-        noCatChip.dataset.category = 'sin-categoria';
-        noCatChip.textContent = '📋 Sin categoría';
-        filterChipsContainer.appendChild(noCatChip);
         
         // Re-attach event listeners
         this.attachFilterChipListeners();
@@ -1385,6 +1376,120 @@ class RecipeApp {
 
         // Time input validation event listeners
         this.setupTimeInputValidation();
+
+        // Cooking action buttons event listeners
+        this.setupCookingActionButtons();
+
+        // Collapsible sections event listeners
+        this.setupCollapsibleSections();
+    }
+
+    /**
+     * Setup cooking action buttons event listeners
+     */
+    setupCookingActionButtons() {
+        const actionButtons = document.querySelectorAll('.cooking-action-btn');
+        const descriptionTextarea = document.getElementById('sequence-description');
+        
+        if (!descriptionTextarea) return;
+        
+        actionButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const action = button.dataset.action;
+                const currentValue = descriptionTextarea.value;
+                
+                // Insert action at cursor position or at the end
+                const cursorPos = descriptionTextarea.selectionStart;
+                const textBefore = currentValue.substring(0, cursorPos);
+                const textAfter = currentValue.substring(cursorPos);
+                
+                // Add space before if needed
+                const needsSpaceBefore = textBefore.length > 0 && !textBefore.endsWith(' ') && !textBefore.endsWith('\n');
+                const prefix = needsSpaceBefore ? ' ' : '';
+                
+                // Update textarea value
+                descriptionTextarea.value = textBefore + prefix + action + textAfter;
+                
+                // Set cursor position after inserted text
+                const newCursorPos = cursorPos + prefix.length + action.length;
+                descriptionTextarea.setSelectionRange(newCursorPos, newCursorPos);
+                
+                // Focus textarea
+                descriptionTextarea.focus();
+            });
+        });
+    }
+
+    /**
+     * Setup collapsible sections event listeners
+     */
+    setupCollapsibleSections() {
+        // Ingredients section
+        const ingredientsSectionTitle = document.getElementById('ingredients-section-title');
+        if (ingredientsSectionTitle) {
+            ingredientsSectionTitle.addEventListener('click', () => {
+                this.toggleCollapsibleSection('ingredients');
+            });
+        }
+
+        // Sequences section
+        const sequencesSectionTitle = document.getElementById('sequences-section-title');
+        if (sequencesSectionTitle) {
+            sequencesSectionTitle.addEventListener('click', () => {
+                this.toggleCollapsibleSection('sequences');
+            });
+        }
+
+        // Additional info section
+        const additionalInfoSectionTitle = document.getElementById('additional-info-section-title');
+        if (additionalInfoSectionTitle) {
+            additionalInfoSectionTitle.addEventListener('click', () => {
+                this.toggleCollapsibleSection('additional-info');
+            });
+        }
+    }
+
+    /**
+     * Toggle collapsible section
+     * @param {string} sectionName - Name of the section to toggle
+     */
+    toggleCollapsibleSection(sectionName) {
+        const title = document.getElementById(`${sectionName}-section-title`);
+        const content = document.getElementById(`${sectionName}-collapsible-content`);
+        
+        if (!title || !content) return;
+        
+        const isCollapsed = title.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            // Expand
+            title.classList.remove('collapsed');
+            content.classList.remove('collapsed');
+        } else {
+            // Collapse
+            title.classList.add('collapsed');
+            content.classList.add('collapsed');
+        }
+    }
+
+    /**
+     * Set collapsible section state
+     * @param {string} sectionName - Name of the section
+     * @param {boolean} collapsed - Whether to collapse or expand
+     */
+    setCollapsibleSectionState(sectionName, collapsed) {
+        const title = document.getElementById(`${sectionName}-section-title`);
+        const content = document.getElementById(`${sectionName}-collapsible-content`);
+        
+        if (!title || !content) return;
+        
+        if (collapsed) {
+            title.classList.add('collapsed');
+            content.classList.add('collapsed');
+        } else {
+            title.classList.remove('collapsed');
+            content.classList.remove('collapsed');
+        }
     }
 
     /**
@@ -1627,6 +1732,9 @@ class RecipeApp {
             clearBtn.classList.add('hidden');
         }
         
+        // Clear category marks (remove red borders)
+        this.markAvailableCategoriesByTime();
+        
         // Update clear button visibility
         this.updateClearButtonVisibility();
         
@@ -1706,11 +1814,67 @@ class RecipeApp {
         timeChips.forEach(c => c.classList.remove('active'));
         chip.classList.add('active');
 
+        // Mark available categories based on time filter
+        this.markAvailableCategoriesByTime();
+
         // Update clear button visibility
         this.updateClearButtonVisibility();
 
         // Apply filters and update view
         this.renderRecipeList();
+    }
+
+    /**
+     * Mark available categories based on active time filter
+     */
+    markAvailableCategoriesByTime() {
+        const categoryChips = document.querySelectorAll('#filter-bar .filter-chip:not([data-category="all"])');
+        
+        // If no time filter is active, remove all marks
+        if (this.activeTimeFilter === 'all') {
+            categoryChips.forEach(chip => {
+                chip.classList.remove('has-time-recipes');
+            });
+            return;
+        }
+
+        // Get recipes that match the time filter
+        const recipesInTimeRange = this.recipes.filter(recipe => {
+            const totalMinutes = this.parseTimeToMinutes(recipe.totalTime);
+            
+            if (this.activeTimeFilter === 'none') {
+                return totalMinutes === null;
+            }
+            
+            if (totalMinutes === null) return false;
+
+            const filterValue = this.activeTimeFilter;
+            if (filterValue === '15') return totalMinutes <= 15;
+            if (filterValue === '30') return totalMinutes <= 30;
+            if (filterValue === '45') return totalMinutes <= 45;
+            if (filterValue === '60') return totalMinutes <= 60;
+            if (filterValue === '120') return totalMinutes <= 120;
+            if (filterValue === '180') return totalMinutes <= 180;
+            
+            return false;
+        });
+
+        // Mark categories that have recipes in this time range
+        categoryChips.forEach(chip => {
+            const category = chip.dataset.category;
+            const hasRecipes = recipesInTimeRange.some(recipe => {
+                if (category === 'sin-categoria') {
+                    return !recipe.category;
+                }
+                return recipe.category === category;
+            });
+
+            if (hasRecipes) {
+                chip.classList.add('has-time-recipes');
+            } else {
+                chip.classList.remove('has-time-recipes');
+            }
+        });
     }
 
     /**
@@ -1761,7 +1925,17 @@ class RecipeApp {
 
         // Apply category filter
         if (this.activeFilters.size > 0) {
+            console.log('[DEBUG] Active filters:', Array.from(this.activeFilters));
+            
             filtered = filtered.filter(recipe => {
+                // Handle "caravana" filter - special case
+                if (this.activeFilters.has('caravana')) {
+                    console.log(`[DEBUG] Checking recipe "${recipe.name}" - caravanFriendly:`, recipe.caravanFriendly);
+                    if (recipe.caravanFriendly === true) {
+                        return true;
+                    }
+                }
+
                 // Handle "sin-categoria" filter
                 if (this.activeFilters.has('sin-categoria')) {
                     if (recipe.category === null || recipe.category === undefined) {
@@ -1772,6 +1946,8 @@ class RecipeApp {
                 // Check if recipe category matches any active filter
                 return this.activeFilters.has(recipe.category);
             });
+            
+            console.log('[DEBUG] Filtered recipes count:', filtered.length);
         }
 
         // Apply time filter
@@ -1856,6 +2032,12 @@ class RecipeApp {
             emptyState.classList.remove('hidden');
             recipesGrid.style.display = 'none';
 
+            // Hide recipe counter
+            const recipeCounter = document.getElementById('recipe-counter');
+            if (recipeCounter) {
+                recipeCounter.style.display = 'none';
+            }
+
             // Update empty state message based on filters
             if (this.activeFilters.size > 0) {
                 const emptyStateTitle = emptyState.querySelector('h3');
@@ -1875,11 +2057,30 @@ class RecipeApp {
         emptyState.classList.add('hidden');
         recipesGrid.style.display = 'grid';
 
+        // Show and update recipe counter
+        const recipeCounter = document.getElementById('recipe-counter');
+        if (recipeCounter) {
+            recipeCounter.style.display = 'inline-block';
+        }
+        this.updateRecipeCounter(filteredRecipes.length);
+
         // Render recipe cards
         filteredRecipes.forEach(recipe => {
             const card = this.createRecipeCard(recipe);
             recipesGrid.appendChild(card);
         });
+    }
+
+    /**
+     * Update recipe counter display
+     * @param {number} count - Number of recipes to display
+     */
+    updateRecipeCounter(count) {
+        const counterText = document.getElementById('recipe-count-text');
+        if (!counterText) return;
+
+        const text = count === 1 ? '1 receta' : `${count} recetas`;
+        counterText.textContent = text;
     }
 
     /**
@@ -1992,6 +2193,12 @@ class RecipeApp {
         // Hide header actions when in form view
         this.hideHeaderActions();
 
+        // Hide filter toggle container
+        const filterToggleContainer = document.querySelector('.filter-toggle-container');
+        if (filterToggleContainer) {
+            filterToggleContainer.classList.add('hidden');
+        }
+
         // Hide filter bars
         const filterBar = document.getElementById('filter-bar');
         if (filterBar) {
@@ -2019,6 +2226,13 @@ class RecipeApp {
 
         // Render category selector with current categories
         this.renderCategorySelector();
+
+        // Set collapsible sections state based on create/edit mode
+        // Collapsed when editing, expanded when creating
+        const isEditing = recipeId !== null;
+        this.setCollapsibleSectionState('ingredients', isEditing);
+        this.setCollapsibleSectionState('sequences', isEditing);
+        this.setCollapsibleSectionState('additional-info', isEditing);
 
         // If editing, load recipe data
         if (recipeId) {
@@ -2056,6 +2270,12 @@ class RecipeApp {
         const listView = document.getElementById('recipe-list-view');
         if (listView) {
             listView.classList.remove('hidden');
+        }
+
+        // Show filter toggle container
+        const filterToggleContainer = document.querySelector('.filter-toggle-container');
+        if (filterToggleContainer) {
+            filterToggleContainer.classList.remove('hidden');
         }
 
         // Show filter bars
@@ -2226,8 +2446,49 @@ class RecipeApp {
             return;
         }
 
+        // Validate time fields (at least one must be filled)
+        const hoursInput = document.getElementById('recipe-hours');
+        const minutesInput = document.getElementById('recipe-minutes');
+        
+        const hoursValue = hoursInput?.value?.trim();
+        const minutesValue = minutesInput?.value?.trim();
+        
+        // At least one field must have a value
+        if (!hoursValue && !minutesValue) {
+            this.showError('Debes especificar al menos horas o minutos en Tiempo Total');
+            hoursInput?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
+        // Parse values (empty = 0)
+        const hours = hoursValue ? parseInt(hoursValue) : 0;
+        const minutes = minutesValue ? parseInt(minutesValue) : 0;
+
+        // Validate ranges
+        if (isNaN(hours) || hours < 0 || hours > 24) {
+            this.showError('Las horas deben estar entre 0 y 24');
+            hoursInput?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
+        if (isNaN(minutes) || minutes < 0 || minutes > 60) {
+            this.showError('Los minutos deben estar entre 0 y 60');
+            minutesInput?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
+        // At least one must be greater than 0
+        if (hours === 0 && minutes === 0) {
+            this.showError('El tiempo total debe ser mayor que 0');
+            hoursInput?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
         // Get form data
         const formData = this.getFormData();
+        
+        // Debug: Log caravanFriendly value
+        console.log('[DEBUG] FormData caravanFriendly:', formData.caravanFriendly);
 
         // Show loading state
         const saveBtn = document.getElementById('save-recipe-btn');
@@ -2284,11 +2545,13 @@ class RecipeApp {
                 }
 
                 // Update recipe data
+                console.log('[DEBUG] Updating recipe, caravanFriendly:', formData.caravanFriendly);
                 recipe = new Recipe({
                     id: existingRecipe.id,
                     name: formData.name,
                     category: formData.category || null,
                     totalTime: formData.totalTime,
+                    caravanFriendly: formData.caravanFriendly || false,
                     preparationMethod: formData.preparationMethod,
                     author: formData.author,
                     history: formData.history,
@@ -2299,12 +2562,14 @@ class RecipeApp {
                     createdAt: existingRecipe.createdAt,
                     updatedAt: new Date()
                 });
+                console.log('[DEBUG] Recipe created, caravanFriendly:', recipe.caravanFriendly);
             } else {
                 // Creating new recipe
                 recipe = new Recipe({
                     name: formData.name,
                     category: formData.category || null,
                     totalTime: formData.totalTime,
+                    caravanFriendly: formData.caravanFriendly || false,
                     preparationMethod: formData.preparationMethod,
                     author: formData.author,
                     history: formData.history,
@@ -2339,6 +2604,7 @@ class RecipeApp {
             name: document.getElementById('recipe-name')?.value.trim() || '',
             category: document.getElementById('recipe-category')?.value || null,
             totalTime: this.parseTimeInput('recipe'),
+            caravanFriendly: document.getElementById('recipe-caravan-friendly')?.checked || false,
             preparationMethod: document.getElementById('preparation-method')?.value.trim() || '',
             author: document.getElementById('recipe-author')?.value.trim() || '',
             history: document.getElementById('recipe-history')?.value.trim() || '',
@@ -2676,6 +2942,13 @@ class RecipeApp {
         // Exit edit mode
         this.editingIngredientId = null;
         this.renderIngredientsList();
+        
+        // Update sequence ingredient selector (for adding new sequences)
+        this.updateSequenceIngredientSelector();
+        
+        // Update sequences that reference this ingredient
+        // This ensures the ingredient name is updated in sequence chips immediately
+        this.renderSequencesList();
     }
 
     /**
@@ -2705,8 +2978,14 @@ class RecipeApp {
             ing.order = index;
         });
 
-        // Re-render list
+        // Remove ingredient from all sequences
+        this.sequences.forEach(sequence => {
+            sequence.ingredientIds = sequence.ingredientIds.filter(id => id !== ingredientId);
+        });
+
+        // Re-render lists
         this.renderIngredientsList();
+        this.renderSequencesList();
     }
 
     /**
@@ -2736,6 +3015,9 @@ class RecipeApp {
 
         // Update sequence ingredient selector
         this.updateSequenceIngredientSelector();
+        
+        // Re-render sequences to show updated ingredient numbers
+        this.renderSequencesList();
     }
 
     /**
@@ -3276,6 +3558,12 @@ class RecipeApp {
 
             // Populate time using unified function
             this.populateTimeInput('recipe', recipe.totalTime || '');
+
+            // Populate caravan friendly checkbox
+            const caravanCheckbox = document.getElementById('recipe-caravan-friendly');
+            if (caravanCheckbox) {
+                caravanCheckbox.checked = recipe.caravanFriendly || false;
+            }
 
             const methodTextarea = document.getElementById('preparation-method');
             if (methodTextarea) {
@@ -3998,6 +4286,16 @@ class RecipeApp {
                 totalTimeElement.style.display = 'inline-block';
             } else {
                 totalTimeElement.style.display = 'none';
+            }
+        }
+
+        // Caravan Friendly Badge
+        const caravanBadge = document.getElementById('detail-caravan-badge');
+        if (caravanBadge) {
+            if (recipe.caravanFriendly === true) {
+                caravanBadge.style.display = 'inline-block';
+            } else {
+                caravanBadge.style.display = 'none';
             }
         }
 
