@@ -196,7 +196,7 @@
                             <button id="edit-recipe-btn" class="btn-action btn-action-compact" title="Editar">Editar</button>
                             <button id="duplicate-recipe-btn" class="btn-action btn-action-compact" title="Duplicar">Duplicar</button>
                             <button id="delete-recipe-btn" class="btn-action btn-action-compact btn-danger" title="Eliminar">Eliminar</button>
-                            <button id="export-xml-btn" class="btn-action btn-action-compact" title="Exportar esta receta">Exportar XML</button>
+                            <button id="export-xml-btn" class="btn-action btn-action-compact" title="Exportar esta receta">Exportar esta receta</button>
                             <button id="export-pdf-btn" class="btn-action btn-action-compact" title="Exportar PDF">PDF</button>
                         </div>
                     </div>
@@ -214,14 +214,11 @@
                         <div id="detail-videos-gallery" class="detail-gallery"></div>
                     </div>
 
-                    <!-- Preparation Method -->
-                    <div class="detail-section">
+                    <!-- Kitchen Appliances / Método de Preparación -->
+                    <div id="detail-appliances-section" class="detail-section" style="display: none;">
                         <h3 class="detail-section-title">👨‍🍳 Método de Preparación</h3>
-                        <div id="detail-preparation-method" class="detail-preparation-method">
-                            <!-- Preparation method will be added here -->
-                        </div>
-                        <div id="detail-no-method" class="detail-empty" style="display: none;">
-                            <p>No hay método de preparación definido</p>
+                        <div id="detail-appliances-chips" class="kitchen-appliances-chips">
+                            <!-- Appliances will be dynamically added here -->
                         </div>
                     </div>
 
@@ -367,21 +364,16 @@
                         </div>
                     </div>
 
-                    <!-- Preparation Method Section -->
+                    <!-- Kitchen Appliances Section -->
                     <div class="form-section">
                         <h3 class="section-title">Método de Preparación</h3>
                         
                         <div class="form-group">
-                            <label for="preparation-method">Instrucciones</label>
-                            <textarea 
-                                id="preparation-method" 
-                                name="preparationMethod" 
-                                class="form-textarea"
-                                placeholder="Usa el dictado por voz de tu móvil, o... escribe"
-                                rows="4"
-                                autocomplete="off"
-                            ></textarea>
-                            <span class="helper-text">Escribe las instrucciones detalladas para preparar tu receta</span>
+                            <label>Selecciona los aparatos que necesitas (opcional)</label>
+                            <div id="kitchen-appliances-chips" class="kitchen-appliances-chips">
+                                <!-- Chips will be added here by JavaScript -->
+                            </div>
+                            <span class="helper-text">Haz clic en los aparatos que necesitas para esta receta</span>
                         </div>
                     </div>
 

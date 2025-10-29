@@ -139,7 +139,8 @@ class Recipe {
         this.ingredients = data.ingredients ? data.ingredients.map(i => 
             i instanceof Ingredient ? i : new Ingredient(i)
         ) : [];
-        this.preparationMethod = data.preparationMethod || '';
+        this.preparationMethod = data.preparationMethod || ''; // Legacy field - kept for backward compatibility
+        this.kitchenAppliances = data.kitchenAppliances || []; // Array of kitchen appliance names
         this.author = data.author || ''; // Optional author field
         this.history = data.history || ''; // Optional history field
         this.additionSequences = data.additionSequences ? data.additionSequences.map(s => 
@@ -191,6 +192,7 @@ class Recipe {
             caravanFriendly: this.caravanFriendly,
             ingredients: this.ingredients.map(i => i.toJSON()),
             preparationMethod: this.preparationMethod,
+            kitchenAppliances: this.kitchenAppliances,
             author: this.author,
             history: this.history,
             additionSequences: this.additionSequences.map(s => s.toJSON()),
@@ -825,6 +827,17 @@ class XMLExporter {
             methodElement.textContent = recipe.preparationMethod || '';
             root.appendChild(methodElement);
 
+            // Add kitchen appliances
+            const appliancesElement = xmlDoc.createElement('kitchenAppliances');
+            if (recipe.kitchenAppliances && recipe.kitchenAppliances.length > 0) {
+                recipe.kitchenAppliances.forEach(applianceId => {
+                    const applianceElement = xmlDoc.createElement('appliance');
+                    applianceElement.textContent = applianceId;
+                    appliancesElement.appendChild(applianceElement);
+                });
+            }
+            root.appendChild(appliancesElement);
+
             // Add author (optional)
             const authorElement = xmlDoc.createElement('author');
             authorElement.textContent = recipe.author || '';
@@ -1260,7 +1273,22 @@ class PDFExporter {
 
             if (recipe.ingredients && recipe.ingredients.length > 0) {
                 recipe.ingredients.forEach((ingredient, index) => {
-                    const ingredientText = `${index + 1}. ${ingredient.name} - ${ingredient.quantity} ${ingredient.unit}`;
+                    // Format quantity display: don't show 0, use dash for empty required fields
+                    let quantityText = '';
+                    if (ingredient.quantity && ingredient.quantity > 0) {
+                        quantityText = ingredient.quantity.toString();
+                        if (ingredient.unit) {
+                            quantityText += ` ${ingredient.unit}`;
+                        }
+                    } else if (ingredient.unit) {
+                        // Only unit, no quantity
+                        quantityText = ingredient.unit;
+                    } else {
+                        // No quantity and no unit - show dash
+                        quantityText = '-';
+                    }
+                    
+                    const ingredientText = `${index + 1}. ${ingredient.name} - ${quantityText}`;
                     doc.text(ingredientText, ingredientsX + 5, ingredientsY + 4, { align: 'left' });
                     ingredientsY += 5;
                 });
@@ -1275,33 +1303,44 @@ class PDFExporter {
             const ingredientsTotalHeight = ingredientsY + ingredientsPadding - sectionStartY;
             yPosition = sectionStartY + Math.max(imageHeight, ingredientsTotalHeight) + 10;
 
-            // Preparation Method Section
-            checkPageBreak(15);
-            doc.setFontSize(12);
-            doc.setFont(undefined, 'bold');
-            doc.text('Método de Preparación', margin, yPosition, { align: 'left' });
-            yPosition += 6;
+            // Método de Preparación Section (Kitchen Appliances)
+            if (recipe.kitchenAppliances && recipe.kitchenAppliances.length > 0) {
+                checkPageBreak(15);
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                doc.text('Método de Preparación', margin, yPosition, { align: 'left' });
+                yPosition += 6;
 
-            doc.setFontSize(9);
-            doc.setFont(undefined, 'normal');
+                doc.setFontSize(9);
+                doc.setFont(undefined, 'normal');
 
-            if (recipe.preparationMethod && recipe.preparationMethod.trim() !== '') {
-                // Split text into lines that fit the page width (55% width, fully justified)
-                const methodLines = doc.splitTextToSize(recipe.preparationMethod, maxLineWidth);
-                methodLines.forEach((line) => {
-                    checkPageBreak(5);
-                    // Justify ALL lines (including last one)
-                    doc.text(line, margin, yPosition, { align: 'justify', maxWidth: maxLineWidth });
+                // Define appliances list (same as in script.js)
+                const KITCHEN_APPLIANCES = [
+                    { id: 'sarten', name: 'Sartén', emoji: '🍳' },
+                    { id: 'olla', name: 'Olla', emoji: '🍲' },
+                    { id: 'olla-presion', name: 'Olla a presión', emoji: '⚡' },
+                    { id: 'horno', name: 'Horno', emoji: '🔥' },
+                    { id: 'microondas', name: 'Microondas', emoji: '📻' },
+                    { id: 'freidora-aire', name: 'Freidora de aire', emoji: '💨' },
+                    { id: 'sandwichera', name: 'Sandwichera', emoji: '🥪' },
+                    { id: 'batidora', name: 'Batidora', emoji: '🌀' }
+                ];
+
+                const applianceNames = recipe.kitchenAppliances
+                    .map(id => {
+                        const appliance = KITCHEN_APPLIANCES.find(a => a.id === id);
+                        return appliance ? appliance.name : '';
+                    })
+                    .filter(name => name !== '')
+                    .join(', ');
+
+                if (applianceNames) {
+                    doc.text(applianceNames, margin + 3, yPosition, { align: 'left' });
                     yPosition += 5;
-                });
-            } else {
-                doc.setTextColor(150, 150, 150);
-                doc.text('No hay método de preparación definido', margin, yPosition, { align: 'left' });
-                doc.setTextColor(0, 0, 0);
-                yPosition += 5;
-            }
+                }
 
-            yPosition += 3;
+                yPosition += 3;
+            }
 
             // Addition Sequences Section
             if (recipe.additionSequences && recipe.additionSequences.length > 0) {
@@ -1930,6 +1969,9 @@ class XMLImporter {
             // Parse addition sequences with ID mapping
             const additionSequences = this.parseSequences(recipeElement, idMapping);
             
+            // Parse kitchen appliances
+            const kitchenAppliances = this.parseKitchenAppliances(recipeElement);
+            
             // Parse multimedia
             const images = await this.parseImages(recipeElement);
             const videos = await this.parseVideos(recipeElement);
@@ -1940,6 +1982,7 @@ class XMLImporter {
                 category: category === 'sin-categoria' ? null : category,
                 totalTime: totalTime || '',
                 preparationMethod: preparationMethod || '',
+                kitchenAppliances: kitchenAppliances,
                 author: author || '',
                 history: history || '',
                 ingredients: ingredients,
@@ -2077,6 +2120,29 @@ class XMLImporter {
         }
         
         return sequences;
+    }
+    
+    /**
+     * Parse kitchen appliances from XML
+     * @param {Element} recipeElement - Recipe XML element
+     * @returns {Array} Array of appliance IDs
+     */
+    static parseKitchenAppliances(recipeElement) {
+        const appliances = [];
+        const appliancesElement = recipeElement.querySelector('kitchenAppliances');
+        
+        if (appliancesElement) {
+            const applianceElements = appliancesElement.querySelectorAll('appliance');
+            
+            applianceElements.forEach(appElement => {
+                const applianceId = appElement.textContent.trim();
+                if (applianceId) {
+                    appliances.push(applianceId);
+                }
+            });
+        }
+        
+        return appliances;
     }
     
     /**

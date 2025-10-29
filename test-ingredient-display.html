@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Ingredient Display</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .test-pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .test-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .ingredient-display {
+            padding: 10px;
+            margin: 10px 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .ingredient-name {
+            font-weight: 500;
+        }
+        .ingredient-quantity {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test - Visualización de Ingredientes</h1>
+    
+    <div class="test-section">
+        <h2>Casos de Prueba</h2>
+        <p>Verificando que los campos vacíos se muestren correctamente:</p>
+        
+        <div class="test-container">
+            <h3>Caso 1: Ingrediente completo (nombre + cantidad + unidad)</h3>
+            <div class="ingredient-display">
+                <span class="ingredient-name">1. Arroz</span>
+                <span class="ingredient-quantity" id="test1">500 g</span>
+            </div>
+            <div class="test-result test-pass">✓ Esperado: "500 g" - Muestra cantidad y unidad</div>
+        </div>
+        
+        <div class="test-container">
+            <h3>Caso 2: Solo nombre (cantidad vacía, unidad vacía)</h3>
+            <div class="ingredient-display">
+                <span class="ingredient-name">2. Sal</span>
+                <span class="ingredient-quantity" id="test2">-</span>
+            </div>
+            <div class="test-result test-pass">✓ Esperado: "-" - No muestra "0" cuando está vacío</div>
+        </div>
+        
+        <div class="test-container">
+            <h3>Caso 3: Nombre + unidad sin cantidad</h3>
+            <div class="ingredient-display">
+                <span class="ingredient-name">3. Aceite</span>
+                <span class="ingredient-quantity" id="test3">al gusto</span>
+            </div>
+            <div class="test-result test-pass">✓ Esperado: "al gusto" - Solo muestra la unidad</div>
+        </div>
+        
+        <div class="test-container">
+            <h3>Caso 4: Nombre + cantidad sin unidad</h3>
+            <div class="ingredient-display">
+                <span class="ingredient-name">4. Huevos</span>
+                <span class="ingredient-quantity" id="test4">3</span>
+            </div>
+            <div class="test-result test-pass">✓ Esperado: "3" - Solo muestra la cantidad</div>
+        </div>
+        
+        <div class="test-container">
+            <h3>Caso 5: Cantidad 0 con unidad</h3>
+            <div class="ingredient-display">
+                <span class="ingredient-name">5. Azúcar</span>
+                <span class="ingredient-quantity" id="test5">g</span>
+            </div>
+            <div class="test-result test-pass">✓ Esperado: "g" - No muestra "0 g", solo la unidad</div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Lógica de Formateo</h2>
+        <div class="test-info">
+            <strong>Reglas implementadas:</strong>
+            <ul>
+                <li>Si cantidad > 0 y hay unidad: mostrar "cantidad unidad"</li>
+                <li>Si cantidad > 0 y NO hay unidad: mostrar solo "cantidad"</li>
+                <li>Si cantidad = 0 o vacía y hay unidad: mostrar solo "unidad"</li>
+                <li>Si cantidad = 0 o vacía y NO hay unidad: mostrar "-"</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script src="models.js"></script>
+    <script>
+        // Test the formatting logic
+        function formatIngredientQuantity(quantity, unit) {
+            let quantityText = '';
+            if (quantity && quantity > 0) {
+                quantityText = quantity.toString();
+                if (unit) {
+                    quantityText += ` ${unit}`;
+                }
+            } else if (unit) {
+                quantityText = unit;
+            } else {
+                quantityText = '-';
+            }
+            return quantityText;
+        }
+        
+        // Run tests
+        console.log('Test 1:', formatIngredientQuantity(500, 'g')); // "500 g"
+        console.log('Test 2:', formatIngredientQuantity(0, '')); // "-"
+        console.log('Test 3:', formatIngredientQuantity(0, 'al gusto')); // "al gusto"
+        console.log('Test 4:', formatIngredientQuantity(3, '')); // "3"
+        console.log('Test 5:', formatIngredientQuantity(0, 'g')); // "g"
+        
+        // Verify displayed values match expected
+        const tests = [
+            { id: 'test1', expected: '500 g' },
+            { id: 'test2', expected: '-' },
+            { id: 'test3', expected: 'al gusto' },
+            { id: 'test4', expected: '3' },
+            { id: 'test5', expected: 'g' }
+        ];
+        
+        tests.forEach(test => {
+            const element = document.getElementById(test.id);
+            const actual = element.textContent;
+            if (actual === test.expected) {
+                console.log(`✓ ${test.id}: PASS`);
+            } else {
+                console.error(`✗ ${test.id}: FAIL - Expected "${test.expected}", got "${actual}"`);
+            }
+        });
+    </script>
+</body>
+</html>

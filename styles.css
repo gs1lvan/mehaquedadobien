@@ -18,11 +18,15 @@
     --color-carne: #D93B30;
     --color-verdura: #008A05;
     --color-pescado: #0073CF;
+    --color-marisco: #FF6B9D;
     --color-fruta: #FF8C00;
     --color-cereales: #C4A053;
+    --color-postres: #FFB6C1;
     --color-mix: #8B5CF6;
     --color-con-huevo: #FFD700;
     --color-pollo: #FFA500;
+    --color-cerdo: #FFB6C1;
+    --color-conejo: #D4A5A5;
     --color-escabeche: #32CD32;
     
     /* Functional Colors */
@@ -460,6 +464,29 @@ main {
     border-color: var(--color-escabeche);
 }
 
+.filter-chip[data-category="marisco"].active {
+    background: var(--color-marisco);
+    border-color: var(--color-marisco);
+}
+
+.filter-chip[data-category="postres"].active {
+    background: var(--color-postres);
+    border-color: var(--color-postres);
+    color: var(--color-text);
+}
+
+.filter-chip[data-category="cerdo"].active {
+    background: var(--color-cerdo);
+    border-color: var(--color-cerdo);
+    color: var(--color-text);
+}
+
+.filter-chip[data-category="conejo"].active {
+    background: var(--color-conejo);
+    border-color: var(--color-conejo);
+    color: var(--color-text);
+}
+
 /* ===== Recipe Counter ===== */
 .recipe-counter {
     margin-top: var(--spacing-xs);
@@ -633,6 +660,26 @@ main {
 .recipe-category[data-category="escabeche"] {
     background: rgba(50, 205, 50, 0.1);
     color: #228B22;
+}
+
+.recipe-category[data-category="marisco"] {
+    background: rgba(255, 107, 157, 0.1);
+    color: var(--color-marisco);
+}
+
+.recipe-category[data-category="postres"] {
+    background: rgba(255, 182, 193, 0.1);
+    color: #D87093;
+}
+
+.recipe-category[data-category="cerdo"] {
+    background: rgba(255, 182, 193, 0.1);
+    color: #D87093;
+}
+
+.recipe-category[data-category="conejo"] {
+    background: rgba(212, 165, 165, 0.1);
+    color: #A0522D;
 }
 
 .recipe-preview {
@@ -895,6 +942,43 @@ main {
 .time-input[type=number] {
     -moz-appearance: textfield;
     appearance: textfield;
+}
+
+/* ===== Kitchen Appliances Chips ===== */
+.kitchen-appliances-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    align-items: center;
+}
+
+.appliance-chip {
+    background: var(--color-background);
+    border: 2px solid var(--color-border);
+    color: var(--color-text);
+    padding: 10px 16px;
+    border-radius: var(--radius-xl);
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+}
+
+.appliance-chip:hover {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.appliance-chip.selected {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.appliance-chip.selected:hover {
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
 }
 
 /* ===== Ingredient Management - Airbnb Style ===== */
@@ -1166,6 +1250,17 @@ main {
 
 .cooking-action-btn:active {
     transform: scale(0.95);
+}
+
+.cooking-action-btn.selected {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.cooking-action-btn.selected:hover {
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
 }
 
 /* Ingredient chips for sequences */
@@ -1638,8 +1733,9 @@ main {
 /* Compact action buttons - minimalist style */
 .btn-action-compact {
     padding: 5px 10px;
-    font-size: 0.75rem;
-    font-weight: var(--font-weight-normal);
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family);
     background: var(--color-background-secondary);
     border: none;
 }
@@ -3154,6 +3250,48 @@ body.dark-theme .filter-chip.active {
     background: var(--color-primary);
     color: white;
     border-color: var(--color-primary);
+}
+
+/* Kitchen appliances chips in dark theme */
+body.dark-theme .appliance-chip {
+    background: var(--color-background-secondary);
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+}
+
+body.dark-theme .appliance-chip:hover {
+    background: var(--color-background);
+    border-color: var(--color-primary);
+}
+
+body.dark-theme .appliance-chip.selected {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+/* Cooking action buttons in dark theme */
+body.dark-theme .cooking-action-btn {
+    background: var(--color-background-secondary);
+    color: var(--color-text-secondary);
+    border-color: var(--color-border);
+}
+
+body.dark-theme .cooking-action-btn:hover {
+    background: var(--color-background);
+    color: var(--color-text);
+    border-color: var(--color-primary);
+}
+
+body.dark-theme .cooking-action-btn.selected {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+body.dark-theme .cooking-action-btn.selected:hover {
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
 }
 
 /* Modal in dark theme */

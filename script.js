@@ -5,13 +5,17 @@
  */
 const PREDEFINED_CATEGORIES = [
     { id: 'carne', name: 'Carne', emoji: '🥩', color: '#D93B30', isPredefined: true },
-    { id: 'verdura', name: 'Verdura', emoji: '🥬', color: '#008A05', isPredefined: true },
-    { id: 'pescado', name: 'Pescado', emoji: '🐟', color: '#0073CF', isPredefined: true },
-    { id: 'fruta', name: 'Fruta', emoji: '🍎', color: '#FF8C00', isPredefined: true },
     { id: 'cereales', name: 'Cereales', emoji: '🌾', color: '#C4A053', isPredefined: true },
+    { id: 'cerdo', name: 'Cerdo', emoji: '🐷', color: '#FFB6C1', isPredefined: true },
     { id: 'con-huevo', name: 'Con huevo', emoji: '🥚', color: '#FFD700', isPredefined: true },
-    { id: 'pollo', name: 'Pollo', emoji: '🐔', color: '#FFA500', isPredefined: true },
+    { id: 'conejo', name: 'Conejo', emoji: '🐰', color: '#D4A5A5', isPredefined: true },
     { id: 'escabeche', name: 'Escabeche', emoji: '🥒', color: '#32CD32', isPredefined: true },
+    { id: 'fruta', name: 'Fruta', emoji: '🍎', color: '#FF8C00', isPredefined: true },
+    { id: 'marisco', name: 'Marisco', emoji: '🦐', color: '#FF6B9D', isPredefined: true },
+    { id: 'pescado', name: 'Pescado', emoji: '🐟', color: '#0073CF', isPredefined: true },
+    { id: 'pollo', name: 'Pollo', emoji: '🐔', color: '#FFA500', isPredefined: true },
+    { id: 'postres', name: 'Postres', emoji: '🍰', color: '#FFB6C1', isPredefined: true },
+    { id: 'verdura', name: 'Verdura', emoji: '🥬', color: '#008A05', isPredefined: true },
     { id: 'caravana', name: 'Caravana', emoji: '🚐', color: '#6B7280', isPredefined: true, isSpecial: true }
 ];
 
@@ -35,6 +39,20 @@ const EMOJI_CATEGORIES = {
  * Default emoji if none selected
  */
 const DEFAULT_EMOJI = '🐱';
+
+/**
+ * Kitchen appliances available for recipes
+ */
+const KITCHEN_APPLIANCES = [
+    { id: 'sarten', name: 'Sartén', emoji: '🍳' },
+    { id: 'olla', name: 'Olla', emoji: '🍲' },
+    { id: 'olla-presion', name: 'Olla a presión', emoji: '⚡' },
+    { id: 'horno', name: 'Horno', emoji: '🔥' },
+    { id: 'microondas', name: 'Microondas', emoji: '📻' },
+    { id: 'freidora-aire', name: 'Freidora de aire', emoji: '💨' },
+    { id: 'sandwichera', name: 'Sandwichera', emoji: '🥪' },
+    { id: 'batidora', name: 'Batidora', emoji: '🌀' }
+];
 
 /**
  * CategoryManager - Manages predefined and custom categories
@@ -270,6 +288,7 @@ class RecipeApp {
         this.editingSequenceId = null; // Track which sequence is being edited
         this.images = []; // Current recipe images
         this.videos = []; // Current recipe videos
+        this.selectedAppliances = []; // Current recipe kitchen appliances
 
         // Image modal state
         this.modalImages = []; // Images for modal navigation
@@ -1382,6 +1401,9 @@ class RecipeApp {
 
         // Collapsible sections event listeners
         this.setupCollapsibleSections();
+        
+        // Kitchen appliances chips
+        this.renderKitchenAppliancesChips();
     }
 
     /**
@@ -2062,7 +2084,7 @@ class RecipeApp {
         if (recipeCounter) {
             recipeCounter.style.display = 'inline-block';
         }
-        this.updateRecipeCounter(filteredRecipes.length);
+        this.updateRecipeCounter(filteredRecipes.length, this.recipes.length);
 
         // Render recipe cards
         filteredRecipes.forEach(recipe => {
@@ -2073,13 +2095,16 @@ class RecipeApp {
 
     /**
      * Update recipe counter display
-     * @param {number} count - Number of recipes to display
+     * @param {number} count - Number of recipes displayed
+     * @param {number} total - Total number of recipes
      */
-    updateRecipeCounter(count) {
+    updateRecipeCounter(count, total) {
         const counterText = document.getElementById('recipe-count-text');
         if (!counterText) return;
 
-        const text = count === 1 ? '1 receta' : `${count} recetas`;
+        // Show "X de Y recetas" format
+        const recetasText = total === 1 ? 'receta' : 'recetas';
+        const text = `${count} de ${total} ${recetasText}`;
         counterText.textContent = text;
     }
 
@@ -2348,6 +2373,10 @@ class RecipeApp {
         if (videoError) {
             videoError.textContent = '';
         }
+        
+        // Reset kitchen appliances
+        this.selectedAppliances = [];
+        this.renderKitchenAppliancesChips();
 
         // Reset form state
         this.formInitialState = this.getFormState();
@@ -2377,6 +2406,59 @@ class RecipeApp {
         const currentState = this.getFormState();
         return JSON.stringify(currentState) !== JSON.stringify(this.formInitialState);
     }
+
+    // ===== Kitchen Appliances Management =====
+    
+    /**
+     * Render kitchen appliances chips
+     */
+    renderKitchenAppliancesChips() {
+        const container = document.getElementById('kitchen-appliances-chips');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        KITCHEN_APPLIANCES.forEach(appliance => {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'cooking-action-btn';
+            chip.dataset.applianceId = appliance.id;
+            chip.innerHTML = `${appliance.emoji} ${appliance.name}`;
+            
+            // Mark as selected if in selectedAppliances array
+            if (this.selectedAppliances.includes(appliance.id)) {
+                chip.classList.add('selected');
+            }
+            
+            // Add click handler
+            chip.addEventListener('click', () => {
+                this.toggleAppliance(appliance.id);
+            });
+            
+            container.appendChild(chip);
+        });
+    }
+    
+    /**
+     * Toggle appliance selection
+     * @param {string} applianceId - Appliance ID to toggle
+     */
+    toggleAppliance(applianceId) {
+        const index = this.selectedAppliances.indexOf(applianceId);
+        
+        if (index > -1) {
+            // Remove from selection
+            this.selectedAppliances.splice(index, 1);
+        } else {
+            // Add to selection
+            this.selectedAppliances.push(applianceId);
+        }
+        
+        // Re-render chips to update visual state
+        this.renderKitchenAppliancesChips();
+    }
+    
+    // ===== End Kitchen Appliances Management =====
 
     /**
      * Validate name field with comprehensive checks
@@ -2553,6 +2635,7 @@ class RecipeApp {
                     totalTime: formData.totalTime,
                     caravanFriendly: formData.caravanFriendly || false,
                     preparationMethod: formData.preparationMethod,
+                    kitchenAppliances: formData.kitchenAppliances || [],
                     author: formData.author,
                     history: formData.history,
                     ingredients: formData.ingredients,
@@ -2571,6 +2654,7 @@ class RecipeApp {
                     totalTime: formData.totalTime,
                     caravanFriendly: formData.caravanFriendly || false,
                     preparationMethod: formData.preparationMethod,
+                    kitchenAppliances: formData.kitchenAppliances || [],
                     author: formData.author,
                     history: formData.history,
                     ingredients: formData.ingredients,
@@ -2606,6 +2690,7 @@ class RecipeApp {
             totalTime: this.parseTimeInput('recipe'),
             caravanFriendly: document.getElementById('recipe-caravan-friendly')?.checked || false,
             preparationMethod: document.getElementById('preparation-method')?.value.trim() || '',
+            kitchenAppliances: this.selectedAppliances,
             author: document.getElementById('recipe-author')?.value.trim() || '',
             history: document.getElementById('recipe-history')?.value.trim() || '',
             ingredients: this.ingredients,
@@ -2829,7 +2914,23 @@ class RecipeApp {
 
             const quantityDiv = document.createElement('div');
             quantityDiv.className = 'ingredient-quantity';
-            quantityDiv.textContent = `${ingredient.quantity} ${ingredient.unit}`;
+            
+            // Format quantity display: don't show 0, use dash for empty required fields
+            let quantityText = '';
+            if (ingredient.quantity && ingredient.quantity > 0) {
+                quantityText = ingredient.quantity.toString();
+                if (ingredient.unit) {
+                    quantityText += ` ${ingredient.unit}`;
+                }
+            } else if (ingredient.unit) {
+                // Only unit, no quantity
+                quantityText = ingredient.unit;
+            } else {
+                // No quantity and no unit - show dash
+                quantityText = '-';
+            }
+            
+            quantityDiv.textContent = quantityText;
 
             infoDiv.appendChild(nameDiv);
             infoDiv.appendChild(quantityDiv);
@@ -3587,6 +3688,10 @@ class RecipeApp {
             this.videos = recipe.videos ? [...recipe.videos] : [];
             this.renderImagesPreview();
             this.renderVideosPreview();
+            
+            // Load kitchen appliances
+            this.selectedAppliances = recipe.kitchenAppliances ? [...recipe.kitchenAppliances] : [];
+            this.renderKitchenAppliancesChips();
 
             // Store initial state
             this.formInitialState = this.getFormState();
@@ -4294,9 +4399,9 @@ class RecipeApp {
 
         // Ingredients
         this.renderDetailIngredients(recipe.ingredients);
-
-        // Preparation method
-        this.renderDetailPreparationMethod(recipe.preparationMethod);
+        
+        // Kitchen appliances (Método de Preparación)
+        this.renderDetailKitchenAppliances(recipe.kitchenAppliances);
 
         // Additional information (author and history)
         this.renderDetailAdditionalInfo(recipe.author, recipe.history);
@@ -4344,7 +4449,23 @@ class RecipeApp {
 
             const quantitySpan = document.createElement('span');
             quantitySpan.className = 'ingredient-detail-quantity';
-            quantitySpan.textContent = `${ingredient.quantity} ${ingredient.unit}`;
+            
+            // Format quantity display: don't show 0, use dash for empty required fields
+            let quantityText = '';
+            if (ingredient.quantity && ingredient.quantity > 0) {
+                quantityText = ingredient.quantity.toString();
+                if (ingredient.unit) {
+                    quantityText += ` ${ingredient.unit}`;
+                }
+            } else if (ingredient.unit) {
+                // Only unit, no quantity
+                quantityText = ingredient.unit;
+            } else {
+                // No quantity and no unit - show dash
+                quantityText = '-';
+            }
+            
+            quantitySpan.textContent = quantityText;
 
             li.appendChild(nameSpan);
             li.appendChild(quantitySpan);
@@ -4372,6 +4493,41 @@ class RecipeApp {
         methodElement.style.display = 'block';
         emptyElement.style.display = 'none';
         methodElement.textContent = preparationMethod;
+    }
+
+    /**
+     * Render detail kitchen appliances section
+     * @param {Array} appliances - Kitchen appliances array
+     */
+    renderDetailKitchenAppliances(appliances) {
+        const section = document.getElementById('detail-appliances-section');
+        const chipsContainer = document.getElementById('detail-appliances-chips');
+
+        if (!section || !chipsContainer) return;
+
+        // Clear chips
+        chipsContainer.innerHTML = '';
+
+        if (!appliances || appliances.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+
+        section.style.display = 'block';
+
+        // Render each appliance as a chip with cooking-action-btn style
+        appliances.forEach(applianceId => {
+            const appliance = KITCHEN_APPLIANCES.find(a => a.id === applianceId);
+            if (appliance) {
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = 'cooking-action-btn';
+                chip.innerHTML = `${appliance.emoji} ${appliance.name}`;
+                chip.disabled = true; // Read-only in detail view
+                chip.style.cursor = 'default';
+                chipsContainer.appendChild(chip);
+            }
+        });
     }
 
     /**
