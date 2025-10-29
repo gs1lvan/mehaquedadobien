@@ -284,6 +284,82 @@ main {
     background: var(--color-background-secondary);
 }
 
+/* ===== Filter Toggle Button ===== */
+.filter-toggle-container {
+    margin-bottom: var(--spacing-md);
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+.btn-toggle-filters {
+    background: var(--color-background-secondary);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border-light);
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-toggle-filters:hover {
+    background: var(--color-border-light);
+    color: var(--color-text);
+    border-color: var(--color-border);
+}
+
+.btn-toggle-filters:active {
+    transform: scale(0.98);
+}
+
+.btn-clear-filters {
+    background: var(--color-background-secondary);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border-light);
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-clear-filters:hover {
+    background: var(--color-border-light);
+    color: var(--color-danger);
+    border-color: var(--color-border);
+}
+
+.btn-clear-filters:active {
+    transform: scale(0.98);
+}
+
+.btn-clear-filters.hidden {
+    display: none;
+}
+
+/* ===== Filters Container ===== */
+.filters-container {
+    max-height: 1000px;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    opacity: 1;
+}
+
+.filters-container.hidden {
+    max-height: 0;
+    opacity: 0;
+    margin-bottom: 0;
+}
+
 /* ===== Filter Bar - Airbnb Style ===== */
 .filter-bar {
     margin-bottom: var(--spacing-xl);
@@ -1467,11 +1543,29 @@ main {
     color: var(--color-background);
 }
 
-/* Compact action buttons */
+/* Compact action buttons - minimalist style */
 .btn-action-compact {
-    padding: 6px 12px;
-    font-size: 0.8125rem;
+    padding: 5px 10px;
+    font-size: 0.75rem;
     font-weight: var(--font-weight-normal);
+    background: var(--color-background-secondary);
+    border: none;
+}
+
+.btn-action-compact:hover {
+    background: var(--color-border-light);
+    border: none;
+    box-shadow: none;
+}
+
+.btn-action-compact.btn-danger {
+    background: var(--color-background-secondary);
+    color: var(--color-danger);
+}
+
+.btn-action-compact.btn-danger:hover {
+    background: rgba(220, 38, 38, 0.1);
+    color: var(--color-danger);
 }
 
 .detail-content {
@@ -1583,9 +1677,8 @@ main {
 .detail-sequence-content {
     flex: 1;
     display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: var(--spacing-xs);
 }
 
 .detail-sequence-ingredients {
@@ -1605,10 +1698,11 @@ main {
     border: 1px solid var(--color-border-light);
 }
 
-.detail-sequence-separator {
-    color: var(--color-text-secondary);
-    font-weight: var(--font-weight-bold);
-    padding: 0 var(--spacing-xs);
+.detail-sequence-desc-duration {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-xs);
+    flex-wrap: wrap;
 }
 
 .detail-sequence-duration {
@@ -1622,8 +1716,6 @@ main {
     color: var(--color-text-secondary);
     font-size: 0.875rem;
     line-height: 1.5;
-    flex: 1;
-    min-width: 200px;
 }
 
 .detail-gallery {
@@ -1806,15 +1898,28 @@ main {
     }
     
     .detail-header {
-        flex-direction: column;
+        flex-direction: row;
+        align-items: flex-start;
+    }
+    
+    .detail-header-content {
+        flex: 1;
+        min-width: 0;
     }
     
     .detail-header h2 {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
+        line-height: 1.3;
     }
     
     .detail-actions {
         width: 100%;
+        margin-top: var(--spacing-sm);
+    }
+    
+    #back-to-list-btn {
+        flex-shrink: 0;
+        padding: 8px 12px;
     }
     
     .btn-action {
@@ -2887,6 +2992,10 @@ body.dark-theme .recipe-card:hover {
     box-shadow: var(--shadow-hover);
 }
 
+body.dark-theme .recipe-time-badge {
+    color: #2a2a2a;
+}
+
 /* Form inputs in dark theme */
 body.dark-theme input[type="text"],
 body.dark-theme input[type="number"],
@@ -2964,12 +3073,23 @@ body.dark-theme .recipe-detail {
 }
 
 body.dark-theme .detail-section {
+    background: transparent;
+    border: none;
+}
+
+body.dark-theme .detail-metadata {
     background: var(--color-background-secondary);
     border: 1px solid var(--color-border);
 }
 
-body.dark-theme .detail-metadata {
-    background: var(--color-background);
+body.dark-theme #detail-sequences-section {
+    background: transparent;
+    border: none;
+}
+
+body.dark-theme .detail-sequence-item {
+    background: var(--color-background-secondary);
+    border: 1px solid var(--color-border);
 }
 
 /* Gallery in dark theme */

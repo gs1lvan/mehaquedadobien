@@ -69,9 +69,21 @@
         </header>
 
         <main>
-            <!-- Filter bar with category chips -->
-            <section id="filter-bar" class="filter-bar">
-                <h2 class="filter-title">Filtrar por categoría:</h2>
+            <!-- Filter toggle button -->
+            <div class="filter-toggle-container">
+                <button id="toggle-filters-btn" class="btn-toggle-filters">
+                    🔍 Filtros
+                </button>
+                <button id="clear-all-filters-btn" class="btn-clear-filters hidden">
+                    🗑️ Limpiar filtros
+                </button>
+            </div>
+
+            <!-- Filters container (collapsible) -->
+            <div id="filters-container" class="filters-container hidden">
+                <!-- Filter bar with category chips -->
+                <section id="filter-bar" class="filter-bar">
+                <h2 class="filter-title">Filtrar por alimento:</h2>
                 <div class="filter-chips">
                     <button class="filter-chip" data-category="all">
                         Todas
@@ -102,6 +114,39 @@
                     </button>
                 </div>
             </section>
+
+            <!-- Time filter bar -->
+            <section id="time-filter-bar" class="filter-bar">
+                <h2 class="filter-title">Filtrar por tiempo:</h2>
+                <div class="filter-chips" id="time-filter-chips">
+                    <button class="filter-chip active" data-time="all">
+                        Todos
+                    </button>
+                    <button class="filter-chip" data-time="15">
+                        ⏱️ 15 min
+                    </button>
+                    <button class="filter-chip" data-time="30">
+                        ⏱️ 30 min
+                    </button>
+                    <button class="filter-chip" data-time="45">
+                        ⏱️ 45 min
+                    </button>
+                    <button class="filter-chip" data-time="60">
+                        ⏱️ 1h
+                    </button>
+                    <button class="filter-chip" data-time="120">
+                        ⏱️ 2h
+                    </button>
+                    <button class="filter-chip" data-time="180">
+                        ⏱️ 3h
+                    </button>
+                    <button class="filter-chip" data-time="none">
+                        ❓ Sin tiempo
+                    </button>
+                </div>
+            </section>
+            </div>
+            <!-- End filters container -->
 
             <!-- Recipe grid -->
             <section id="recipe-list-view" class="recipe-list">

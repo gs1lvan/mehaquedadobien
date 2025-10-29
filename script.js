@@ -265,6 +265,7 @@ class RecipeApp {
         this.categoryManager = new CategoryManager();
         this.recipes = [];
         this.activeFilters = new Set(); // Track active category filters
+        this.activeTimeFilter = 'all'; // Track active time filter
         this.currentView = 'list'; // 'list', 'detail', 'form'
         this.ingredients = []; // Current recipe ingredients
         this.editingIngredientId = null; // Track which ingredient is being edited
@@ -422,7 +423,7 @@ class RecipeApp {
         }
 
         if (minutes > 0) {
-            parts.push(minutes === 1 ? '1 minuto' : `${minutes} minutos`);
+            parts.push(`${minutes} min`);
         }
 
         return parts.join(' ');
@@ -478,12 +479,28 @@ class RecipeApp {
     // ===== End Time Input Utilities =====
 
     /**
+     * Shuffle array randomly using Fisher-Yates algorithm
+     * @param {Array} array - Array to shuffle
+     * @returns {Array} Shuffled array
+     */
+    shuffleArray(array) {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
+    /**
      * Load all recipes from storage
      */
     async loadRecipes() {
         try {
             this.recipes = await this.storageManager.getAllRecipes();
-            console.log(`Loaded ${this.recipes.length} recipes`);
+            // Shuffle recipes randomly on load
+            this.recipes = this.shuffleArray(this.recipes);
+            console.log(`Loaded ${this.recipes.length} recipes (shuffled)`);
         } catch (error) {
             console.error('Failed to load recipes:', error);
             this.showError('Error al cargar las recetas: ' + error.message);
@@ -520,13 +537,37 @@ class RecipeApp {
             });
         }
 
-        // Filter chips
-        const filterChips = document.querySelectorAll('.filter-chip');
+        // Filter chips (category)
+        const filterChips = document.querySelectorAll('#filter-bar .filter-chip');
         filterChips.forEach(chip => {
             chip.addEventListener('click', (e) => {
                 this.handleFilterClick(e.target);
             });
         });
+
+        // Time filter chips
+        const timeFilterChips = document.querySelectorAll('#time-filter-chips .filter-chip');
+        timeFilterChips.forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                this.handleTimeFilterClick(e.target);
+            });
+        });
+
+        // Toggle filters button
+        const toggleFiltersBtn = document.getElementById('toggle-filters-btn');
+        if (toggleFiltersBtn) {
+            toggleFiltersBtn.addEventListener('click', () => {
+                this.toggleFilters();
+            });
+        }
+
+        // Clear all filters button
+        const clearAllFiltersBtn = document.getElementById('clear-all-filters-btn');
+        if (clearAllFiltersBtn) {
+            clearAllFiltersBtn.addEventListener('click', () => {
+                this.clearAllFilters();
+            });
+        }
 
         // Import XML button
         const importXmlBtn = document.getElementById('import-xml-btn');
@@ -713,10 +754,19 @@ class RecipeApp {
      * Attach event listeners to filter chips
      */
     attachFilterChipListeners() {
-        const filterChips = document.querySelectorAll('.filter-chip');
+        // Category filter chips
+        const filterChips = document.querySelectorAll('#filter-bar .filter-chip');
         filterChips.forEach(chip => {
             chip.addEventListener('click', (e) => {
                 this.handleFilterClick(e.target);
+            });
+        });
+
+        // Time filter chips
+        const timeFilterChips = document.querySelectorAll('#time-filter-chips .filter-chip');
+        timeFilterChips.forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                this.handleTimeFilterClick(e.target);
             });
         });
     }
@@ -1487,6 +1537,104 @@ class RecipeApp {
     }
 
     /**
+     * Toggle filters visibility
+     */
+    toggleFilters() {
+        const filtersContainer = document.getElementById('filters-container');
+        const toggleBtn = document.getElementById('toggle-filters-btn');
+        const clearBtn = document.getElementById('clear-all-filters-btn');
+        
+        if (!filtersContainer || !toggleBtn) return;
+        
+        const isHidden = filtersContainer.classList.contains('hidden');
+        
+        if (isHidden) {
+            // Opening filters
+            filtersContainer.classList.remove('hidden');
+            toggleBtn.textContent = '✖️ Cerrar filtros';
+            // Show clear button if filters are active
+            if (clearBtn && (this.activeFilters.size > 0 || this.activeTimeFilter !== 'all')) {
+                clearBtn.classList.remove('hidden');
+            }
+        } else {
+            // Closing filters - clear all filters and show all recipes
+            filtersContainer.classList.add('hidden');
+            toggleBtn.textContent = '🔍 Filtros';
+            
+            // Hide clear button
+            if (clearBtn) {
+                clearBtn.classList.add('hidden');
+            }
+            
+            // Clear all filters
+            this.clearAllFilters();
+        }
+    }
+
+    /**
+     * Update clear button visibility based on active filters
+     */
+    updateClearButtonVisibility() {
+        const clearBtn = document.getElementById('clear-all-filters-btn');
+        const filtersContainer = document.getElementById('filters-container');
+        
+        if (!clearBtn) return;
+        
+        // Show button only if filters are visible and there are active filters
+        const hasActiveFilters = this.activeFilters.size > 0 || this.activeTimeFilter !== 'all';
+        const filtersVisible = filtersContainer && !filtersContainer.classList.contains('hidden');
+        
+        if (hasActiveFilters && filtersVisible) {
+            clearBtn.classList.remove('hidden');
+        } else {
+            clearBtn.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Clear all filters (category and time)
+     */
+    clearAllFilters() {
+        // Clear category filters
+        this.activeFilters.clear();
+        
+        // Clear time filter
+        this.activeTimeFilter = 'all';
+        
+        // Update UI - category chips
+        const categoryChips = document.querySelectorAll('#filter-bar .filter-chip');
+        categoryChips.forEach(chip => {
+            if (chip.dataset.category === 'all') {
+                chip.classList.add('active');
+            } else {
+                chip.classList.remove('active');
+            }
+        });
+        
+        // Update UI - time chips
+        const timeChips = document.querySelectorAll('#time-filter-chips .filter-chip');
+        timeChips.forEach(chip => {
+            if (chip.dataset.time === 'all') {
+                chip.classList.add('active');
+            } else {
+                chip.classList.remove('active');
+            }
+        });
+        
+        // Hide clear button
+        const clearBtn = document.getElementById('clear-all-filters-btn');
+        if (clearBtn) {
+            clearBtn.classList.add('hidden');
+        }
+        
+        // Update clear button visibility
+        this.updateClearButtonVisibility();
+        
+        // Render all recipes
+        this.renderRecipeList();
+    }
+
+    /**
      * Handle filter chip click - implements multiple filter logic
      * Requirements: 10.2, 10.3, 10.4, 10.5
      */
@@ -1516,6 +1664,9 @@ class RecipeApp {
             allChip.classList.remove('active');
         }
 
+        // Update clear button visibility
+        this.updateClearButtonVisibility();
+
         // Apply filters and update view
         this.renderRecipeList();
     }
@@ -1542,28 +1693,141 @@ class RecipeApp {
     }
 
     /**
+     * Handle time filter chip click
+     */
+    handleTimeFilterClick(chip) {
+        const timeFilter = chip.dataset.time;
+
+        // Update active time filter
+        this.activeTimeFilter = timeFilter;
+
+        // Update UI - remove active class from all time chips
+        const timeChips = document.querySelectorAll('#time-filter-chips .filter-chip');
+        timeChips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+
+        // Update clear button visibility
+        this.updateClearButtonVisibility();
+
+        // Apply filters and update view
+        this.renderRecipeList();
+    }
+
+    /**
+     * Parse time string to minutes
+     * @param {string} timeString - Time string like "2h 30min", "1h", "45min"
+     * @returns {number} Total minutes or null if no time
+     */
+    parseTimeToMinutes(timeString) {
+        if (!timeString || timeString.trim() === '') {
+            return null;
+        }
+
+        const hoursMatch = timeString.match(/(\d+)\s*h/);
+        const minutesMatch = timeString.match(/(\d+)\s*min/);
+
+        const hours = hoursMatch ? parseInt(hoursMatch[1]) : 0;
+        const minutes = minutesMatch ? parseInt(minutesMatch[1]) : 0;
+
+        return hours * 60 + minutes;
+    }
+
+    /**
+     * Parse time string to minutes
+     * @param {string} timeString - Time string like "2h 30min", "1h", "45min"
+     * @returns {number} Total minutes or null if no time
+     */
+    parseTimeToMinutes(timeString) {
+        if (!timeString || timeString.trim() === '') {
+            return null;
+        }
+
+        const hoursMatch = timeString.match(/(\d+)\s*h/);
+        const minutesMatch = timeString.match(/(\d+)\s*min/);
+
+        const hours = hoursMatch ? parseInt(hoursMatch[1]) : 0;
+        const minutes = minutesMatch ? parseInt(minutesMatch[1]) : 0;
+
+        return hours * 60 + minutes;
+    }
+
+    /**
      * Filter recipes based on active filters
      * Requirements: 10.2, 10.3, 10.4
      * @returns {Recipe[]} Filtered recipes
      */
     filterRecipes() {
-        // If no filters active, return all recipes
-        if (this.activeFilters.size === 0) {
-            return this.recipes;
+        let filtered = this.recipes;
+
+        // Apply category filter
+        if (this.activeFilters.size > 0) {
+            filtered = filtered.filter(recipe => {
+                // Handle "sin-categoria" filter
+                if (this.activeFilters.has('sin-categoria')) {
+                    if (recipe.category === null || recipe.category === undefined) {
+                        return true;
+                    }
+                }
+
+                // Check if recipe category matches any active filter
+                return this.activeFilters.has(recipe.category);
+            });
         }
 
-        // Filter recipes that match ANY of the active filters (OR logic)
-        return this.recipes.filter(recipe => {
-            // Handle "sin-categoria" filter
-            if (this.activeFilters.has('sin-categoria')) {
-                if (recipe.category === null || recipe.category === undefined) {
-                    return true;
-                }
-            }
+        // Apply time filter
+        if (this.activeTimeFilter !== 'all') {
+            filtered = filtered.filter(recipe => {
+                const totalMinutes = this.parseTimeToMinutes(recipe.totalTime);
 
-            // Check if recipe category matches any active filter
-            return this.activeFilters.has(recipe.category);
-        });
+                // Handle "none" filter - recipes without time
+                if (this.activeTimeFilter === 'none') {
+                    return totalMinutes === null;
+                }
+
+                // If recipe has no time, don't include it in time-based filters
+                if (totalMinutes === null) {
+                    return false;
+                }
+
+                // Handle specific time filters (acumulativo: muestra recetas <= tiempo seleccionado)
+                // Ejemplo: filtro 30min muestra recetas de 0-30min
+                if (this.activeTimeFilter === '15') {
+                    return totalMinutes <= 15;
+                } else if (this.activeTimeFilter === '30') {
+                    return totalMinutes <= 30;
+                } else if (this.activeTimeFilter === '45') {
+                    return totalMinutes <= 45;
+                } else if (this.activeTimeFilter === '60') {
+                    return totalMinutes <= 60;
+                } else if (this.activeTimeFilter === '120') {
+                    // Rango específico: entre 1h y 2h
+                    return totalMinutes <= 120;
+                } else if (this.activeTimeFilter === '180') {
+                    return totalMinutes <= 180;
+                }
+
+                return true;
+            });
+
+            // Sort by proximity to selected time filter
+            if (this.activeTimeFilter !== 'none') {
+                const targetMinutes = parseInt(this.activeTimeFilter);
+                
+                filtered.sort((a, b) => {
+                    const aMinutes = this.parseTimeToMinutes(a.totalTime) || 0;
+                    const bMinutes = this.parseTimeToMinutes(b.totalTime) || 0;
+                    
+                    // Calculate distance from target time
+                    const aDistance = Math.abs(aMinutes - targetMinutes);
+                    const bDistance = Math.abs(bMinutes - targetMinutes);
+                    
+                    // Sort by closest to target time
+                    return aDistance - bDistance;
+                });
+            }
+        }
+
+        return filtered;
     }
 
     /**
@@ -1728,10 +1992,14 @@ class RecipeApp {
         // Hide header actions when in form view
         this.hideHeaderActions();
 
-        // Hide filter bar
+        // Hide filter bars
         const filterBar = document.getElementById('filter-bar');
         if (filterBar) {
             filterBar.classList.add('hidden');
+        }
+        const timeFilterBar = document.getElementById('time-filter-bar');
+        if (timeFilterBar) {
+            timeFilterBar.classList.add('hidden');
         }
 
         // Show form view
@@ -1790,10 +2058,14 @@ class RecipeApp {
             listView.classList.remove('hidden');
         }
 
-        // Show filter bar
+        // Show filter bars
         const filterBar = document.getElementById('filter-bar');
         if (filterBar) {
             filterBar.classList.remove('hidden');
+        }
+        const timeFilterBar = document.getElementById('time-filter-bar');
+        if (timeFilterBar) {
+            timeFilterBar.classList.remove('hidden');
         }
 
         // Show header actions when closing form
@@ -3658,10 +3930,14 @@ class RecipeApp {
         if (listView) listView.classList.add('hidden');
         if (formView) formView.classList.add('hidden');
 
-        // Hide filter bar
+        // Hide filter bars
         const filterBar = document.getElementById('filter-bar');
         if (filterBar) {
             filterBar.classList.add('hidden');
+        }
+        const timeFilterBar = document.getElementById('time-filter-bar');
+        if (timeFilterBar) {
+            timeFilterBar.classList.add('hidden');
         }
 
         // Show detail view
@@ -3879,7 +4155,7 @@ class RecipeApp {
             const contentDiv = document.createElement('div');
             contentDiv.className = 'detail-sequence-content';
 
-            // Ingredients tags
+            // Ingredients tags (first line)
             if (sequence.ingredientIds && sequence.ingredientIds.length > 0) {
                 const ingredientsDiv = document.createElement('div');
                 ingredientsDiv.className = 'detail-sequence-ingredients';
@@ -3897,29 +4173,29 @@ class RecipeApp {
                 contentDiv.appendChild(ingredientsDiv);
             }
 
-            // Separator (visual divider between ingredients and description)
-            if (sequence.ingredientIds && sequence.ingredientIds.length > 0 && sequence.description) {
-                const separator = document.createElement('span');
-                separator.className = 'detail-sequence-separator';
-                separator.textContent = '•';
-                contentDiv.appendChild(separator);
-            }
+            // Description and duration container (second line)
+            if (sequence.description || sequence.duration) {
+                const descDurationDiv = document.createElement('div');
+                descDurationDiv.className = 'detail-sequence-desc-duration';
 
-            // Description
-            if (sequence.description) {
-                const descriptionDiv = document.createElement('div');
-                descriptionDiv.className = 'detail-sequence-description';
-                descriptionDiv.textContent = sequence.description;
-                contentDiv.appendChild(descriptionDiv);
-            }
+                // Description
+                if (sequence.description) {
+                    const descriptionSpan = document.createElement('span');
+                    descriptionSpan.className = 'detail-sequence-description';
+                    descriptionSpan.textContent = sequence.description;
+                    descDurationDiv.appendChild(descriptionSpan);
+                }
 
-            // Duration
-            if (sequence.duration) {
-                const durationDiv = document.createElement('div');
-                durationDiv.className = 'detail-sequence-duration';
-                const formattedDuration = this.formatTimeForDisplay(sequence.duration);
-                durationDiv.textContent = `⏱️ ${formattedDuration}`;
-                contentDiv.appendChild(durationDiv);
+                // Duration
+                if (sequence.duration) {
+                    const durationSpan = document.createElement('span');
+                    durationSpan.className = 'detail-sequence-duration';
+                    const formattedDuration = this.formatTimeForDisplay(sequence.duration);
+                    durationSpan.textContent = ` ⏱️ ${formattedDuration}`;
+                    descDurationDiv.appendChild(durationSpan);
+                }
+
+                contentDiv.appendChild(descDurationDiv);
             }
 
             item.appendChild(numberDiv);
@@ -4839,10 +5115,14 @@ class RecipeApp {
             listView.classList.remove('hidden');
         }
 
-        // Show filter bar
+        // Show filter bars
         const filterBar = document.getElementById('filter-bar');
         if (filterBar) {
             filterBar.classList.remove('hidden');
+        }
+        const timeFilterBar = document.getElementById('time-filter-bar');
+        if (timeFilterBar) {
+            timeFilterBar.classList.remove('hidden');
         }
 
         // Show header actions when returning to home
@@ -4880,10 +5160,14 @@ class RecipeApp {
             listView.classList.remove('hidden');
         }
 
-        // Show filter bar
+        // Show filter bars
         const filterBar = document.getElementById('filter-bar');
         if (filterBar) {
             filterBar.classList.remove('hidden');
+        }
+        const timeFilterBar = document.getElementById('time-filter-bar');
+        if (timeFilterBar) {
+            timeFilterBar.classList.remove('hidden');
         }
 
         // Update current view state
