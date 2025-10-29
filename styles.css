@@ -198,11 +198,12 @@ main {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
     flex-shrink: 0;
+    vertical-align: baseline;
 }
 
 .btn-icon:hover {
@@ -1335,15 +1336,11 @@ main {
 
 .detail-title-container {
     display: flex;
-    align-items: flex-start;
+    align-items: baseline;
     gap: var(--spacing-sm);
     flex: 1 1 auto;
     min-width: 0;
     max-width: 100%;
-}
-
-.detail-title-container .btn-icon {
-    margin-top: 4px;
 }
 
 .detail-header h2 {
