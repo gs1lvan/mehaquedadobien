@@ -832,62 +832,6 @@ body.dark-theme .recipe-pdf-badge:hover {
     background: rgba(30, 30, 30, 1);
 }
 
-/* ===== WhatsApp Share Badge ===== */
-.recipe-whatsapp-badge {
-    position: absolute;
-    bottom: 5px;
-    right: 115px;
-    background: rgba(255, 255, 255, 0.95);
-    color: var(--color-text);
-    padding: 6px 12px;
-    border-radius: 50px;
-    font-size: 0.75rem;
-    font-weight: var(--font-weight-semibold);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(221, 221, 221, 0.6);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer;
-    z-index: 2;
-    backdrop-filter: blur(4px);
-    transition: all 0.2s ease;
-}
-
-.recipe-whatsapp-badge::before {
-    content: '💬';
-    font-size: 0.875rem;
-}
-
-.recipe-whatsapp-badge:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    background: rgba(255, 255, 255, 1);
-}
-
-.recipe-whatsapp-badge:active {
-    transform: scale(0.95);
-}
-
-.recipe-whatsapp-badge:focus {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-}
-
-.recipe-whatsapp-badge:focus:not(:focus-visible) {
-    outline: none;
-}
-
-/* Dark theme support for WhatsApp badge */
-body.dark-theme .recipe-whatsapp-badge {
-    background: rgba(30, 30, 30, 0.95);
-    color: var(--color-text);
-}
-
-body.dark-theme .recipe-whatsapp-badge:hover {
-    background: rgba(30, 30, 30, 1);
-}
-
 .recipe-content {
     padding: var(--spacing-md);
 }

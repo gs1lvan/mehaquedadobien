@@ -2240,32 +2240,6 @@ class RecipeApp {
 
         imageDiv.appendChild(pdfBadge);
 
-        // Add WhatsApp share badge
-        const whatsappBadge = document.createElement('div');
-        whatsappBadge.className = 'recipe-whatsapp-badge';
-        whatsappBadge.title = 'Compartir por WhatsApp';
-        whatsappBadge.setAttribute('role', 'button');
-        whatsappBadge.setAttribute('tabindex', '0');
-        whatsappBadge.setAttribute('aria-label', `Compartir ${recipe.name} por WhatsApp`);
-
-        // Add click handler for WhatsApp share
-        whatsappBadge.addEventListener('click', (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            this.shareRecipeOnWhatsApp(recipe);
-        });
-
-        // Add keyboard handler for accessibility
-        whatsappBadge.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                e.stopPropagation();
-                this.shareRecipeOnWhatsApp(recipe);
-            }
-        });
-
-        imageDiv.appendChild(whatsappBadge);
-
         // Create content section
         const contentDiv = document.createElement('div');
         contentDiv.className = 'recipe-content';
@@ -5863,6 +5837,7 @@ class RecipeApp {
         
         // Default to dark theme if no preference is saved
         if (savedTheme === null || savedTheme === 'dark') {
+            document.documentElement.classList.add('dark-theme');
             document.body.classList.add('dark-theme');
             this.updateThemeButton(true);
             // Save default preference if not set
@@ -5870,6 +5845,7 @@ class RecipeApp {
                 localStorage.setItem('recetario_theme', 'dark');
             }
         } else {
+            document.documentElement.classList.remove('dark-theme');
             document.body.classList.remove('dark-theme');
             this.updateThemeButton(false);
         }
@@ -5880,6 +5856,7 @@ class RecipeApp {
      */
     toggleTheme() {
         const isDark = document.body.classList.toggle('dark-theme');
+        document.documentElement.classList.toggle('dark-theme', isDark);
         localStorage.setItem('recetario_theme', isDark ? 'dark' : 'light');
         this.updateThemeButton(isDark);
         
@@ -6614,58 +6591,6 @@ class RecipeApp {
         }
     }
 
-    /**
-     * Share recipe on WhatsApp
-     * @param {Recipe} recipe - Recipe to share
-     */
-    shareRecipeOnWhatsApp(recipe) {
-        // Format recipe information for WhatsApp
-        let message = `🍳 *${recipe.name}*\n\n`;
-
-        // Add category
-        if (recipe.category) {
-            const categoryLabel = this.getCategoryLabel(recipe.category);
-            message += `📂 ${categoryLabel}\n\n`;
-        }
-
-        // Add time if available
-        if (recipe.totalTime && recipe.totalTime.trim() !== '') {
-            message += `⏱️ Tiempo: ${recipe.totalTime}\n\n`;
-        }
-
-        // Add ingredients
-        if (recipe.ingredients && recipe.ingredients.length > 0) {
-            message += `*Ingredientes:*\n`;
-            recipe.ingredients.forEach(ingredient => {
-                let line = `• ${ingredient.name}`;
-                if (ingredient.quantity && ingredient.quantity > 0) {
-                    line += ` - ${ingredient.quantity}`;
-                    if (ingredient.unit && ingredient.unit.trim() !== '') {
-                        line += ` ${ingredient.unit}`;
-                    }
-                } else if (ingredient.unit && ingredient.unit.trim() !== '') {
-                    line += ` - ${ingredient.unit}`;
-                }
-                message += line + '\n';
-            });
-            message += '\n';
-        }
-
-        // Add sequences if available
-        if (recipe.sequences && recipe.sequences.length > 0) {
-            message += `*Preparación:*\n`;
-            recipe.sequences.forEach((sequence, index) => {
-                message += `${index + 1}. ${sequence.step}\n`;
-            });
-        }
-
-        // Encode message for URL
-        const encodedMessage = encodeURIComponent(message);
-
-        // Open WhatsApp with the message
-        const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
-        window.open(whatsappUrl, '_blank');
-    }
 }
 
 // Initialize the application when the page loads
