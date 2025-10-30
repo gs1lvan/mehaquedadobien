@@ -9,12 +9,15 @@ const PREDEFINED_CATEGORIES = [
     { id: 'cerdo', name: 'Cerdo', emoji: '🐷', color: '#FFB6C1', isPredefined: true },
     { id: 'con-huevo', name: 'Con huevo', emoji: '🥚', color: '#FFD700', isPredefined: true },
     { id: 'conejo', name: 'Conejo', emoji: '🐰', color: '#D4A5A5', isPredefined: true },
+    { id: 'encurtidos', name: 'Encurtidos', emoji: '🥒', color: '#7CB342', isPredefined: true },
     { id: 'escabeche', name: 'Escabeche', emoji: '🥒', color: '#32CD32', isPredefined: true },
     { id: 'fruta', name: 'Fruta', emoji: '🍎', color: '#FF8C00', isPredefined: true },
+    { id: 'legumbres', name: 'Legumbres', emoji: '🫘', color: '#8D6E63', isPredefined: true },
     { id: 'marisco', name: 'Marisco', emoji: '🦐', color: '#FF6B9D', isPredefined: true },
     { id: 'pescado', name: 'Pescado', emoji: '🐟', color: '#0073CF', isPredefined: true },
     { id: 'pollo', name: 'Pollo', emoji: '🐔', color: '#FFA500', isPredefined: true },
     { id: 'postres', name: 'Postres', emoji: '🍰', color: '#FFB6C1', isPredefined: true },
+    { id: 'salsas', name: 'Salsas', emoji: '🍅', color: '#E53935', isPredefined: true },
     { id: 'verdura', name: 'Verdura', emoji: '🥬', color: '#008A05', isPredefined: true },
     { id: 'caravana', name: 'Caravana', emoji: '🚐', color: '#6B7280', isPredefined: true, isSpecial: true }
 ];
@@ -51,7 +54,10 @@ const KITCHEN_APPLIANCES = [
     { id: 'microondas', name: 'Microondas', emoji: '📻' },
     { id: 'freidora-aire', name: 'Freidora de aire', emoji: '💨' },
     { id: 'sandwichera', name: 'Sandwichera', emoji: '🥪' },
-    { id: 'batidora', name: 'Batidora', emoji: '🌀' }
+    { id: 'batidora', name: 'Batidora', emoji: '🌀' },
+    { id: 'wok', name: 'Wok', emoji: '🥘' },
+    { id: 'vaporera', name: 'Vaporera', emoji: '♨️' },
+    { id: 'thermomix', name: 'Thermomix', emoji: '🤖' }
 ];
 
 /**
@@ -517,10 +523,6 @@ class RecipeApp {
             // Shuffle recipes randomly on load
             this.recipes = this.shuffleArray(this.recipes);
             console.log(`Loaded ${this.recipes.length} recipes (shuffled)`);
-            
-            // Debug: Check caravanFriendly values
-            const caravanRecipes = this.recipes.filter(r => r.caravanFriendly === true);
-            console.log(`[DEBUG] Recipes with caravanFriendly=true: ${caravanRecipes.length}`, caravanRecipes.map(r => r.name));
         } catch (error) {
             console.error('Failed to load recipes:', error);
             this.showError('Error al cargar las recetas: ' + error.message);
@@ -1919,25 +1921,6 @@ class RecipeApp {
     }
 
     /**
-     * Parse time string to minutes
-     * @param {string} timeString - Time string like "2h 30min", "1h", "45min"
-     * @returns {number} Total minutes or null if no time
-     */
-    parseTimeToMinutes(timeString) {
-        if (!timeString || timeString.trim() === '') {
-            return null;
-        }
-
-        const hoursMatch = timeString.match(/(\d+)\s*h/);
-        const minutesMatch = timeString.match(/(\d+)\s*min/);
-
-        const hours = hoursMatch ? parseInt(hoursMatch[1]) : 0;
-        const minutes = minutesMatch ? parseInt(minutesMatch[1]) : 0;
-
-        return hours * 60 + minutes;
-    }
-
-    /**
      * Filter recipes based on active filters
      * Requirements: 10.2, 10.3, 10.4
      * @returns {Recipe[]} Filtered recipes
@@ -1947,29 +1930,27 @@ class RecipeApp {
 
         // Apply category filter
         if (this.activeFilters.size > 0) {
-            console.log('[DEBUG] Active filters:', Array.from(this.activeFilters));
-            
             filtered = filtered.filter(recipe => {
-                // Handle "caravana" filter - special case
-                if (this.activeFilters.has('caravana')) {
-                    console.log(`[DEBUG] Checking recipe "${recipe.name}" - caravanFriendly:`, recipe.caravanFriendly);
-                    if (recipe.caravanFriendly === true) {
-                        return true;
-                    }
+                // Check if recipe matches ANY of the active filters
+                let matches = false;
+                
+                // Check "caravana" filter - special case
+                if (this.activeFilters.has('caravana') && recipe.caravanFriendly === true) {
+                    matches = true;
                 }
 
-                // Handle "sin-categoria" filter
-                if (this.activeFilters.has('sin-categoria')) {
-                    if (recipe.category === null || recipe.category === undefined) {
-                        return true;
-                    }
+                // Check "sin-categoria" filter
+                if (this.activeFilters.has('sin-categoria') && (recipe.category === null || recipe.category === undefined)) {
+                    matches = true;
                 }
 
-                // Check if recipe category matches any active filter
-                return this.activeFilters.has(recipe.category);
+                // Check if recipe category matches any active filter (excluding special filters)
+                if (recipe.category && this.activeFilters.has(recipe.category)) {
+                    matches = true;
+                }
+
+                return matches;
             });
-            
-            console.log('[DEBUG] Filtered recipes count:', filtered.length);
         }
 
         // Apply time filter
@@ -2196,7 +2177,8 @@ class RecipeApp {
         if (categoryObj) {
             return `${categoryObj.emoji} ${categoryObj.name}`;
         }
-        return category;
+        // Category not found (may have been deleted)
+        return '❓ Categoría no encontrada';
     }
 
     /**
@@ -2517,34 +2499,70 @@ class RecipeApp {
     }
 
     /**
+     * Generate automatic recipe name with autonumeric suffix
+     * @returns {string} Auto-generated name like "GonsoReceta 1"
+     */
+    generateAutoRecipeName() {
+        // Find existing GonsoReceta names
+        const gonsoRecipes = this.recipes.filter(recipe => 
+            recipe.name.startsWith('GonsoReceta ')
+        );
+        
+        // Extract numbers from existing names
+        const numbers = gonsoRecipes.map(recipe => {
+            const match = recipe.name.match(/GonsoReceta (\d+)/);
+            return match ? parseInt(match[1]) : 0;
+        });
+        
+        // Find the next available number
+        let nextNumber = 1;
+        if (numbers.length > 0) {
+            nextNumber = Math.max(...numbers) + 1;
+        }
+        
+        return `GonsoReceta ${nextNumber}`;
+    }
+
+    /**
      * Handle form submission
      * Requirements: 1.1, 1.2, 1.3, 3.3, 6.3, 6.5, 9.2, 9.5
      */
     async handleFormSubmit() {
-        // Validate name field
+        // Check if name is empty and generate auto name if needed
+        const nameInput = document.getElementById('recipe-name');
+        if (nameInput && (!nameInput.value || nameInput.value.trim() === '')) {
+            // Generate auto name: GonsoReceta [number]
+            const autoName = this.generateAutoRecipeName();
+            nameInput.value = autoName;
+            console.log(`Auto-generated recipe name: ${autoName}`);
+        }
+        
+        // Validate name field (should pass now with auto-generated name)
         if (!this.validateNameField()) {
             // Scroll to name field
             document.getElementById('recipe-name')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
         }
 
-        // Validate time fields (at least one must be filled)
+        // Validate time fields - if empty, set default to 59 minutes
         const hoursInput = document.getElementById('recipe-hours');
         const minutesInput = document.getElementById('recipe-minutes');
         
         const hoursValue = hoursInput?.value?.trim();
         const minutesValue = minutesInput?.value?.trim();
         
-        // At least one field must have a value
-        if (!hoursValue && !minutesValue) {
-            this.showError('Debes especificar al menos horas o minutos en Tiempo Total');
-            hoursInput?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            return;
-        }
-
         // Parse values (empty = 0)
-        const hours = hoursValue ? parseInt(hoursValue) : 0;
-        const minutes = minutesValue ? parseInt(minutesValue) : 0;
+        let hours = hoursValue ? parseInt(hoursValue) : 0;
+        let minutes = minutesValue ? parseInt(minutesValue) : 0;
+
+        // If both are empty/0, set default to 59 minutes
+        if (hours === 0 && minutes === 0) {
+            minutes = 59;
+            if (minutesInput) {
+                minutesInput.value = '59';
+            }
+            console.log('Auto-set time to 59 minutes (default)');
+        }
 
         // Validate ranges
         if (isNaN(hours) || hours < 0 || hours > 24) {
@@ -2553,24 +2571,14 @@ class RecipeApp {
             return;
         }
 
-        if (isNaN(minutes) || minutes < 0 || minutes > 60) {
-            this.showError('Los minutos deben estar entre 0 y 60');
+        if (isNaN(minutes) || minutes < 0 || minutes > 59) {
+            this.showError('Los minutos deben estar entre 0 y 59');
             minutesInput?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            return;
-        }
-
-        // At least one must be greater than 0
-        if (hours === 0 && minutes === 0) {
-            this.showError('El tiempo total debe ser mayor que 0');
-            hoursInput?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
         }
 
         // Get form data
         const formData = this.getFormData();
-        
-        // Debug: Log caravanFriendly value
-        console.log('[DEBUG] FormData caravanFriendly:', formData.caravanFriendly);
 
         // Show loading state
         const saveBtn = document.getElementById('save-recipe-btn');
@@ -2627,7 +2635,6 @@ class RecipeApp {
                 }
 
                 // Update recipe data
-                console.log('[DEBUG] Updating recipe, caravanFriendly:', formData.caravanFriendly);
                 recipe = new Recipe({
                     id: existingRecipe.id,
                     name: formData.name,
@@ -2645,7 +2652,6 @@ class RecipeApp {
                     createdAt: existingRecipe.createdAt,
                     updatedAt: new Date()
                 });
-                console.log('[DEBUG] Recipe created, caravanFriendly:', recipe.caravanFriendly);
             } else {
                 // Creating new recipe
                 recipe = new Recipe({
@@ -5641,12 +5647,19 @@ class RecipeApp {
 
     /**
      * Initialize theme from localStorage
+     * Default theme is dark if no preference is saved
      */
     initTheme() {
         const savedTheme = localStorage.getItem('recetario_theme');
-        if (savedTheme === 'dark') {
+        
+        // Default to dark theme if no preference is saved
+        if (savedTheme === null || savedTheme === 'dark') {
             document.body.classList.add('dark-theme');
             this.updateThemeButton(true);
+            // Save default preference if not set
+            if (savedTheme === null) {
+                localStorage.setItem('recetario_theme', 'dark');
+            }
         } else {
             document.body.classList.remove('dark-theme');
             this.updateThemeButton(false);

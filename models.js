@@ -1323,7 +1323,10 @@ class PDFExporter {
                     { id: 'microondas', name: 'Microondas', emoji: '📻' },
                     { id: 'freidora-aire', name: 'Freidora de aire', emoji: '💨' },
                     { id: 'sandwichera', name: 'Sandwichera', emoji: '🥪' },
-                    { id: 'batidora', name: 'Batidora', emoji: '🌀' }
+                    { id: 'batidora', name: 'Batidora', emoji: '🌀' },
+                    { id: 'wok', name: 'Wok', emoji: '🥘' },
+                    { id: 'vaporera', name: 'Vaporera', emoji: '♨️' },
+                    { id: 'thermomix', name: 'Thermomix', emoji: '🤖' }
                 ];
 
                 const applianceNames = recipe.kitchenAppliances

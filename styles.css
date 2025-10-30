@@ -27,7 +27,10 @@
     --color-pollo: #FFA500;
     --color-cerdo: #FFB6C1;
     --color-conejo: #D4A5A5;
+    --color-encurtidos: #7CB342;
     --color-escabeche: #32CD32;
+    --color-legumbres: #8D6E63;
+    --color-salsas: #E53935;
     
     /* Functional Colors */
     --color-success: #008A05;
@@ -487,6 +490,21 @@ main {
     color: var(--color-text);
 }
 
+.filter-chip[data-category="encurtidos"].active {
+    background: var(--color-encurtidos);
+    border-color: var(--color-encurtidos);
+}
+
+.filter-chip[data-category="legumbres"].active {
+    background: var(--color-legumbres);
+    border-color: var(--color-legumbres);
+}
+
+.filter-chip[data-category="salsas"].active {
+    background: var(--color-salsas);
+    border-color: var(--color-salsas);
+}
+
 /* ===== Recipe Counter ===== */
 .recipe-counter {
     margin-top: var(--spacing-xs);
@@ -680,6 +698,21 @@ main {
 .recipe-category[data-category="conejo"] {
     background: rgba(212, 165, 165, 0.1);
     color: #A0522D;
+}
+
+.recipe-category[data-category="encurtidos"] {
+    background: rgba(124, 179, 66, 0.1);
+    color: #558B2F;
+}
+
+.recipe-category[data-category="legumbres"] {
+    background: rgba(141, 110, 99, 0.1);
+    color: #5D4037;
+}
+
+.recipe-category[data-category="salsas"] {
+    background: rgba(229, 57, 53, 0.1);
+    color: #C62828;
 }
 
 .recipe-preview {

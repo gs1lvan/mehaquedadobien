@@ -242,33 +242,39 @@
                     </div>
 
                     <!-- Metadata -->
-                    <div class="detail-section detail-metadata">
+                    <div class="detail-section">
                         <h3 class="detail-section-title">ℹ️ Información</h3>
                         
                         <!-- Additional Information (Author and History) -->
                         <div id="detail-additional-info-section" style="display: none; margin-bottom: 24px;">
-                            <div id="detail-author-section" style="display: none; margin-bottom: 16px;">
-                                <span class="metadata-label">Autor:</span>
-                                <div id="detail-author" class="metadata-value"></div>
+                            <div id="detail-author-section" class="detail-sequence-item" style="display: none;">
+                                <div class="sequence-header">
+                                    <span class="sequence-number">Autor</span>
+                                </div>
+                                <div id="detail-author" class="sequence-description"></div>
                             </div>
-                            <div id="detail-history-section" style="display: none;">
-                                <span class="metadata-label">Historia:</span>
-                                <div id="detail-history" class="metadata-value" style="white-space: pre-wrap;"></div>
+                            <div id="detail-history-section" class="detail-sequence-item" style="display: none;">
+                                <div class="sequence-header">
+                                    <span class="sequence-number">Historia</span>
+                                </div>
+                                <div id="detail-history" class="sequence-description"></div>
                             </div>
                         </div>
 
-                        <div class="metadata-grid">
-                            <div class="metadata-item">
-                                <span class="metadata-label">Creada:</span>
-                                <span id="detail-created-at" class="metadata-value">-</span>
-                            </div>
-                            <div class="metadata-item">
-                                <span class="metadata-label">Última modificación:</span>
-                                <span id="detail-updated-at" class="metadata-value">-</span>
-                            </div>
-                            <div class="metadata-item">
-                                <span class="metadata-label">ID:</span>
-                                <span id="detail-recipe-id" class="metadata-value">-</span>
+                        <div class="detail-metadata">
+                            <div class="metadata-grid">
+                                <div class="metadata-item">
+                                    <span class="metadata-label">Creada:</span>
+                                    <span id="detail-created-at" class="metadata-value">-</span>
+                                </div>
+                                <div class="metadata-item">
+                                    <span class="metadata-label">Última modificación:</span>
+                                    <span id="detail-updated-at" class="metadata-value">-</span>
+                                </div>
+                                <div class="metadata-item">
+                                    <span class="metadata-label">ID:</span>
+                                    <span id="detail-recipe-id" class="metadata-value">-</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -288,17 +294,17 @@
                         <h3 class="section-title">Información Básica</h3>
                         
                         <div class="form-group">
-                            <label for="recipe-name" class="required">Nombre de la receta</label>
+                            <label for="recipe-name">Nombre de la receta (opcional)</label>
                             <input 
                                 type="text" 
                                 id="recipe-name" 
                                 name="name" 
                                 class="form-input" 
                                 placeholder="Ej: Paella Valenciana"
-                                required
                                 maxlength="100"
                                 autocomplete="off"
                             >
+                            <span class="helper-text">Si lo dejas vacío, se generará automáticamente como "GonsoReceta 1", "GonsoReceta 2", etc.</span>
                             <span class="error-message" id="name-error"></span>
                         </div>
 
@@ -320,7 +326,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="required">Tiempo Total</label>
+                            <label>Tiempo Total (opcional)</label>
                             <div class="time-input-group">
                                 <div class="time-input-item">
                                     <span class="time-label">Horas</span>
@@ -342,12 +348,12 @@
                                         class="form-input time-input" 
                                         placeholder="0"
                                         min="0"
-                                        max="60"
+                                        max="59"
                                         autocomplete="off"
                                     >
                                 </div>
                             </div>
-                            <span class="helper-text">Especifica al menos horas o minutos (ej: solo "30" minutos es válido)</span>
+                            <span class="helper-text">Si lo dejas vacío, se establecerá automáticamente en 59 minutos</span>
                         </div>
 
                         <div class="form-group">
@@ -512,7 +518,7 @@
                                                     class="form-input time-input" 
                                                     placeholder="0"
                                                     min="0"
-                                                    max="60"
+                                                    max="59"
                                                     autocomplete="off"
                                                 >
                                             </div>

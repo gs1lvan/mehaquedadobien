@@ -9,6 +9,7 @@
   - Implementar estilos para el indicador de posición (.gallery-indicator)
   - Crear estilos para las miniaturas (.gallery-thumbnails, .gallery-thumbnail)
   - Agregar estilos responsive para móvil (< 768px) y tablet (768px - 1024px)
+  
   - Implementar fallback CSS para navegadores sin soporte de aspect-ratio
   - _Requisitos: 1.1, 1.3, 1.5, 3.1, 3.2, 3.3, 3.4_
 
@@ -146,3 +147,4 @@
   - Probar scroll horizontal de miniaturas
   - Verificar transiciones y animaciones
   - _Requisitos: 3.1, 3.2, 3.3, 3.4, 3.5, 4.2, 4.3, 4.4, 4.5_
+hola , como podria tener cargados y actualizados las recetas en xml? que servicio podria usar
