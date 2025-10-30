@@ -956,6 +956,13 @@ body.dark-theme .recipe-pdf-badge:hover {
     -webkit-box-orient: vertical;
 }
 
+/* Hide recipe preview on mobile */
+@media (max-width: 768px) {
+    .recipe-preview {
+        display: none;
+    }
+}
+
 /* ===== Empty State ===== */
 .empty-state {
     text-align: center;
@@ -1040,9 +1047,18 @@ body.dark-theme .recipe-pdf-badge:hover {
     align-items: center;
     gap: var(--spacing-sm);
     transition: color 0.2s ease;
+    color: var(--color-text);
 }
 
 .collapsible-title:hover {
+    color: var(--color-primary);
+}
+
+.collapsible-title.collapsed {
+    color: var(--color-text);
+}
+
+.collapsible-title.collapsed:hover {
     color: var(--color-primary);
 }
 
@@ -1953,6 +1969,11 @@ body.dark-theme .recipe-pdf-badge:hover {
     word-break: break-word;
     hyphens: none;
     line-height: 1.2;
+    transition: color 0.2s ease;
+}
+
+.detail-header h2:hover {
+    color: var(--color-primary);
 }
 
 .detail-actions {
@@ -1960,7 +1981,7 @@ body.dark-theme .recipe-pdf-badge:hover {
     gap: var(--spacing-xs);
     flex-wrap: wrap;
     flex-shrink: 0;
-    margin-top: var(--spacing-md);
+    margin-top: var(--spacing-xs);
 }
 
 .btn-action {
@@ -2043,7 +2064,7 @@ body.dark-theme .recipe-pdf-badge:hover {
 }
 
 .detail-category-section {
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-sm);
     display: flex;
     gap: var(--spacing-sm);
     align-items: center;
@@ -2651,7 +2672,7 @@ body.dark-theme .recipe-pdf-badge:hover {
 
 /* ===== Footer ===== */
 .app-footer {
-    margin-top: 15px;
+    margin-top: 4px;
     padding: 0;
     background: transparent;
 }
@@ -2665,10 +2686,7 @@ body.dark-theme .recipe-pdf-badge:hover {
     color: var(--color-text-secondary);
     text-align: left;
     margin: 0;
-    background: var(--color-background);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-xl);
-    box-shadow: var(--shadow-sm);
+    padding: var(--spacing-xs) 0;
 }
 
 /* ===== Focus Styles for Accessibility ===== */

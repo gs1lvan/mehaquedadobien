@@ -4545,6 +4545,11 @@ class RecipeApp {
             nameElement.textContent = recipe.name;
             // Apply dynamic font sizing based on name length
             this.adjustRecipeNameFontSize(nameElement);
+            // Make it clickable to go back to home
+            nameElement.style.cursor = 'pointer';
+            nameElement.onclick = () => {
+                this.goToHome();
+            };
         }
 
         // Category
@@ -5765,6 +5770,24 @@ class RecipeApp {
         const recipeCounter = document.getElementById('recipe-counter');
         if (recipeCounter) {
             recipeCounter.classList.remove('hidden');
+        }
+        
+        // Hide filters container (like initial state)
+        const filtersContainer = document.getElementById('filters-container');
+        if (filtersContainer) {
+            filtersContainer.classList.add('hidden');
+        }
+        
+        // Show toggle filters button
+        const filterToggleContainer = document.querySelector('.filter-toggle-container');
+        if (filterToggleContainer) {
+            filterToggleContainer.classList.remove('hidden');
+        }
+        
+        // Update toggle button text to show filters are closed
+        const toggleBtn = document.getElementById('toggle-filters-btn');
+        if (toggleBtn) {
+            toggleBtn.textContent = '🔍 Filtros';
         }
 
         // Show header actions when returning to home
