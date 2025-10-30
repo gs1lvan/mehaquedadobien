@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Testing - Copy Ingredients Feature</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        
+        .test-section {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .test-section h2 {
+            margin-top: 0;
+            color: var(--color-primary);
+        }
+        
+        .test-checklist {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .test-checklist li {
+            padding: 10px;
+            margin: 5px 0;
+            background: var(--color-background);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .test-checklist input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .test-info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .test-warning {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .browser-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .browser-card {
+            background: var(--color-background);
+            padding: 15px;
+            border-radius: var(--radius-md);
+            border: 2px solid var(--color-border);
+        }
+        
+        .browser-card h4 {
+            margin-top: 0;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-pass { background: #4caf50; }
+        .status-fail { background: #f44336; }
+        .status-pending { background: #9e9e9e; }
+        
+        .test-results {
+            margin-top: 20px;
+        }
+        
+        .result-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .paste-area {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius-md);
+            font-family: monospace;
+            background: var(--color-background);
+            margin: 10px 0;

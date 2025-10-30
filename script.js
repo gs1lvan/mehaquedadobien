@@ -1419,13 +1419,24 @@ class RecipeApp {
         
         actionButtons.forEach(button => {
             button.addEventListener('click', () => {
-                const action = button.dataset.action;
+                let action = button.dataset.action;
                 const currentValue = descriptionTextarea.value;
                 
                 // Insert action at cursor position or at the end
                 const cursorPos = descriptionTextarea.selectionStart;
                 const textBefore = currentValue.substring(0, cursorPos);
                 const textAfter = currentValue.substring(cursorPos);
+                
+                // Check if we need to capitalize (start of text or after period)
+                const shouldCapitalize = textBefore.length === 0 || 
+                                       textBefore.trimEnd().endsWith('.') ||
+                                       textBefore.trimEnd().endsWith('!') ||
+                                       textBefore.trimEnd().endsWith('?');
+                
+                // Capitalize first letter if needed
+                if (shouldCapitalize && action.length > 0) {
+                    action = action.charAt(0).toUpperCase() + action.slice(1);
+                }
                 
                 // Add space before if needed
                 const needsSpaceBefore = textBefore.length > 0 && !textBefore.endsWith(' ') && !textBefore.endsWith('\n');
@@ -2104,10 +2115,71 @@ class RecipeApp {
         imageDiv.className = 'recipe-image';
 
         if (recipe.images && recipe.images.length > 0) {
-            const img = document.createElement('img');
-            img.src = recipe.images[0].data;
-            img.alt = recipe.name;
-            imageDiv.appendChild(img);
+            // Create carousel container
+            const carouselContainer = document.createElement('div');
+            carouselContainer.className = 'recipe-image-carousel';
+            carouselContainer.dataset.currentIndex = '0';
+            carouselContainer.dataset.totalImages = recipe.images.length;
+
+            // Create images wrapper
+            const imagesWrapper = document.createElement('div');
+            imagesWrapper.className = 'carousel-images';
+
+            // Add all images
+            recipe.images.forEach((image, index) => {
+                const img = document.createElement('img');
+                img.src = image.data;
+                img.alt = `${recipe.name} - Imagen ${index + 1}`;
+                img.className = index === 0 ? 'active' : '';
+                imagesWrapper.appendChild(img);
+            });
+
+            carouselContainer.appendChild(imagesWrapper);
+
+            // Add navigation arrows if more than one image
+            if (recipe.images.length > 1) {
+                // Previous button
+                const prevBtn = document.createElement('button');
+                prevBtn.className = 'carousel-btn carousel-prev';
+                prevBtn.innerHTML = '‹';
+                prevBtn.setAttribute('aria-label', 'Imagen anterior');
+                prevBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.navigateCarousel(carouselContainer, -1);
+                });
+
+                // Next button
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'carousel-btn carousel-next';
+                nextBtn.innerHTML = '›';
+                nextBtn.setAttribute('aria-label', 'Imagen siguiente');
+                nextBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.navigateCarousel(carouselContainer, 1);
+                });
+
+                // Dots indicator
+                const dotsContainer = document.createElement('div');
+                dotsContainer.className = 'carousel-dots';
+                recipe.images.forEach((_, index) => {
+                    const dot = document.createElement('span');
+                    dot.className = index === 0 ? 'dot active' : 'dot';
+                    dot.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.goToCarouselImage(carouselContainer, index);
+                    });
+                    dotsContainer.appendChild(dot);
+                });
+
+                carouselContainer.appendChild(prevBtn);
+                carouselContainer.appendChild(nextBtn);
+                carouselContainer.appendChild(dotsContainer);
+
+                // Add touch support for mobile
+                this.addCarouselTouchSupport(carouselContainer);
+            }
+
+            imageDiv.appendChild(carouselContainer);
         }
 
         // Add time badge if totalTime exists
@@ -2117,6 +2189,82 @@ class RecipeApp {
             timeBadge.textContent = recipe.totalTime;
             imageDiv.appendChild(timeBadge);
         }
+
+        // Add ingredients badge
+        const ingredientsBadge = document.createElement('div');
+        ingredientsBadge.className = 'recipe-ingredients-badge';
+        ingredientsBadge.title = 'Copiar ingredientes';
+        ingredientsBadge.setAttribute('role', 'button');
+        ingredientsBadge.setAttribute('tabindex', '0');
+        ingredientsBadge.setAttribute('aria-label', `Copiar ingredientes de ${recipe.name}`);
+
+        // Add click handler for copying ingredients
+        ingredientsBadge.addEventListener('click', (e) => {
+            this.copyIngredientsToClipboard(recipe, e);
+        });
+
+        // Add keyboard handler for accessibility
+        ingredientsBadge.addEventListener('keydown', (e) => {
+            // Detect Enter or Space keys
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault(); // Prevent default browser behavior
+                this.copyIngredientsToClipboard(recipe, e);
+            }
+        });
+
+        imageDiv.appendChild(ingredientsBadge);
+
+        // Add PDF export badge
+        const pdfBadge = document.createElement('div');
+        pdfBadge.className = 'recipe-pdf-badge';
+        pdfBadge.title = 'Exportar a PDF';
+        pdfBadge.setAttribute('role', 'button');
+        pdfBadge.setAttribute('tabindex', '0');
+        pdfBadge.setAttribute('aria-label', `Exportar ${recipe.name} a PDF`);
+
+        // Add click handler for PDF export
+        pdfBadge.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            this.exportRecipeToPDF(recipe.id);
+        });
+
+        // Add keyboard handler for accessibility
+        pdfBadge.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                this.exportRecipeToPDF(recipe.id);
+            }
+        });
+
+        imageDiv.appendChild(pdfBadge);
+
+        // Add WhatsApp share badge
+        const whatsappBadge = document.createElement('div');
+        whatsappBadge.className = 'recipe-whatsapp-badge';
+        whatsappBadge.title = 'Compartir por WhatsApp';
+        whatsappBadge.setAttribute('role', 'button');
+        whatsappBadge.setAttribute('tabindex', '0');
+        whatsappBadge.setAttribute('aria-label', `Compartir ${recipe.name} por WhatsApp`);
+
+        // Add click handler for WhatsApp share
+        whatsappBadge.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            this.shareRecipeOnWhatsApp(recipe);
+        });
+
+        // Add keyboard handler for accessibility
+        whatsappBadge.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                this.shareRecipeOnWhatsApp(recipe);
+            }
+        });
+
+        imageDiv.appendChild(whatsappBadge);
 
         // Create content section
         const contentDiv = document.createElement('div');
@@ -4338,6 +4486,12 @@ class RecipeApp {
             timeFilterBar.classList.add('hidden');
         }
 
+        // Hide recipe counter
+        const recipeCounter = document.getElementById('recipe-counter');
+        if (recipeCounter) {
+            recipeCounter.classList.add('hidden');
+        }
+
         // Show detail view
         const detailView = document.getElementById('recipe-detail-view');
         if (detailView) {
@@ -4359,15 +4513,64 @@ class RecipeApp {
     }
 
     /**
+     * Adjust recipe name font size dynamically to fill available width
+     * @param {HTMLElement} nameElement - The h2 element containing the recipe name
+     */
+    adjustRecipeNameFontSize(nameElement) {
+        if (!nameElement) return;
+        
+        const containerWidth = nameElement.parentElement.offsetWidth;
+        const textLength = nameElement.textContent.length;
+        
+        // Base font sizes (in rem)
+        const maxFontSize = 3;    // Desktop max: 3rem (48px)
+        const minFontSize = 1.5;  // Minimum: 1.5rem (24px)
+        
+        // Calculate font size based on text length
+        // Shorter names get larger font, longer names get smaller font
+        let fontSize;
+        
+        if (textLength <= 10) {
+            fontSize = maxFontSize;  // Very short: max size
+        } else if (textLength <= 20) {
+            fontSize = maxFontSize - ((textLength - 10) * 0.05);  // Gradual decrease
+        } else if (textLength <= 30) {
+            fontSize = 2.5 - ((textLength - 20) * 0.05);
+        } else if (textLength <= 40) {
+            fontSize = 2 - ((textLength - 30) * 0.03);
+        } else {
+            fontSize = minFontSize;  // Very long: min size
+        }
+        
+        // Ensure we don't go below minimum
+        fontSize = Math.max(fontSize, minFontSize);
+        
+        // Apply font size
+        nameElement.style.fontSize = `${fontSize}rem`;
+        
+        // Check if text overflows and adjust further if needed
+        setTimeout(() => {
+            if (nameElement.scrollWidth > containerWidth) {
+                // Text still overflows, reduce font size slightly
+                let adjustedSize = fontSize * 0.95;
+                adjustedSize = Math.max(adjustedSize, minFontSize);
+                nameElement.style.fontSize = `${adjustedSize}rem`;
+            }
+        }, 0);
+    }
+
+    /**
      * Render recipe detail
      * Requirements: 3.4, 4.4, 5.5, 9.4
      * @param {Recipe} recipe - Recipe to display
      */
     renderRecipeDetail(recipe) {
-        // Recipe name
+        // Recipe name with dynamic font sizing
         const nameElement = document.getElementById('detail-recipe-name');
         if (nameElement) {
             nameElement.textContent = recipe.name;
+            // Apply dynamic font sizing based on name length
+            this.adjustRecipeNameFontSize(nameElement);
         }
 
         // Category
@@ -5584,6 +5787,12 @@ class RecipeApp {
             timeFilterBar.classList.remove('hidden');
         }
 
+        // Show recipe counter
+        const recipeCounter = document.getElementById('recipe-counter');
+        if (recipeCounter) {
+            recipeCounter.classList.remove('hidden');
+        }
+
         // Show header actions when returning to home
         this.showHeaderActions();
 
@@ -5867,6 +6076,200 @@ class RecipeApp {
     }
 
     /**
+     * Format ingredients as plain text for clipboard
+     * Requirements: 2.2, 2.3, 2.4, 5.1, 5.2, 5.3, 5.4, 5.5
+     * @param {Recipe} recipe - Recipe object with ingredients
+     * @returns {string} Formatted text with recipe name and ingredients
+     */
+    formatIngredientsForClipboard(recipe) {
+        // Start with recipe name
+        let text = recipe.name + '\n\n';
+        
+        // Check if recipe has ingredients
+        if (!recipe.ingredients || recipe.ingredients.length === 0) {
+            text += 'No hay ingredientes definidos';
+            return text;
+        }
+        
+        // Format each ingredient
+        recipe.ingredients.forEach(ingredient => {
+            let line = ingredient.name;
+            
+            // Add quantity and unit if available
+            if (ingredient.quantity && ingredient.quantity > 0) {
+                line += ` - ${ingredient.quantity}`;
+                
+                if (ingredient.unit && ingredient.unit.trim() !== '') {
+                    line += ` ${ingredient.unit}`;
+                }
+            } else if (ingredient.unit && ingredient.unit.trim() !== '') {
+                line += ` - ${ingredient.unit}`;
+            }
+            
+            text += line + '\n';
+        });
+        
+        return text.trim();
+    }
+
+    /**
+     * Copy ingredients to clipboard
+     * Requirements: 2.1, 2.5, 4.1, 4.3
+     * @param {Recipe} recipe - Recipe object with ingredients
+     * @param {Event} event - Click event to prevent propagation
+     */
+    async copyIngredientsToClipboard(recipe, event) {
+        // Prevent card click event
+        event.stopPropagation();
+        event.preventDefault();
+        
+        // Get the recipe card element
+        const recipeCard = event.target.closest('.recipe-card');
+        
+        try {
+            // Format ingredients text
+            const ingredientsText = this.formatIngredientsForClipboard(recipe);
+            
+            // Copy to clipboard using Clipboard API
+            await navigator.clipboard.writeText(ingredientsText);
+            
+            // Show success toast over the recipe card
+            this.showToastOnCard(recipeCard, 'Ingredientes copiados', 'success');
+            
+        } catch (error) {
+            console.error('Error copying ingredients:', error);
+            
+            // Fallback to legacy method
+            try {
+                const ingredientsText = this.formatIngredientsForClipboard(recipe);
+                this.fallbackCopyToClipboard(ingredientsText);
+                this.showToastOnCard(recipeCard, 'Ingredientes copiados', 'success');
+            } catch (fallbackError) {
+                this.showToastOnCard(recipeCard, 'Error al copiar ingredientes', 'error');
+            }
+        }
+    }
+
+    /**
+     * Fallback method to copy text to clipboard for older browsers
+     * Requirements: 2.1, 4.1
+     * @param {string} text - Text to copy to clipboard
+     * @throws {Error} If copy operation fails
+     */
+    fallbackCopyToClipboard(text) {
+        // Create temporary textarea element
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        
+        // Position off-screen
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        
+        // Add to DOM
+        document.body.appendChild(textArea);
+        
+        // Select and copy
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            // Execute copy command
+            const successful = document.execCommand('copy');
+            
+            // Clean up
+            document.body.removeChild(textArea);
+            
+            if (!successful) {
+                throw new Error('execCommand returned false');
+            }
+        } catch (error) {
+            // Clean up on error
+            document.body.removeChild(textArea);
+            throw error;
+        }
+    }
+
+    /**
+     * Show toast notification over a recipe card
+     * Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 4.4
+     * @param {HTMLElement} recipeCard - Recipe card element
+     * @param {string} message - Message to display
+     * @param {string} type - Type of toast ('success' or 'error')
+     */
+    showToastOnCard(recipeCard, message, type = 'success') {
+        if (!recipeCard) return;
+        
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `toast-notification-card ${type}`;
+        toast.innerHTML = `
+            <span class="toast-icon">${type === 'success' ? '✓' : '✕'}</span>
+            <span class="toast-message">${message}</span>
+        `;
+        
+        // Add toast to recipe card
+        recipeCard.appendChild(toast);
+        
+        // Show toast with animation
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 10);
+        
+        // Hide and remove toast after 2 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }, 2000);
+    }
+
+    /**
+     * Show toast notification (legacy method for other uses)
+     * Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 4.4
+     * @param {string} message - Message to display
+     * @param {string} type - Type of toast ('success' or 'error')
+     */
+    showToast(message, type = 'success') {
+        // Get or create toast element
+        let toast = document.getElementById('ingredients-toast');
+        
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'ingredients-toast';
+            toast.className = 'toast-notification';
+            toast.innerHTML = `
+                <span class="toast-icon">✓</span>
+                <span class="toast-message"></span>
+            `;
+            document.body.appendChild(toast);
+        }
+        
+        // Update message and type
+        const messageSpan = toast.querySelector('.toast-message');
+        const iconSpan = toast.querySelector('.toast-icon');
+        
+        messageSpan.textContent = message;
+        toast.className = `toast-notification ${type}`;
+        
+        // Update icon based on type
+        iconSpan.textContent = type === 'success' ? '✓' : '✕';
+        
+        // Show toast
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 10);
+        
+        // Hide toast after 3 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    /**
      * Handle import XML button click
      * Requirements: 1.1
      */
@@ -6130,6 +6533,138 @@ class RecipeApp {
             console.error('[Export] Error exporting multiple recipes:', error);
             throw error;
         }
+    }
+
+    /**
+     * Navigate carousel images
+     * @param {HTMLElement} carousel - Carousel container
+     * @param {number} direction - Direction to navigate (-1 for prev, 1 for next)
+     */
+    navigateCarousel(carousel, direction) {
+        const currentIndex = parseInt(carousel.dataset.currentIndex);
+        const totalImages = parseInt(carousel.dataset.totalImages);
+        let newIndex = currentIndex + direction;
+
+        // Loop around
+        if (newIndex < 0) newIndex = totalImages - 1;
+        if (newIndex >= totalImages) newIndex = 0;
+
+        this.goToCarouselImage(carousel, newIndex);
+    }
+
+    /**
+     * Go to specific carousel image
+     * @param {HTMLElement} carousel - Carousel container
+     * @param {number} index - Image index to show
+     */
+    goToCarouselImage(carousel, index) {
+        const images = carousel.querySelectorAll('.carousel-images img');
+        const dots = carousel.querySelectorAll('.dot');
+
+        // Update active image
+        images.forEach((img, i) => {
+            img.classList.toggle('active', i === index);
+        });
+
+        // Update active dot
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+        });
+
+        // Update current index
+        carousel.dataset.currentIndex = index;
+    }
+
+    /**
+     * Add touch support for carousel
+     * @param {HTMLElement} carousel - Carousel container
+     */
+    addCarouselTouchSupport(carousel) {
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        carousel.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        carousel.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            this.handleCarouselSwipe(carousel, touchStartX, touchEndX);
+        }, { passive: true });
+    }
+
+    /**
+     * Handle swipe gesture
+     * @param {HTMLElement} carousel - Carousel container
+     * @param {number} startX - Touch start X position
+     * @param {number} endX - Touch end X position
+     */
+    handleCarouselSwipe(carousel, startX, endX) {
+        const swipeThreshold = 50;
+        const diff = startX - endX;
+
+        if (Math.abs(diff) > swipeThreshold) {
+            if (diff > 0) {
+                // Swipe left - next image
+                this.navigateCarousel(carousel, 1);
+            } else {
+                // Swipe right - previous image
+                this.navigateCarousel(carousel, -1);
+            }
+        }
+    }
+
+    /**
+     * Share recipe on WhatsApp
+     * @param {Recipe} recipe - Recipe to share
+     */
+    shareRecipeOnWhatsApp(recipe) {
+        // Format recipe information for WhatsApp
+        let message = `🍳 *${recipe.name}*\n\n`;
+
+        // Add category
+        if (recipe.category) {
+            const categoryLabel = this.getCategoryLabel(recipe.category);
+            message += `📂 ${categoryLabel}\n\n`;
+        }
+
+        // Add time if available
+        if (recipe.totalTime && recipe.totalTime.trim() !== '') {
+            message += `⏱️ Tiempo: ${recipe.totalTime}\n\n`;
+        }
+
+        // Add ingredients
+        if (recipe.ingredients && recipe.ingredients.length > 0) {
+            message += `*Ingredientes:*\n`;
+            recipe.ingredients.forEach(ingredient => {
+                let line = `• ${ingredient.name}`;
+                if (ingredient.quantity && ingredient.quantity > 0) {
+                    line += ` - ${ingredient.quantity}`;
+                    if (ingredient.unit && ingredient.unit.trim() !== '') {
+                        line += ` ${ingredient.unit}`;
+                    }
+                } else if (ingredient.unit && ingredient.unit.trim() !== '') {
+                    line += ` - ${ingredient.unit}`;
+                }
+                message += line + '\n';
+            });
+            message += '\n';
+        }
+
+        // Add sequences if available
+        if (recipe.sequences && recipe.sequences.length > 0) {
+            message += `*Preparación:*\n`;
+            recipe.sequences.forEach((sequence, index) => {
+                message += `${index + 1}. ${sequence.step}\n`;
+            });
+        }
+
+        // Encode message for URL
+        const encodedMessage = encodeURIComponent(message);
+
+        // Open WhatsApp with the message
+        const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+        window.open(whatsappUrl, '_blank');
     }
 }
 

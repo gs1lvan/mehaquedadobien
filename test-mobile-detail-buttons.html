@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Botones Detalle Móvil</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            padding: 20px;
+            background: var(--color-background-secondary);
+        }
+        
+        .test-container {
+            max-width: 400px;
+            margin: 0 auto 40px;
+            background: var(--color-background);
+            padding: 20px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .test-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--color-primary);
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 15px;
+            font-size: 0.875rem;
+        }
+        
+        .status.before {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+        }
+        
+        .status.after {
+            background: #d4edda;
+            border: 1px solid #28a745;
+        }
+        
+        /* Simulación de móvil */
+        .mobile-sim {
+            border: 3px solid #333;
+            border-radius: 20px;
+            padding: 10px;
+            background: #000;
+        }
+        
+        .mobile-screen {
+            background: var(--color-background);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        /* ANTES - Comportamiento actual */
+        .detail-header-before .detail-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+            flex-wrap: wrap;
+            flex-shrink: 0;
+            /* En móvil actual: width: 100% y margin-top */
+        }
+        
+        /* DESPUÉS - Comportamiento mejorado */
+        .detail-header-after {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+        
+        .detail-header-after .detail-header-content {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+            width: 100%;
+        }
+        
+        .detail-header-after .detail-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+            flex-wrap: wrap;
+            width: 100%;
+        }
+        
+        .detail-header-after .btn-action {
+            flex: 1 1 calc(50% - var(--spacing-xs));
+            min-width: 120px;
+            text-align: center;
+            padding: 10px 8px;
+            font-size: 0.8125rem;
+        }
+        
+        /* Simulación de ancho móvil */
+        @media (max-width: 768px) {
+            .detail-actions {
+                width: 100%;
+                margin-top: var(--spacing-sm);
+            }
+            
+            .btn-action {
+                flex: 1;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; margin-bottom: 30px;">🔍 Test - Botones Detalle en Móvil</h1>
+    
+    <!-- ANTES -->
+    <div class="test-container">
+        <div class="test-title">❌ ANTES (Problema Actual)</div>
+        <div class="status before">
+            <strong>Problema:</strong> Los botones no ocupan todo el ancho del detail-header en móvil
+        </div>
+        
+        <div class="mobile-sim">
+            <div class="mobile-screen">
+                <div class="detail-header detail-header-before" style="padding: 15px;">
+                    <button class="btn-icon" style="margin-bottom: 10px;">◀</button>
+                    <div style="margin-bottom: 10px;">
+                        <h2 style="font-size: 1.2rem; margin: 0;">Paella Valenciana</h2>
+                        <span style="font-size: 0.875rem; color: var(--color-text-secondary);">⏱️ 1h 30min</span>
+                    </div>
+                    <div class="detail-actions">
+                        <button class="btn-action btn-action-compact">Editar</button>
+                        <button class="btn-action btn-action-compact">Duplicar</button>
+                        <button class="btn-action btn-action-compact btn-danger">Eliminar</button>
+                        <button class="btn-action btn-action-compact">Exportar esta receta</button>
+                        <button class="btn-action btn-action-compact">PDF</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 15px; padding: 10px; background: var(--color-background-secondary); border-radius: var(--radius-sm); font-size: 0.875rem;">
+            <strong>Observación:</strong> Los botones se ajustan pero no aprovechan todo el ancho disponible del contenedor padre.
+        </div>
+    </div>
+    
+    <!-- DESPUÉS -->
+    <div class="test-container">
+        <div class="test-title">✅ DESPUÉS (Solución Propuesta)</div>
+        <div class="status after">
+            <strong>Solución:</strong> Los botones ocupan todo el ancho del detail-header con distribución 2x3
+        </div>
+        
+        <div class="mobile-sim">
+            <div class="mobile-screen">
+                <div class="detail-header detail-header-after" style="padding: 15px;">
+                    <button class="btn-icon" style="align-self: flex-start;">◀</button>
+                    <div class="detail-header-content">
+                        <div>
+                            <h2 style="font-size: 1.2rem; margin: 0;">Paella Valenciana</h2>
+                            <span style="font-size: 0.875rem; color: var(--color-text-secondary);">⏱️ 1h 30min</span>
+                        </div>
+                        <div class="detail-actions">
+                            <button class="btn-action btn-action-compact">Editar</button>
+                            <button class="btn-action btn-action-compact">Duplicar</button>
+                            <button class="btn-action btn-action-compact btn-danger">Eliminar</button>
+                            <button class="btn-action btn-action-compact">Exportar esta receta</button>
+                            <button class="btn-action btn-action-compact">PDF</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 15px; padding: 10px; background: var(--color-background-secondary); border-radius: var(--radius-sm); font-size: 0.875rem;">
+            <strong>Mejora:</strong> Los botones se distribuyen en 2 columnas y ocupan todo el ancho disponible, mejorando la usabilidad en móvil.
+        </div>
+    </div>
+    
+    <!-- COMPARACIÓN LADO A LADO -->
+    <div class="test-container" style="max-width: 800px;">
+        <div class="test-title">📊 Comparación Lado a Lado</div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <h3 style="text-align: center; font-size: 1rem; margin-bottom: 10px;">Antes</h3>
+                <div class="mobile-sim" style="max-width: 300px; margin: 0 auto;">
+                    <div class="mobile-screen">
+                        <div class="detail-header detail-header-before" style="padding: 15px;">
+                            <button class="btn-icon" style="margin-bottom: 10px;">◀</button>
+                            <div style="margin-bottom: 10px;">
+                                <h2 style="font-size: 1rem; margin: 0;">Receta</h2>
+                            </div>
+                            <div class="detail-actions">
+                                <button class="btn-action btn-action-compact" style="font-size: 0.75rem; padding: 6px 8px;">Editar</button>
+                                <button class="btn-action btn-action-compact" style="font-size: 0.75rem; padding: 6px 8px;">Duplicar</button>
+                                <button class="btn-action btn-action-compact btn-danger" style="font-size: 0.75rem; padding: 6px 8px;">Eliminar</button>
+                                <button class="btn-action btn-action-compact" style="font-size: 0.75rem; padding: 6px 8px;">Exportar</button>
+                                <button class="btn-action btn-action-compact" style="font-size: 0.75rem; padding: 6px 8px;">PDF</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h3 style="text-align: center; font-size: 1rem; margin-bottom: 10px;">Después</h3>
+                <div class="mobile-sim" style="max-width: 300px; margin: 0 auto;">
+                    <div class="mobile-screen">
+                        <div class="detail-header detail-header-after" style="padding: 15px;">
+                            <button class="btn-icon" style="align-self: flex-start;">◀</button>
+                            <div class="detail-header-content">
+                                <div>
+                                    <h2 style="font-size: 1rem; margin: 0;">Receta</h2>
+                                </div>
+                                <div class="detail-actions">
+                                    <button class="btn-action btn-action-compact" style="font-size: 0.75rem; padding: 8px 6px;">Editar</button>
+                                    <button class="btn-action btn-action-compact" style="font-size: 0.75rem; padding: 8px 6px;">Duplicar</button>
+                                    <button class="btn-action btn-action-compact btn-danger" style="font-size: 0.75rem; padding: 8px 6px;">Eliminar</button>
+                                    <button class="btn-action btn-action-compact" style="font-size: 0.75rem; padding: 8px 6px;">Exportar</button>
+                                    <button class="btn-action btn-action-compact" style="font-size: 0.75rem; padding: 8px 6px;">PDF</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- CÓDIGO CSS PROPUESTO -->
+    <div class="test-container" style="max-width: 800px;">
+        <div class="test-title">💻 Código CSS Propuesto</div>
+        
+        <div style="background: #f8f9fa; padding: 15px; border-radius: var(--radius-sm); font-family: monospace; font-size: 0.875rem; overflow-x: auto;">
+            <pre style="margin: 0;">/* En la sección @media (max-width: 768px) */
+
+.detail-header {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.detail-header-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    width: 100%;
+}
+
+.detail-actions {
+    width: 100%;
+    margin-top: 0; /* Eliminar margin-top extra */
+}
+
+.btn-action {
+    flex: 1 1 calc(50% - var(--spacing-xs));
+    min-width: 120px;
+    text-align: center;
+    padding: 10px 8px;
+}</pre>
+        </div>
+    </div>
+    
+    <div style="text-align: center; margin-top: 40px; padding: 20px; background: var(--color-background); border-radius: var(--radius-md);">
+        <h3>📱 Prueba en Móvil Real</h3>
+        <p style="color: var(--color-text-secondary); margin-bottom: 15px;">
+            Abre este archivo en tu móvil o usa las DevTools de Chrome (F12) y activa el modo responsive
+        </p>
+        <button onclick="window.location.reload()" style="padding: 10px 20px; background: var(--color-primary); color: white; border: none; border-radius: var(--radius-sm); cursor: pointer;">
+            🔄 Recargar Página
+        </button>
+    </div>
+</body>
+</html>

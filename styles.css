@@ -293,6 +293,10 @@ main {
     background: var(--color-background-secondary);
 }
 
+#back-to-list-btn {
+    display: none;
+}
+
 /* ===== Filter Toggle Button ===== */
 .filter-toggle-container {
     margin-bottom: var(--spacing-md);
@@ -544,7 +548,6 @@ main {
 
 .recipe-card:hover {
     box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
 }
 
 .recipe-image {
@@ -566,7 +569,7 @@ main {
 }
 
 .recipe-card:hover .recipe-image img {
-    transform: scale(1.05);
+    transform: scale(1.02);
 }
 
 .recipe-image::after {
@@ -601,6 +604,288 @@ main {
 .recipe-time-badge::before {
     content: '⏱️';
     font-size: 0.875rem;
+}
+
+/* ===== Recipe Image Carousel ===== */
+.recipe-image-carousel {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.carousel-images {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.carousel-images img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.carousel-images img.active {
+    opacity: 1;
+}
+
+/* Carousel navigation buttons */
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 3;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+}
+
+.carousel-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-btn:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.carousel-prev {
+    left: 8px;
+}
+
+.carousel-next {
+    right: 8px;
+}
+
+/* Show buttons on hover (desktop only) */
+@media (min-width: 769px) {
+    .recipe-card:hover .carousel-btn {
+        display: flex;
+    }
+}
+
+/* Carousel dots indicator */
+.carousel-dots {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 3;
+}
+
+.carousel-dots .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.carousel-dots .dot.active {
+    background: rgba(255, 255, 255, 0.95);
+    width: 8px;
+    height: 8px;
+}
+
+.carousel-dots .dot:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+/* Dark theme support for carousel */
+body.dark-theme .carousel-btn {
+    background: rgba(30, 30, 30, 0.9);
+    color: var(--color-text);
+}
+
+body.dark-theme .carousel-btn:hover {
+    background: rgba(30, 30, 30, 1);
+}
+
+/* ===== Ingredients Badge - Copy to Clipboard ===== */
+.recipe-ingredients-badge {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--color-text);
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-semibold);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(221, 221, 221, 0.6);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    z-index: 2;
+    backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+}
+
+.recipe-ingredients-badge::before {
+    content: '🧺';
+    font-size: 0.875rem;
+}
+
+.recipe-ingredients-badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 1);
+}
+
+.recipe-ingredients-badge:active {
+    transform: scale(0.95);
+}
+
+.recipe-ingredients-badge:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.recipe-ingredients-badge:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Dark theme support for ingredients badge */
+body.dark-theme .recipe-ingredients-badge {
+    background: rgba(30, 30, 30, 0.95);
+    color: var(--color-text);
+}
+
+body.dark-theme .recipe-ingredients-badge:hover {
+    background: rgba(30, 30, 30, 1);
+}
+
+/* ===== PDF Export Badge ===== */
+.recipe-pdf-badge {
+    position: absolute;
+    bottom: 5px;
+    right: 60px;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--color-text);
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-semibold);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(221, 221, 221, 0.6);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    z-index: 2;
+    backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+}
+
+.recipe-pdf-badge::before {
+    content: '📄';
+    font-size: 0.875rem;
+}
+
+.recipe-pdf-badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 1);
+}
+
+.recipe-pdf-badge:active {
+    transform: scale(0.95);
+}
+
+.recipe-pdf-badge:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.recipe-pdf-badge:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Dark theme support for PDF badge */
+body.dark-theme .recipe-pdf-badge {
+    background: rgba(30, 30, 30, 0.95);
+    color: var(--color-text);
+}
+
+body.dark-theme .recipe-pdf-badge:hover {
+    background: rgba(30, 30, 30, 1);
+}
+
+/* ===== WhatsApp Share Badge ===== */
+.recipe-whatsapp-badge {
+    position: absolute;
+    bottom: 5px;
+    right: 115px;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--color-text);
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-semibold);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(221, 221, 221, 0.6);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    z-index: 2;
+    backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+}
+
+.recipe-whatsapp-badge::before {
+    content: '💬';
+    font-size: 0.875rem;
+}
+
+.recipe-whatsapp-badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 1);
+}
+
+.recipe-whatsapp-badge:active {
+    transform: scale(0.95);
+}
+
+.recipe-whatsapp-badge:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.recipe-whatsapp-badge:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Dark theme support for WhatsApp badge */
+body.dark-theme .recipe-whatsapp-badge {
+    background: rgba(30, 30, 30, 0.95);
+    color: var(--color-text);
+}
+
+body.dark-theme .recipe-whatsapp-badge:hover {
+    background: rgba(30, 30, 30, 1);
 }
 
 .recipe-content {
@@ -1715,17 +2000,15 @@ main {
 }
 
 .detail-header h2 {
-    font-size: 2rem;
+    font-size: 3rem;
     font-weight: var(--font-weight-bold);
     color: var(--color-text);
     margin: 0;
     letter-spacing: -0.02em;
-    flex: 1;
-    min-width: 0;
+    width: 100%;
     word-break: break-word;
     hyphens: none;
     line-height: 1.2;
-    max-width: 100%;
 }
 
 .detail-actions {
@@ -1733,6 +2016,7 @@ main {
     gap: var(--spacing-xs);
     flex-wrap: wrap;
     flex-shrink: 0;
+    margin-top: var(--spacing-md);
 }
 
 .btn-action {
@@ -1803,6 +2087,15 @@ main {
     color: var(--color-text);
     margin-bottom: var(--spacing-md);
     letter-spacing: -0.01em;
+}
+
+/* Add spacing between author and history sections */
+#detail-author-section {
+    margin-bottom: var(--spacing-xl);
+}
+
+#detail-history-section {
+    margin-top: var(--spacing-xl);
 }
 
 .detail-category-section {
@@ -1978,15 +2271,11 @@ main {
 }
 
 .detail-metadata {
-    padding: var(--spacing-lg);
-    background: var(--color-background-secondary);
-    border-radius: var(--radius-md);
+    display: none !important;
 }
 
 .metadata-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--spacing-md);
+    display: none !important;
 }
 
 .metadata-item {
@@ -2139,24 +2428,46 @@ main {
         min-width: 0;
     }
     
+    .detail-header {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
     .detail-header h2 {
-        font-size: 1.25rem;
-        line-height: 1.3;
+        font-size: 2.5rem;
+        line-height: 1.2;
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .detail-header-content {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        width: 100%;
+    }
+    
+    .detail-header-content > div {
+        width: 100%;
     }
     
     .detail-actions {
         width: 100%;
-        margin-top: var(--spacing-sm);
+        margin-top: var(--spacing-md);
     }
     
     #back-to-list-btn {
         flex-shrink: 0;
         padding: 8px 12px;
+        align-self: flex-start;
     }
     
     .btn-action {
-        flex: 1;
+        flex: 0 1 auto;
+        min-width: auto;
         text-align: center;
+        padding: 6px 12px;
+        font-size: 0.8125rem;
     }
     
     .detail-ingredients-list {
@@ -2209,7 +2520,7 @@ main {
     }
     
     .recipe-card:hover {
-        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
     }
 }
 
@@ -2283,6 +2594,102 @@ main {
     font-size: 0.875rem;
 }
 
+/* ===== Toast Notification - Copy Ingredients ===== */
+.toast-notification {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--color-success, #10b981);
+    color: white;
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: var(--font-weight-medium);
+    z-index: 9999;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.toast-notification.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.toast-icon {
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+}
+
+.toast-message {
+    font-size: 0.875rem;
+}
+
+/* Error variant */
+.toast-notification.error {
+    background: var(--color-danger, #ef4444);
+}
+
+/* Mobile optimization for toast */
+@media (max-width: 768px) {
+    .toast-notification {
+        bottom: 80px;
+        max-width: calc(100% - 32px);
+    }
+}
+
+/* ===== Toast Notification on Card - Copy Ingredients ===== */
+.toast-notification-card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: var(--color-success, #10b981);
+    color: white;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: var(--font-weight-semibold);
+    z-index: 10;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.toast-notification-card.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.toast-notification-card .toast-icon {
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+}
+
+.toast-notification-card .toast-message {
+    font-size: 0.875rem;
+}
+
+/* Error variant for card toast */
+.toast-notification-card.error {
+    background: var(--color-danger, #ef4444);
+}
+
+/* Ensure recipe card has relative positioning for absolute toast */
+.recipe-card {
+    position: relative;
+}
+
 /* ===== Loading States ===== */
 .loading {
     display: inline-block;
@@ -2296,6 +2703,28 @@ main {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+/* ===== Footer ===== */
+.app-footer {
+    margin-top: 15px;
+    padding: 0;
+    background: transparent;
+}
+
+.app-footer .container {
+    padding: 0 var(--spacing-lg);
+}
+
+.footer-text {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    text-align: left;
+    margin: 0;
+    background: var(--color-background);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-sm);
 }
 
 /* ===== Focus Styles for Accessibility ===== */
