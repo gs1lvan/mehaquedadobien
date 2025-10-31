@@ -50,9 +50,11 @@ class GeminiAPIService {
         if (!this.hasAPIKey()) return false;
         
         try {
-            const response = await this.generateContent('Test');
-            return response !== null;
+            // Simple test with a short prompt
+            const response = await this.generateContent('Hola');
+            return response !== null && response.length > 0;
         } catch (error) {
+            console.error('[Gemini API Test] Error:', error);
             return false;
         }
     }
@@ -117,27 +119,46 @@ REGLAS IMPORTANTES:
         
         const url = `${this.baseURL}?key=${this.apiKey}`;
         
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: prompt
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
                     }]
-                }]
-            })
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(`Gemini API Error: ${error.error?.message || 'Unknown error'}`);
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                const errorMessage = errorData.error?.message || `HTTP ${response.status}`;
+                console.error('[Gemini API] Error response:', errorData);
+                throw new Error(`Gemini API Error: ${errorMessage}`);
+            }
+            
+            const data = await response.json();
+            console.log('[Gemini API] Response:', data);
+            
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!text) {
+                console.error('[Gemini API] Unexpected response format:', data);
+                throw new Error('Respuesta inesperada de Gemini API');
+            }
+            
+            return text;
+            
+        } catch (error) {
+            if (error.message.includes('Gemini API Error')) {
+                throw error;
+            }
+            console.error('[Gemini API] Network error:', error);
+            throw new Error(SCAN_ERROR_MESSAGES.NETWORK_ERROR);
         }
-        
-        const data = await response.json();
-        return data.candidates[0]?.content?.parts[0]?.text || null;
     }
     
     validateRecipeData(data) {
