@@ -1697,7 +1697,7 @@ class RecipeApp {
                 clearBtn.classList.remove('hidden');
             }
         } else {
-            // Closing filters - clear all filters and show all recipes
+            // Closing filters - just hide, don't clear
             filtersContainer.classList.add('hidden');
             toggleBtn.textContent = '🔍 Filtros';
             
@@ -1705,9 +1705,6 @@ class RecipeApp {
             if (clearBtn) {
                 clearBtn.classList.add('hidden');
             }
-            
-            // Clear all filters
-            this.clearAllFilters();
         }
     }
 
@@ -4552,37 +4549,28 @@ class RecipeApp {
             };
         }
 
-        // Category
+        // Category - Show above recipe name
         const categoryElement = document.getElementById('detail-category');
         if (categoryElement) {
             if (recipe.category) {
                 categoryElement.dataset.category = recipe.category;
                 categoryElement.textContent = this.getCategoryLabel(recipe.category);
+                categoryElement.style.display = 'inline-block';
             } else {
-                categoryElement.removeAttribute('data-category');
-                categoryElement.textContent = 'Sin categoría';
+                categoryElement.style.display = 'none';
             }
         }
 
-        // Total Time
+        // Total Time - Now shown on gallery image, hide from header
         const totalTimeElement = document.getElementById('detail-total-time');
         if (totalTimeElement) {
-            if (recipe.totalTime && recipe.totalTime.trim() !== '') {
-                totalTimeElement.textContent = `⏱️ ${recipe.totalTime}`;
-                totalTimeElement.style.display = 'inline-block';
-            } else {
-                totalTimeElement.style.display = 'none';
-            }
+            totalTimeElement.style.display = 'none';
         }
 
-        // Caravan Friendly Badge
+        // Caravan Friendly Badge - Now shown in image gallery, hide from header
         const caravanBadge = document.getElementById('detail-caravan-badge');
         if (caravanBadge) {
-            if (recipe.caravanFriendly === true) {
-                caravanBadge.style.display = 'inline-block';
-            } else {
-                caravanBadge.style.display = 'none';
-            }
+            caravanBadge.style.display = 'none';
         }
 
         // Ingredients
@@ -4598,7 +4586,7 @@ class RecipeApp {
         this.renderDetailSequences(recipe.additionSequences, recipe.ingredients);
 
         // Multimedia
-        this.renderDetailMultimedia(recipe.images, recipe.videos, recipe.name);
+        this.renderDetailMultimedia(recipe.images, recipe.videos, recipe.name, recipe.totalTime, recipe.category, recipe.caravanFriendly);
 
         // Metadata
         this.renderDetailMetadata(recipe);
@@ -4852,9 +4840,11 @@ class RecipeApp {
      * Requirements: 1.1, 1.2
      * @param {MediaFile[]} images - Array of images
      * @param {string} recipeName - Name of the recipe for alt text
+     * @param {string} totalTime - Total time for the recipe
+     * @param {boolean} caravanFriendly - Whether recipe is caravan friendly
      * @returns {HTMLElement|null} Gallery element or null
      */
-    renderPhotoGallery(images, recipeName = '') {
+    renderPhotoGallery(images, recipeName = '', totalTime = '', caravanFriendly = false) {
         // Validation
         if (!images || !Array.isArray(images) || images.length === 0) {
             console.warn('[PhotoGallery] No images provided');
@@ -4863,7 +4853,7 @@ class RecipeApp {
 
         // If only 1 image, use traditional rendering
         if (images.length === 1) {
-            return this.renderSingleImage(images[0], recipeName);
+            return this.renderSingleImage(images[0], recipeName, totalTime, caravanFriendly);
         }
 
         // Initialize gallery state for 2+ images
@@ -4881,7 +4871,7 @@ class RecipeApp {
         galleryContainer.setAttribute('aria-label', 'Galería de fotos de la receta');
 
         // Render main area
-        const mainArea = this.renderGalleryMain(images[0], 0, images.length, recipeName);
+        const mainArea = this.renderGalleryMain(images[0], 0, images.length, recipeName, totalTime, caravanFriendly);
         galleryContainer.appendChild(mainArea);
 
         // Render thumbnails
@@ -4899,9 +4889,11 @@ class RecipeApp {
      * Requirements: 1.2
      * @param {MediaFile} image - Image to display
      * @param {string} recipeName - Name of the recipe for alt text
+     * @param {string} totalTime - Total time for the recipe
+     * @param {boolean} caravanFriendly - Whether recipe is caravan friendly
      * @returns {HTMLElement} Image element
      */
-    renderSingleImage(image, recipeName = '') {
+    renderSingleImage(image, recipeName = '', totalTime = '', caravanFriendly = false) {
         const item = document.createElement('div');
         item.className = 'detail-gallery-item';
 
@@ -4918,6 +4910,22 @@ class RecipeApp {
 
         item.appendChild(img);
 
+        // Add time badge if totalTime exists
+        if (totalTime && totalTime.trim() !== '') {
+            const timeBadge = document.createElement('div');
+            timeBadge.className = 'recipe-time-badge';
+            timeBadge.textContent = totalTime;
+            item.appendChild(timeBadge);
+        }
+
+        // Add caravan badge if caravanFriendly
+        if (caravanFriendly) {
+            const caravanBadge = document.createElement('div');
+            caravanBadge.className = 'recipe-caravan-badge-image';
+            caravanBadge.textContent = '🚐 Apto para Caravana';
+            item.appendChild(caravanBadge);
+        }
+
         // Add click to open modal
         item.addEventListener('click', () => {
             this.openImageModal([image], 0);
@@ -4933,9 +4941,11 @@ class RecipeApp {
      * @param {number} index - Current image index
      * @param {number} total - Total number of images
      * @param {string} recipeName - Name of the recipe for alt text
+     * @param {string} totalTime - Total time for the recipe
+     * @param {boolean} caravanFriendly - Whether recipe is caravan friendly
      * @returns {HTMLElement} Main area element
      */
-    renderGalleryMain(image, index, total, recipeName = '') {
+    renderGalleryMain(image, index, total, recipeName = '', totalTime = '', caravanFriendly = false) {
         const mainArea = document.createElement('div');
         mainArea.className = 'gallery-main';
         mainArea.setAttribute('role', 'img');
@@ -4961,6 +4971,22 @@ class RecipeApp {
         });
 
         mainArea.appendChild(img);
+
+        // Add time badge if totalTime exists
+        if (totalTime && totalTime.trim() !== '') {
+            const timeBadge = document.createElement('div');
+            timeBadge.className = 'recipe-time-badge';
+            timeBadge.textContent = totalTime;
+            mainArea.appendChild(timeBadge);
+        }
+
+        // Add caravan badge if caravanFriendly
+        if (caravanFriendly) {
+            const caravanBadge = document.createElement('div');
+            caravanBadge.className = 'recipe-caravan-badge-image';
+            caravanBadge.textContent = '🚐 Apto para Caravana';
+            mainArea.appendChild(caravanBadge);
+        }
 
         // Previous button
         const prevBtn = document.createElement('button');
@@ -5171,8 +5197,11 @@ class RecipeApp {
      * @param {MediaFile[]} images - Images to display
      * @param {MediaFile[]} videos - Videos to display
      * @param {string} recipeName - Name of the recipe for alt text
+     * @param {string} totalTime - Total time for the recipe
+     * @param {string} category - Category of the recipe
+     * @param {boolean} caravanFriendly - Whether recipe is caravan friendly
      */
-    renderDetailMultimedia(images, videos, recipeName = '') {
+    renderDetailMultimedia(images, videos, recipeName = '', totalTime = '', category = '', caravanFriendly = false) {
         const sectionElement = document.getElementById('detail-multimedia-section');
         const imagesGallery = document.getElementById('detail-images-gallery');
         const videosGallery = document.getElementById('detail-videos-gallery');
@@ -5197,13 +5226,13 @@ class RecipeApp {
         if (hasImages) {
             if (images.length >= 2) {
                 // Use photo gallery for multiple images
-                const gallery = this.renderPhotoGallery(images, recipeName);
+                const gallery = this.renderPhotoGallery(images, recipeName, totalTime, caravanFriendly);
                 if (gallery) {
                     imagesGallery.appendChild(gallery);
                 }
             } else {
                 // Use traditional rendering for single image
-                const singleImage = this.renderSingleImage(images[0], recipeName);
+                const singleImage = this.renderSingleImage(images[0], recipeName, totalTime, caravanFriendly);
                 imagesGallery.appendChild(singleImage);
             }
         }
@@ -5454,6 +5483,14 @@ class RecipeApp {
         if (exportPdfBtn) {
             exportPdfBtn.onclick = () => {
                 this.exportRecipeToPDF(recipe.id);
+            };
+        }
+
+        // Copy ingredients button
+        const copyIngredientsBtn = document.getElementById('copy-ingredients-btn');
+        if (copyIngredientsBtn) {
+            copyIngredientsBtn.onclick = async (e) => {
+                await this.copyIngredientsFromDetail(recipe, e);
             };
         }
     }
@@ -6146,6 +6183,81 @@ class RecipeApp {
                 this.showToastOnCard(recipeCard, 'Ingredientes copiados', 'success');
             } catch (fallbackError) {
                 this.showToastOnCard(recipeCard, 'Error al copiar ingredientes', 'error');
+            }
+        }
+    }
+
+    /**
+     * Copy ingredients to clipboard from detail view
+     * @param {Recipe} recipe - Recipe object with ingredients
+     * @param {Event} event - Click event
+     */
+    async copyIngredientsFromDetail(recipe, event) {
+        event.preventDefault();
+        
+        // Get the button element
+        const button = event.target.closest('.btn-copy-ingredients');
+        const originalIcon = '🧺';
+        
+        try {
+            // Format ingredients text
+            const ingredientsText = this.formatIngredientsForClipboard(recipe);
+            
+            // Copy to clipboard using Clipboard API
+            await navigator.clipboard.writeText(ingredientsText);
+            
+            // Show success feedback on button
+            if (button) {
+                button.textContent = '✓';
+                button.style.background = 'var(--color-success)';
+                button.style.color = 'white';
+                button.style.borderColor = 'var(--color-success)';
+                
+                setTimeout(() => {
+                    button.textContent = originalIcon;
+                    button.style.background = '';
+                    button.style.color = '';
+                    button.style.borderColor = '';
+                }, 2000);
+            }
+            
+        } catch (error) {
+            console.error('Error copying ingredients:', error);
+            
+            // Fallback to legacy method
+            try {
+                const ingredientsText = this.formatIngredientsForClipboard(recipe);
+                this.fallbackCopyToClipboard(ingredientsText);
+                
+                // Show success feedback
+                if (button) {
+                    button.textContent = '✓';
+                    button.style.background = 'var(--color-success)';
+                    button.style.color = 'white';
+                    button.style.borderColor = 'var(--color-success)';
+                    
+                    setTimeout(() => {
+                        button.textContent = originalIcon;
+                        button.style.background = '';
+                        button.style.color = '';
+                        button.style.borderColor = '';
+                    }, 2000);
+                }
+            } catch (fallbackError) {
+                // Show error feedback
+                if (button) {
+                    button.textContent = '✗';
+                    button.style.background = 'var(--color-danger)';
+                    button.style.color = 'white';
+                    button.style.borderColor = 'var(--color-danger)';
+                    
+                    setTimeout(() => {
+                        button.textContent = originalIcon;
+                        button.style.background = '';
+                        button.style.color = '';
+                        button.style.borderColor = '';
+                    }, 2000);
+                }
             }
         }
     }

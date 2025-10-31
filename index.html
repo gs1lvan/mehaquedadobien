@@ -200,9 +200,10 @@
                     <button id="back-to-list-btn" class="btn-icon" title="Volver a la lista">◀</button>
                     <div class="detail-header-content">
                         <div>
+                            <span id="detail-category" class="recipe-category" style="display: none; margin-bottom: var(--spacing-xs);">Sin categoría</span>
                             <h2 id="detail-recipe-name">Nombre de la Receta</h2>
                             <div class="detail-meta"
-                                style="display: flex; align-items: center; gap: var(--spacing-sm); flex-wrap: wrap; margin-top: var(--spacing-xs);">
+                                style="display: flex; flex-direction: column; align-items: flex-start; gap: var(--spacing-xs); margin-top: var(--spacing-xs);">
                                 <span id="detail-total-time" class="recipe-total-time" style="display: none;"></span>
                                 <span id="detail-caravan-badge" class="recipe-caravan-badge" style="display: none;">🚐
                                     Apto para Caravana</span>
@@ -224,11 +225,6 @@
                 </div>
 
                 <div class="detail-content">
-                    <!-- Category Badge (hidden) -->
-                    <div class="detail-category-section" style="display: none;">
-                        <span id="detail-category" class="recipe-category">Sin categoría</span>
-                    </div>
-
                     <!-- Multimedia Gallery -->
                     <div id="detail-multimedia-section" class="detail-section" style="display: none;">
                         <div id="detail-images-gallery" class="detail-gallery"></div>
@@ -245,7 +241,12 @@
 
                     <!-- Ingredients -->
                     <div class="detail-section">
-                        <h3 class="detail-section-title">🥘 Ingredientes</h3>
+                        <div class="detail-section-header">
+                            <h3 class="detail-section-title">🥘 Ingredientes</h3>
+                            <button id="copy-ingredients-btn" class="btn-copy-ingredients" title="Copiar ingredientes al portapapeles">
+                                🧺
+                            </button>
+                        </div>
                         <ul id="detail-ingredients-list" class="detail-ingredients-list">
                             <!-- Ingredients will be dynamically added here -->
                         </ul>
