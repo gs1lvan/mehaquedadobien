@@ -91,7 +91,7 @@ body {
 .recipe-header {
     background: var(--color-background);
     padding: var(--spacing-sm) 0;
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-xs);
     border-bottom: 1px solid var(--color-border-light);
 }
 
@@ -1979,18 +1979,19 @@ body.dark-theme .recipe-pdf-badge:hover {
 .detail-actions {
     display: flex;
     gap: var(--spacing-xs);
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     flex-shrink: 0;
-    margin-top: var(--spacing-xs);
+    margin-top: -10px;
+    overflow-x: auto;
 }
 
 .btn-action {
     background: var(--color-background);
     color: var(--color-text);
     border: 1px solid var(--color-border);
-    padding: 6px 12px;
+    padding: 4px 8px;
     border-radius: var(--radius-sm);
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     font-weight: var(--font-weight-semibold);
     cursor: pointer;
     transition: all 0.2s ease;
