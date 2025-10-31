@@ -2477,7 +2477,8 @@ body.dark-theme .recipe-pdf-badge:hover {
 
     .detail-actions {
         width: 100%;
-
+        flex-wrap: wrap;
+        justify-content: flex-start;
     }
 
     #back-to-list-btn {
