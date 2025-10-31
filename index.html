@@ -45,6 +45,9 @@
                     <button id="manage-categories-btn" class="btn-action" title="Gestionar categorías">
                         🏷️ Categorías
                     </button>
+                    <button id="config-ai-btn" class="btn-action" title="Configurar IA para escaneo">
+                        🤖 Configurar IA
+                    </button>
                     <button id="import-xml-btn" class="btn-action" title="Importar recetas desde XML">
                         📥 Importar receta
                     </button>
@@ -63,6 +66,9 @@
                     </button>
                     <button id="mobile-manage-categories" class="mobile-menu-item">
                         🏷️ Categorías
+                    </button>
+                    <button id="mobile-config-ai" class="mobile-menu-item">
+                        🤖 Configurar IA
                     </button>
                     <button id="mobile-import-xml" class="mobile-menu-item">
                         📥 Importar receta
@@ -311,6 +317,14 @@
                 </div>
 
                 <form id="recipe-form" class="recipe-form-content">
+                    <!-- Scan Recipe Section -->
+                    <div class="scan-recipe-section">
+                        <button type="button" id="scan-recipe-btn" class="btn-scan-recipe">
+                            📸 Escanear Receta con IA
+                        </button>
+                        <p class="scan-recipe-hint">Sube una foto de una receta y la IA la procesará automáticamente</p>
+                    </div>
+
                     <!-- Basic Information Section -->
                     <div class="form-section">
                         <h3 class="section-title">Información Básica</h3>
@@ -767,6 +781,96 @@
         </div>
     </div>
 
+    <!-- API Key Configuration Modal -->
+    <div id="api-key-modal" class="modal-overlay hidden">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>🔑 Configurar API Key de Gemini</h3>
+                <button id="close-api-key-modal" class="btn-icon">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-description">Para usar la funcionalidad de escaneo de recetas, necesitas una API Key de Google Gemini (gratis).</p>
+                
+                <div class="form-group">
+                    <label for="api-key-input">API Key:</label>
+                    <div class="api-key-input-group">
+                        <input type="password" id="api-key-input" class="form-input" placeholder="Ingresa tu API Key">
+                        <button type="button" id="toggle-api-key-visibility" class="btn-icon" title="Mostrar/Ocultar">👁️</button>
+                    </div>
+                </div>
+                
+                <div class="api-key-status hidden" id="api-key-status"></div>
+                
+                <div class="api-key-help">
+                    <p>📖 <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">¿Cómo obtener una API Key?</a></p>
+                    <p>💡 Tu API Key se guarda solo en tu navegador y nunca se comparte</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="test-api-key-btn">Probar</button>
+                <button class="btn-primary" id="save-api-key-btn">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scan Recipe Modal -->
+    <div id="scan-modal" class="modal-overlay hidden">
+        <div class="modal-dialog modal-dialog-large">
+            <div class="modal-header">
+                <h3>📸 Escanear Receta</h3>
+                <button id="close-scan-modal" class="btn-icon">✕</button>
+            </div>
+            <div class="modal-body">
+                <!-- Upload Area -->
+                <div id="scan-upload-area" class="scan-upload-area">
+                    <input type="file" id="scan-image-input" accept="image/*" style="display: none;">
+                    <div class="scan-upload-placeholder">
+                        <span class="scan-upload-icon">📷</span>
+                        <p><strong>Selecciona una imagen de receta</strong></p>
+                        <p class="scan-upload-hint">JPG, PNG, WEBP o HEIC (máx. 10MB)</p>
+                        <button class="btn-primary" id="select-image-btn">Seleccionar Imagen</button>
+                    </div>
+                </div>
+                
+                <!-- Preview -->
+                <div id="scan-preview" class="scan-preview hidden">
+                    <img id="scan-preview-image" alt="Preview">
+                </div>
+                
+                <!-- Progress -->
+                <div id="scan-progress" class="scan-progress hidden">
+                    <div class="scan-progress-bar">
+                        <div id="scan-progress-fill" class="scan-progress-fill"></div>
+                    </div>
+                    <p id="scan-progress-text" class="scan-progress-text"></p>
+                </div>
+                
+                <!-- Result -->
+                <div id="scan-result" class="scan-result hidden">
+                    <div class="scan-result-success">
+                        <span class="scan-result-icon">✅</span>
+                        <p><strong>¡Receta escaneada exitosamente!</strong></p>
+                        <div class="scan-result-stats">
+                            <span id="scan-ingredients-count">0 ingredientes</span>
+                            <span>•</span>
+                            <span id="scan-sequences-count">0 pasos</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Error -->
+                <div id="scan-error" class="scan-error hidden">
+                    <span class="scan-error-icon">❌</span>
+                    <p id="scan-error-message"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="scan-cancel-btn">Cancelar</button>
+                <button class="btn-primary" id="scan-process-btn" disabled>Escanear</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="app-footer">
         <div class="container">
@@ -775,6 +879,8 @@
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Tesseract.js for OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="models.js"></script>
     <script src="script.js"></script>
     <script>
