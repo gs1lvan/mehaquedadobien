@@ -299,6 +299,19 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- QR Code Section -->
+                        <div id="detail-qr-section" class="detail-section" style="margin-top: 32px;">
+                            <h3 class="detail-section-title">📱 Compartir Receta</h3>
+                            <div style="text-align: center; padding: 20px; background: var(--color-background-secondary); border-radius: var(--radius-md);">
+                                <p style="margin-bottom: 16px; color: var(--color-text-secondary); font-size: 0.875rem;">
+                                    Escanea este código QR para compartir la receta
+                                </p>
+                                <div id="detail-qr-code" style="display: inline-block; padding: 16px; background: white; border-radius: var(--radius-md);">
+                                    <!-- QR code will be generated here -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -405,7 +418,7 @@
                                                 step="0.01" autocomplete="off">
                                         </div>
                                         <div class="ingredient-input-group">
-                                            <label for="ingredient-unit">Unidad</label>
+                                            <label for="ingredient-unit">Unidad (opcional)</label>
                                             <select id="ingredient-unit" class="form-select ingredient-input">
                                                 <option value="">Seleccionar</option>
                                                 <option value="g">g (gramos)</option>

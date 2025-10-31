@@ -381,3 +381,47 @@ Para probar todas las funcionalidades:
 ---
 
 **Última actualización:** Octubre 2025
+
+---
+
+## 10. Mejora Visual de Aparatos de Cocina 🍳
+
+### Cambio Implementado
+- **Tamaño de emoji aumentado:** De 1.25rem a 3rem en chips de aparatos de cocina
+- Mejora significativa en la visibilidad y usabilidad de los iconos
+
+### Detalles Técnicos
+- **Archivo modificado:** `styles.css`
+- **Clase afectada:** `.appliance-chip`
+- **Propiedad:** `font-size: 3rem` (antes 1.25rem)
+- **Impacto:** Los emojis de aparatos (🔪, 🍳, 🔥, etc.) ahora son mucho más grandes y fáciles de identificar
+
+### Beneficios
+- ✅ Mayor visibilidad de los iconos de aparatos
+- ✅ Mejor experiencia táctil en dispositivos móviles
+- ✅ Interfaz más intuitiva y amigable
+- ✅ Consistencia con el diseño visual de la aplicación
+- ✅ Facilita la selección rápida de aparatos
+
+### Ubicación
+- **Formulario de recetas:** Sección "Método de Preparación"
+- **Vista de detalle:** Sección "👨‍🍳 Método de Preparación"
+
+### Aparatos Afectados
+Los 12 aparatos disponibles ahora se muestran con emojis más grandes:
+- 🌀 Batidora
+- 🔪 Cuchillo
+- 💨 Freidora de aire
+- 🔥 Horno
+- 📻 Microondas
+- 🍲 Olla
+- ⚡ Olla a presión
+- 🥪 Sandwichera
+- 🍳 Sartén
+- 🤖 Thermomix
+- ♨️ Vaporera
+- 🥘 Wok
+
+---
+
+**Última actualización:** 31 de octubre de 2025

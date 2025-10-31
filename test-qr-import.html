@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test QR Import - Recetas</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: var(--color-surface);
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+        .qr-preview {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .qr-preview img {
+            max-width: 300px;
+            border: 2px solid var(--color-border);
+            border-radius: 8px;
+            padding: 16px;
+            background: white;
+        }
+        .test-url {
+            background: var(--color-background);
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.875rem;
+            word-break: break-all;
+            margin: 12px 0;
+        }
+        .btn-test {
+            display: inline-block;
+            padding: 12px 24px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            margin: 8px 4px;
+        }
+        .btn-test:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test de Importación de Recetas por QR</h1>
+        
+        <div class="test-section">
+            <h2>📱 Receta de Prueba</h2>
+            <p>Esta es la receta que se generará en el QR:</p>
+            <pre id="recipe-data" style="background: var(--color-background); padding: 16px; border-radius: 8px; overflow-x: auto;"></pre>
+        </div>
+
+        <div class="test-section">
+            <h2>🔗 URL Generada</h2>
+            <p>Esta es la URL que contendrá el código QR:</p>
+            <div class="test-url" id="generated-url"></div>
+            <button class="btn-test" onclick="copyURL()">📋 Copiar URL</button>
+            <a class="btn-test" id="test-link" href="#" target="_blank">🔗 Abrir URL</a>
+        </div>
+
+        <div class="test-section">
+            <h2>📷 Código QR Generado</h2>
+            <div class="qr-preview">
+                <img id="qr-image" src="" alt="Código QR">
+            </div>
+            <p style="text-align: center; color: var(--color-text-secondary); font-size: 0.875rem;">
+                Escanea este QR con tu móvil para probar la importación
+            </p>
+        </div>
+
+        <div class="test-section">
+            <h2>🧪 Pruebas Manuales</h2>
+            <button class="btn-test" onclick="simulateQRScan()">
+                🎯 Simular Escaneo de QR
+            </button>
+            <button class="btn-test" onclick="window.location.href='index.html'">
+                🏠 Volver a la App
+            </button>
+        </div>
+
+        <div class="test-section">
+            <h2>📝 Instrucciones</h2>
+            <ol style="line-height: 1.8;">
+                <li>El código QR se genera automáticamente con una receta de prueba</li>
+                <li>Puedes escanear el QR con tu móvil para probar la importación real</li>
+                <li>O hacer clic en "Simular Escaneo" para probar en este navegador</li>
+                <li>La URL contiene los datos de la receta codificados en base64</li>
+                <li>Al escanear, se abrirá la app con un modal de confirmación</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Receta de prueba
+        const testRecipe = {
+            name: "Paella Valenciana",
+            category: "main",
+            ingredients: [
+                { name: "Arroz", quantity: "400", unit: "g" },
+                { name: "Pollo", quantity: "300", unit: "g" },
+                { name: "Conejo", quantity: "300", unit: "g" },
+                { name: "Judías verdes", quantity: "200", unit: "g" },
+                { name: "Garrofón", quantity: "100", unit: "g" },
+                { name: "Tomate", quantity: "2", unit: "unidades" },
+                { name: "Azafrán", quantity: "1", unit: "pizca" },
+                { name: "Aceite de oliva", quantity: "100", unit: "ml" },
+                { name: "Sal", quantity: "al gusto", unit: "" }
+            ],
+            preparationMethod: "1. Sofreír el pollo y el conejo en aceite de oliva.\n2. Añadir las judías verdes y el garrofón.\n3. Incorporar el tomate rallado y sofreír.\n4. Añadir el agua y el azafrán, dejar hervir 20 minutos.\n5. Agregar el arroz y cocinar 18 minutos.\n6. Dejar reposar 5 minutos antes de servir.",
+            totalTime: "1h 30min"
+        };
+
+        // Mostrar datos de la receta
+        document.getElementById('recipe-data').textContent = JSON.stringify(testRecipe, null, 2);
+
+        // Generar URL con datos codificados
+        function generateImportURL() {
+            const jsonData = JSON.stringify(testRecipe);
+            const base64Data = btoa(encodeURIComponent(jsonData));
+            return `https://guiavfr.enaire.es/#import=${base64Data}`;
+        }
+
+        // Generar URL del QR
+        function generateQRURL() {
+            const importURL = generateImportURL();
+            const encodedURL = encodeURIComponent(importURL);
+            return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedURL}`;
+        }
+
+        // Inicializar
+        const importURL = generateImportURL();
+        const qrURL = generateQRURL();
+
+        document.getElementById('generated-url').textContent = importURL;
+        document.getElementById('test-link').href = importURL;
+        document.getElementById('qr-image').src = qrURL;
+
+        // Copiar URL
+        function copyURL() {
+            navigator.clipboard.writeText(importURL).then(() => {
+                alert('✓ URL copiada al portapapeles');
+            });
+        }
+
+        // Simular escaneo
+        function simulateQRScan() {
+            window.location.href = importURL;
+        }
+    </script>
+</body>
+</html>

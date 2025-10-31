@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "Documentation Sync",
+  "description": "Monitors JavaScript source files and configuration files for changes and triggers documentation updates in README.md",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "*.js",
+      "*.html",
+      "manifest.json",
+      "*.css"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Source files have been modified. Please review the changes in the following files and update the README.md documentation accordingly. Ensure that any new features, API changes, configuration updates, or architectural modifications are properly documented. Focus on keeping the documentation accurate, clear, and synchronized with the current codebase."
+  }
+}

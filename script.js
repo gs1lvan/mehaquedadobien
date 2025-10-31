@@ -2099,6 +2099,47 @@ class RecipeApp {
     }
 
     /**
+     * Create an action badge with consistent accessibility features
+     * @param {Object} config - Badge configuration
+     * @param {string} config.className - CSS class name
+     * @param {string} config.title - Tooltip text
+     * @param {string} config.ariaLabel - Accessibility label
+     * @param {Function} config.onClick - Click handler
+     * @param {boolean} config.stopPropagation - Whether to stop event propagation (default: true)
+     * @returns {HTMLElement} Badge element
+     */
+    createActionBadge({ className, title, ariaLabel, onClick, stopPropagation = true }) {
+        const badge = document.createElement('div');
+        badge.className = className;
+        badge.title = title;
+        badge.setAttribute('role', 'button');
+        badge.setAttribute('tabindex', '0');
+        badge.setAttribute('aria-label', ariaLabel);
+
+        // Click handler
+        badge.addEventListener('click', (e) => {
+            if (stopPropagation) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+            onClick(e);
+        });
+
+        // Keyboard accessibility
+        badge.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                if (stopPropagation) {
+                    e.stopPropagation();
+                }
+                onClick(e);
+            }
+        });
+
+        return badge;
+    }
+
+    /**
      * Create a recipe card element
      * @param {Recipe} recipe - Recipe to display
      * @returns {HTMLElement} Recipe card element
@@ -2188,54 +2229,23 @@ class RecipeApp {
             imageDiv.appendChild(timeBadge);
         }
 
-        // Add ingredients badge
-        const ingredientsBadge = document.createElement('div');
-        ingredientsBadge.className = 'recipe-ingredients-badge';
-        ingredientsBadge.title = 'Copiar ingredientes';
-        ingredientsBadge.setAttribute('role', 'button');
-        ingredientsBadge.setAttribute('tabindex', '0');
-        ingredientsBadge.setAttribute('aria-label', `Copiar ingredientes de ${recipe.name}`);
-
-        // Add click handler for copying ingredients
-        ingredientsBadge.addEventListener('click', (e) => {
-            this.copyIngredientsToClipboard(recipe, e);
+        // Add action badges
+        const ingredientsBadge = this.createActionBadge({
+            className: 'recipe-ingredients-badge',
+            title: 'Copiar ingredientes',
+            ariaLabel: `Copiar ingredientes de ${recipe.name}`,
+            onClick: (e) => this.copyIngredientsToClipboard(recipe, e),
+            stopPropagation: false
         });
-
-        // Add keyboard handler for accessibility
-        ingredientsBadge.addEventListener('keydown', (e) => {
-            // Detect Enter or Space keys
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault(); // Prevent default browser behavior
-                this.copyIngredientsToClipboard(recipe, e);
-            }
-        });
-
         imageDiv.appendChild(ingredientsBadge);
 
-        // Add PDF export badge
-        const pdfBadge = document.createElement('div');
-        pdfBadge.className = 'recipe-pdf-badge';
-        pdfBadge.title = 'Exportar a PDF';
-        pdfBadge.setAttribute('role', 'button');
-        pdfBadge.setAttribute('tabindex', '0');
-        pdfBadge.setAttribute('aria-label', `Exportar ${recipe.name} a PDF`);
-
-        // Add click handler for PDF export
-        pdfBadge.addEventListener('click', (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            this.exportRecipeToPDF(recipe.id);
+        const pdfBadge = this.createActionBadge({
+            className: 'recipe-pdf-badge',
+            title: 'Exportar a PDF',
+            ariaLabel: `Exportar ${recipe.name} a PDF`,
+            onClick: (e) => this.exportRecipeToPDF(recipe.id),
+            stopPropagation: true
         });
-
-        // Add keyboard handler for accessibility
-        pdfBadge.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                e.stopPropagation();
-                this.exportRecipeToPDF(recipe.id);
-            }
-        });
-
         imageDiv.appendChild(pdfBadge);
 
         // Create content section
@@ -2533,9 +2543,9 @@ class RecipeApp {
         KITCHEN_APPLIANCES.forEach(appliance => {
             const chip = document.createElement('button');
             chip.type = 'button';
-            chip.className = 'cooking-action-btn';
+            chip.className = 'appliance-chip';
             chip.dataset.applianceId = appliance.id;
-            chip.innerHTML = `${appliance.emoji} ${appliance.name}`;
+            chip.innerHTML = `<span class="chip-emoji">${appliance.emoji}</span> ${appliance.name}`;
             
             // Mark as selected if in selectedAppliances array
             if (this.selectedAppliances.includes(appliance.id)) {
@@ -4601,6 +4611,9 @@ class RecipeApp {
 
         // Metadata
         this.renderDetailMetadata(recipe);
+
+        // QR Code
+        this.renderDetailQRCode(recipe);
     }
 
     /**
@@ -4702,14 +4715,14 @@ class RecipeApp {
 
         section.style.display = 'block';
 
-        // Render each appliance as a chip with cooking-action-btn style
+        // Render each appliance as a chip with appliance-chip style
         appliances.forEach(applianceId => {
             const appliance = KITCHEN_APPLIANCES.find(a => a.id === applianceId);
             if (appliance) {
                 const chip = document.createElement('button');
                 chip.type = 'button';
-                chip.className = 'cooking-action-btn';
-                chip.innerHTML = `${appliance.emoji} ${appliance.name}`;
+                chip.className = 'appliance-chip';
+                chip.innerHTML = `<span class="chip-emoji">${appliance.emoji}</span> ${appliance.name}`;
                 chip.disabled = true; // Read-only in detail view
                 chip.style.cursor = 'default';
                 chipsContainer.appendChild(chip);
@@ -6142,7 +6155,8 @@ class RecipeApp {
      */
     formatIngredientsForClipboard(recipe) {
         // Start with recipe name
-        let text = recipe.name + '\n\n';
+        let text = recipe.name + '\n';
+        text += '-------------------------------\n';
         
         // Check if recipe has ingredients
         if (!recipe.ingredients || recipe.ingredients.length === 0) {
@@ -6217,9 +6231,10 @@ class RecipeApp {
     async copyIngredientsFromDetail(recipe, event) {
         event.preventDefault();
         
-        // Get the button element
-        const button = event.target.closest('.btn-copy-ingredients');
-        const originalIcon = '🧺';
+        // Get the multimedia gallery section (prefer images gallery)
+        const galleryContainer = document.getElementById('detail-images-gallery') || 
+                                document.getElementById('detail-multimedia-section') ||
+                                document.getElementById('recipe-detail');
         
         try {
             // Format ingredients text
@@ -6228,20 +6243,8 @@ class RecipeApp {
             // Copy to clipboard using Clipboard API
             await navigator.clipboard.writeText(ingredientsText);
             
-            // Show success feedback on button
-            if (button) {
-                button.textContent = '✓';
-                button.style.background = 'var(--color-success)';
-                button.style.color = 'white';
-                button.style.borderColor = 'var(--color-success)';
-                
-                setTimeout(() => {
-                    button.textContent = originalIcon;
-                    button.style.background = '';
-                    button.style.color = '';
-                    button.style.borderColor = '';
-                }, 2000);
-            }
+            // Show success toast over the gallery
+            this.showToastOnCard(galleryContainer, 'Ingredientes copiados', 'success');
             
         } catch (error) {
             console.error('Error copying ingredients:', error);
@@ -6250,36 +6253,9 @@ class RecipeApp {
             try {
                 const ingredientsText = this.formatIngredientsForClipboard(recipe);
                 this.fallbackCopyToClipboard(ingredientsText);
-                
-                // Show success feedback
-                if (button) {
-                    button.textContent = '✓';
-                    button.style.background = 'var(--color-success)';
-                    button.style.color = 'white';
-                    button.style.borderColor = 'var(--color-success)';
-                    
-                    setTimeout(() => {
-                        button.textContent = originalIcon;
-                        button.style.background = '';
-                        button.style.color = '';
-                        button.style.borderColor = '';
-                    }, 2000);
-                }
+                this.showToastOnCard(galleryContainer, 'Ingredientes copiados', 'success');
             } catch (fallbackError) {
-                // Show error feedback
-                if (button) {
-                    button.textContent = '✗';
-                    button.style.background = 'var(--color-danger)';
-                    button.style.color = 'white';
-                    button.style.borderColor = 'var(--color-danger)';
-                    
-                    setTimeout(() => {
-                        button.textContent = originalIcon;
-                        button.style.background = '';
-                        button.style.color = '';
-                        button.style.borderColor = '';
-                    }, 2000);
-                }
+                this.showToastOnCard(galleryContainer, 'Error al copiar ingredientes', 'error');
             }
         }
     }
@@ -6748,12 +6724,356 @@ class RecipeApp {
         }
     }
 
+    /**
+     * Prepare recipe data for QR code export
+     * @param {Recipe} recipe - Recipe object
+     * @param {string} mode - Export mode: 'full' (default) or 'compact'
+     * @returns {string} JSON string of recipe data
+     */
+    prepareRecipeDataForQR(recipe, mode = 'full') {
+        if (mode === 'compact') {
+            // Compact mode: Only essential data for smaller QR
+            return JSON.stringify({
+                n: recipe.name,
+                c: recipe.category,
+                i: recipe.ingredients.map(i => `${i.name}|${i.quantity}|${i.unit}`).join(';'),
+                p: recipe.preparationMethod?.substring(0, 200) || '', // Limit to 200 chars
+                t: recipe.totalTime
+            });
+        }
+        
+        // Full mode: Complete data
+        const recipeExport = {
+            name: recipe.name,
+            category: recipe.category,
+            ingredients: recipe.ingredients.map(i => ({
+                name: i.name,
+                quantity: i.quantity,
+                unit: i.unit
+            })),
+            preparationMethod: recipe.preparationMethod,
+            totalTime: recipe.totalTime
+        };
+        return JSON.stringify(recipeExport);
+    }
+
+    /**
+     * Generate QR code URL for recipe data
+     * @param {string} recipeData - JSON string of recipe data
+     * @param {number} size - QR code size in pixels (default: 200)
+     * @param {Object} options - QR generation options
+     * @param {string} options.errorCorrection - Error correction level: L, M, Q, H (default: M)
+     * @param {number} options.margin - Margin size in modules (default: 1)
+     * @returns {string} QR code image URL
+     */
+    generateQRCodeURL(recipeData, size = 200, options = {}) {
+        const { errorCorrection = 'M', margin = 1 } = options;
+        
+        // Encode recipe data in base64 for URL
+        const base64Data = btoa(encodeURIComponent(recipeData));
+        const targetURL = `https://guiavfr.enaire.es/#import=${base64Data}`;
+        const encodedURL = encodeURIComponent(targetURL);
+        
+        // Build QR API URL with options
+        return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodedURL}&ecc=${errorCorrection}&margin=${margin}`;
+    }
+
+    /**
+     * Generate a small QR code (21x21 modules) with minimal data
+     * @param {Recipe} recipe - Recipe object
+     * @returns {string} QR code image URL
+     */
+    generateSmallQR(recipe) {
+        // For 21x21 QR (Version 1), we need very short data
+        // Use compact mode and low error correction
+        const compactData = this.prepareRecipeDataForQR(recipe, 'compact');
+        
+        // If still too large, use only recipe ID
+        if (compactData.length > 100) {
+            // Fallback: Just use recipe ID
+            const shortURL = `https://guiavfr.enaire.es/#r=${recipe.id}`;
+            const encodedURL = encodeURIComponent(shortURL);
+            return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodedURL}&ecc=L&margin=1`;
+        }
+        
+        return this.generateQRCodeURL(compactData, 150, { errorCorrection: 'L', margin: 1 });
+    }
+
+    /**
+     * Render QR code in detail view
+     * @param {Recipe} recipe - Recipe object to generate QR for
+     */
+    renderDetailQRCode(recipe) {
+        const qrContainer = document.getElementById('detail-qr-code');
+        const downloadBtn = document.getElementById('detail-download-qr-btn');
+        
+        if (!qrContainer) return;
+        
+        // Clear previous QR
+        qrContainer.innerHTML = 'Generando código QR...';
+        
+        try {
+            // Use compact mode for smaller QR codes
+            const recipeData = this.prepareRecipeDataForQR(recipe, 'compact');
+            
+            // Generate QR with minimal error correction and margin for smaller size
+            const qrUrl = this.generateQRCodeURL(recipeData, 200, {
+                errorCorrection: 'L', // Low error correction = smaller QR
+                margin: 1 // Minimal margin = smaller QR
+            });
+            
+            // Create image element
+            const qrImg = document.createElement('img');
+            qrImg.style.width = '200px';
+            qrImg.style.height = '200px';
+            qrImg.alt = 'Código QR de la receta';
+            
+            qrImg.onload = () => {
+                qrContainer.innerHTML = '';
+                qrContainer.appendChild(qrImg);
+                
+                // Add info about QR size
+                const info = document.createElement('p');
+                info.style.cssText = 'margin-top: 8px; font-size: 0.75rem; color: var(--color-text-secondary);';
+                info.textContent = `Tamaño optimizado • ${Math.ceil(recipeData.length / 1024)}KB de datos`;
+                qrContainer.appendChild(info);
+            };
+            
+            qrImg.onerror = () => {
+                qrContainer.innerHTML = '<p style="color: var(--color-danger); font-size: 0.875rem;">Error al generar el código QR</p>';
+            };
+            
+            qrImg.src = qrUrl;
+            
+            // Update download button
+            if (downloadBtn) {
+                downloadBtn.onclick = () => {
+                    if (qrImg.complete && qrImg.naturalHeight !== 0) {
+                        const link = document.createElement('a');
+                        link.download = `qr-${recipe.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.png`;
+                        link.href = qrUrl;
+                        link.target = '_blank';
+                        link.click();
+                    }
+                };
+            }
+            
+        } catch (error) {
+            console.error('[QR] Error generating QR code:', error);
+            qrContainer.innerHTML = '<p style="color: var(--color-danger); font-size: 0.875rem;">Error al generar el código QR</p>';
+        }
+    }
+
+
+
 }
 
 // Initialize the application when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     window.recipeApp = new RecipeApp();
+    
+    // Check if URL contains recipe import data from QR scan
+    checkForRecipeImport();
 });
+
+/**
+ * Check URL hash for recipe import data and show import modal
+ */
+function checkForRecipeImport() {
+    const hash = window.location.hash;
+    
+    // Handle full recipe import
+    if (hash.startsWith('#import=')) {
+        try {
+            // Extract and decode recipe data
+            const base64Data = hash.substring(8); // Remove '#import='
+            const jsonData = decodeURIComponent(atob(base64Data));
+            const rawData = JSON.parse(jsonData);
+            
+            // Convert compact format to full format if needed
+            const recipeData = expandRecipeData(rawData);
+            
+            // Show import confirmation modal
+            showRecipeImportModal(recipeData);
+            
+            // Clean URL hash
+            history.replaceState(null, '', window.location.pathname);
+            
+        } catch (error) {
+            console.error('[Import] Error parsing recipe data:', error);
+            showNotification('Error al importar la receta. Código QR inválido.', 'error');
+        }
+    }
+    
+    // Handle recipe ID reference (for very small QR codes)
+    if (hash.startsWith('#r=')) {
+        try {
+            const recipeId = parseInt(hash.substring(3));
+            showNotification('Este QR requiere sincronización con el dispositivo original.', 'info');
+            // Future: Could fetch from a shared database
+        } catch (error) {
+            console.error('[Import] Error parsing recipe ID:', error);
+        }
+    }
+}
+
+/**
+ * Expand compact recipe data format to full format
+ * @param {Object} data - Recipe data (compact or full format)
+ * @returns {Object} Recipe data in full format
+ */
+function expandRecipeData(data) {
+    // Check if data is in compact format (has 'n' instead of 'name')
+    if (data.n !== undefined) {
+        return {
+            name: data.n,
+            category: data.c,
+            ingredients: data.i.split(';').map(ing => {
+                const [name, quantity, unit] = ing.split('|');
+                return { name, quantity, unit };
+            }),
+            preparationMethod: data.p,
+            totalTime: data.t
+        };
+    }
+    
+    // Already in full format
+    return data;
+}
+
+/**
+ * Show modal to confirm recipe import from QR scan
+ * @param {Object} recipeData - Recipe data from QR code
+ */
+function showRecipeImportModal(recipeData) {
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+    
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = 'background: var(--color-background); padding: 24px; border-radius: 12px; max-width: 500px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.2);';
+    
+    modalContent.innerHTML = `
+        <h2 style="margin: 0 0 16px 0; color: var(--color-text);">📱 Importar Receta</h2>
+        <p style="margin: 0 0 8px 0; color: var(--color-text-secondary);">
+            Se ha detectado una receta desde el código QR:
+        </p>
+        <div style="background: var(--color-surface); padding: 16px; border-radius: 8px; margin: 16px 0;">
+            <h3 style="margin: 0 0 8px 0; color: var(--color-text);">${recipeData.name}</h3>
+            <p style="margin: 0; color: var(--color-text-secondary); font-size: 0.875rem;">
+                ${recipeData.ingredients?.length || 0} ingredientes
+                ${recipeData.totalTime ? `• ${recipeData.totalTime}` : ''}
+            </p>
+        </div>
+        <p style="margin: 0 0 16px 0; color: var(--color-text-secondary); font-size: 0.875rem;">
+            ¿Deseas importar esta receta a tu colección?
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button id="cancel-import" class="btn-secondary" style="padding: 10px 20px;">
+                Cancelar
+            </button>
+            <button id="confirm-import" class="btn-primary" style="padding: 10px 20px;">
+                ✓ Importar Receta
+            </button>
+        </div>
+    `;
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    // Cancel button handler
+    document.getElementById('cancel-import').addEventListener('click', () => {
+        modal.remove();
+    });
+    
+    // Confirm import handler
+    document.getElementById('confirm-import').addEventListener('click', () => {
+        importRecipeFromQR(recipeData);
+        modal.remove();
+    });
+    
+    // Close on overlay click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+}
+
+/**
+ * Import recipe from QR code data
+ * @param {Object} recipeData - Recipe data to import
+ */
+function importRecipeFromQR(recipeData) {
+    try {
+        // Create new recipe with imported data
+        const newRecipe = {
+            id: Date.now(),
+            name: recipeData.name,
+            category: recipeData.category || '',
+            ingredients: recipeData.ingredients || [],
+            preparationMethod: recipeData.preparationMethod || '',
+            totalTime: recipeData.totalTime || '',
+            images: [], // QR doesn't include images
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+        
+        // Add recipe to storage
+        const recipes = JSON.parse(localStorage.getItem('recipes') || '[]');
+        recipes.push(newRecipe);
+        localStorage.setItem('recipes', JSON.stringify(recipes));
+        
+        // Show success notification
+        showNotification(`✓ Receta "${recipeData.name}" importada correctamente`, 'success');
+        
+        // Reload recipes if app is initialized
+        if (window.recipeApp) {
+            window.recipeApp.loadRecipes();
+            
+            // Show the imported recipe detail after a short delay
+            setTimeout(() => {
+                window.recipeApp.showRecipeDetail(newRecipe.id);
+            }, 500);
+        }
+        
+    } catch (error) {
+        console.error('[Import] Error importing recipe:', error);
+        showNotification('Error al importar la receta', 'error');
+    }
+}
+
+/**
+ * Show notification message
+ * @param {string} message - Message to display
+ * @param {string} type - Notification type (success, error, info)
+ */
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? 'var(--color-success)' : type === 'error' ? 'var(--color-danger)' : 'var(--color-primary)'};
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10001;
+        animation: slideIn 0.3s ease;
+        max-width: 400px;
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
 
 
 // ============================================================================

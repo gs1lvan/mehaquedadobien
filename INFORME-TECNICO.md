@@ -1,7 +1,7 @@
 # INFORME TÉCNICO - mehaquedadobien 🍳
 
-**Fecha:** 30 de octubre de 2025  
-**Versión:** 2.1  
+**Fecha:** 31 de octubre de 2025  
+**Versión:** 2.2  
 **Proyecto:** Recetario Personal - Aplicación Web PWA
 
 ---
@@ -129,24 +129,26 @@
 
 ## 🔧 APARATOS DE COCINA (Método de Preparación)
 
-### Lista de Aparatos Disponibles
-1. **Sartén** 🍳
-2. **Olla** 🍲
-3. **Olla a presión** ⚡
+### Lista de Aparatos Disponibles (Orden Alfabético)
+1. **Batidora** 🌀
+2. **Cuchillo** 🔪
+3. **Freidora de aire** 💨
 4. **Horno** 🔥
 5. **Microondas** 📻
-6. **Freidora de aire** 💨
-7. **Sandwichera** 🥪
-8. **Batidora** 🌀
-9. **Wok** 🥘
-10. **Vaporera** ♨️
-11. **Thermomix** 🤖
+6. **Olla** 🍲
+7. **Olla a presión** ⚡
+8. **Sandwichera** 🥪
+9. **Sartén** 🍳
+10. **Thermomix** 🤖
+11. **Vaporera** ♨️
+12. **Wok** 🥘
 
 ### Implementación
 - **Campo:** `kitchenAppliances` (array de IDs)
-- **UI:** Chips seleccionables con estilo `cooking-action-btn`
+- **UI:** Chips seleccionables con estilo `appliance-chip`
+- **Tamaño de emoji:** 3rem (48px) para mejor visibilidad y usabilidad
 - **Visualización:** 
-  - Formulario: chips interactivos
+  - Formulario: chips interactivos con emojis grandes
   - Detalle: chips read-only en sección propia
   - PDF: lista separada por comas (sin emojis)
 - **Ubicación:** Reemplaza el antiguo campo de texto "Método de Preparación"
@@ -443,10 +445,12 @@
 
 ### 🍳 Método de Preparación → Aparatos de Cocina
 - ✅ Reemplazado textarea por chips seleccionables
-- ✅ 11 aparatos disponibles (incluye Wok, Vaporera, Thermomix)
+- ✅ **12 aparatos disponibles** (incluye Wok, Vaporera, Thermomix, Cuchillo 🔪)
+- ✅ **Ordenamiento alfabético** de aparatos
 - ✅ Visualización en ficha de receta como sección independiente
 - ✅ Exportación a PDF sin emojis
 - ✅ Soporte completo en XML
+- ✅ **Tamaño de emoji aumentado:** 3rem para mejor visibilidad
 
 ### 🏷️ Categorías
 - ✅ Agregadas: Marisco, Postres, Cerdo, Conejo, Legumbres, Encurtidos, Salsas
@@ -466,6 +470,18 @@
 - ✅ H3 fuera del div metadata
 - ✅ Autor e Historia con estilo de secuencias (detail-sequence-item)
 - ✅ Estructura consistente con otras secciones
+
+### 📱 Mejoras de UX Móvil
+- ✅ **Botones de acción en detalle:** Ahora se muestran en dos líneas en móvil (flex-wrap)
+- ✅ Mejor distribución de espacio para Editar, Duplicar, Eliminar, Exportar, PDF
+- ✅ Interfaz más cómoda en dispositivos móviles
+
+### 🔄 Mejoras de Navegación
+- ✅ **Contador siempre visible:** El contador de recetas ahora se muestra siempre al volver a home
+- ✅ Restauración automática del contador al cerrar formulario
+- ✅ Restauración automática del contador al cerrar detalle de receta
+- ✅ Restauración automática del contador después de eliminar receta
+- ✅ Regla implementada: "El contador siempre está visible en la página de inicio"
 
 ---
 
@@ -554,5 +570,5 @@
 ---
 
 **Fin del Informe Técnico**  
-*Última actualización: 30 de octubre de 2025*  
-*Versión: 2.1 - Mejoras de UX y corrección de bugs*
+*Última actualización: 31 de octubre de 2025*  
+*Versión: 2.2 - Eliminación de OCR/IA, corrección de bugs y mejoras de UX móvil*
