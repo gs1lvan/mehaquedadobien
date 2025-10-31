@@ -47,17 +47,18 @@ const DEFAULT_EMOJI = '🐱';
  * Kitchen appliances available for recipes
  */
 const KITCHEN_APPLIANCES = [
-    { id: 'sarten', name: 'Sartén', emoji: '🍳' },
-    { id: 'olla', name: 'Olla', emoji: '🍲' },
-    { id: 'olla-presion', name: 'Olla a presión', emoji: '⚡' },
+    { id: 'batidora', name: 'Batidora', emoji: '🌀' },
+    { id: 'cuchillo', name: 'Cuchillo', emoji: '🔪' },
+    { id: 'freidora-aire', name: 'Freidora de aire', emoji: '💨' },
     { id: 'horno', name: 'Horno', emoji: '🔥' },
     { id: 'microondas', name: 'Microondas', emoji: '📻' },
-    { id: 'freidora-aire', name: 'Freidora de aire', emoji: '💨' },
+    { id: 'olla', name: 'Olla', emoji: '🍲' },
+    { id: 'olla-presion', name: 'Olla a presión', emoji: '⚡' },
     { id: 'sandwichera', name: 'Sandwichera', emoji: '🥪' },
-    { id: 'batidora', name: 'Batidora', emoji: '🌀' },
-    { id: 'wok', name: 'Wok', emoji: '🥘' },
+    { id: 'sarten', name: 'Sartén', emoji: '🍳' },
+    { id: 'thermomix', name: 'Thermomix', emoji: '🤖' },
     { id: 'vaporera', name: 'Vaporera', emoji: '♨️' },
-    { id: 'thermomix', name: 'Thermomix', emoji: '🤖' }
+    { id: 'wok', name: 'Wok', emoji: '🥘' }
 ];
 
 /**
@@ -2414,6 +2415,13 @@ class RecipeApp {
             timeFilterBar.classList.remove('hidden');
         }
 
+        // Show recipe counter
+        const recipeCounter = document.getElementById('recipe-counter');
+        if (recipeCounter) {
+            recipeCounter.style.display = 'inline-block';
+            recipeCounter.classList.remove('hidden');
+        }
+
         // Show header actions when closing form
         this.showHeaderActions();
 
@@ -2423,6 +2431,9 @@ class RecipeApp {
         // Update current view state
         this.currentView = 'list';
         this.currentRecipeId = null;
+
+        // Render recipe list to ensure counter is updated
+        this.renderRecipeList();
 
         // Scroll to top
         window.scrollTo(0, 0);

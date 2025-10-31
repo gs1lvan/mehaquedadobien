@@ -1316,17 +1316,18 @@ class PDFExporter {
 
                 // Define appliances list (same as in script.js)
                 const KITCHEN_APPLIANCES = [
-                    { id: 'sarten', name: 'Sartén', emoji: '🍳' },
-                    { id: 'olla', name: 'Olla', emoji: '🍲' },
-                    { id: 'olla-presion', name: 'Olla a presión', emoji: '⚡' },
+                    { id: 'batidora', name: 'Batidora', emoji: '🌀' },
+                    { id: 'cuchillo', name: 'Cuchillo', emoji: '🔪' },
+                    { id: 'freidora-aire', name: 'Freidora de aire', emoji: '💨' },
                     { id: 'horno', name: 'Horno', emoji: '🔥' },
                     { id: 'microondas', name: 'Microondas', emoji: '📻' },
-                    { id: 'freidora-aire', name: 'Freidora de aire', emoji: '💨' },
+                    { id: 'olla', name: 'Olla', emoji: '🍲' },
+                    { id: 'olla-presion', name: 'Olla a presión', emoji: '⚡' },
                     { id: 'sandwichera', name: 'Sandwichera', emoji: '🥪' },
-                    { id: 'batidora', name: 'Batidora', emoji: '🌀' },
-                    { id: 'wok', name: 'Wok', emoji: '🥘' },
+                    { id: 'sarten', name: 'Sartén', emoji: '🍳' },
+                    { id: 'thermomix', name: 'Thermomix', emoji: '🤖' },
                     { id: 'vaporera', name: 'Vaporera', emoji: '♨️' },
-                    { id: 'thermomix', name: 'Thermomix', emoji: '🤖' }
+                    { id: 'wok', name: 'Wok', emoji: '🥘' }
                 ];
 
                 const applianceNames = recipe.kitchenAppliances

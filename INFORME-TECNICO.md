@@ -368,16 +368,37 @@
 
 ---
 
-## 📝 CAMBIOS RECIENTES (Sesión Actual)
+## 📝 CAMBIOS RECIENTES (Sesión Actual - 31 de octubre de 2025)
 
-### 🐛 Corrección de Bugs (7 bugs corregidos)
+### 🗑️ Eliminación Completa de Funcionalidad OCR/IA
+
+#### Archivos Eliminados
+- ✅ **test-ocr.html** - Archivo de prueba de OCR
+- ✅ **INSTRUCCIONES-API-GEMINI.md** - Documentación de API de Gemini
+- ✅ **.kiro/specs/scan-recipe-with-ai/** - Carpeta completa de especificaciones
+
+#### Código Eliminado
+- ✅ **GeminiAPIService** - Clase de comunicación con Gemini API
+- ✅ **RecipeScannerService** - Servicio de orquestación OCR + IA
+- ✅ **Modales de configuración** - Modal de API Key y modal de escaneo
+- ✅ **Botones de IA** - Botón "🤖 Configurar IA" y "📸 Escanear Receta con IA"
+- ✅ **Estilos CSS** - ~300 líneas de estilos relacionados con OCR/IA
+- ✅ **Tesseract.js** - Referencias a biblioteca de OCR
+- ✅ **Funcionalidades** - Configuración de API Key, extracción de texto, procesamiento con IA
+
+**Motivo:** Simplificación de la aplicación, eliminando dependencias externas y funcionalidades experimentales.
+
+### 🐛 Corrección de Bugs (10 bugs corregidos)
 
 #### Bugs Críticos
 - ✅ **Función duplicada:** Eliminada definición duplicada de `parseTimeToMinutes()` en script.js
+- ✅ **Botón Eliminar:** Corregido estado "⏳ Eliminando..." que persistía al abrir otras recetas
+- ✅ **Contador desaparecido:** Solucionado problema del contador que no aparecía al volver a home
 
 #### Bugs Medios
 - ✅ **Filtro Caravana:** Corregida lógica para combinar correctamente con otros filtros activos (OR lógico)
 - ✅ **Validación de Tiempo:** Simplificada lógica redundante y corregido rango de minutos (0-59 en lugar de 0-60)
+- ✅ **Contador en formulario:** Agregada restauración del contador al cerrar formulario
 
 #### Bugs Menores
 - ✅ **Logs de Debug:** Eliminados 7 console.log de debug en producción
