@@ -96,6 +96,7 @@ body {
 }
 
 .header-content {
+    position: relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -103,16 +104,11 @@ body {
     gap: var(--spacing-sm);
 }
 
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    flex-wrap: nowrap;
-}
 
-/* Mobile menu button - hidden by default */
-.mobile-menu-btn {
-    display: none;
+
+/* Menu button - always visible */
+.menu-btn {
+    display: block;
     background: var(--color-background);
     border: 1px solid var(--color-border);
     color: var(--color-text);
@@ -123,16 +119,16 @@ body {
     transition: all 0.2s ease;
 }
 
-.mobile-menu-btn:hover {
+.menu-btn:hover {
     background: var(--color-background-secondary);
 }
 
-.mobile-menu-btn:active {
+.menu-btn:active {
     transform: scale(0.95);
 }
 
-/* Mobile dropdown menu */
-.mobile-menu {
+/* Dropdown menu */
+.menu-dropdown {
     display: none;
     position: absolute;
     top: 100%;
@@ -147,12 +143,12 @@ body {
     overflow: hidden;
 }
 
-.mobile-menu.active {
+.menu-dropdown.active {
     display: flex;
     flex-direction: column;
 }
 
-.mobile-menu-item {
+.menu-item {
     width: 100%;
     padding: var(--spacing-md);
     background: var(--color-background);
@@ -165,26 +161,31 @@ body {
     transition: background 0.2s ease;
 }
 
-.mobile-menu-item:last-child {
+.menu-item:last-child {
     border-bottom: none;
 }
 
-.mobile-menu-item:hover {
+.menu-item:hover {
     background: var(--color-background-secondary);
 }
 
-.mobile-menu-item:active {
+.menu-item:active {
     background: var(--color-border-light);
 }
 
-.mobile-menu-item-primary {
+.menu-item-primary {
     background: linear-gradient(to right, var(--color-primary), var(--color-primary-light));
     color: var(--color-background);
     font-weight: var(--font-weight-semibold);
 }
 
-.mobile-menu-item-primary:hover {
+.menu-item-primary:hover {
     background: linear-gradient(to right, var(--color-primary-light), var(--color-primary));
+}
+
+/* Hide desktop header-actions permanently */
+.header-actions {
+    display: none !important;
 }
 
 .recipe-header h1 {
@@ -2362,15 +2363,7 @@ body.dark-theme .recipe-pdf-badge:hover {
         align-items: center;
     }
 
-    /* Hide desktop actions on mobile */
-    .header-actions {
-        display: none !important;
-    }
 
-    /* Show mobile menu button */
-    .mobile-menu-btn {
-        display: block;
-    }
 
     main {
         padding: var(--spacing-lg);
@@ -2918,6 +2911,15 @@ html {
     padding: var(--spacing-lg);
     overflow-y: auto;
     flex: 1;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: var(--spacing-lg);
+    border-top: 1px solid var(--color-border-light);
+    gap: var(--spacing-md);
 }
 
 /* Category form */
@@ -4007,4 +4009,363 @@ input,
 textarea,
 select {
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+
+/* ===== Shopping Lists Styles ===== */
+
+/* Shopping Lists Header */
+.shopping-lists-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.shopping-lists-header h2 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+
+/* Shopping Lists Container */
+.shopping-lists-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+/* Shopping List Card */
+.shopping-list-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    transition: all 0.2s ease;
+}
+
+.shopping-list-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+/* Shopping List Header */
+.shopping-list-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    transition: background 0.2s ease;
+    user-select: none;
+}
+
+.shopping-list-header:hover {
+    background: var(--color-background-secondary);
+}
+
+.shopping-list-header:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.shopping-list-name {
+    flex: 1;
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+}
+
+.shopping-list-counter {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    padding: 4px 8px;
+    background: var(--color-background-secondary);
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+}
+
+.expand-icon {
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+    color: var(--color-text-secondary);
+}
+
+.shopping-list-header.expanded .expand-icon {
+    transform: rotate(180deg);
+}
+
+/* Shopping List Actions */
+.shopping-list-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-sm);
+}
+
+/* Shopping List Content (Collapsible) */
+.shopping-list-content {
+    max-height: 1000px;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
+    opacity: 1;
+    margin-top: var(--spacing-md);
+}
+
+.shopping-list-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+}
+
+.shopping-list-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+/* Shopping Item */
+.shopping-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    line-height: 1.6;
+}
+
+.shopping-item-bullet {
+    color: var(--color-text-secondary);
+    font-size: 1.2rem;
+    line-height: 1.4;
+    flex-shrink: 0;
+}
+
+.shopping-item-content {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.shopping-item-name {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+}
+
+.shopping-item-quantity {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+}
+
+/* Shopping Item Reorder Buttons */
+.shopping-item-reorder {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+}
+
+.btn-reorder {
+    font-size: 1rem;
+    padding: 4px;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.btn-reorder:hover:not(:disabled) {
+    opacity: 1;
+}
+
+.btn-reorder:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+}
+
+/* Shopping List Buttons */
+.shopping-list-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.shopping-list-buttons button {
+    width: 100%;
+    font-size: 1rem;
+    padding: 14px 24px;
+}
+
+/* Shopping Item Input (Form) */
+.shopping-item-input {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    align-items: start;
+}
+
+.shopping-item-input .shopping-item-name-input {
+    grid-column: 1;
+}
+
+.shopping-item-input .shopping-item-quantity-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+.shopping-item-reorder-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.shopping-item-reorder-buttons .btn-reorder {
+    padding: 4px 8px;
+    font-size: 0.875rem;
+}
+
+/* Reorder animation feedback */
+.shopping-item-input.reordered {
+    animation: reorderPulse 0.3s ease;
+}
+
+@keyframes reorderPulse {
+    0%, 100% {
+        transform: scale(1);
+        background: transparent;
+    }
+    50% {
+        transform: scale(1.02);
+        background: var(--color-background-secondary);
+    }
+}
+
+/* Screen reader only class */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Visual distinction for existing items */
+.shopping-item-input.existing-item {
+    position: relative;
+    padding-top: var(--spacing-lg);
+    margin-top: var(--spacing-md);
+}
+
+.shopping-item-input.existing-item::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--color-border);
+}
+
+/* First existing item gets a label */
+.shopping-item-input.existing-item.first-existing::after {
+    content: 'Elementos existentes';
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary);
+    background: var(--color-background);
+    padding: 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.shopping-item-name-input,
+.shopping-item-quantity-input {
+    width: 100%;
+}
+
+.remove-shopping-item-btn {
+    margin-top: 0;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-xxl) var(--spacing-xl);
+    color: var(--color-text-secondary);
+}
+
+.empty-state p:first-child {
+    font-size: 1.25rem;
+    margin-bottom: var(--spacing-sm);
+}
+
+.empty-state p:last-child {
+    font-size: 0.875rem;
+}
+
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .shopping-lists-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .shopping-lists-header h2 {
+        font-size: 1.5rem;
+    }
+
+    #new-shopping-list-btn {
+        width: 100%;
+    }
+
+    .shopping-list-actions {
+        justify-content: flex-end;
+    }
+
+    .shopping-item-label {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* Dark Theme Support */
+body.dark-theme .shopping-list-card {
+    background: var(--color-background-secondary);
+    border-color: var(--color-border);
+}
+
+body.dark-theme .shopping-list-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-theme .shopping-list-header:hover {
+    background: var(--color-background);
+}
+
+body.dark-theme .shopping-list-counter {
+    background: var(--color-background);
+}
+
+body.dark-theme .shopping-item:hover {
+    background: var(--color-background);
+}
+
+body.dark-theme .empty-state {
+    color: var(--color-text-secondary);
+}
+
+body.dark-theme .shopping-item-input.existing-item::after {
+    background: var(--color-background);
 }

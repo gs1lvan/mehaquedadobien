@@ -95,7 +95,9 @@
   - Prevenir comportamiento por defecto del navegador
   - _Requirements: 1.5, 4.1_
 
-- [-] 8. Realizar pruebas manuales en diferentes navegadores y dispositivos
+- [x] 8. Realizar pruebas manuales en diferentes navegadores y dispositivos
+
+
 
 
 

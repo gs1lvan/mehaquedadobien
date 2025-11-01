@@ -8,6 +8,7 @@ Una aplicación web moderna para gestionar tus recetas personales con funcionali
 
 - ✅ **Gestión completa de recetas** - Crear, editar, duplicar y eliminar
 - ✅ **Categorías personalizables** - 16 categorías predefinidas + categorías personalizadas
+- ✅ **Listas de compra** - Crea y gestiona múltiples listas de compra con elementos marcables
 - ✅ **Aparatos de cocina** - Selección visual de 12 aparatos con emojis grandes (2.5em)
 - ✅ **Ingredientes inteligentes** - Gestión con cantidades y unidades opcionales
 - ✅ **Secuencias de adición** - Pasos numerados con ingredientes asociados
@@ -41,7 +42,30 @@ El proyecto incluye múltiples archivos de prueba HTML (prefijo `test-*.html`) p
 - **test-qr.html** - Prueba de generación de códigos QR con datos de receta de ejemplo
 - Otros archivos de prueba para ingredientes, secuencias, multimedia, filtrado, exportación, etc.
 
+## 🛒 Listas de Compra
+
+La aplicación incluye un sistema completo de gestión de listas de compra:
+
+### Características
+
+- **Múltiples listas:** Crea y gestiona varias listas de compra simultáneamente
+- **Elementos con cantidad:** Añade elementos con nombre y cantidad opcional
+- **Marcar completados:** Marca elementos como comprados mientras haces la compra
+- **Expandir/Colapsar:** Listas desplegables para una vista organizada
+- **Contador:** Visualiza cuántos elementos has completado (X/Y completados)
+- **Copiar al portapapeles:** Copia rápidamente toda la lista para compartir
+- **Persistencia:** Las listas se guardan automáticamente en localStorage
+
+### Acceso
+
+Accede a las listas de compra desde el menú hamburguesa (☰) → 🛒 Listas de Compra
+
 ## 🎨 Última Actualización
+
+**Fecha:** 1 de noviembre de 2025  
+**Cambio:** Añadido botón de Listas de Compra al menú - Se ha agregado acceso directo a la funcionalidad de listas de compra desde el menú principal de la aplicación.
+
+## 📝 Actualizaciones Anteriores
 
 **Fecha:** 31 de octubre de 2025  
 **Cambio:** Sistema optimizado de códigos QR con importación automática - Se ha implementado un sistema completo para compartir e importar recetas mediante códigos QR optimizados:

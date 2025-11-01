@@ -278,6 +278,314 @@ class CategoryManager {
 
 // ===== End Category Management =====
 
+// ===== Shopping List Management =====
+
+/**
+ * ShoppingListManager - Manages shopping lists and their items
+ */
+class ShoppingListManager {
+    constructor() {
+        this.lists = [];
+        this.currentListId = null;
+        this.storageKey = 'shopping_lists';
+        this.loadLists();
+    }
+
+    /**
+     * Load shopping lists from localStorage
+     */
+    loadLists() {
+        try {
+            const stored = localStorage.getItem(this.storageKey);
+            if (stored) {
+                this.lists = JSON.parse(stored);
+                console.log('[ShoppingListManager] Loaded lists:', this.lists.length);
+            }
+        } catch (error) {
+            console.error('[ShoppingListManager] Error loading lists:', error);
+            this.lists = [];
+        }
+    }
+
+    /**
+     * Save shopping lists to localStorage
+     */
+    saveLists() {
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(this.lists));
+            console.log('[ShoppingListManager] Saved lists:', this.lists.length);
+        } catch (error) {
+            console.error('[ShoppingListManager] Error saving lists:', error);
+            throw new Error('No se pudieron guardar las listas');
+        }
+    }
+
+    /**
+     * Create a new shopping list
+     * @param {string} name - Name of the list
+     * @returns {Object} The created list
+     */
+    createList(name) {
+        const list = {
+            id: Date.now(),
+            name: name,
+            items: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+        
+        this.lists.push(list);
+        this.saveLists();
+        
+        console.log('[ShoppingListManager] Created list:', list.id, list.name);
+        return list;
+    }
+
+    /**
+     * Get a shopping list by ID
+     * @param {number} id - List ID
+     * @returns {Object|null} The list or null if not found
+     */
+    getList(id) {
+        return this.lists.find(list => list.id === id) || null;
+    }
+
+    /**
+     * Update a shopping list
+     * @param {number} id - List ID
+     * @param {Object} updates - Updates to apply
+     * @returns {Object|null} The updated list or null if not found
+     */
+    updateList(id, updates) {
+        const list = this.getList(id);
+        if (!list) {
+            console.error('[ShoppingListManager] List not found:', id);
+            return null;
+        }
+
+        Object.assign(list, updates);
+        list.updatedAt = new Date().toISOString();
+        this.saveLists();
+        
+        console.log('[ShoppingListManager] Updated list:', id);
+        return list;
+    }
+
+    /**
+     * Delete a shopping list
+     * @param {number} id - List ID
+     * @returns {boolean} True if deleted, false if not found
+     */
+    deleteList(id) {
+        const index = this.lists.findIndex(list => list.id === id);
+        if (index === -1) {
+            console.error('[ShoppingListManager] List not found:', id);
+            return false;
+        }
+
+        this.lists.splice(index, 1);
+        this.saveLists();
+        
+        console.log('[ShoppingListManager] Deleted list:', id);
+        return true;
+    }
+
+    /**
+     * Add an item to a shopping list
+     * @param {number} listId - List ID
+     * @param {Object} item - Item to add {name, quantity}
+     * @returns {Object|null} The added item or null if list not found
+     */
+    addItem(listId, item) {
+        const list = this.getList(listId);
+        if (!list) {
+            console.error('[ShoppingListManager] List not found:', listId);
+            return null;
+        }
+
+        const newItem = {
+            id: Date.now(),
+            name: item.name,
+            quantity: item.quantity || '',
+            completed: false
+        };
+
+        list.items.push(newItem);
+        list.updatedAt = new Date().toISOString();
+        this.saveLists();
+        
+        console.log('[ShoppingListManager] Added item to list:', listId, newItem.name);
+        return newItem;
+    }
+
+    /**
+     * Update an item in a shopping list
+     * @param {number} listId - List ID
+     * @param {number} itemId - Item ID
+     * @param {Object} updates - Updates to apply
+     * @returns {Object|null} The updated item or null if not found
+     */
+    updateItem(listId, itemId, updates) {
+        const list = this.getList(listId);
+        if (!list) {
+            console.error('[ShoppingListManager] List not found:', listId);
+            return null;
+        }
+
+        const item = list.items.find(i => i.id === itemId);
+        if (!item) {
+            console.error('[ShoppingListManager] Item not found:', itemId);
+            return null;
+        }
+
+        Object.assign(item, updates);
+        list.updatedAt = new Date().toISOString();
+        this.saveLists();
+        
+        console.log('[ShoppingListManager] Updated item:', itemId);
+        return item;
+    }
+
+    /**
+     * Delete an item from a shopping list
+     * @param {number} listId - List ID
+     * @param {number} itemId - Item ID
+     * @returns {boolean} True if deleted, false if not found
+     */
+    deleteItem(listId, itemId) {
+        const list = this.getList(listId);
+        if (!list) {
+            console.error('[ShoppingListManager] List not found:', listId);
+            return false;
+        }
+
+        const index = list.items.findIndex(i => i.id === itemId);
+        if (index === -1) {
+            console.error('[ShoppingListManager] Item not found:', itemId);
+            return false;
+        }
+
+        list.items.splice(index, 1);
+        list.updatedAt = new Date().toISOString();
+        this.saveLists();
+        
+        console.log('[ShoppingListManager] Deleted item:', itemId);
+        return true;
+    }
+
+    /**
+     * Toggle item completed state
+     * @param {number} listId - List ID
+     * @param {number} itemId - Item ID
+     * @returns {boolean|null} New completed state or null if not found
+     */
+    toggleItemCompleted(listId, itemId) {
+        const list = this.getList(listId);
+        if (!list) {
+            console.error('[ShoppingListManager] List not found:', listId);
+            return null;
+        }
+
+        const item = list.items.find(i => i.id === itemId);
+        if (!item) {
+            console.error('[ShoppingListManager] Item not found:', itemId);
+            return null;
+        }
+
+        item.completed = !item.completed;
+        list.updatedAt = new Date().toISOString();
+        this.saveLists();
+        
+        console.log('[ShoppingListManager] Toggled item completed:', itemId, item.completed);
+        return item.completed;
+    }
+
+    /**
+     * Get count of completed items in a list
+     * @param {number} listId - List ID
+     * @returns {number} Count of completed items
+     */
+    getCompletedCount(listId) {
+        const list = this.getList(listId);
+        if (!list) return 0;
+        return list.items.filter(item => item.completed).length;
+    }
+
+    /**
+     * Get total count of items in a list
+     * @param {number} listId - List ID
+     * @returns {number} Total count of items
+     */
+    getTotalCount(listId) {
+        const list = this.getList(listId);
+        if (!list) return 0;
+        return list.items.length;
+    }
+
+    /**
+     * Check if all items in a list are completed
+     * @param {number} listId - List ID
+     * @returns {boolean} True if all items are completed
+     */
+    isListComplete(listId) {
+        const list = this.getList(listId);
+        if (!list || list.items.length === 0) return false;
+        return list.items.every(item => item.completed);
+    }
+
+    /**
+     * Format list for clipboard
+     * @param {number} listId - List ID
+     * @param {boolean} includeCompleted - Whether to include completed items (default: true)
+     * @returns {string} Formatted text for clipboard
+     */
+    formatListForClipboard(listId, includeCompleted = true) {
+        const list = this.getList(listId);
+        if (!list) {
+            console.warn('[ShoppingListManager] Cannot format list: list not found', listId);
+            return '';
+        }
+
+        const lines = [];
+        
+        // Add list name as header
+        lines.push(list.name);
+        lines.push('-----------------------------------'); // Fixed separator line
+        
+        // Filter items based on completed status
+        const items = includeCompleted 
+            ? list.items 
+            : list.items.filter(item => !item.completed);
+
+        // Handle empty list
+        if (items.length === 0) {
+            const message = includeCompleted 
+                ? 'No hay elementos en esta lista'
+                : 'No hay elementos pendientes';
+            lines.push(message);
+            return lines.join('\n');
+        }
+
+        // Format each item with blank line after each
+        items.forEach((item, index) => {
+            const quantity = item.quantity?.trim() 
+                ? ` - ${item.quantity}` 
+                : '';
+            const completedMark = item.completed ? '✓ ' : '';
+            lines.push(`${completedMark}${item.name}${quantity}`);
+            
+            // Add blank line after each item except the last one
+            if (index < items.length - 1) {
+                lines.push('');
+            }
+        });
+
+        return lines.join('\n');
+    }
+}
+
+// ===== End Shopping List Management =====
+
 /**
  * RecipeApp - Main application controller for Recetario Personal
  */
@@ -285,6 +593,7 @@ class RecipeApp {
     constructor() {
         this.storageManager = new StorageManager();
         this.categoryManager = new CategoryManager();
+        this.shoppingListManager = new ShoppingListManager();
         this.recipes = [];
         this.activeFilters = new Set(); // Track active category filters
         this.activeTimeFilter = 'all'; // Track active time filter
@@ -330,6 +639,9 @@ class RecipeApp {
 
             // Setup image modal
             this.setupImageModal();
+
+            // Initialize shopping lists
+            this.initShoppingLists();
 
             // Initialize theme
             this.initTheme();
@@ -544,22 +856,6 @@ class RecipeApp {
             });
         }
 
-        // Theme toggle button
-        const themeToggleBtn = document.getElementById('theme-toggle-btn');
-        if (themeToggleBtn) {
-            themeToggleBtn.addEventListener('click', () => {
-                this.toggleTheme();
-            });
-        }
-
-        // New recipe button
-        const newRecipeBtn = document.getElementById('new-recipe-btn');
-        if (newRecipeBtn) {
-            newRecipeBtn.addEventListener('click', () => {
-                this.showRecipeForm();
-            });
-        }
-
         // Filter chips (category)
         const filterChips = document.querySelectorAll('#filter-bar .filter-chip');
         filterChips.forEach(chip => {
@@ -592,22 +888,6 @@ class RecipeApp {
             });
         }
 
-        // Import XML button
-        const importXmlBtn = document.getElementById('import-xml-btn');
-        if (importXmlBtn) {
-            importXmlBtn.addEventListener('click', () => {
-                this.handleImportXMLClick();
-            });
-        }
-
-        // Export all button
-        const exportAllBtn = document.getElementById('export-all-btn');
-        if (exportAllBtn) {
-            exportAllBtn.addEventListener('click', () => {
-                this.handleExportAllClick();
-            });
-        }
-
         // XML file input
         const xmlFileInput = document.getElementById('xml-file-input');
         if (xmlFileInput) {
@@ -616,69 +896,82 @@ class RecipeApp {
             });
         }
 
-        // Manage categories button
-        const manageCategoriesBtn = document.getElementById('manage-categories-btn');
-        if (manageCategoriesBtn) {
-            manageCategoriesBtn.addEventListener('click', () => {
-                this.showCategoryModal();
-            });
-        }
-
-        // Mobile menu button
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        if (mobileMenuBtn && mobileMenu) {
-            mobileMenuBtn.addEventListener('click', (e) => {
+        // Menu button and dropdown
+        const menuBtn = document.getElementById('menu-btn');
+        const menuDropdown = document.getElementById('menu-dropdown');
+        
+        // Helper function to close menu
+        const closeMenu = () => {
+            if (menuDropdown) {
+                menuDropdown.classList.remove('active');
+                if (menuBtn) {
+                    menuBtn.setAttribute('aria-expanded', 'false');
+                }
+            }
+        };
+        
+        if (menuBtn && menuDropdown) {
+            // Toggle menu on button click
+            menuBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                mobileMenu.classList.toggle('active');
+                const isActive = menuDropdown.classList.toggle('active');
+                menuBtn.setAttribute('aria-expanded', isActive);
             });
 
             // Close menu when clicking outside
             document.addEventListener('click', (e) => {
-                if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
-                    mobileMenu.classList.remove('active');
+                if (!menuDropdown.contains(e.target) && !menuBtn.contains(e.target)) {
+                    closeMenu();
                 }
             });
         }
 
-        // Mobile menu items
-        const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
-        if (mobileThemeToggle) {
-            mobileThemeToggle.addEventListener('click', () => {
+        // Menu items
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', () => {
                 this.toggleTheme();
-                mobileMenu.classList.remove('active');
+                closeMenu();
             });
         }
 
-        const mobileManageCategories = document.getElementById('mobile-manage-categories');
-        if (mobileManageCategories) {
-            mobileManageCategories.addEventListener('click', () => {
+        const manageCategoriesBtn = document.getElementById('manage-categories-btn');
+        if (manageCategoriesBtn) {
+            manageCategoriesBtn.addEventListener('click', () => {
                 this.showCategoryModal();
-                mobileMenu.classList.remove('active');
+                closeMenu();
             });
         }
 
-        const mobileImportXml = document.getElementById('mobile-import-xml');
-        if (mobileImportXml) {
-            mobileImportXml.addEventListener('click', () => {
+        const shoppingListsBtn = document.getElementById('shopping-lists-btn');
+        if (shoppingListsBtn) {
+            shoppingListsBtn.addEventListener('click', () => {
+                this.showShoppingListsView();
+                closeMenu();
+            });
+        }
+
+        const importXmlBtn = document.getElementById('import-xml-btn');
+        if (importXmlBtn) {
+            importXmlBtn.addEventListener('click', () => {
                 this.handleImportXMLClick();
-                mobileMenu.classList.remove('active');
+                closeMenu();
             });
         }
 
-        const mobileExportAll = document.getElementById('mobile-export-all');
-        if (mobileExportAll) {
-            mobileExportAll.addEventListener('click', () => {
+        const exportAllBtn = document.getElementById('export-all-btn');
+        if (exportAllBtn) {
+            exportAllBtn.addEventListener('click', () => {
                 this.handleExportAllClick();
-                mobileMenu.classList.remove('active');
+                closeMenu();
             });
         }
 
-        const mobileNewRecipe = document.getElementById('mobile-new-recipe');
-        if (mobileNewRecipe) {
-            mobileNewRecipe.addEventListener('click', () => {
+        const newRecipeBtn = document.getElementById('new-recipe-btn');
+        if (newRecipeBtn) {
+            newRecipeBtn.addEventListener('click', () => {
                 this.showRecipeForm();
-                mobileMenu.classList.remove('active');
+                closeMenu();
             });
         }
 
@@ -2030,8 +2323,7 @@ class RecipeApp {
             return;
         }
 
-        // Show header actions when in list view
-        this.showHeaderActions();
+        // Menu is always visible now
 
         // Get filtered recipes
         const filteredRecipes = this.filterRecipes();
@@ -2327,8 +2619,7 @@ class RecipeApp {
             detailView.classList.add('hidden');
         }
 
-        // Hide header actions when in form view
-        this.hideHeaderActions();
+        // Menu remains visible in form view
 
         // Hide filter toggle container
         const filterToggleContainer = document.querySelector('.filter-toggle-container');
@@ -2432,8 +2723,7 @@ class RecipeApp {
             recipeCounter.classList.remove('hidden');
         }
 
-        // Show header actions when closing form
-        this.showHeaderActions();
+        // Menu is always visible
 
         // Reset form
         this.resetForm();
@@ -4453,8 +4743,7 @@ class RecipeApp {
             return;
         }
 
-        // Hide header actions when viewing recipe detail
-        this.hideHeaderActions();
+        // Menu remains visible in detail view
 
         // Hide list and form views
         const listView = document.getElementById('recipe-list-view');
@@ -5812,8 +6101,10 @@ class RecipeApp {
         // Hide all views
         const detailView = document.getElementById('recipe-detail-view');
         const formView = document.getElementById('recipe-form-view');
+        const shoppingListsView = document.getElementById('shopping-lists-view');
         if (detailView) detailView.classList.add('hidden');
         if (formView) formView.classList.add('hidden');
+        if (shoppingListsView) shoppingListsView.classList.add('hidden');
 
         // Show list view
         const listView = document.getElementById('recipe-list-view');
@@ -5855,8 +6146,7 @@ class RecipeApp {
             toggleBtn.textContent = '🔍 Filtros';
         }
 
-        // Show header actions when returning to home
-        this.showHeaderActions();
+        // Menu is always visible
 
         // Reset form if we were in form view
         if (this.currentView === 'form') {
@@ -5875,8 +6165,7 @@ class RecipeApp {
      * Close recipe detail and return to list view
      */
     closeRecipeDetail() {
-        // Show header actions when closing detail
-        this.showHeaderActions();
+        // Menu is always visible
 
         // Hide detail view
         const detailView = document.getElementById('recipe-detail-view');
@@ -5969,41 +6258,9 @@ class RecipeApp {
             themeBtn.innerHTML = isDark ? '☀️ Tema' : '🌙 Tema';
             themeBtn.title = isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro';
         }
-        
-        // Update mobile theme button
-        const mobileThemeBtn = document.getElementById('mobile-theme-toggle');
-        if (mobileThemeBtn) {
-            mobileThemeBtn.innerHTML = isDark ? '☀️ Tema' : '🌙 Tema';
-        }
     }
 
     // ===== End Theme Management =====
-
-    // ===== Header Actions Visibility =====
-
-    /**
-     * Show header actions (buttons in header)
-     * Called when in list view
-     */
-    showHeaderActions() {
-        const headerActions = document.getElementById('header-actions');
-        if (headerActions) {
-            headerActions.style.display = 'flex';
-        }
-    }
-
-    /**
-     * Hide header actions (buttons in header)
-     * Called when in detail or form view
-     */
-    hideHeaderActions() {
-        const headerActions = document.getElementById('header-actions');
-        if (headerActions) {
-            headerActions.style.display = 'none';
-        }
-    }
-
-    // ===== End Header Actions Visibility =====
 
     /**
      * Show error message to user with toast notification
@@ -6864,7 +7121,927 @@ class RecipeApp {
         }
     }
 
+    // ===== Shopping Lists Management =====
 
+    /**
+     * Initialize shopping lists functionality
+     */
+    initShoppingLists() {
+        console.log('[ShoppingLists] Initializing shopping lists');
+        
+        // Get DOM elements
+        const newListBtn = document.getElementById('new-shopping-list-btn');
+        const closeModalBtn = document.getElementById('close-shopping-list-modal');
+        const saveBtn = document.getElementById('save-shopping-list-btn');
+        const addItemBtn = document.getElementById('add-shopping-item-btn');
+        
+        // Setup event listeners
+        if (newListBtn) {
+            newListBtn.addEventListener('click', () => {
+                this.showShoppingListForm();
+            });
+        }
+        
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', () => {
+                this.closeShoppingListModal();
+            });
+        }
+        
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => {
+                this.saveShoppingList();
+            });
+        }
+        
+        if (addItemBtn) {
+            addItemBtn.addEventListener('click', () => {
+                this.addShoppingItemInput();
+            });
+        }
+        
+        // Close modal on overlay click
+        const modal = document.getElementById('shopping-list-modal');
+        if (modal) {
+            const overlay = modal.querySelector('.modal-overlay');
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    this.closeShoppingListModal();
+                });
+            }
+        }
+    }
+
+    /**
+     * Show shopping lists view
+     */
+    showShoppingListsView() {
+        console.log('[ShoppingLists] Showing shopping lists view');
+        
+        // Hide other views
+        const recipesView = document.getElementById('recipe-list-view');
+        const recipeFormView = document.getElementById('recipe-form-view');
+        const recipeDetailView = document.getElementById('recipe-detail-view');
+        const shoppingListsView = document.getElementById('shopping-lists-view');
+        
+        if (recipesView) recipesView.classList.add('hidden');
+        if (recipeFormView) recipeFormView.classList.add('hidden');
+        if (recipeDetailView) recipeDetailView.classList.add('hidden');
+        if (shoppingListsView) shoppingListsView.classList.remove('hidden');
+        
+        // Hide filters and recipe counter
+        const filterToggleContainer = document.querySelector('.filter-toggle-container');
+        const filtersContainer = document.getElementById('filters-container');
+        const recipeCounter = document.getElementById('recipe-counter');
+        
+        if (filterToggleContainer) filterToggleContainer.classList.add('hidden');
+        if (filtersContainer) filtersContainer.classList.add('hidden');
+        if (recipeCounter) recipeCounter.classList.add('hidden');
+        
+        // Update current view
+        this.currentView = 'shopping-lists';
+        
+        // Render lists
+        this.renderShoppingLists();
+    }
+
+    /**
+     * Hide shopping lists view
+     */
+    hideShoppingListsView() {
+        const shoppingListsView = document.getElementById('shopping-lists-view');
+        if (shoppingListsView) {
+            shoppingListsView.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Render all shopping lists
+     */
+    renderShoppingLists() {
+        const container = document.getElementById('shopping-lists-container');
+        const emptyState = document.getElementById('shopping-lists-empty');
+        
+        if (!container) return;
+        
+        // Clear container
+        container.innerHTML = '';
+        
+        // Get all lists
+        const lists = this.shoppingListManager.lists;
+        
+        // Show empty state if no lists
+        if (lists.length === 0) {
+            if (emptyState) emptyState.classList.remove('hidden');
+            return;
+        }
+        
+        // Hide empty state
+        if (emptyState) emptyState.classList.add('hidden');
+        
+        // Render each list
+        lists.forEach(list => {
+            const card = this.renderShoppingListCard(list);
+            container.appendChild(card);
+        });
+    }
+
+    /**
+     * Render a single shopping list card
+     * @param {Object} list - Shopping list object
+     * @returns {HTMLElement} Card element
+     */
+    renderShoppingListCard(list) {
+        const card = document.createElement('div');
+        card.className = 'shopping-list-card';
+        card.dataset.listId = list.id;
+        
+        // Make card draggable
+        card.draggable = true;
+        card.addEventListener('dragstart', (e) => this.handleListDragStart(e));
+        card.addEventListener('dragend', (e) => this.handleListDragEnd(e));
+        card.addEventListener('dragover', (e) => this.handleListDragOver(e));
+        card.addEventListener('drop', (e) => this.handleListDrop(e));
+        
+        // Get total count
+        const totalCount = this.shoppingListManager.getTotalCount(list.id);
+        
+        // Create header
+        const header = document.createElement('div');
+        header.className = 'shopping-list-header';
+        header.setAttribute('role', 'button');
+        header.setAttribute('tabindex', '0');
+        header.setAttribute('aria-expanded', 'false');
+        
+        const name = document.createElement('h3');
+        name.className = 'shopping-list-name';
+        name.textContent = list.name;
+        
+        const counter = document.createElement('span');
+        counter.className = 'shopping-list-counter';
+        counter.textContent = `${totalCount} ${totalCount === 1 ? 'cosa que comprar' : 'cosas que comprar'}`;
+        
+        const expandIcon = document.createElement('span');
+        expandIcon.className = 'expand-icon';
+        expandIcon.textContent = '▼';
+        
+        header.appendChild(name);
+        header.appendChild(counter);
+        header.appendChild(expandIcon);
+        
+        // Create actions
+        const actions = document.createElement('div');
+        actions.className = 'shopping-list-actions';
+        
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'btn-icon copy-list-btn';
+        copyBtn.title = 'Copiar lista';
+        copyBtn.setAttribute('aria-label', 'Copiar lista al portapapeles');
+        copyBtn.textContent = '📋';
+        copyBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.copyShoppingListToClipboard(list.id, false);
+        });
+        
+        const duplicateBtn = document.createElement('button');
+        duplicateBtn.className = 'btn-icon';
+        duplicateBtn.title = 'Duplicar lista';
+        duplicateBtn.setAttribute('aria-label', 'Duplicar lista');
+        duplicateBtn.textContent = '📑';
+        duplicateBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.duplicateShoppingList(list.id);
+        });
+        
+        const editBtn = document.createElement('button');
+        editBtn.className = 'btn-icon';
+        editBtn.title = 'Editar lista';
+        editBtn.setAttribute('aria-label', 'Editar lista');
+        editBtn.textContent = '✏️';
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.showShoppingListForm(list.id);
+        });
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn-icon';
+        deleteBtn.title = 'Eliminar lista';
+        deleteBtn.setAttribute('aria-label', 'Eliminar lista');
+        deleteBtn.textContent = '🗑️';
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.deleteShoppingList(list.id);
+        });
+        
+        actions.appendChild(copyBtn);
+        actions.appendChild(duplicateBtn);
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+        
+        // Create content (collapsible)
+        const content = document.createElement('div');
+        content.className = 'shopping-list-content collapsed';
+        
+        const itemsContainer = this.renderShoppingItems(list);
+        content.appendChild(itemsContainer);
+        
+        // Add event listeners for expand/collapse
+        header.addEventListener('click', () => {
+            this.toggleListExpanded(list.id);
+        });
+        
+        header.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.toggleListExpanded(list.id);
+            }
+        });
+        
+        // Assemble card
+        card.appendChild(header);
+        card.appendChild(actions);
+        card.appendChild(content);
+        
+        return card;
+    }
+
+    /**
+     * Render shopping items for a list
+     * @param {Object} list - Shopping list object
+     * @returns {HTMLElement} Items container
+     */
+    renderShoppingItems(list) {
+        const container = document.createElement('div');
+        container.className = 'shopping-list-items';
+        
+        if (list.items.length === 0) {
+            const empty = document.createElement('p');
+            empty.style.color = 'var(--color-text-secondary)';
+            empty.style.fontSize = '0.875rem';
+            empty.textContent = 'No hay elementos en esta lista';
+            container.appendChild(empty);
+            return container;
+        }
+        
+        list.items.forEach((item, index) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'shopping-item';
+            itemDiv.dataset.itemId = item.id;
+            
+            // Bullet point
+            const bullet = document.createElement('span');
+            bullet.className = 'shopping-item-bullet';
+            bullet.textContent = '•';
+            
+            // Item content
+            const itemContent = document.createElement('div');
+            itemContent.className = 'shopping-item-content';
+            
+            const itemName = document.createElement('span');
+            itemName.className = 'shopping-item-name';
+            itemName.textContent = item.name;
+            
+            itemContent.appendChild(itemName);
+            
+            if (item.quantity) {
+                const itemQuantity = document.createElement('span');
+                itemQuantity.className = 'shopping-item-quantity';
+                itemQuantity.textContent = ` (${item.quantity})`;
+                itemContent.appendChild(itemQuantity);
+            }
+            
+            // Reorder buttons
+            const reorderButtons = document.createElement('div');
+            reorderButtons.className = 'shopping-item-reorder';
+            
+            // Up button
+            const upBtn = document.createElement('button');
+            upBtn.className = 'btn-icon btn-reorder';
+            upBtn.title = 'Mover arriba';
+            upBtn.textContent = '⬆️';
+            upBtn.disabled = index === 0; // Disable if first item
+            upBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.moveItemUp(list.id, index);
+            });
+            
+            // Down button
+            const downBtn = document.createElement('button');
+            downBtn.className = 'btn-icon btn-reorder';
+            downBtn.title = 'Mover abajo';
+            downBtn.textContent = '⬇️';
+            downBtn.disabled = index === list.items.length - 1; // Disable if last item
+            downBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.moveItemDown(list.id, index);
+            });
+            
+            reorderButtons.appendChild(upBtn);
+            reorderButtons.appendChild(downBtn);
+            
+            itemDiv.appendChild(bullet);
+            itemDiv.appendChild(itemContent);
+            itemDiv.appendChild(reorderButtons);
+            
+            container.appendChild(itemDiv);
+        });
+        
+        return container;
+    }
+
+    /**
+     * Move item up in the list
+     * @param {number} listId - List ID
+     * @param {number} index - Current index of the item
+     */
+    moveItemUp(listId, index) {
+        if (index === 0) return; // Already at top
+        
+        const list = this.shoppingListManager.getList(listId);
+        if (!list) return;
+        
+        // Save expanded state before re-rendering
+        const wasExpanded = this.isListExpanded(listId);
+        
+        // Swap items
+        [list.items[index - 1], list.items[index]] = [list.items[index], list.items[index - 1]];
+        
+        // Save and re-render
+        this.shoppingListManager.saveLists();
+        this.renderShoppingLists();
+        
+        // Restore expanded state
+        if (wasExpanded) {
+            this.expandList(listId);
+        }
+    }
+
+    /**
+     * Move item down in the list
+     * @param {number} listId - List ID
+     * @param {number} index - Current index of the item
+     */
+    moveItemDown(listId, index) {
+        const list = this.shoppingListManager.getList(listId);
+        if (!list || index === list.items.length - 1) return; // Already at bottom
+        
+        // Save expanded state before re-rendering
+        const wasExpanded = this.isListExpanded(listId);
+        
+        // Swap items
+        [list.items[index], list.items[index + 1]] = [list.items[index + 1], list.items[index]];
+        
+        // Save and re-render
+        this.shoppingListManager.saveLists();
+        this.renderShoppingLists();
+        
+        // Restore expanded state
+        if (wasExpanded) {
+            this.expandList(listId);
+        }
+    }
+
+    /**
+     * Toggle list expanded/collapsed state
+     * @param {number} listId - List ID
+     */
+    toggleListExpanded(listId) {
+        const card = document.querySelector(`.shopping-list-card[data-list-id="${listId}"]`);
+        if (!card) return;
+        
+        const header = card.querySelector('.shopping-list-header');
+        const content = card.querySelector('.shopping-list-content');
+        
+        if (!header || !content) return;
+        
+        // Toggle collapsed class
+        const isCollapsed = content.classList.contains('collapsed');
+        content.classList.toggle('collapsed');
+        header.classList.toggle('expanded', isCollapsed);
+        
+        // Update aria-expanded
+        header.setAttribute('aria-expanded', isCollapsed ? 'true' : 'false');
+    }
+
+    /**
+     * Check if a list is currently expanded
+     * @param {number} listId - List ID
+     * @returns {boolean} True if expanded, false if collapsed
+     */
+    isListExpanded(listId) {
+        const card = document.querySelector(`.shopping-list-card[data-list-id="${listId}"]`);
+        if (!card) return false;
+        
+        const content = card.querySelector('.shopping-list-content');
+        if (!content) return false;
+        
+        return !content.classList.contains('collapsed');
+    }
+
+    /**
+     * Expand a list (remove collapsed state)
+     * @param {number} listId - List ID
+     */
+    expandList(listId) {
+        const card = document.querySelector(`.shopping-list-card[data-list-id="${listId}"]`);
+        if (!card) return;
+        
+        const header = card.querySelector('.shopping-list-header');
+        const content = card.querySelector('.shopping-list-content');
+        
+        if (!header || !content) return;
+        
+        // Remove collapsed class
+        content.classList.remove('collapsed');
+        header.classList.add('expanded');
+        
+        // Update aria-expanded
+        header.setAttribute('aria-expanded', 'true');
+    }
+
+    /**
+     * Toggle item completed state
+     * @param {number} listId - List ID
+     * @param {number} itemId - Item ID
+     */
+    toggleItemCompleted(listId, itemId) {
+        const newState = this.shoppingListManager.toggleItemCompleted(listId, itemId);
+        
+        if (newState === null) {
+            console.error('[ShoppingLists] Failed to toggle item completed');
+            return;
+        }
+        
+        // Re-render the list to update UI
+        this.renderShoppingLists();
+    }
+
+    /**
+     * Show shopping list form (create or edit)
+     * @param {number|null} listId - List ID for editing, null for creating
+     */
+    showShoppingListForm(listId = null) {
+        const modal = document.getElementById('shopping-list-modal');
+        const title = document.getElementById('shopping-list-modal-title');
+        const nameInput = document.getElementById('shopping-list-name-input');
+        const newItemsContainer = document.getElementById('shopping-new-items-container');
+        const existingItemsContainer = document.getElementById('shopping-existing-items-container');
+        
+        if (!modal || !title || !nameInput || !newItemsContainer || !existingItemsContainer) return;
+        
+        // Clear form
+        nameInput.value = '';
+        newItemsContainer.innerHTML = '';
+        existingItemsContainer.innerHTML = '';
+        
+        // Set mode
+        this.shoppingListManager.currentListId = listId;
+        
+        if (listId) {
+            // Edit mode
+            title.textContent = 'Editar Lista de Compra';
+            const list = this.shoppingListManager.getList(listId);
+            
+            if (list) {
+                nameInput.value = list.name;
+                
+                // Add existing items (marked as existing so they appear at the bottom)
+                list.items.forEach(item => {
+                    this.addShoppingItemInput(item, true);
+                });
+            }
+        } else {
+            // Create mode
+            title.textContent = 'Nueva Lista de Compra';
+            
+            // Add one empty item input (new item, appears at top)
+            this.addShoppingItemInput(null, false);
+        }
+        
+        // Show modal
+        modal.classList.remove('hidden');
+    }
+
+    /**
+     * Add shopping item input to form
+     * @param {Object|null} item - Item data for editing, null for new item
+     * @param {boolean} isExisting - Whether this is an existing item (add at bottom) or new (add at top)
+     */
+    addShoppingItemInput(item = null, isExisting = false) {
+        // Use different containers for new and existing items
+        const newContainer = document.getElementById('shopping-new-items-container');
+        const existingContainer = document.getElementById('shopping-existing-items-container');
+        
+        const container = isExisting ? existingContainer : newContainer;
+        if (!container) return;
+        
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'shopping-item-input';
+        if (item) itemDiv.dataset.itemId = item.id;
+        
+        // Mark existing items with a class for visual distinction
+        if (isExisting) {
+            itemDiv.classList.add('existing-item');
+            
+            // Check if this is the first existing item
+            const existingItems = existingContainer.querySelectorAll('.existing-item');
+            if (existingItems.length === 0) {
+                itemDiv.classList.add('first-existing');
+            }
+        }
+        
+        // Name input (full width, first row)
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.className = 'form-input shopping-item-name-input';
+        nameInput.placeholder = 'Nombre del elemento';
+        nameInput.value = item ? item.name : '';
+        
+        // Quantity row container (second row)
+        const quantityRow = document.createElement('div');
+        quantityRow.className = 'shopping-item-quantity-row';
+        
+        const quantityInput = document.createElement('input');
+        quantityInput.type = 'text';
+        quantityInput.className = 'form-input shopping-item-quantity-input';
+        quantityInput.placeholder = 'Cantidad, alternativas o posibilidades';
+        quantityInput.value = item ? item.quantity : '';
+        
+        // Reorder buttons container
+        const reorderButtons = this.createReorderButtons(itemDiv, container);
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'btn-icon remove-shopping-item-btn';
+        removeBtn.title = 'Eliminar';
+        removeBtn.textContent = '🗑️';
+        removeBtn.addEventListener('click', () => {
+            itemDiv.remove();
+        });
+        
+        // Assemble quantity row
+        quantityRow.appendChild(quantityInput);
+        quantityRow.appendChild(reorderButtons);
+        quantityRow.appendChild(removeBtn);
+        
+        // Assemble item div
+        itemDiv.appendChild(nameInput);
+        itemDiv.appendChild(quantityRow);
+        
+        // Add to the appropriate container
+        // For new items: prepend (add at the top, right after the button)
+        // For existing items: append (add at the bottom)
+        if (isExisting) {
+            container.appendChild(itemDiv);
+        } else {
+            container.prepend(itemDiv);
+        }
+        
+        // Focus on the name input for new items
+        if (!isExisting) {
+            nameInput.focus();
+        }
+    }
+
+    /**
+     * Create reorder buttons for shopping list items
+     * @param {HTMLElement} itemDiv - The item div to reorder
+     * @param {HTMLElement} container - The container holding the items
+     * @returns {HTMLElement} Container with up/down buttons
+     */
+    createReorderButtons(itemDiv, container) {
+        const ITEM_CLASS = 'shopping-item-input';
+        
+        const reorderButtons = document.createElement('div');
+        reorderButtons.className = 'shopping-item-reorder-buttons';
+        
+        /**
+         * Helper to create a reorder button
+         * @param {string} direction - 'up' or 'down'
+         * @returns {HTMLElement} Button element
+         */
+        const createButton = (direction) => {
+            const isUp = direction === 'up';
+            const btn = document.createElement('button');
+            btn.type = 'button'; // Prevent form submission
+            btn.className = 'btn-icon btn-reorder';
+            btn.title = isUp ? 'Mover arriba' : 'Mover abajo';
+            btn.textContent = isUp ? '⬆️' : '⬇️';
+            btn.setAttribute('aria-label', btn.title);
+            
+            // Use event delegation pattern for better performance
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const sibling = isUp 
+                    ? itemDiv.previousElementSibling 
+                    : itemDiv.nextElementSibling;
+                
+                if (sibling && sibling.classList.contains(ITEM_CLASS)) {
+                    if (isUp) {
+                        container.insertBefore(itemDiv, sibling);
+                    } else {
+                        container.insertBefore(sibling, itemDiv);
+                    }
+                    
+                    // Update visual feedback
+                    itemDiv.classList.add('reordered');
+                    setTimeout(() => itemDiv.classList.remove('reordered'), 300);
+                    
+                    // Announce to screen readers
+                    this.announceToScreenReader(`Elemento movido ${isUp ? 'arriba' : 'abajo'}`);
+                }
+            });
+            
+            return btn;
+        };
+        
+        reorderButtons.appendChild(createButton('up'));
+        reorderButtons.appendChild(createButton('down'));
+        
+        return reorderButtons;
+    }
+
+    /**
+     * Announce message to screen readers
+     * @param {string} message - Message to announce
+     */
+    announceToScreenReader(message) {
+        const announcement = document.createElement('div');
+        announcement.setAttribute('role', 'status');
+        announcement.setAttribute('aria-live', 'polite');
+        announcement.className = 'sr-only';
+        announcement.textContent = message;
+        document.body.appendChild(announcement);
+        
+        // Remove after announcement
+        setTimeout(() => announcement.remove(), 1000);
+    }
+
+    /**
+     * Save shopping list (create or update)
+     */
+    saveShoppingList() {
+        const nameInput = document.getElementById('shopping-list-name-input');
+        const newItemsContainer = document.getElementById('shopping-new-items-container');
+        const existingItemsContainer = document.getElementById('shopping-existing-items-container');
+        
+        if (!nameInput || !newItemsContainer || !existingItemsContainer) return;
+        
+        // Validate name
+        const name = nameInput.value.trim();
+        if (!name) {
+            this.showToast('Por favor ingresa un nombre para la lista', 'error');
+            return;
+        }
+        
+        // Get items from both containers (new items first, then existing)
+        const allItemInputs = [
+            ...newItemsContainer.querySelectorAll('.shopping-item-input'),
+            ...existingItemsContainer.querySelectorAll('.shopping-item-input')
+        ];
+        
+        const items = [];
+        
+        allItemInputs.forEach(itemDiv => {
+            const nameInput = itemDiv.querySelector('.shopping-item-name-input');
+            const quantityInput = itemDiv.querySelector('.shopping-item-quantity-input');
+            
+            const itemName = nameInput.value.trim();
+            if (itemName) {
+                items.push({
+                    name: itemName,
+                    quantity: quantityInput.value.trim()
+                });
+            }
+        });
+        
+        // Validate at least one item
+        if (items.length === 0) {
+            this.showToast('Por favor añade al menos un elemento', 'error');
+            return;
+        }
+        
+        // Save list
+        const listId = this.shoppingListManager.currentListId;
+        
+        if (listId) {
+            // Update existing list
+            const list = this.shoppingListManager.getList(listId);
+            if (list) {
+                list.name = name;
+                list.items = items.map((item, index) => ({
+                    id: list.items[index]?.id || Date.now() + index,
+                    name: item.name,
+                    quantity: item.quantity,
+                    completed: list.items[index]?.completed || false
+                }));
+                list.updatedAt = new Date().toISOString();
+                this.shoppingListManager.saveLists();
+                this.showToast('Lista actualizada correctamente', 'success');
+            }
+        } else {
+            // Create new list
+            const newList = this.shoppingListManager.createList(name);
+            items.forEach(item => {
+                this.shoppingListManager.addItem(newList.id, item);
+            });
+            this.showToast('Lista creada correctamente', 'success');
+        }
+        
+        // Close modal and refresh view
+        this.closeShoppingListModal();
+        this.renderShoppingLists();
+    }
+
+    /**
+     * Delete shopping list with confirmation
+     * @param {number} listId - List ID
+     */
+    deleteShoppingList(listId) {
+        const list = this.shoppingListManager.getList(listId);
+        if (!list) return;
+        
+        const confirmed = confirm(`¿Estás seguro de que quieres eliminar la lista "${list.name}"?`);
+        
+        if (confirmed) {
+            this.shoppingListManager.deleteList(listId);
+            this.showToast('Lista eliminada correctamente', 'success');
+            this.renderShoppingLists();
+        }
+    }
+
+    /**
+     * Duplicate shopping list
+     * @param {number} listId - List ID to duplicate
+     */
+    duplicateShoppingList(listId) {
+        const originalList = this.shoppingListManager.getList(listId);
+        if (!originalList) return;
+        
+        // Create new list with copied data
+        const newListName = `${originalList.name} (copia)`;
+        const newList = this.shoppingListManager.createList(newListName);
+        
+        // Copy all items from original list
+        originalList.items.forEach(item => {
+            this.shoppingListManager.addItem(newList.id, {
+                name: item.name,
+                quantity: item.quantity
+            });
+        });
+        
+        this.showToast('Lista duplicada correctamente', 'success');
+        this.renderShoppingLists();
+    }
+
+    /**
+     * Copy shopping list to clipboard
+     * @param {number} listId - List ID
+     * @param {boolean} includeCompleted - Whether to include completed items
+     */
+    copyShoppingListToClipboard(listId, includeCompleted = false) {
+        const text = this.shoppingListManager.formatListForClipboard(listId, includeCompleted);
+        
+        if (!text) {
+            this.showToast('Error al copiar la lista', 'error');
+            return;
+        }
+        
+        // Try to copy using Clipboard API
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    this.showToast('Lista copiada al portapapeles', 'success');
+                })
+                .catch(err => {
+                    console.error('[ShoppingLists] Error copying to clipboard:', err);
+                    this.fallbackCopyToClipboard(text);
+                });
+        } else {
+            // Fallback for older browsers
+            this.fallbackCopyToClipboard(text);
+        }
+    }
+
+    /**
+     * Fallback method to copy text to clipboard
+     * @param {string} text - Text to copy
+     */
+    fallbackCopyToClipboard(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                this.showToast('Lista copiada al portapapeles', 'success');
+            } else {
+                this.showToast('Error al copiar la lista', 'error');
+            }
+        } catch (err) {
+            console.error('[ShoppingLists] Fallback copy failed:', err);
+            this.showToast('Error al copiar la lista', 'error');
+        }
+        
+        document.body.removeChild(textarea);
+    }
+
+    /**
+     * Close shopping list modal
+     */
+    closeShoppingListModal() {
+        const modal = document.getElementById('shopping-list-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+        
+        // Reset current list ID
+        this.shoppingListManager.currentListId = null;
+    }
+
+    // ===== Drag and Drop for Lists =====
+
+    /**
+     * Handle drag start for list cards
+     */
+    handleListDragStart(e) {
+        e.stopPropagation();
+        const card = e.target.closest('.shopping-list-card');
+        if (!card) return;
+        
+        card.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', card.dataset.listId);
+    }
+
+    /**
+     * Handle drag end for list cards
+     */
+    handleListDragEnd(e) {
+        const card = e.target.closest('.shopping-list-card');
+        if (!card) return;
+        
+        card.classList.remove('dragging');
+        
+        // Remove all drag-over classes
+        document.querySelectorAll('.shopping-list-card.drag-over').forEach(el => {
+            el.classList.remove('drag-over');
+        });
+    }
+
+    /**
+     * Handle drag over for list cards
+     */
+    handleListDragOver(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.dataTransfer.dropEffect = 'move';
+        
+        const card = e.target.closest('.shopping-list-card');
+        if (!card || card.classList.contains('dragging')) return;
+        
+        card.classList.add('drag-over');
+    }
+
+    /**
+     * Handle drop for list cards
+     */
+    handleListDrop(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const targetCard = e.target.closest('.shopping-list-card');
+        if (!targetCard || targetCard.classList.contains('dragging')) return;
+        
+        targetCard.classList.remove('drag-over');
+        
+        const draggedListId = parseInt(e.dataTransfer.getData('text/plain'));
+        const targetListId = parseInt(targetCard.dataset.listId);
+        
+        if (draggedListId === targetListId) return;
+        
+        // Reorder lists
+        const lists = this.shoppingListManager.lists;
+        const draggedIndex = lists.findIndex(l => l.id === draggedListId);
+        const targetIndex = lists.findIndex(l => l.id === targetListId);
+        
+        if (draggedIndex === -1 || targetIndex === -1) return;
+        
+        // Remove dragged list and insert at target position
+        const [draggedList] = lists.splice(draggedIndex, 1);
+        lists.splice(targetIndex, 0, draggedList);
+        
+        // Save and re-render
+        this.shoppingListManager.saveLists();
+        this.renderShoppingLists();
+    }
+
+    // ===== End Shopping Lists Management =====
 
 }
 

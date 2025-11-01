@@ -32,45 +32,29 @@
                 <h1><a href="#" id="home-link" style="text-decoration: none; color: inherit;">🍳 mehaquedadobien</a>
                 </h1>
 
-                <!-- Mobile menu button -->
-                <button id="mobile-menu-btn" class="mobile-menu-btn" title="Menú">
+                <!-- Menu button (always visible) -->
+                <button id="menu-btn" class="menu-btn" title="Menú" aria-label="Menú de opciones" aria-expanded="false" aria-haspopup="true">
                     <span class="hamburger-icon">☰</span>
                 </button>
 
-                <!-- Desktop actions -->
-                <div class="header-actions" id="header-actions">
-                    <button id="theme-toggle-btn" class="btn-action" title="Cambiar tema">
-                        🌙 Tema
+                <!-- Dropdown menu -->
+                <div id="menu-dropdown" class="menu-dropdown" role="menu" aria-label="Opciones de la aplicación">
+                    <button id="theme-toggle-btn" class="menu-item" role="menuitem" title="Cambiar tema">
+                        ☀️ Tema
                     </button>
-                    <button id="manage-categories-btn" class="btn-action" title="Gestionar categorías">
+                    <button id="manage-categories-btn" class="menu-item" role="menuitem" title="Gestionar categorías">
                         🏷️ Categorías
                     </button>
-                    <button id="import-xml-btn" class="btn-action" title="Importar recetas desde XML">
+                    <button id="shopping-lists-btn" class="menu-item" role="menuitem" title="Gestionar listas de compra">
+                        🛒 Listas de Compra
+                    </button>
+                    <button id="import-xml-btn" class="menu-item" role="menuitem" title="Importar recetas desde XML">
                         📥 Importar receta
                     </button>
-                    <button id="export-all-btn" class="btn-action" title="Exportar todas las recetas">
+                    <button id="export-all-btn" class="menu-item" role="menuitem" title="Exportar todas las recetas">
                         📤 Exportar todas las recetas
                     </button>
-                    <button id="new-recipe-btn" class="btn-primary">
-                        ➕ Nueva Receta
-                    </button>
-                </div>
-
-                <!-- Mobile dropdown menu -->
-                <div id="mobile-menu" class="mobile-menu">
-                    <button id="mobile-theme-toggle" class="mobile-menu-item">
-                        🌙 Tema
-                    </button>
-                    <button id="mobile-manage-categories" class="mobile-menu-item">
-                        🏷️ Categorías
-                    </button>
-                    <button id="mobile-import-xml" class="mobile-menu-item">
-                        📥 Importar receta
-                    </button>
-                    <button id="mobile-export-all" class="mobile-menu-item">
-                        📤 Exportar todas las recetas
-                    </button>
-                    <button id="mobile-new-recipe" class="mobile-menu-item mobile-menu-item-primary">
+                    <button id="new-recipe-btn" class="menu-item menu-item-primary" role="menuitem" title="Crear nueva receta">
                         ➕ Nueva Receta
                     </button>
                 </div>
@@ -642,6 +626,24 @@
                 </form>
             </section>
 
+            <!-- Shopping Lists View -->
+            <section id="shopping-lists-view" class="view-container hidden">
+                <div class="shopping-lists-header">
+                    <h2>🛒 Listas de Compra</h2>
+                    <button id="new-shopping-list-btn" class="btn-primary">
+                        ➕ Nueva Lista
+                    </button>
+                </div>
+
+                <div id="shopping-lists-container" class="shopping-lists-container">
+                    <!-- Shopping list cards will be rendered here -->
+                </div>
+
+                <div id="shopping-lists-empty" class="empty-state hidden">
+                    <p>🛒 No tienes listas de compra</p>
+                    <p>Crea tu primera lista para empezar</p>
+                </div>
+            </section>
 
         </main>
     </div>
@@ -777,6 +779,46 @@
             <button id="next-image-btn" class="image-modal-nav image-modal-next" title="Siguiente">›</button>
             <img id="modal-image" class="image-modal-img" src="" alt="">
             <div id="modal-image-counter" class="image-modal-counter"></div>
+        </div>
+    </div>
+
+    <!-- Shopping List Modal -->
+    <div id="shopping-list-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="shopping-list-modal-title">Nueva Lista de Compra</h2>
+                <button id="close-shopping-list-modal" class="btn-icon">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- List Name -->
+                <div class="form-group">
+                    <label for="shopping-list-name-input">Nombre de la lista</label>
+                    <input type="text" id="shopping-list-name-input" class="form-input" placeholder="Ej: Compra Semanal">
+                </div>
+
+                <!-- Items Section -->
+                <div class="form-group">
+                    <label>Elementos</label>
+                    <div class="shopping-list-buttons">
+                        <button id="add-shopping-item-btn" class="btn-secondary">
+                            ➕ Añadir Elemento
+                        </button>
+                        <button id="save-shopping-list-btn" class="btn-primary">
+                            💾 Guardar Lista
+                        </button>
+                    </div>
+                    <!-- New items container (appears right below the buttons) -->
+                    <div id="shopping-new-items-container">
+                        <!-- New items will be added here -->
+                    </div>
+                    <!-- Existing items container (appears at the bottom) -->
+                    <div id="shopping-existing-items-container">
+                        <!-- Existing items will be added here -->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

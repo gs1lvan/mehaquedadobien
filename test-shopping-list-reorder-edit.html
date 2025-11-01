@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Reordenar en Editar Lista</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f7f7f7;
+        }
+        
+        .test-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #222;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #717171;
+            margin-bottom: 24px;
+        }
+        
+        h2 {
+            color: #222;
+            font-size: 1.25rem;
+            margin-bottom: 16px;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-list li::before {
+            content: '✅ ';
+            margin-right: 8px;
+        }
+        
+        .code-block {
+            background: #f7f7f7;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px 16px;
+            margin: 16px 0;
+            border-radius: 4px;
+        }
+        
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 12px 16px;
+            margin: 16px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛒 Test - Reordenar Elementos en Editar Lista</h1>
+    <p class="subtitle">Verificación de funcionalidad de reordenamiento en el modal de edición</p>
+    
+    <div class="test-section">
+        <h2>✨ Funcionalidades Implementadas</h2>
+        <ul class="feature-list">
+            <li>Botones de reordenamiento (⬆️ ⬇️) en línea con campos de elemento</li>
+            <li>Reordenamiento funcional dentro del modal de edición</li>
+            <li>Layout responsive con botones alineados correctamente</li>
+            <li>La lista permanece abierta después de reordenar en la vista principal</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎯 Cómo Probar</h2>
+        <ol>
+            <li>Abre la aplicación principal (index.html)</li>
+            <li>Ve a "🛒 Listas de Compra" desde el menú</li>
+            <li>Crea una nueva lista o edita una existente</li>
+            <li>Añade varios elementos a la lista</li>
+            <li>Usa los botones ⬆️ y ⬇️ para reordenar elementos</li>
+            <li>Verifica que los elementos se mueven correctamente</li>
+            <li>Guarda la lista y verifica que el orden se mantiene</li>
+        </ol>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔧 Cambios Técnicos</h2>
+        
+        <h3>JavaScript (script.js)</h3>
+        <div class="code-block">
+// Añadidos botones de reordenamiento en addShoppingItemInput()
+const reorderButtons = document.createElement('div');
+reorderButtons.className = 'shopping-item-reorder-buttons';
+
+const upBtn = document.createElement('button');
+upBtn.textContent = '⬆️';
+upBtn.addEventListener('click', () => {
+    const prevItem = itemDiv.previousElementSibling;
+    if (prevItem && prevItem.classList.contains('shopping-item-input')) {
+        container.insertBefore(itemDiv, prevItem);
+    }
+});
+
+const downBtn = document.createElement('button');
+downBtn.textContent = '⬇️';
+downBtn.addEventListener('click', () => {
+    const nextItem = itemDiv.nextElementSibling;
+    if (nextItem && nextItem.classList.contains('shopping-item-input')) {
+        container.insertBefore(nextItem, itemDiv);
+    }
+});
+        </div>
+        
+        <h3>CSS (styles.css)</h3>
+        <div class="code-block">
+/* Actualizado grid para incluir botones de reordenamiento */
+.shopping-item-input .shopping-item-quantity-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+.shopping-item-reorder-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.shopping-item-reorder-buttons .btn-reorder {
+    padding: 4px 8px;
+    font-size: 0.875rem;
+}
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📐 Layout de Elementos</h2>
+        <p>Cada elemento en el modal de edición ahora tiene esta estructura:</p>
+        <div class="code-block">
+┌─────────────────────────────────────────────┐
+│ [Nombre del elemento                    ]  │
+├─────────────────────────────────────────────┤
+│ [Cantidad...        ] [⬆️][⬇️] [🗑️]        │
+└─────────────────────────────────────────────┘
+        </div>
+        <ul>
+            <li><strong>Fila 1:</strong> Campo de nombre (ancho completo)</li>
+            <li><strong>Fila 2:</strong> Campo de cantidad + botones de reordenamiento + botón eliminar</li>
+        </ul>
+    </div>
+    
+    <div class="success">
+        <strong>✅ Implementación Completa</strong><br>
+        Los botones de reordenamiento están ahora disponibles en el modal de edición de listas de compra, 
+        permitiendo reorganizar elementos fácilmente antes de guardar.
+    </div>
+    
+    <div class="note">
+        <strong>💡 Nota:</strong> El reordenamiento en el modal es independiente del reordenamiento en la vista 
+        principal. Ambos funcionan correctamente y mantienen el estado de expansión de las listas.
+    </div>
+</body>
+</html>
