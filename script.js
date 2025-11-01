@@ -7293,44 +7293,46 @@ class RecipeApp {
         const actions = document.createElement('div');
         actions.className = 'shopping-list-actions';
         
-        const copyBtn = document.createElement('button');
-        copyBtn.className = 'btn-icon copy-list-btn';
-        copyBtn.title = 'Copiar lista';
-        copyBtn.setAttribute('aria-label', 'Copiar lista al portapapeles');
-        copyBtn.textContent = '📋';
-        copyBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.copyShoppingListToClipboard(list.id, false);
+        // Create action buttons using factory pattern
+        const copyBtn = this.createButton({
+            className: 'btn-icon copy-list-btn',
+            text: '📋',
+            title: 'Copiar lista',
+            ariaLabel: 'Copiar lista al portapapeles',
+            onClick: (e) => {
+                e.stopPropagation();
+                this.copyShoppingListToClipboard(list.id, false);
+            }
         });
         
-        const duplicateBtn = document.createElement('button');
-        duplicateBtn.className = 'btn-icon';
-        duplicateBtn.title = 'Duplicar lista';
-        duplicateBtn.setAttribute('aria-label', 'Duplicar lista');
-        duplicateBtn.textContent = '📑';
-        duplicateBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.duplicateShoppingList(list.id);
+        const duplicateBtn = this.createButton({
+            className: 'btn-icon',
+            text: '📑',
+            title: 'Duplicar lista',
+            onClick: (e) => {
+                e.stopPropagation();
+                this.duplicateShoppingList(list.id);
+            }
         });
         
-        const editBtn = document.createElement('button');
-        editBtn.className = 'btn-icon';
-        editBtn.title = 'Editar lista';
-        editBtn.setAttribute('aria-label', 'Editar lista');
-        editBtn.textContent = '✏️';
-        editBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.showShoppingListForm(list.id);
+        const editBtn = this.createButton({
+            className: 'btn-icon',
+            text: '✏️',
+            title: 'Editar lista',
+            onClick: (e) => {
+                e.stopPropagation();
+                this.showShoppingListForm(list.id);
+            }
         });
         
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'btn-icon';
-        deleteBtn.title = 'Eliminar lista';
-        deleteBtn.setAttribute('aria-label', 'Eliminar lista');
-        deleteBtn.textContent = '🗑️';
-        deleteBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.deleteShoppingList(list.id);
+        const deleteBtn = this.createButton({
+            className: 'btn-icon',
+            text: '🗑️',
+            title: 'Eliminar lista',
+            onClick: (e) => {
+                e.stopPropagation();
+                this.deleteShoppingList(list.id);
+            }
         });
         
         actions.appendChild(copyBtn);
@@ -7776,6 +7778,42 @@ class RecipeApp {
         
         // Remove after announcement
         setTimeout(() => announcement.remove(), 1000);
+    }
+
+    /**
+     * Create a button element with common properties
+     * Factory method to reduce code duplication
+     * @param {Object} config - Button configuration
+     * @param {string} config.className - CSS class name(s)
+     * @param {string} config.text - Button text/emoji
+     * @param {string} config.title - Tooltip text
+     * @param {string} [config.ariaLabel] - ARIA label (defaults to title)
+     * @param {Function} config.onClick - Click handler
+     * @param {string} [config.type='button'] - Button type
+     * @returns {HTMLButtonElement} Configured button element
+     */
+    createButton(config) {
+        const {
+            className,
+            text,
+            title,
+            ariaLabel = title,
+            onClick,
+            type = 'button'
+        } = config;
+
+        const btn = document.createElement('button');
+        btn.type = type;
+        btn.className = className;
+        btn.title = title;
+        btn.textContent = text;
+        btn.setAttribute('aria-label', ariaLabel);
+        
+        if (onClick) {
+            btn.addEventListener('click', onClick);
+        }
+        
+        return btn;
     }
 
     /**
