@@ -1757,6 +1757,14 @@ class RecipeApp {
      * Setup collapsible sections event listeners
      */
     setupCollapsibleSections() {
+        // Appliances section
+        const appliancesSectionTitle = document.getElementById('appliances-section-title');
+        if (appliancesSectionTitle) {
+            appliancesSectionTitle.addEventListener('click', () => {
+                this.toggleCollapsibleSection('appliances');
+            });
+        }
+
         // Ingredients section
         const ingredientsSectionTitle = document.getElementById('ingredients-section-title');
         if (ingredientsSectionTitle) {
@@ -1795,7 +1803,15 @@ class RecipeApp {
         const isCollapsed = title.classList.contains('collapsed');
         
         if (isCollapsed) {
-            // Expand
+            // Close all other sections first
+            const allSections = ['appliances', 'ingredients', 'sequences', 'additional-info'];
+            allSections.forEach(section => {
+                if (section !== sectionName) {
+                    this.setCollapsibleSectionState(section, true);
+                }
+            });
+            
+            // Expand this section
             title.classList.remove('collapsed');
             content.classList.remove('collapsed');
         } else {
@@ -2535,14 +2551,14 @@ class RecipeApp {
         });
         imageDiv.appendChild(ingredientsBadge);
 
-        const pdfBadge = this.createActionBadge({
-            className: 'recipe-pdf-badge',
-            title: 'Exportar a PDF',
-            ariaLabel: `Exportar ${recipe.name} a PDF`,
-            onClick: (e) => this.exportRecipeToPDF(recipe.id),
+        const optionsBadge = this.createActionBadge({
+            className: 'recipe-options-badge',
+            title: 'Más opciones',
+            ariaLabel: `Opciones para ${recipe.name}`,
+            onClick: (e) => this.showRecipeOptionsModal(recipe.id),
             stopPropagation: true
         });
-        imageDiv.appendChild(pdfBadge);
+        imageDiv.appendChild(optionsBadge);
 
         // Create content section
         const contentDiv = document.createElement('div');
@@ -3352,29 +3368,6 @@ class RecipeApp {
             nameDiv.className = 'ingredient-name';
             nameDiv.textContent = ingredient.name;
 
-            const quantityDiv = document.createElement('div');
-            quantityDiv.className = 'ingredient-quantity';
-            
-            // Format quantity display: don't show 0, use dash for empty required fields
-            let quantityText = '';
-            if (ingredient.quantity && ingredient.quantity > 0) {
-                quantityText = ingredient.quantity.toString();
-                if (ingredient.unit) {
-                    quantityText += ` ${ingredient.unit}`;
-                }
-            } else if (ingredient.unit) {
-                // Only unit, no quantity
-                quantityText = ingredient.unit;
-            } else {
-                // No quantity and no unit - show dash
-                quantityText = '-';
-            }
-            
-            quantityDiv.textContent = quantityText;
-
-            infoDiv.appendChild(nameDiv);
-            infoDiv.appendChild(quantityDiv);
-
             // Actions
             const actionsDiv = document.createElement('div');
             actionsDiv.className = 'ingredient-actions';
@@ -3426,9 +3419,38 @@ class RecipeApp {
             actionsDiv.appendChild(editBtn);
             actionsDiv.appendChild(deleteBtn);
 
+            const quantityDiv = document.createElement('div');
+            quantityDiv.className = 'ingredient-quantity';
+            
+            // Format quantity display: don't show 0, use dash for empty required fields
+            let quantityText = '';
+            if (ingredient.quantity && ingredient.quantity > 0) {
+                quantityText = ingredient.quantity.toString();
+                if (ingredient.unit) {
+                    quantityText += ` ${ingredient.unit}`;
+                }
+            } else if (ingredient.unit) {
+                // Only unit, no quantity
+                quantityText = ingredient.unit;
+            } else {
+                // No quantity and no unit - show dash
+                quantityText = '-';
+            }
+            
+            quantityDiv.textContent = quantityText;
+
+            // Create separator
+            const separator = document.createElement('span');
+            separator.className = 'ingredient-separator';
+            separator.textContent = '|';
+
+            infoDiv.appendChild(nameDiv);
+            infoDiv.appendChild(separator);
+            infoDiv.appendChild(quantityDiv);
+            infoDiv.appendChild(actionsDiv);
+
             item.appendChild(orderDiv);
             item.appendChild(infoDiv);
-            item.appendChild(actionsDiv);
         }
 
         return item;
@@ -4940,6 +4962,9 @@ class RecipeApp {
             nameSpan.className = 'ingredient-detail-name';
             nameSpan.textContent = `${index + 1}. ${ingredient.name}`;
 
+            const quantityContainer = document.createElement('span');
+            quantityContainer.className = 'ingredient-detail-quantity-container';
+
             const quantitySpan = document.createElement('span');
             quantitySpan.className = 'ingredient-detail-quantity';
             
@@ -4960,8 +4985,23 @@ class RecipeApp {
             
             quantitySpan.textContent = quantityText;
 
+            const basketBtn = document.createElement('button');
+            basketBtn.className = 'btn-icon ingredient-basket-btn';
+            basketBtn.title = 'Añadir a lista de compra';
+            basketBtn.setAttribute('aria-label', 'Añadir a lista de compra');
+            basketBtn.textContent = '🧺';
+            basketBtn.dataset.ingredientName = ingredient.name;
+            basketBtn.dataset.ingredientQuantity = quantityText;
+            basketBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.showSelectShoppingListModal(ingredient.name, quantityText);
+            });
+
+            quantityContainer.appendChild(quantitySpan);
+            quantityContainer.appendChild(basketBtn);
+
             li.appendChild(nameSpan);
-            li.appendChild(quantitySpan);
+            li.appendChild(quantityContainer);
             listElement.appendChild(li);
         });
     }
@@ -5239,7 +5279,7 @@ class RecipeApp {
         if (caravanFriendly) {
             const caravanBadge = document.createElement('div');
             caravanBadge.className = 'recipe-caravan-badge-image';
-            caravanBadge.textContent = '🚐 Apto para Caravana';
+            caravanBadge.textContent = 'Apto para Caravana';
             item.appendChild(caravanBadge);
         }
 
@@ -5301,7 +5341,7 @@ class RecipeApp {
         if (caravanFriendly) {
             const caravanBadge = document.createElement('div');
             caravanBadge.className = 'recipe-caravan-badge-image';
-            caravanBadge.textContent = '🚐 Apto para Caravana';
+            caravanBadge.textContent = 'Apto para Caravana';
             mainArea.appendChild(caravanBadge);
         }
 
@@ -5991,6 +6031,76 @@ class RecipeApp {
     }
 
     /**
+     * Show recipe options modal
+     * @param {string} recipeId - Recipe ID
+     */
+    showRecipeOptionsModal(recipeId) {
+        const modal = document.getElementById('recipe-options-modal');
+        if (!modal) return;
+        
+        // Store current recipe ID for actions
+        this.currentOptionsRecipeId = recipeId;
+        
+        // Show modal
+        modal.classList.remove('hidden');
+        
+        // Setup event listeners
+        const closeBtn = document.getElementById('close-recipe-options-modal');
+        const overlay = modal.querySelector('.modal-overlay');
+        const editBtn = document.getElementById('recipe-option-edit');
+        const duplicateBtn = document.getElementById('recipe-option-duplicate');
+        const pdfBtn = document.getElementById('recipe-option-pdf');
+        const deleteBtn = document.getElementById('recipe-option-delete');
+        
+        if (closeBtn) {
+            closeBtn.onclick = () => this.closeRecipeOptionsModal();
+        }
+        
+        if (overlay) {
+            overlay.onclick = () => this.closeRecipeOptionsModal();
+        }
+        
+        if (editBtn) {
+            editBtn.onclick = () => {
+                this.closeRecipeOptionsModal();
+                this.showRecipeForm(recipeId);
+            };
+        }
+        
+        if (duplicateBtn) {
+            duplicateBtn.onclick = () => {
+                this.closeRecipeOptionsModal();
+                this.duplicateRecipe(recipeId);
+            };
+        }
+        
+        if (pdfBtn) {
+            pdfBtn.onclick = () => {
+                this.closeRecipeOptionsModal();
+                this.exportRecipeToPDF(recipeId);
+            };
+        }
+        
+        if (deleteBtn) {
+            deleteBtn.onclick = () => {
+                this.closeRecipeOptionsModal();
+                this.deleteRecipe(recipeId);
+            };
+        }
+    }
+
+    /**
+     * Close recipe options modal
+     */
+    closeRecipeOptionsModal() {
+        const modal = document.getElementById('recipe-options-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+        this.currentOptionsRecipeId = null;
+    }
+
+    /**
      * Export recipe to XML
      * Requirements: 11.1, 11.2, 11.3, 11.4, 11.5
      * @param {string} recipeId - Recipe ID to export
@@ -6259,7 +6369,7 @@ class RecipeApp {
     updateThemeButton(isDark) {
         const themeBtn = document.getElementById('theme-toggle-btn');
         if (themeBtn) {
-            themeBtn.innerHTML = isDark ? '☀️ Tema' : '🌙 Tema';
+            themeBtn.innerHTML = isDark ? '☀️' : '🌙';
             themeBtn.title = isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro';
         }
     }
@@ -7318,55 +7428,52 @@ class RecipeApp {
         name.className = 'shopping-list-name';
         name.textContent = list.name;
         
-        const counter = document.createElement('span');
-        counter.className = 'shopping-list-counter';
-        counter.textContent = `${totalCount} ${totalCount === 1 ? 'cosa que comprar' : 'cosas que comprar'}`;
+        const dateInfo = document.createElement('span');
+        dateInfo.className = 'shopping-list-counter';
+        
+        // Show modified date if exists, otherwise created date
+        const dateToShow = list.updatedAt || list.createdAt;
+        
+        if (dateToShow) {
+            const date = new Date(dateToShow);
+            const formattedDate = date.toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+            const formattedTime = date.toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            // Check if modified in the last 5 minutes
+            const now = new Date();
+            const diffInMinutes = (now - date) / (1000 * 60);
+            const isRecentlyModified = diffInMinutes <= 5;
+            
+            // Create single badge with date and time
+            const dateTimeBadge = document.createElement('span');
+            dateTimeBadge.className = isRecentlyModified ? 'date-time-badge recent-modification' : 'date-time-badge';
+            dateTimeBadge.innerHTML = `${formattedDate} <span class="badge-separator">|</span> ${formattedTime}`;
+            
+            dateInfo.appendChild(dateTimeBadge);
+        } else {
+            dateInfo.textContent = `${totalCount} ${totalCount === 1 ? 'cosa que comprar' : 'cosas que comprar'}`;
+        }
         
         const expandIcon = document.createElement('span');
         expandIcon.className = 'expand-icon';
         expandIcon.textContent = '▼';
         
         header.appendChild(name);
-        header.appendChild(counter);
+        header.appendChild(dateInfo);
         header.appendChild(expandIcon);
         
         // Create actions
         const actions = document.createElement('div');
         actions.className = 'shopping-list-actions';
         
-        // Create action buttons using factory pattern
-        const exportBtn = this.createButton({
-            className: 'btn-icon export-list-btn',
-            text: '💾',
-            title: 'Exportar lista',
-            ariaLabel: 'Exportar lista a archivo',
-            onClick: (e) => {
-                e.stopPropagation();
-                this.exportShoppingList(list.id);
-            }
-        });
-        
-        const copyBtn = this.createButton({
-            className: 'btn-icon copy-list-btn',
-            text: '📋',
-            title: 'Copiar lista',
-            ariaLabel: 'Copiar lista al portapapeles',
-            onClick: (e) => {
-                e.stopPropagation();
-                this.copyShoppingListToClipboard(list.id, false);
-            }
-        });
-        
-        const duplicateBtn = this.createButton({
-            className: 'btn-icon',
-            text: '📑',
-            title: 'Duplicar lista',
-            onClick: (e) => {
-                e.stopPropagation();
-                this.duplicateShoppingList(list.id);
-            }
-        });
-        
+        // Create edit button
         const editBtn = this.createButton({
             className: 'btn-icon',
             text: '✏️',
@@ -7377,32 +7484,19 @@ class RecipeApp {
             }
         });
         
-        const deleteBtn = this.createButton({
+        // Create more options button (three dots)
+        const moreBtn = this.createButton({
             className: 'btn-icon',
-            text: '🗑️',
-            title: 'Eliminar lista',
+            text: '⋮',
+            title: 'Más opciones',
             onClick: (e) => {
                 e.stopPropagation();
-                this.deleteShoppingList(list.id);
+                this.showShoppingListOptionsModal(list.id);
             }
         });
         
-        // Create left group (export and copy)
-        const actionsLeft = document.createElement('div');
-        actionsLeft.className = 'shopping-list-actions-left';
-        actionsLeft.appendChild(exportBtn);
-        actionsLeft.appendChild(copyBtn);
-        
-        // Create right group (duplicate, edit, delete)
-        const actionsRight = document.createElement('div');
-        actionsRight.className = 'shopping-list-actions-right';
-        actionsRight.appendChild(duplicateBtn);
-        actionsRight.appendChild(editBtn);
-        actionsRight.appendChild(deleteBtn);
-        
-        // Append both groups to actions
-        actions.appendChild(actionsLeft);
-        actions.appendChild(actionsRight);
+        actions.appendChild(editBtn);
+        actions.appendChild(moreBtn);
         
         // Create content (collapsible)
         const content = document.createElement('div');
@@ -7580,10 +7674,31 @@ class RecipeApp {
         
         if (!header || !content) return;
         
-        // Toggle collapsed class
+        // Check if this list is currently collapsed
         const isCollapsed = content.classList.contains('collapsed');
+        
+        // If we're about to expand this list, first collapse all other lists
+        if (isCollapsed) {
+            const allCards = document.querySelectorAll('.shopping-list-card');
+            allCards.forEach(otherCard => {
+                if (otherCard !== card) {
+                    const otherHeader = otherCard.querySelector('.shopping-list-header');
+                    const otherContent = otherCard.querySelector('.shopping-list-content');
+                    
+                    if (otherHeader && otherContent) {
+                        otherContent.classList.add('collapsed');
+                        otherHeader.classList.remove('expanded');
+                        otherCard.classList.remove('expanded');
+                        otherHeader.setAttribute('aria-expanded', 'false');
+                    }
+                }
+            });
+        }
+        
+        // Toggle collapsed class for the clicked list
         content.classList.toggle('collapsed');
         header.classList.toggle('expanded', isCollapsed);
+        card.classList.toggle('expanded', isCollapsed);
         
         // Update aria-expanded
         header.setAttribute('aria-expanded', isCollapsed ? 'true' : 'false');
@@ -7620,6 +7735,7 @@ class RecipeApp {
         // Remove collapsed class
         content.classList.remove('collapsed');
         header.classList.add('expanded');
+        card.classList.add('expanded');
         
         // Update aria-expanded
         header.setAttribute('aria-expanded', 'true');
@@ -8173,6 +8289,179 @@ class RecipeApp {
         
         // Reset current list ID
         this.shoppingListManager.currentListId = null;
+    }
+
+    /**
+     * Show modal to select shopping list for ingredient
+     * @param {string} ingredientName - Name of the ingredient
+     * @param {string} ingredientQuantity - Quantity of the ingredient
+     */
+    showSelectShoppingListModal(ingredientName, ingredientQuantity) {
+        const modal = document.getElementById('select-shopping-list-modal');
+        const ingredientDisplay = document.getElementById('ingredient-to-add-display');
+        const listsContainer = document.getElementById('shopping-lists-selection');
+        
+        if (!modal || !ingredientDisplay || !listsContainer) return;
+        
+        // Display ingredient info
+        ingredientDisplay.textContent = `${ingredientName} - ${ingredientQuantity}`;
+        
+        // Clear previous lists
+        listsContainer.innerHTML = '';
+        
+        // Get all shopping lists
+        const lists = this.shoppingListManager.lists;
+        
+        if (lists.length === 0) {
+            listsContainer.innerHTML = '<p class="modal-description">No tienes listas de compra. Crea una nueva lista para añadir este ingrediente.</p>';
+        } else {
+            // Render each list as an option
+            lists.forEach(list => {
+                const option = document.createElement('div');
+                option.className = 'shopping-list-option';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'shopping-list-option-name';
+                nameSpan.textContent = list.name;
+                
+                const countSpan = document.createElement('span');
+                countSpan.className = 'shopping-list-option-count';
+                countSpan.textContent = `${list.items.length} elementos`;
+                
+                option.appendChild(nameSpan);
+                option.appendChild(countSpan);
+                
+                option.addEventListener('click', () => {
+                    this.addIngredientToShoppingList(list.id, ingredientName, ingredientQuantity);
+                });
+                
+                listsContainer.appendChild(option);
+            });
+        }
+        
+        // Show modal
+        modal.classList.remove('hidden');
+        
+        // Setup close button and overlay
+        const closeBtn = document.getElementById('close-select-list-modal');
+        const overlay = modal.querySelector('.modal-overlay');
+        const createNewBtn = document.getElementById('create-new-list-from-ingredient');
+        
+        if (closeBtn) {
+            closeBtn.onclick = () => this.closeSelectShoppingListModal();
+        }
+        
+        if (overlay) {
+            overlay.onclick = () => this.closeSelectShoppingListModal();
+        }
+        
+        if (createNewBtn) {
+            createNewBtn.onclick = () => {
+                this.closeSelectShoppingListModal();
+                this.showShoppingListForm();
+            };
+        }
+    }
+
+    /**
+     * Close select shopping list modal
+     */
+    closeSelectShoppingListModal() {
+        const modal = document.getElementById('select-shopping-list-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Add ingredient to shopping list
+     * @param {number} listId - Shopping list ID
+     * @param {string} ingredientName - Ingredient name
+     * @param {string} ingredientQuantity - Ingredient quantity
+     */
+    addIngredientToShoppingList(listId, ingredientName, ingredientQuantity) {
+        // Add "para receta" to quantity to indicate it comes from a recipe
+        const quantityWithSource = ingredientQuantity && ingredientQuantity !== '-' 
+            ? `${ingredientQuantity} para receta` 
+            : 'para receta';
+        
+        this.shoppingListManager.addItem(listId, {
+            name: ingredientName,
+            quantity: quantityWithSource
+        });
+        
+        this.closeSelectShoppingListModal();
+        this.showToast(`"${ingredientName}" añadido a la lista`, 'success');
+    }
+
+    /**
+     * Show shopping list options modal
+     * @param {number} listId - Shopping list ID
+     */
+    showShoppingListOptionsModal(listId) {
+        const modal = document.getElementById('shopping-list-options-modal');
+        if (!modal) return;
+        
+        // Store current list ID for actions
+        this.currentOptionsListId = listId;
+        
+        // Show modal
+        modal.classList.remove('hidden');
+        
+        // Setup event listeners
+        const closeBtn = document.getElementById('close-options-modal');
+        const overlay = modal.querySelector('.modal-overlay');
+        const exportBtn = document.getElementById('option-export');
+        const copyBtn = document.getElementById('option-copy');
+        const duplicateBtn = document.getElementById('option-duplicate');
+        const deleteBtn = document.getElementById('option-delete');
+        
+        if (closeBtn) {
+            closeBtn.onclick = () => this.closeShoppingListOptionsModal();
+        }
+        
+        if (overlay) {
+            overlay.onclick = () => this.closeShoppingListOptionsModal();
+        }
+        
+        if (exportBtn) {
+            exportBtn.onclick = () => {
+                this.exportShoppingList(listId);
+                this.closeShoppingListOptionsModal();
+            };
+        }
+        
+        if (copyBtn) {
+            copyBtn.onclick = () => {
+                this.copyShoppingListToClipboard(listId, false);
+                this.closeShoppingListOptionsModal();
+            };
+        }
+        
+        if (duplicateBtn) {
+            duplicateBtn.onclick = () => {
+                this.duplicateShoppingList(listId);
+                this.closeShoppingListOptionsModal();
+            };
+        }
+        
+        if (deleteBtn) {
+            deleteBtn.onclick = () => {
+                this.closeShoppingListOptionsModal();
+                this.deleteShoppingList(listId);
+            };
+        }
+    }
+
+    /**
+     * Close shopping list options modal
+     */
+    closeShoppingListOptionsModal() {
+        const modal = document.getElementById('shopping-list-options-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+        this.currentOptionsListId = null;
     }
 
     // ===== Drag and Drop for Lists =====

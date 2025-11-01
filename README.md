@@ -52,20 +52,43 @@ La aplicación incluye un sistema completo de gestión de listas de compra:
 - **Elementos con cantidad:** Añade elementos con nombre y cantidad opcional
 - **Marcar completados:** Marca elementos como comprados mientras haces la compra
 - **Expandir/Colapsar:** Listas desplegables para una vista organizada
-- **Contador:** Visualiza cuántos elementos has completado (X/Y completados)
+- **Información temporal:** Visualiza cuándo fue creada o modificada cada lista (fecha y hora)
 - **Copiar al portapapeles:** Copia rápidamente toda la lista para compartir
+- **Integración con recetas:** Añade ingredientes directamente desde las recetas con etiqueta "recetario" para identificar su origen
 - **Persistencia:** Las listas se guardan automáticamente en localStorage
 
 ### Acceso
 
 Accede a las listas de compra desde el menú hamburguesa (☰) → 🛒 Listas de Compra
 
+### Añadir Ingredientes desde Recetas
+
+Cuando añades un ingrediente desde una receta a una lista de compra, el sistema automáticamente añade la etiqueta "recetario" a la cantidad para indicar que proviene de una receta. Esto te ayuda a distinguir entre ingredientes añadidos manualmente y los que vienen de tus recetas.
+
 ## 🎨 Última Actualización
 
 **Fecha:** 1 de noviembre de 2025  
-**Cambio:** Añadido botón de Listas de Compra al menú - Se ha agregado acceso directo a la funcionalidad de listas de compra desde el menú principal de la aplicación.
+**Cambio:** Etiquetado automático de ingredientes desde recetas - Cuando se añade un ingrediente desde una receta a una lista de compra, el sistema ahora añade automáticamente la etiqueta "recetario" a la cantidad para identificar su origen. Esto permite distinguir fácilmente entre ingredientes añadidos manualmente y los que provienen de recetas.
 
 ## 📝 Actualizaciones Anteriores
+
+**Fecha:** 1 de noviembre de 2025  
+**Cambio:** Mejora de contraste en tema oscuro para listas de compra - Los badges de contador y fecha/hora en las listas de compra ahora usan un fondo gris oscuro (#3a3a3a) en lugar de morado en el tema oscuro, mejorando la legibilidad y consistencia visual con el resto de la interfaz oscura.
+
+**Fecha:** 1 de noviembre de 2025  
+**Cambio:** Mejora visual del badge de fecha/hora en listas de compra - El badge de fecha y hora ahora tiene un fondo morado (#667eea) con bordes redondeados, mejorando la consistencia visual y el contraste con el resto de la interfaz.
+
+**Fecha:** 1 de noviembre de 2025  
+**Cambio:** Mejora en visualización de fecha/hora en listas de compra - La fecha y hora en el encabezado de las listas de compra ahora se muestran en un único badge unificado con separador visual (|), mejorando la legibilidad y el diseño compacto.
+
+**Fecha:** 1 de noviembre de 2025  
+**Cambio:** Mejora en layout de botones de listas de compra - Los botones en la vista de listas de compra ahora se muestran en disposición horizontal con ajuste automático (flex-wrap), mejorando la usabilidad en pantallas anchas y manteniendo la responsividad en móviles.
+
+**Fecha:** 1 de noviembre de 2025  
+**Cambio:** Mejora en visualización de listas de compra - Se ha añadido la hora (además de la fecha) en el encabezado de las listas de compra, mostrando cuándo fue creada o modificada cada lista con formato "DD/MM/AAAA HH:MM".
+
+**Fecha:** 1 de noviembre de 2025  
+**Cambio:** Añadido botón de Listas de Compra al menú - Se ha agregado acceso directo a la funcionalidad de listas de compra desde el menú principal de la aplicación.
 
 **Fecha:** 31 de octubre de 2025  
 **Cambio:** Sistema optimizado de códigos QR con importación automática - Se ha implementado un sistema completo para compartir e importar recetas mediante códigos QR optimizados:

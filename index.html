@@ -29,8 +29,18 @@
         <!-- Header with title and new recipe button -->
         <header class="recipe-header">
             <div class="header-content">
-                <h1><a href="#" id="home-link" style="text-decoration: none; color: inherit;">🍳 mehaquedadobien</a>
-                </h1>
+                <div class="header-left">
+                    <h1><a href="#" id="home-link" style="text-decoration: none; color: inherit;">🍳 mehaquedadobien</a>
+                    </h1>
+                    <!-- Theme toggle button (square format) -->
+                    <button id="theme-toggle-btn" class="btn-icon theme-toggle-square" title="Cambiar a tema oscuro" aria-label="Cambiar a tema oscuro">
+                        🌙
+                    </button>
+                    <!-- Autumn button (square format) -->
+                    <button id="autumn-btn" class="btn-icon theme-toggle-square" title="Otoño" aria-label="Otoño">
+                        🍂
+                    </button>
+                </div>
 
                 <!-- Menu button (always visible) -->
                 <button id="menu-btn" class="menu-btn" title="Menú" aria-label="Menú de opciones" aria-expanded="false" aria-haspopup="true">
@@ -39,9 +49,6 @@
 
                 <!-- Dropdown menu -->
                 <div id="menu-dropdown" class="menu-dropdown" role="menu" aria-label="Opciones de la aplicación">
-                    <button id="theme-toggle-btn" class="menu-item" role="menuitem" title="Cambiar tema">
-                        ☀️ Tema
-                    </button>
                     <button id="manage-categories-btn" class="menu-item" role="menuitem" title="Gestionar categorías">
                         🏷️ Categorías
                     </button>
@@ -189,8 +196,7 @@
                             <div class="detail-meta"
                                 style="display: flex; flex-direction: column; align-items: flex-start; gap: var(--spacing-xs); margin-top: var(--spacing-xs);">
                                 <span id="detail-total-time" class="recipe-total-time" style="display: none;"></span>
-                                <span id="detail-caravan-badge" class="recipe-caravan-badge" style="display: none;">🚐
-                                    Apto para Caravana</span>
+                                <span id="detail-caravan-badge" class="recipe-caravan-badge" style="display: none;">Apto para Caravana</span>
                             </div>
                         </div>
                         <div class="detail-actions">
@@ -212,7 +218,6 @@
                     <!-- Multimedia Gallery -->
                     <div id="detail-multimedia-section" class="detail-section" style="display: none;">
                         <div id="detail-images-gallery" class="detail-gallery"></div>
-                        <div id="detail-videos-gallery" class="detail-gallery"></div>
                     </div>
 
                     <!-- Kitchen Appliances / Método de Preparación -->
@@ -369,14 +374,17 @@
 
                     <!-- Kitchen Appliances Section -->
                     <div class="form-section">
-                        <h3 class="section-title">Método de Preparación</h3>
-
-                        <div class="form-group">
-                            <label>Selecciona los aparatos que necesitas (opcional)</label>
-                            <div id="kitchen-appliances-chips" class="kitchen-appliances-chips">
-                                <!-- Chips will be added here by JavaScript -->
+                        <h3 class="section-title collapsible-title collapsed" id="appliances-section-title">
+                            <span class="collapse-icon">▼</span> Método de Preparación
+                        </h3>
+                        <div id="appliances-collapsible-content" class="collapsible-content collapsed">
+                            <div class="form-group">
+                                <label>Selecciona los aparatos que necesitas (opcional)</label>
+                                <div id="kitchen-appliances-chips" class="kitchen-appliances-chips">
+                                    <!-- Chips will be added here by JavaScript -->
+                                </div>
+                                <span class="helper-text">Haz clic en los aparatos que necesitas para esta receta</span>
                             </div>
-                            <span class="helper-text">Haz clic en los aparatos que necesitas para esta receta</span>
                         </div>
                     </div>
 
@@ -588,29 +596,6 @@
                                     <p>No hay imágenes añadidas</p>
                                 </div>
                             </div>
-
-                            <!-- Videos Section -->
-                            <div class="media-subsection">
-                                <h4 class="subsection-title">Videos</h4>
-                                <div class="media-upload-area">
-                                    <input type="file" id="video-upload" accept="video/*" multiple
-                                        style="display: none;">
-                                    <button type="button" id="upload-video-btn" class="btn-upload-media">
-                                        🎥 Añadir Videos
-                                    </button>
-                                    <span class="helper-text">Formatos: MP4, WebM. Máximo 50MB por video</span>
-                                    <span class="error-message" id="video-error"></span>
-                                </div>
-
-                                <!-- Videos preview grid -->
-                                <div id="videos-preview" class="media-preview-grid">
-                                    <!-- Video previews will be dynamically added here -->
-                                </div>
-
-                                <div id="videos-empty" class="media-empty">
-                                    <p>No hay videos añadidos</p>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -629,22 +614,21 @@
             <!-- Shopping Lists View -->
             <section id="shopping-lists-view" class="view-container hidden">
                 <div class="shopping-lists-header">
-                    <h2>🛒 Listas de Compra</h2>
-                    <div class="shopping-lists-header-actions">
-                        <button id="new-shopping-list-btn" class="btn-primary">
-                            ➕ Nueva Lista
-                        </button>
+                    <div class="shopping-lists-header-title">
+                        <h2>🛒 Listas de Compra</h2>
                         <button id="close-shopping-lists-btn" class="btn-icon" title="Cerrar" aria-label="Cerrar listas de compra">
                             ✕
                         </button>
                     </div>
-                </div>
-
-                <div class="shopping-lists-import-section">
-                    <button id="import-shopping-list-btn" class="btn-secondary">
-                        📥 Importar Lista
-                    </button>
-                    <input type="file" id="import-shopping-list-input" accept=".txt" style="display: none;">
+                    <div class="shopping-lists-buttons">
+                        <button id="new-shopping-list-btn" class="btn-primary">
+                            ➕ Nueva Lista
+                        </button>
+                        <button id="import-shopping-list-btn" class="btn-primary">
+                            📥 Importar Lista
+                        </button>
+                        <input type="file" id="import-shopping-list-input" accept=".txt" style="display: none;">
+                    </div>
                 </div>
 
                 <div id="shopping-lists-container" class="shopping-lists-container">
@@ -829,6 +813,96 @@
                     <div id="shopping-existing-items-container">
                         <!-- Existing items will be added here -->
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Select Shopping List Modal -->
+    <div id="select-shopping-list-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Añadir a Lista de Compra</h2>
+                <button id="close-select-list-modal" class="btn-icon">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <p class="modal-description">Selecciona la lista donde quieres añadir este ingrediente:</p>
+                <p id="ingredient-to-add-display" class="ingredient-display"></p>
+                
+                <div id="shopping-lists-selection" class="shopping-lists-selection">
+                    <!-- Shopping lists will be rendered here -->
+                </div>
+
+                <div class="modal-actions">
+                    <button id="create-new-list-from-ingredient" class="btn-secondary">
+                        ➕ Crear Nueva Lista
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shopping List Options Modal -->
+    <div id="shopping-list-options-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content shopping-list-options-content">
+            <div class="modal-header">
+                <h2>Opciones de Lista</h2>
+                <button id="close-options-modal" class="btn-icon">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="options-menu">
+                    <button id="option-export" class="option-btn">
+                        <span class="option-icon">💾</span>
+                        <span class="option-text">Exportar</span>
+                    </button>
+                    <button id="option-copy" class="option-btn">
+                        <span class="option-icon">📋</span>
+                        <span class="option-text">Copiar</span>
+                    </button>
+                    <button id="option-duplicate" class="option-btn">
+                        <span class="option-icon">📑</span>
+                        <span class="option-text">Duplicar</span>
+                    </button>
+                    <button id="option-delete" class="option-btn option-btn-danger">
+                        <span class="option-icon">🗑️</span>
+                        <span class="option-text">Eliminar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recipe Options Modal -->
+    <div id="recipe-options-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content shopping-list-options-content">
+            <div class="modal-header">
+                <h2>Opciones de Receta</h2>
+                <button id="close-recipe-options-modal" class="btn-icon">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="options-menu">
+                    <button id="recipe-option-edit" class="option-btn">
+                        <span class="option-icon">✏️</span>
+                        <span class="option-text">Editar</span>
+                    </button>
+                    <button id="recipe-option-duplicate" class="option-btn">
+                        <span class="option-icon">📑</span>
+                        <span class="option-text">Duplicar</span>
+                    </button>
+                    <button id="recipe-option-pdf" class="option-btn">
+                        <span class="option-icon">📄</span>
+                        <span class="option-text">Exportar PDF</span>
+                    </button>
+                    <button id="recipe-option-delete" class="option-btn option-btn-danger">
+                        <span class="option-icon">🗑️</span>
+                        <span class="option-text">Eliminar</span>
+                    </button>
                 </div>
             </div>
         </div>
