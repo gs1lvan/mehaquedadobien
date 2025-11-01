@@ -630,9 +630,21 @@
             <section id="shopping-lists-view" class="view-container hidden">
                 <div class="shopping-lists-header">
                     <h2>🛒 Listas de Compra</h2>
-                    <button id="new-shopping-list-btn" class="btn-primary">
-                        ➕ Nueva Lista
+                    <div class="shopping-lists-header-actions">
+                        <button id="new-shopping-list-btn" class="btn-primary">
+                            ➕ Nueva Lista
+                        </button>
+                        <button id="close-shopping-lists-btn" class="btn-icon" title="Cerrar" aria-label="Cerrar listas de compra">
+                            ✕
+                        </button>
+                    </div>
+                </div>
+
+                <div class="shopping-lists-import-section">
+                    <button id="import-shopping-list-btn" class="btn-secondary">
+                        📥 Importar Lista
                     </button>
+                    <input type="file" id="import-shopping-list-input" accept=".txt" style="display: none;">
                 </div>
 
                 <div id="shopping-lists-container" class="shopping-lists-container">

@@ -566,20 +566,24 @@ class ShoppingListManager {
             return lines.join('\n');
         }
 
-        // Format each item with blank line after each
+        // Format each item with conditional blank line
         items.forEach((item, index) => {
-            const quantity = item.quantity?.trim() 
-                ? ` - ${item.quantity}` 
-                : '';
+            const quantityText = item.quantity?.trim() || '';
+            const quantity = quantityText ? ` - ${quantityText}` : '';
             const completedMark = item.completed ? '✓ ' : '';
-            lines.push(`${completedMark}${item.name}${quantity}`);
+            const itemLine = `${completedMark}${item.name}${quantity}`;
+            lines.push(itemLine);
             
             // Add blank line after each item except the last one
+            // BUT only if the quantity is 30 characters or more
             if (index < items.length - 1) {
-                lines.push('');
+                if (quantityText.length >= 30) {
+                    lines.push(''); // Empty string creates a blank line
+                }
             }
         });
 
+        // Join with newline character
         return lines.join('\n');
     }
 }
@@ -7131,6 +7135,9 @@ class RecipeApp {
         
         // Get DOM elements
         const newListBtn = document.getElementById('new-shopping-list-btn');
+        const importListBtn = document.getElementById('import-shopping-list-btn');
+        const importListInput = document.getElementById('import-shopping-list-input');
+        const closeShoppingListsBtn = document.getElementById('close-shopping-lists-btn');
         const closeModalBtn = document.getElementById('close-shopping-list-modal');
         const saveBtn = document.getElementById('save-shopping-list-btn');
         const addItemBtn = document.getElementById('add-shopping-item-btn');
@@ -7139,6 +7146,40 @@ class RecipeApp {
         if (newListBtn) {
             newListBtn.addEventListener('click', () => {
                 this.showShoppingListForm();
+            });
+        }
+        
+        if (importListBtn && importListInput) {
+            importListBtn.addEventListener('click', () => {
+                importListInput.click();
+            });
+            
+            importListInput.addEventListener('change', (e) => {
+                this.handleImportShoppingList(e);
+            });
+        }
+        
+        if (closeShoppingListsBtn) {
+            closeShoppingListsBtn.addEventListener('click', () => {
+                // Hide shopping lists view
+                this.hideShoppingListsView();
+                
+                // Show recipe list view
+                const recipesView = document.getElementById('recipe-list-view');
+                if (recipesView) recipesView.classList.remove('hidden');
+                
+                // Show filters and recipe counter
+                const filterToggleContainer = document.querySelector('.filter-toggle-container');
+                const recipeCounter = document.getElementById('recipe-counter');
+                
+                if (filterToggleContainer) filterToggleContainer.classList.remove('hidden');
+                if (recipeCounter) recipeCounter.classList.remove('hidden');
+                
+                // Update current view
+                this.currentView = 'list';
+                
+                // Render recipes to ensure they're displayed
+                this.renderRecipes();
             });
         }
         
@@ -7294,6 +7335,17 @@ class RecipeApp {
         actions.className = 'shopping-list-actions';
         
         // Create action buttons using factory pattern
+        const exportBtn = this.createButton({
+            className: 'btn-icon export-list-btn',
+            text: '💾',
+            title: 'Exportar lista',
+            ariaLabel: 'Exportar lista a archivo',
+            onClick: (e) => {
+                e.stopPropagation();
+                this.exportShoppingList(list.id);
+            }
+        });
+        
         const copyBtn = this.createButton({
             className: 'btn-icon copy-list-btn',
             text: '📋',
@@ -7335,10 +7387,22 @@ class RecipeApp {
             }
         });
         
-        actions.appendChild(copyBtn);
-        actions.appendChild(duplicateBtn);
-        actions.appendChild(editBtn);
-        actions.appendChild(deleteBtn);
+        // Create left group (export and copy)
+        const actionsLeft = document.createElement('div');
+        actionsLeft.className = 'shopping-list-actions-left';
+        actionsLeft.appendChild(exportBtn);
+        actionsLeft.appendChild(copyBtn);
+        
+        // Create right group (duplicate, edit, delete)
+        const actionsRight = document.createElement('div');
+        actionsRight.className = 'shopping-list-actions-right';
+        actionsRight.appendChild(duplicateBtn);
+        actionsRight.appendChild(editBtn);
+        actionsRight.appendChild(deleteBtn);
+        
+        // Append both groups to actions
+        actions.appendChild(actionsLeft);
+        actions.appendChild(actionsRight);
         
         // Create content (collapsible)
         const content = document.createElement('div');
@@ -7931,6 +7995,115 @@ class RecipeApp {
         
         this.showToast('Lista duplicada correctamente', 'success');
         this.renderShoppingLists();
+    }
+
+    /**
+     * Export shopping list to text file
+     * @param {number} listId - List ID
+     */
+    exportShoppingList(listId) {
+        const list = this.shoppingListManager.getList(listId);
+        if (!list) {
+            this.showToast('Error: Lista no encontrada', 'error');
+            return;
+        }
+        
+        // Format list content
+        const text = this.shoppingListManager.formatListForClipboard(listId, true);
+        
+        if (!text) {
+            this.showToast('Error al exportar la lista', 'error');
+            return;
+        }
+        
+        // Create blob and download
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        
+        // Generate filename with sanitized list name
+        const sanitizedName = list.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const timestamp = new Date().toISOString().split('T')[0];
+        link.download = `lista_compra_${sanitizedName}_${timestamp}.txt`;
+        
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        this.showToast('Lista exportada correctamente', 'success');
+    }
+
+    /**
+     * Handle import shopping list from file
+     * @param {Event} e - File input change event
+     */
+    handleImportShoppingList(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const text = event.target.result;
+                const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+                
+                if (lines.length < 2) {
+                    this.showToast('Archivo vacío o formato incorrecto', 'error');
+                    return;
+                }
+                
+                // First line is the list name
+                const listName = lines[0];
+                
+                // Skip separator line if present
+                let startIndex = 1;
+                if (lines[1].startsWith('---')) {
+                    startIndex = 2;
+                }
+                
+                // Create new list
+                const newList = this.shoppingListManager.createList(listName);
+                
+                // Parse items
+                for (let i = startIndex; i < lines.length; i++) {
+                    const line = lines[i];
+                    if (!line) continue;
+                    
+                    // Remove completed mark if present
+                    const cleanLine = line.replace(/^✓\s*/, '');
+                    
+                    // Split by " - " to separate name and quantity
+                    const parts = cleanLine.split(' - ');
+                    const name = parts[0].trim();
+                    const quantity = parts.length > 1 ? parts.slice(1).join(' - ').trim() : '';
+                    
+                    if (name) {
+                        this.shoppingListManager.addItem(newList.id, {
+                            name: name,
+                            quantity: quantity
+                        });
+                    }
+                }
+                
+                this.showToast('Lista importada correctamente', 'success');
+                this.renderShoppingLists();
+                
+            } catch (error) {
+                console.error('Error importing shopping list:', error);
+                this.showToast('Error al importar la lista', 'error');
+            }
+        };
+        
+        reader.onerror = () => {
+            this.showToast('Error al leer el archivo', 'error');
+        };
+        
+        reader.readAsText(file);
+        
+        // Reset input so the same file can be imported again
+        e.target.value = '';
     }
 
     /**

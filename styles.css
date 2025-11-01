@@ -4031,6 +4031,17 @@ select {
     color: var(--color-text);
 }
 
+.shopping-lists-header-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+/* Shopping Lists Import Section */
+.shopping-lists-import-section {
+    margin-bottom: var(--spacing-lg);
+}
+
 /* Shopping Lists Container */
 .shopping-lists-container {
     display: flex;
@@ -4102,8 +4113,19 @@ select {
 /* Shopping List Actions */
 .shopping-list-actions {
     display: flex;
+    justify-content: space-between;
     gap: var(--spacing-xs);
     margin-top: var(--spacing-sm);
+}
+
+.shopping-list-actions-left {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.shopping-list-actions-right {
+    display: flex;
+    gap: var(--spacing-xs);
 }
 
 /* Shopping List Content (Collapsible) */
