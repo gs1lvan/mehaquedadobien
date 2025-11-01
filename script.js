@@ -7098,39 +7098,101 @@ class RecipeApp {
     /**
      * Prepare recipe data for QR code export
      * @param {Recipe} recipe - Recipe object
-     * @param {string} mode - Export mode: 'full' (default) or 'compact'
-     * @returns {string} JSON string of recipe data
+     * @returns {string} XML string of recipe data (compact version)
      */
-    prepareRecipeDataForQR(recipe, mode = 'full') {
-        if (mode === 'compact') {
-            // Compact mode: Only essential data for smaller QR
-            return JSON.stringify({
-                n: recipe.name,
-                c: recipe.category,
-                i: recipe.ingredients.map(i => `${i.name}|${i.quantity}|${i.unit}`).join(';'),
-                p: recipe.preparationMethod?.substring(0, 200) || '', // Limit to 200 chars
-                t: recipe.totalTime
+    prepareRecipeDataForQR(recipe) {
+        // Create compact XML manually for QR (only essential fields)
+        const xmlDoc = document.implementation.createDocument(null, 'recipe');
+        const root = xmlDoc.documentElement;
+        
+        // Essential fields only
+        const addElement = (name, value) => {
+            if (value) {
+                const el = xmlDoc.createElement(name);
+                el.textContent = value;
+                root.appendChild(el);
+            }
+        };
+        
+        addElement('name', recipe.name);
+        addElement('category', recipe.category);
+        addElement('totalTime', recipe.totalTime);
+        addElement('preparationMethod', recipe.preparationMethod);
+        
+        // Ingredients (simplified - no IDs or order)
+        if (recipe.ingredients && recipe.ingredients.length > 0) {
+            const ingredientsEl = xmlDoc.createElement('ingredients');
+            recipe.ingredients.forEach(ing => {
+                const ingEl = xmlDoc.createElement('i');
+                const nameEl = xmlDoc.createElement('n');
+                nameEl.textContent = ing.name;
+                ingEl.appendChild(nameEl);
+                
+                if (ing.quantity) {
+                    const qtyEl = xmlDoc.createElement('q');
+                    qtyEl.textContent = ing.quantity.toString();
+                    ingEl.appendChild(qtyEl);
+                }
+                
+                if (ing.unit) {
+                    const unitEl = xmlDoc.createElement('u');
+                    unitEl.textContent = ing.unit;
+                    ingEl.appendChild(unitEl);
+                }
+                
+                ingredientsEl.appendChild(ingEl);
             });
+            root.appendChild(ingredientsEl);
         }
         
-        // Full mode: Complete data
-        const recipeExport = {
-            name: recipe.name,
-            category: recipe.category,
-            ingredients: recipe.ingredients.map(i => ({
-                name: i.name,
-                quantity: i.quantity,
-                unit: i.unit
-            })),
-            preparationMethod: recipe.preparationMethod,
-            totalTime: recipe.totalTime
-        };
-        return JSON.stringify(recipeExport);
+        // Addition sequences (simplified - no IDs)
+        if (recipe.additionSequences && recipe.additionSequences.length > 0) {
+            const seqsEl = xmlDoc.createElement('sequences');
+            recipe.additionSequences.forEach(seq => {
+                const seqEl = xmlDoc.createElement('s');
+                
+                if (seq.step) {
+                    const stepEl = xmlDoc.createElement('step');
+                    stepEl.textContent = seq.step.toString();
+                    seqEl.appendChild(stepEl);
+                }
+                
+                if (seq.duration) {
+                    const durEl = xmlDoc.createElement('dur');
+                    durEl.textContent = seq.duration;
+                    seqEl.appendChild(durEl);
+                }
+                
+                if (seq.description) {
+                    const descEl = xmlDoc.createElement('desc');
+                    descEl.textContent = seq.description;
+                    seqEl.appendChild(descEl);
+                }
+                
+                seqsEl.appendChild(seqEl);
+            });
+            root.appendChild(seqsEl);
+        }
+        
+        // Kitchen appliances (if any)
+        if (recipe.kitchenAppliances && recipe.kitchenAppliances.length > 0) {
+            const appEl = xmlDoc.createElement('appliances');
+            recipe.kitchenAppliances.forEach(appId => {
+                const aEl = xmlDoc.createElement('a');
+                aEl.textContent = appId;
+                appEl.appendChild(aEl);
+            });
+            root.appendChild(appEl);
+        }
+        
+        // Serialize to string
+        const serializer = new XMLSerializer();
+        return serializer.serializeToString(xmlDoc);
     }
 
     /**
      * Generate QR code URL for recipe data
-     * @param {string} recipeData - JSON string of recipe data
+     * @param {string} recipeData - XML string of recipe data
      * @param {number} size - QR code size in pixels (default: 200)
      * @param {Object} options - QR generation options
      * @param {string} options.errorCorrection - Error correction level: L, M, Q, H (default: M)
@@ -7140,34 +7202,15 @@ class RecipeApp {
     generateQRCodeURL(recipeData, size = 200, options = {}) {
         const { errorCorrection = 'M', margin = 1 } = options;
         
-        // Encode recipe data in base64 for URL
+        // Encode recipe XML in base64
         const base64Data = btoa(encodeURIComponent(recipeData));
-        const targetURL = `https://guiavfr.enaire.es/#import=${base64Data}`;
-        const encodedURL = encodeURIComponent(targetURL);
+        
+        // Build URL with GitHub Pages domain
+        const appURL = `https://gs1lvan.github.io/mehaquedadobien/#import=${base64Data}`;
+        const encodedURL = encodeURIComponent(appURL);
         
         // Build QR API URL with options
         return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodedURL}&ecc=${errorCorrection}&margin=${margin}`;
-    }
-
-    /**
-     * Generate a small QR code (21x21 modules) with minimal data
-     * @param {Recipe} recipe - Recipe object
-     * @returns {string} QR code image URL
-     */
-    generateSmallQR(recipe) {
-        // For 21x21 QR (Version 1), we need very short data
-        // Use compact mode and low error correction
-        const compactData = this.prepareRecipeDataForQR(recipe, 'compact');
-        
-        // If still too large, use only recipe ID
-        if (compactData.length > 100) {
-            // Fallback: Just use recipe ID
-            const shortURL = `https://guiavfr.enaire.es/#r=${recipe.id}`;
-            const encodedURL = encodeURIComponent(shortURL);
-            return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodedURL}&ecc=L&margin=1`;
-        }
-        
-        return this.generateQRCodeURL(compactData, 150, { errorCorrection: 'L', margin: 1 });
     }
 
     /**
@@ -7184,30 +7227,57 @@ class RecipeApp {
         qrContainer.innerHTML = 'Generando código QR...';
         
         try {
-            // Use compact mode for smaller QR codes
-            const recipeData = this.prepareRecipeDataForQR(recipe, 'compact');
+            // Generate XML data for QR
+            const recipeData = this.prepareRecipeDataForQR(recipe);
             
-            // Generate QR with minimal error correction and margin for smaller size
-            const qrUrl = this.generateQRCodeURL(recipeData, 200, {
-                errorCorrection: 'L', // Low error correction = smaller QR
-                margin: 1 // Minimal margin = smaller QR
+            // Encode XML in Base64 for size estimation
+            const base64Data = btoa(encodeURIComponent(recipeData));
+            
+            // Estimate QR size (approximate QR version calculation)
+            const estimateQRSize = (dataLength) => {
+                // Rough estimation: QR versions and their capacity with error correction M
+                // Version 10: 57x57 (up to ~750 chars)
+                // Version 20: 97x97 (up to ~1500 chars)
+                // Version 30: 137x137 (up to ~2500 chars)
+                // Version 40: 177x177 (up to ~3700 chars)
+                if (dataLength <= 750) return '57×57';
+                if (dataLength <= 1500) return '97×97';
+                if (dataLength <= 2500) return '137×137';
+                if (dataLength <= 3700) return '177×177';
+                return '177×177+';
+            };
+            
+            const qrSizeEstimate = estimateQRSize(base64Data.length);
+            
+            // Generate QR with medium error correction for better capacity
+            const qrUrl = this.generateQRCodeURL(recipeData, 400, {
+                errorCorrection: 'M', // Medium error correction = good balance
+                margin: 2 // Small margin for better scanning
             });
             
             // Create image element
             const qrImg = document.createElement('img');
-            qrImg.style.width = '200px';
-            qrImg.style.height = '200px';
+            qrImg.style.width = '300px';
+            qrImg.style.height = '300px';
             qrImg.alt = 'Código QR de la receta';
             
             qrImg.onload = () => {
                 qrContainer.innerHTML = '';
                 qrContainer.appendChild(qrImg);
                 
-                // Add info about QR size
+                // Add info about QR format and size
                 const info = document.createElement('p');
                 info.style.cssText = 'margin-top: 8px; font-size: 0.75rem; color: var(--color-text-secondary);';
-                info.textContent = `Tamaño optimizado • ${Math.ceil(recipeData.length / 1024)}KB de datos`;
+                info.textContent = `Formato XML • ${base64Data.length} caracteres • QR ${qrSizeEstimate}`;
                 qrContainer.appendChild(info);
+                
+                // Add helpful tip for large QR codes
+                if (base64Data.length > 2500) {
+                    const tip = document.createElement('p');
+                    tip.style.cssText = 'margin-top: 4px; font-size: 0.75rem; color: var(--color-info);';
+                    tip.textContent = '💡 Para mejor escaneo, usa buena iluminación y mantén la cámara estable';
+                    qrContainer.appendChild(tip);
+                }
             };
             
             qrImg.onerror = () => {
