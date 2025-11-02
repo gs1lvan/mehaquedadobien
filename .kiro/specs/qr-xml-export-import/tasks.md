@@ -171,3 +171,68 @@
     - Test on Chrome mobile (Android)
     - Test on Safari mobile (iOS)
     - Verify QR scanning works on all platforms
+
+
+---
+
+## Code Quality Improvements (Completed)
+
+### ✅ Refactoring: XML Parsing Consolidation
+
+**Date**: 2025-11-02
+
+**Problem Identified**: 
+- Duplicate XML parsing logic between `parseCompactXML()` in script.js and `XMLImporter.parseRecipeElement()` in models.js
+- Recent dual-format support only applied to one parser, not both
+- ~100 lines of duplicated code
+- Maintenance burden and inconsistency risk
+
+**Improvements Implemented**:
+
+1. **Consolidated XML Parsing Logic** 🔴 Critical
+   - Enhanced `XMLImporter.parseSequences()` to support both compact and full formats
+   - Added `parseSequenceIngredients()` helper method for ingredient reference parsing
+   - Updated `parseIngredientsWithMapping()` to support both formats
+   - Modified `parseCompactXML()` to use `XMLImporter` internally
+   - Eliminated ~100 lines of duplicate code
+
+2. **Improved Code Organization** 🟡 High
+   - Added `createMultiSelector()` helper for CSS selector generation
+   - Centralized format detection logic
+   - Better separation of concerns
+
+3. **Enhanced Error Handling** 🟡 High
+   - Added validation before parsing elements
+   - Informative console logs at each parsing step
+   - Graceful handling of missing data
+   - Specific warnings for edge cases
+
+4. **Better Documentation** 🟢 Medium
+   - Comprehensive JSDoc comments explaining both formats
+   - Inline comments describing format differences
+   - Created test-xml-parsing.md with test cases
+
+5. **Performance Optimizations** 🟢 Low
+   - Cached DOM element lookups
+   - Reduced redundant `querySelector()` calls
+   - More efficient CSS selectors
+
+**Files Modified**:
+- `models.js`: Enhanced XMLImporter with dual-format support
+- `script.js`: Refactored parseCompactXML to use XMLImporter
+- `xml-constants.js`: Created (constants for future use)
+- `test-xml-parsing.md`: Created (test documentation)
+
+**Benefits**:
+- Single source of truth for XML parsing
+- Consistent behavior across import methods
+- Easier to maintain and extend
+- Better test coverage potential
+- Reduced bug surface area
+
+**Testing Recommendations**:
+See `test-xml-parsing.md` for comprehensive test cases covering:
+- Compact format (QR codes)
+- Full format (XML exports)
+- Mixed format (compatibility)
+- Edge cases (missing data, invalid references)

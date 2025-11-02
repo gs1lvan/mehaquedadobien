@@ -1739,6 +1739,15 @@ ImportError.PARSING_FAILED = 'PARSING_FAILED';
  */
 class XMLImporter {
     /**
+     * Helper method to create multi-format CSS selector
+     * @param {string[]} selectors - Array of selector strings
+     * @returns {string} Combined CSS selector
+     */
+    static createMultiSelector(selectors) {
+        return selectors.join(', ');
+    }
+    
+    /**
      * Import recipes from XML file
      * Requirements: 1.2, 4.1
      * @param {File} file - XML file to import
@@ -1980,10 +1989,14 @@ class XMLImporter {
             }
             
             // Parse ingredients and create ID mapping
-            const { ingredients, idMapping } = this.parseIngredientsWithMapping(recipeElement);
+            const { ingredients, idMapping } = this.parseIngredientsWithMapping(recipeElement, {
+                supportCompactFormat: false
+            });
             
             // Parse addition sequences with ID mapping
-            const additionSequences = this.parseSequences(recipeElement, idMapping);
+            const additionSequences = this.parseSequences(recipeElement, idMapping, {
+                supportCompactFormat: false
+            });
             
             // Parse kitchen appliances
             const kitchenAppliances = this.parseKitchenAppliances(recipeElement);
@@ -2046,23 +2059,54 @@ class XMLImporter {
     
     /**
      * Parse ingredients from XML with ID mapping
+     * Supports both full format (with <ingredient> elements) and compact format (with <i> elements)
+     * 
      * @param {Element} recipeElement - Recipe XML element
+     * @param {Object} options - Parsing options
+     * @param {boolean} options.supportCompactFormat - Enable compact format support (default: false)
      * @returns {Object} Object with ingredients array and ID mapping
      */
-    static parseIngredientsWithMapping(recipeElement) {
+    static parseIngredientsWithMapping(recipeElement, options = {}) {
+        const { supportCompactFormat = false } = options;
         const ingredients = [];
-        const idMapping = new Map(); // oldId -> newId
+        const idMapping = new Map(); // oldId/name -> newId
         const ingredientsElement = recipeElement.querySelector('ingredients');
         
         if (ingredientsElement) {
-            const ingredientElements = ingredientsElement.querySelectorAll('ingredient');
+            const selector = supportCompactFormat 
+                ? this.createMultiSelector(['ingredient', 'i'])
+                : 'ingredient';
+            const ingredientElements = ingredientsElement.querySelectorAll(selector);
             
             ingredientElements.forEach((ingElement, index) => {
                 try {
-                    const oldId = this.getElementText(ingElement, 'id');
-                    const name = this.getElementText(ingElement, 'name');
-                    const quantity = parseFloat(this.getElementText(ingElement, 'quantity')) || 0;
-                    const unit = this.getElementText(ingElement, 'unit');
+                    // Support both formats for each field
+                    const oldId = supportCompactFormat
+                        ? (ingElement.querySelector('id')?.textContent || '').trim()
+                        : this.getElementText(ingElement, 'id');
+                    
+                    const nameSelector = supportCompactFormat
+                        ? this.createMultiSelector(['n', 'name'])
+                        : 'name';
+                    const name = supportCompactFormat
+                        ? (ingElement.querySelector(nameSelector)?.textContent || '').trim()
+                        : this.getElementText(ingElement, 'name');
+                    
+                    const quantitySelector = supportCompactFormat
+                        ? this.createMultiSelector(['q', 'quantity'])
+                        : 'quantity';
+                    const quantityText = supportCompactFormat
+                        ? (ingElement.querySelector(quantitySelector)?.textContent || '0')
+                        : this.getElementText(ingElement, 'quantity');
+                    const quantity = parseFloat(quantityText) || 0;
+                    
+                    const unitSelector = supportCompactFormat
+                        ? this.createMultiSelector(['u', 'unit'])
+                        : 'unit';
+                    const unit = supportCompactFormat
+                        ? (ingElement.querySelector(unitSelector)?.textContent || '').trim()
+                        : this.getElementText(ingElement, 'unit');
+                    
                     const order = parseInt(this.getElementText(ingElement, 'order')) || index;
                     
                     if (name) {
@@ -2079,6 +2123,11 @@ class XMLImporter {
                         if (oldId) {
                             idMapping.set(oldId, ingredient.id);
                         }
+                        
+                        // Also map by name for compact format (where sequences reference by name)
+                        if (supportCompactFormat) {
+                            idMapping.set(name, ingredient.id);
+                        }
                     }
                 } catch (error) {
                     console.warn(`[XMLImporter] Error parsing ingredient ${index + 1}:`, error);
@@ -2090,52 +2139,137 @@ class XMLImporter {
     }
     
     /**
-     * Parse addition sequences from XML
+     * Parse addition sequences from XML with support for multiple formats
+     * 
+     * Supports two XML formats:
+     * 1. Compact format (used in QR codes for size optimization):
+     *    <sequences><s><step>1</step><dur>5min</dur><desc>...</desc><ings><ing>Name</ing></ings></s></sequences>
+     * 
+     * 2. Full format (used in file exports for clarity):
+     *    <additionSequences><sequence><step>1</step><duration>5min</duration>
+     *    <description>...</description><ingredientIds><ingredientId>uuid</ingredientId></ingredientIds></sequence></additionSequences>
+     * 
      * @param {Element} recipeElement - Recipe XML element
-     * @param {Map} idMapping - Mapping from old ingredient IDs to new ones
+     * @param {Map} idMapping - Mapping from old ingredient IDs to new ones (or names to IDs for compact format)
+     * @param {Object} options - Parsing options
+     * @param {boolean} options.supportCompactFormat - Enable compact format support (default: false)
      * @returns {Sequence[]} Array of sequences
      */
-    static parseSequences(recipeElement, idMapping = new Map()) {
+    static parseSequences(recipeElement, idMapping = new Map(), options = {}) {
+        const { supportCompactFormat = false } = options;
         const sequences = [];
-        const sequencesElement = recipeElement.querySelector('additionSequences');
         
-        if (sequencesElement) {
-            const sequenceElements = sequencesElement.querySelectorAll('sequence');
-            
-            sequenceElements.forEach((seqElement, index) => {
-                try {
-                    const step = parseInt(this.getElementText(seqElement, 'step')) || index + 1;
-                    const duration = this.getElementText(seqElement, 'duration');
-                    const description = this.getElementText(seqElement, 'description');
-                    
-                    // Parse ingredient IDs and map them to new IDs
-                    const ingredientIds = [];
-                    const ingredientIdsElement = seqElement.querySelector('ingredientIds');
-                    if (ingredientIdsElement) {
-                        const idElements = ingredientIdsElement.querySelectorAll('ingredientId');
-                        idElements.forEach(idElement => {
-                            const oldId = idElement.textContent.trim();
-                            if (oldId) {
-                                // Map old ID to new ID if mapping exists
-                                const newId = idMapping.get(oldId) || oldId;
-                                ingredientIds.push(newId);
-                            }
-                        });
-                    }
-                    
-                    sequences.push(new Sequence({
-                        step: step,
-                        ingredientIds: ingredientIds,
-                        duration: duration || '',
-                        description: description
-                    }));
-                } catch (error) {
-                    console.warn(`[XMLImporter] Error parsing sequence ${index + 1}:`, error);
-                }
-            });
+        // Support both formats
+        const sequencesElement = supportCompactFormat 
+            ? (recipeElement.querySelector('sequences') || recipeElement.querySelector('additionSequences'))
+            : recipeElement.querySelector('additionSequences');
+        
+        if (!sequencesElement) {
+            console.log('[XMLImporter] No sequences found in recipe');
+            return sequences;
         }
         
+        const selector = supportCompactFormat 
+            ? this.createMultiSelector(['s', 'sequence'])
+            : 'sequence';
+        const sequenceElements = sequencesElement.querySelectorAll(selector);
+        
+        if (sequenceElements.length === 0) {
+            console.warn('[XMLImporter] Sequences element found but contains no sequence items');
+            return sequences;
+        }
+        
+        sequenceElements.forEach((seqElement, index) => {
+            try {
+                // Parse step number
+                const stepText = seqElement.querySelector('step')?.textContent;
+                if (!stepText) {
+                    console.warn(`[XMLImporter] Sequence ${index + 1} missing step number, using index`);
+                }
+                const step = parseInt(stepText) || index + 1;
+                
+                // Parse duration - support both formats
+                const durationSelector = supportCompactFormat
+                    ? this.createMultiSelector(['dur', 'duration'])
+                    : 'duration';
+                const durationEl = seqElement.querySelector(durationSelector);
+                const duration = durationEl?.textContent || '';
+                
+                // Parse description - support both formats
+                const descriptionSelector = supportCompactFormat
+                    ? this.createMultiSelector(['desc', 'description'])
+                    : 'description';
+                const descriptionEl = seqElement.querySelector(descriptionSelector);
+                const description = descriptionEl?.textContent || '';
+                
+                // Parse ingredient references
+                const ingredientIds = this.parseSequenceIngredients(
+                    seqElement, 
+                    idMapping, 
+                    supportCompactFormat
+                );
+                
+                sequences.push(new Sequence({
+                    step: step,
+                    ingredientIds: ingredientIds,
+                    duration: duration,
+                    description: description
+                }));
+            } catch (error) {
+                console.warn(`[XMLImporter] Error parsing sequence ${index + 1}:`, error);
+            }
+        });
+        
         return sequences;
+    }
+    
+    /**
+     * Parse ingredient references from a sequence element
+     * Handles both compact format (ingredient names) and full format (ingredient IDs)
+     * 
+     * @param {Element} seqElement - Sequence XML element
+     * @param {Map} idMapping - Mapping from names/old IDs to new IDs
+     * @param {boolean} supportCompactFormat - Whether to support compact format
+     * @returns {string[]} Array of ingredient IDs
+     */
+    static parseSequenceIngredients(seqElement, idMapping, supportCompactFormat) {
+        const ingredientIds = [];
+        
+        if (supportCompactFormat) {
+            // Handle both compact (ings/ing) and full (ingredientNames/ingredientName or ingredientIds/ingredientId) formats
+            const ingsEl = seqElement.querySelector('ings') || 
+                          seqElement.querySelector('ingredientNames') ||
+                          seqElement.querySelector('ingredientIds');
+            
+            if (ingsEl) {
+                const ingSelector = XMLImporter.createMultiSelector(['ing', 'ingredientName', 'ingredientId']);
+                const ingElements = ingsEl.querySelectorAll(ingSelector);
+                ingElements.forEach(ingEl => {
+                    const nameOrId = ingEl.textContent.trim();
+                    if (nameOrId) {
+                        // Try to map name/old ID to new ID, otherwise use as-is
+                        const newId = idMapping.get(nameOrId) || nameOrId;
+                        ingredientIds.push(newId);
+                    }
+                });
+            }
+        } else {
+            // Standard format with ingredient IDs
+            const ingredientIdsElement = seqElement.querySelector('ingredientIds');
+            if (ingredientIdsElement) {
+                const idElements = ingredientIdsElement.querySelectorAll('ingredientId');
+                idElements.forEach(idElement => {
+                    const oldId = idElement.textContent.trim();
+                    if (oldId) {
+                        // Map old ID to new ID if mapping exists
+                        const newId = idMapping.get(oldId) || oldId;
+                        ingredientIds.push(newId);
+                    }
+                });
+            }
+        }
+        
+        return ingredientIds;
     }
     
     /**

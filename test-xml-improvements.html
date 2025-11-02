@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test XML Parsing Improvements</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        h2 { color: #666; margin-top: 0; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .result {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .success { border-left-color: #28a745; }
+        .error { border-left-color: #dc3545; }
+        pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .stat {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test XML Parsing Improvements</h1>
+    <p>Esta página prueba las mejoras implementadas en el parsing de XML.</p>
+
+    <div class="test-section">
+        <h2>1. Test Formato Compacto (QR Code)</h2>
+        <button onclick="testCompactFormat()">Ejecutar Test</button>
+        <div id="compact-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Formato Completo (XML Export)</h2>
+        <button onclick="testFullFormat()">Ejecutar Test</button>
+        <div id="full-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Formato Mixto</h2>
+        <button onclick="testMixedFormat()">Ejecutar Test</button>
+        <div id="mixed-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test Casos Edge</h2>
+        <button onclick="testEdgeCases()">Ejecutar Test</button>
+        <div id="edge-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Ejecutar Todos los Tests</h2>
+        <button onclick="runAllTests()">Ejecutar Todos</button>
+        <div id="all-results"></div>
+    </div>
+
+    <!-- Include the models.js file -->
+    <script src="models.js"></script>
+    
+    <script>
+        // Test data
+        const compactXML = `<recipe>
+            <name>Paella Valenciana</name>
+            <category>arroces</category>
+            <totalTime>60 min</totalTime>
+            <author>Chef Test</author>
+            <history>Receta tradicional</history>
+            <preparationMethod>Cocinar en paellera</preparationMethod>
+            <caravanFriendly>true</caravanFriendly>
+            <ingredients>
+                <i><n>Arroz</n><q>400</q><u>g</u></i>
+                <i><n>Pollo</n><q>300</q><u>g</u></i>
+                <i><n>Judías verdes</n><q>200</q><u>g</u></i>
+            </ingredients>
+            <sequences>
+                <s>
+                    <step>1</step>
+                    <dur>10 min</dur>
+                    <desc>Sofreír el pollo</desc>
+                    <ings><ing>Pollo</ing></ings>
+                </s>
+                <s>
+                    <step>2</step>
+                    <dur>5 min</dur>
+                    <desc>Añadir las judías</desc>
+                    <ings><ing>Judías verdes</ing></ings>
+                </s>
+                <s>
+                    <step>3</step>
+                    <dur>20 min</dur>
+                    <desc>Añadir el arroz y cocinar</desc>
+                    <ings><ing>Arroz</ing></ings>
+                </s>
+            </sequences>
+            <appliances>
+                <a>paellera</a>
+                <a>fuego</a>
+            </appliances>
+        </recipe>`;
+
+        const fullXML = `<recipe>
+            <name>Paella Valenciana</name>
+            <category>arroces</category>
+            <totalTime>60 min</totalTime>
+            <author>Chef Test</author>
+            <ingredients>
+                <ingredient>
+                    <id>ing-001</id>
+                    <name>Arroz</name>
+                    <quantity>400</quantity>
+                    <unit>g</unit>
+                    <order>0</order>
+                </ingredient>
+                <ingredient>
+                    <id>ing-002</id>
+                    <name>Pollo</name>
+                    <quantity>300</quantity>
+                    <unit>g</unit>
+                    <order>1</order>
+                </ingredient>
+            </ingredients>
+            <additionSequences>
+                <sequence>
+                    <step>1</step>
+                    <duration>10 min</duration>
+                    <description>Sofreír el pollo</description>
+                    <ingredientIds>
+                        <ingredientId>ing-002</ingredientId>
+                    </ingredientIds>
+                </sequence>
+                <sequence>
+                    <step>2</step>
+                    <duration>20 min</duration>
+                    <description>Añadir el arroz</description>
+                    <ingredientIds>
+                        <ingredientId>ing-001</ingredientId>
+                    </ingredientIds>
+                </sequence>
+            </additionSequences>
+        </recipe>`;
+
+        function testCompactFormat() {
+            const resultDiv = document.getElementById('compact-result');
+            resultDiv.innerHTML = '<p>Ejecutando test...</p>';
+            
+            try {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(compactXML, 'text/xml');
+                const root = xmlDoc.documentElement;
+                
+                // Parse with compact format support
+                const { ingredients, idMapping } = XMLImporter.parseIngredientsWithMapping(root, {
+                    supportCompactFormat: true
+                });
+                
+                const sequences = XMLImporter.parseSequences(root, idMapping, {
+                    supportCompactFormat: true
+                });
+                
+                // Validate results
+                const success = ingredients.length === 3 && sequences.length === 3;
+                
+                resultDiv.innerHTML = `
+                    <div class="result ${success ? 'success' : 'error'}">
+                        <h3>${success ? '✅ Test Exitoso' : '❌ Test Fallido'}</h3>
+                        <div class="stats">
+                            <div class="stat">
+                                <div class="stat-value">${ingredients.length}</div>
+                                <div class="stat-label">Ingredientes</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">${sequences.length}</div>
+                                <div class="stat-label">Secuencias</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">${idMapping.size}</div>
+                                <div class="stat-label">Mapeos</div>
+                            </div>
+                        </div>
+                        <details>
+                            <summary>Ver detalles</summary>
+                            <pre>${JSON.stringify({
+                                ingredients: ingredients.map(i => ({ name: i.name, quantity: i.quantity, unit: i.unit })),
+                                sequences: sequences.map(s => ({ step: s.step, duration: s.duration, ingredientCount: s.ingredientIds.length }))
+                            }, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Error</h3>
+                        <p>${error.message}</p>
+                        <pre>${error.stack}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        function testFullFormat() {
+            const resultDiv = document.getElementById('full-result');
+            resultDiv.innerHTML = '<p>Ejecutando test...</p>';
+            
+            try {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(fullXML, 'text/xml');
+                const root = xmlDoc.documentElement;
+                
+                // Parse with standard format
+                const { ingredients, idMapping } = XMLImporter.parseIngredientsWithMapping(root, {
+                    supportCompactFormat: false
+                });
+                
+                const sequences = XMLImporter.parseSequences(root, idMapping, {
+                    supportCompactFormat: false
+                });
+                
+                // Validate results
+                const success = ingredients.length === 2 && sequences.length === 2;
+                
+                resultDiv.innerHTML = `
+                    <div class="result ${success ? 'success' : 'error'}">
+                        <h3>${success ? '✅ Test Exitoso' : '❌ Test Fallido'}</h3>
+                        <div class="stats">
+                            <div class="stat">
+                                <div class="stat-value">${ingredients.length}</div>
+                                <div class="stat-label">Ingredientes</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">${sequences.length}</div>
+                                <div class="stat-label">Secuencias</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">${idMapping.size}</div>
+                                <div class="stat-label">Mapeos ID</div>
+                            </div>
+                        </div>
+                        <details>
+                            <summary>Ver detalles</summary>
+                            <pre>${JSON.stringify({
+                                ingredients: ingredients.map(i => ({ name: i.name, quantity: i.quantity })),
+                                sequences: sequences.map(s => ({ step: s.step, duration: s.duration, ingredientIds: s.ingredientIds }))
+                            }, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function testMixedFormat() {
+            const resultDiv = document.getElementById('mixed-result');
+            resultDiv.innerHTML = '<p>Ejecutando test...</p>';
+            
+            const mixedXML = `<recipe>
+                <name>Test Mixto</name>
+                <ingredients>
+                    <i><n>Ingrediente 1</n><q>100</q><u>g</u></i>
+                </ingredients>
+                <additionSequences>
+                    <sequence>
+                        <step>1</step>
+                        <duration>5 min</duration>
+                        <description>Test</description>
+                        <ingredientNames>
+                            <ingredientName>Ingrediente 1</ingredientName>
+                        </ingredientNames>
+                    </sequence>
+                </additionSequences>
+            </recipe>`;
+            
+            try {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(mixedXML, 'text/xml');
+                const root = xmlDoc.documentElement;
+                
+                const { ingredients, idMapping } = XMLImporter.parseIngredientsWithMapping(root, {
+                    supportCompactFormat: true
+                });
+                
+                const sequences = XMLImporter.parseSequences(root, idMapping, {
+                    supportCompactFormat: true
+                });
+                
+                const success = ingredients.length === 1 && sequences.length === 1 && sequences[0].ingredientIds.length === 1;
+                
+                resultDiv.innerHTML = `
+                    <div class="result ${success ? 'success' : 'error'}">
+                        <h3>${success ? '✅ Test Exitoso' : '❌ Test Fallido'}</h3>
+                        <p>Formato mixto parseado correctamente</p>
+                        <div class="stats">
+                            <div class="stat">
+                                <div class="stat-value">${sequences[0].ingredientIds.length}</div>
+                                <div class="stat-label">Referencias Mapeadas</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function testEdgeCases() {
+            const resultDiv = document.getElementById('edge-result');
+            resultDiv.innerHTML = '<p>Ejecutando tests...</p>';
+            
+            const tests = [
+                {
+                    name: 'Secuencia sin ingredientes',
+                    xml: '<recipe><sequences><s><step>1</step><dur>5 min</dur><desc>Test</desc></s></sequences></recipe>',
+                    validate: (result) => result.sequences.length === 1 && result.sequences[0].ingredientIds.length === 0
+                },
+                {
+                    name: 'Ingrediente sin cantidad',
+                    xml: '<recipe><ingredients><i><n>Sal</n><q></q><u>al gusto</u></i></ingredients></recipe>',
+                    validate: (result) => result.ingredients.length === 1 && result.ingredients[0].quantity === 0
+                }
+            ];
+            
+            let results = [];
+            
+            tests.forEach(test => {
+                try {
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(test.xml, 'text/xml');
+                    const root = xmlDoc.documentElement;
+                    
+                    const { ingredients, idMapping } = XMLImporter.parseIngredientsWithMapping(root, {
+                        supportCompactFormat: true
+                    });
+                    
+                    const sequences = XMLImporter.parseSequences(root, idMapping, {
+                        supportCompactFormat: true
+                    });
+                    
+                    const success = test.validate({ ingredients, sequences });
+                    results.push({ name: test.name, success });
+                } catch (error) {
+                    results.push({ name: test.name, success: false, error: error.message });
+                }
+            });
+            
+            const allSuccess = results.every(r => r.success);
+            
+            resultDiv.innerHTML = `
+                <div class="result ${allSuccess ? 'success' : 'error'}">
+                    <h3>${allSuccess ? '✅ Todos los Tests Exitosos' : '⚠️ Algunos Tests Fallaron'}</h3>
+                    ${results.map(r => `
+                        <p>${r.success ? '✅' : '❌'} ${r.name}</p>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function runAllTests() {
+            testCompactFormat();
+            testFullFormat();
+            testMixedFormat();
+            testEdgeCases();
+            
+            document.getElementById('all-results').innerHTML = `
+                <div class="result success">
+                    <h3>✅ Todos los tests ejecutados</h3>
+                    <p>Revisa los resultados en cada sección arriba.</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

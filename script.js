@@ -7147,132 +7147,33 @@ class RecipeApp {
 
     /**
      * Generate share link for recipe
+     * Uses XMLExporter to generate standard XML format
      * @param {Recipe} recipe - Recipe object
      * @returns {string} Share URL
      */
     generateShareLink(recipe) {
-        // Create compact XML
-        const xmlDoc = document.implementation.createDocument(null, 'recipe');
-        const root = xmlDoc.documentElement;
+        // Use XMLExporter to generate standard XML (without images/videos for URL size)
+        // Create a copy of the recipe without images and videos
+        const recipeForShare = new Recipe({
+            id: recipe.id,
+            name: recipe.name,
+            category: recipe.category,
+            totalTime: recipe.totalTime,
+            caravanFriendly: recipe.caravanFriendly,
+            ingredients: recipe.ingredients,
+            preparationMethod: recipe.preparationMethod,
+            kitchenAppliances: recipe.kitchenAppliances,
+            author: recipe.author,
+            history: recipe.history,
+            additionSequences: recipe.additionSequences,
+            images: [], // Exclude images from share link (too large for URL)
+            videos: [], // Exclude videos from share link (too large for URL)
+            createdAt: recipe.createdAt,
+            updatedAt: recipe.updatedAt
+        });
         
-        const addElement = (name, value) => {
-            if (value) {
-                const el = xmlDoc.createElement(name);
-                el.textContent = value;
-                root.appendChild(el);
-            }
-        };
-        
-        addElement('name', recipe.name);
-        addElement('category', recipe.category);
-        addElement('totalTime', recipe.totalTime);
-        addElement('author', recipe.author);
-        addElement('history', recipe.history);
-        addElement('preparationMethod', recipe.preparationMethod);
-        
-        // Caravan friendly flag
-        if (recipe.caravanFriendly) {
-            const cfEl = xmlDoc.createElement('caravanFriendly');
-            cfEl.textContent = 'true';
-            root.appendChild(cfEl);
-        }
-        
-        // Ingredients
-        if (recipe.ingredients && recipe.ingredients.length > 0) {
-            const ingredientsEl = xmlDoc.createElement('ingredients');
-            recipe.ingredients.forEach(ing => {
-                const ingEl = xmlDoc.createElement('i');
-                const nameEl = xmlDoc.createElement('n');
-                nameEl.textContent = ing.name;
-                ingEl.appendChild(nameEl);
-                
-                if (ing.quantity) {
-                    const qtyEl = xmlDoc.createElement('q');
-                    qtyEl.textContent = ing.quantity.toString();
-                    ingEl.appendChild(qtyEl);
-                }
-                
-                if (ing.unit) {
-                    const unitEl = xmlDoc.createElement('u');
-                    unitEl.textContent = ing.unit;
-                    ingEl.appendChild(unitEl);
-                }
-                
-                ingredientsEl.appendChild(ingEl);
-            });
-            root.appendChild(ingredientsEl);
-        }
-        
-        // Sequences
-        if (recipe.additionSequences && recipe.additionSequences.length > 0) {
-            // Create ingredient lookup map for O(1) access
-            const ingredientMap = new Map();
-            if (recipe.ingredients) {
-                recipe.ingredients.forEach(ing => ingredientMap.set(ing.id, ing));
-            }
-            
-            const seqsEl = xmlDoc.createElement('sequences');
-            recipe.additionSequences.forEach(seq => {
-                const seqEl = xmlDoc.createElement('s');
-                
-                if (seq.step) {
-                    const stepEl = xmlDoc.createElement('step');
-                    stepEl.textContent = seq.step.toString();
-                    seqEl.appendChild(stepEl);
-                }
-                
-                if (seq.duration) {
-                    const durEl = xmlDoc.createElement('dur');
-                    durEl.textContent = seq.duration;
-                    seqEl.appendChild(durEl);
-                }
-                
-                if (seq.description) {
-                    const descEl = xmlDoc.createElement('desc');
-                    descEl.textContent = seq.description;
-                    seqEl.appendChild(descEl);
-                }
-                
-                // Export ingredient names for portability (IDs are internal)
-                if (seq.ingredientIds && seq.ingredientIds.length > 0) {
-                    const ingsEl = xmlDoc.createElement('ings');
-                    seq.ingredientIds.forEach(ingId => {
-                        const ingredient = ingredientMap.get(ingId);
-                        if (ingredient) {
-                            const ingNameEl = xmlDoc.createElement('ing');
-                            ingNameEl.textContent = ingredient.name;
-                            ingsEl.appendChild(ingNameEl);
-                        } else {
-                            console.warn('[Share] Ingredient ID not found:', ingId);
-                        }
-                    });
-                    if (ingsEl.childNodes.length > 0) {
-                        seqEl.appendChild(ingsEl);
-                    }
-                }
-                
-                seqsEl.appendChild(seqEl);
-            });
-            root.appendChild(seqsEl);
-        }
-        
-        // Appliances
-        if (recipe.kitchenAppliances && recipe.kitchenAppliances.length > 0) {
-            const appEl = xmlDoc.createElement('appliances');
-            recipe.kitchenAppliances.forEach(appId => {
-                const aEl = xmlDoc.createElement('a');
-                aEl.textContent = appId;
-                appEl.appendChild(aEl);
-            });
-            root.appendChild(appEl);
-        }
-        
-        // Note: Images and videos are not exported in share links
-        // because they contain large base64 data that would make URLs too long
-        // They are only preserved when exporting to XML file
-        
-        const serializer = new XMLSerializer();
-        const xmlString = serializer.serializeToString(xmlDoc);
+        // Generate XML using XMLExporter
+        const xmlString = XMLExporter.generateXML(recipeForShare);
         
         // Debug: Log what we're exporting
         console.log('[Share] Exporting recipe:', {
@@ -8835,8 +8736,9 @@ function showImportSuccessModal(recipeName) {
 }
 
 /**
- * Parse compact XML format from share link
- * @param {string} xmlString - Compact XML string
+ * Parse standard XML format from share link or export
+ * Uses the same format as XMLExporter (standard format only)
+ * @param {string} xmlString - Standard XML string
  * @returns {Object} Recipe data object
  */
 function parseCompactXML(xmlString) {
@@ -8854,7 +8756,7 @@ function parseCompactXML(xmlString) {
         return el ? el.textContent : '';
     };
     
-    // Extract basic fields
+    // Extract basic fields using standard XMLExporter format
     const recipeData = {
         name: getElementText('name'),
         category: getElementText('category'),
@@ -8870,36 +8772,36 @@ function parseCompactXML(xmlString) {
         videos: []
     };
     
-    // Parse ingredients
+    // Parse ingredients using standard format: <ingredients><ingredient><name><quantity><unit>
     const ingredientsEl = root.querySelector('ingredients');
     if (ingredientsEl) {
-        const ingElements = ingredientsEl.querySelectorAll('i');
+        const ingElements = ingredientsEl.querySelectorAll('ingredient');
         ingElements.forEach(ingEl => {
-            const quantityText = ingEl.querySelector('q')?.textContent || '0';
+            const quantityText = ingEl.querySelector('quantity')?.textContent || '0';
             recipeData.ingredients.push({
-                name: ingEl.querySelector('n')?.textContent || '',
+                name: ingEl.querySelector('name')?.textContent || '',
                 quantity: parseFloat(quantityText) || 0,
-                unit: ingEl.querySelector('u')?.textContent || ''
+                unit: ingEl.querySelector('unit')?.textContent || ''
             });
         });
     }
     
-    // Parse sequences
-    const sequencesEl = root.querySelector('sequences');
+    // Parse sequences using standard format: <additionSequences><sequence><step><duration><description><ingredientNames><ingredientName>
+    const sequencesEl = root.querySelector('additionSequences');
     if (sequencesEl) {
-        const seqElements = sequencesEl.querySelectorAll('s');
+        const seqElements = sequencesEl.querySelectorAll('sequence');
         seqElements.forEach(seqEl => {
             const sequence = {
                 step: parseInt(seqEl.querySelector('step')?.textContent || '0'),
-                duration: seqEl.querySelector('dur')?.textContent || '',
-                description: seqEl.querySelector('desc')?.textContent || '',
+                duration: seqEl.querySelector('duration')?.textContent || '',
+                description: seqEl.querySelector('description')?.textContent || '',
                 ingredientNames: [] // Store names temporarily, will convert to IDs later
             };
             
-            // Parse ingredient names
-            const ingsEl = seqEl.querySelector('ings');
+            // Parse ingredient names using standard format
+            const ingsEl = seqEl.querySelector('ingredientNames');
             if (ingsEl) {
-                const ingElements = ingsEl.querySelectorAll('ing');
+                const ingElements = ingsEl.querySelectorAll('ingredientName');
                 ingElements.forEach(ingEl => {
                     sequence.ingredientNames.push(ingEl.textContent);
                 });
@@ -8910,10 +8812,10 @@ function parseCompactXML(xmlString) {
         });
     }
     
-    // Parse appliances
-    const appliancesEl = root.querySelector('appliances');
+    // Parse appliances using standard format: <kitchenAppliances><appliance>
+    const appliancesEl = root.querySelector('kitchenAppliances');
     if (appliancesEl) {
-        const appElements = appliancesEl.querySelectorAll('a');
+        const appElements = appliancesEl.querySelectorAll('appliance');
         appElements.forEach(appEl => {
             recipeData.kitchenAppliances.push(appEl.textContent);
         });
@@ -8928,6 +8830,8 @@ function parseCompactXML(xmlString) {
         author: recipeData.author,
         history: recipeData.history,
         caravanFriendly: recipeData.caravanFriendly,
+        ingredients: recipeData.ingredients.length,
+        sequences: recipeData.additionSequences.length,
         hasImages: recipeData.images.length > 0,
         hasVideos: recipeData.videos.length > 0
     });

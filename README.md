@@ -34,12 +34,16 @@ Una aplicación web moderna para gestionar tus recetas personales con funcionali
 - **[INFORME-TECNICO.md](INFORME-TECNICO.md)** - Documentación técnica completa
 - **[RESUMEN-CAMBIOS.md](RESUMEN-CAMBIOS.md)** - Historial de cambios implementados
 - **[GUIA-CREAR-APK.md](GUIA-CREAR-APK.md)** - Guía para crear APK de Android
+- **[test-xml-parsing.md](test-xml-parsing.md)** - Casos de prueba para validación de parsing XML
+- **[xml-constants.js](xml-constants.js)** - Constantes y helpers para formatos XML
 
 ## 🧪 Archivos de Prueba
 
 El proyecto incluye múltiples archivos de prueba HTML (prefijo `test-*.html`) para verificar funcionalidades específicas:
 - **test-chips-simple.html** - Verifica consistencia visual de chips de electrodomésticos en diferentes contextos
 - **test-qr.html** - Prueba de generación de códigos QR con datos de receta de ejemplo
+- **test-xml-improvements.html** - Prueba las mejoras de parsing XML (formatos compacto, completo y mixto)
+- **test-xml-parsing.md** - Documentación de casos de prueba para validación de XML
 - Otros archivos de prueba para ingredientes, secuencias, multimedia, filtrado, exportación, etc.
 
 ## 🛒 Listas de Compra
@@ -70,7 +74,17 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 ## 🎨 Última Actualización
 
 **Fecha:** 2 de noviembre de 2025  
-**Cambio:** Simplificación del formulario de secuencias - Se ha simplificado el formulario de adición de secuencias eliminando la selección previa de ingredientes:
+**Cambio:** Mejoras en el sistema de parsing XML - Se ha refactorizado y consolidado el código de importación XML:
+- ✅ **Código consolidado:** Eliminación de ~100 líneas de código duplicado entre parsers
+- ✅ **Soporte dual de formatos:** Parsing unificado para formato compacto (QR) y completo (exportación)
+- ✅ **Mejor mantenibilidad:** Lógica centralizada en XMLImporter con métodos helper reutilizables
+- ✅ **Manejo robusto de errores:** Validación mejorada y mensajes de error descriptivos
+- ✅ **Optimización de rendimiento:** Reducción de llamadas DOM y selectores CSS más eficientes
+- ✅ **Archivo de pruebas:** Nuevo test-xml-improvements.html para validar parsing en todos los formatos
+- ✅ **Documentación técnica:** test-xml-parsing.md con casos de prueba detallados
+
+**Fecha:** 2 de noviembre de 2025  
+**Cambio anterior:** Simplificación del formulario de secuencias - Se ha simplificado el formulario de adición de secuencias eliminando la selección previa de ingredientes:
 - ✅ **Interfaz más limpia:** El formulario ahora solo requiere la descripción del paso
 - ✅ **Flujo más rápido:** Añade secuencias directamente sin pasos adicionales
 - ✅ **Mayor flexibilidad:** Describe los pasos libremente sin restricciones de ingredientes preseleccionados
@@ -146,6 +160,36 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 - Sistema de notificaciones con animaciones suaves (slideIn/slideOut) para feedback visual
 - Uso de API externa (QRServer) para la generación de códigos QR
 - Diseño integrado con el sistema de estilos Airbnb de la aplicación
+
+## 🔧 Arquitectura de Importación XML
+
+La aplicación utiliza un sistema robusto de importación XML con soporte para múltiples formatos:
+
+### Formatos Soportados
+
+1. **Formato Compacto (QR Codes)**
+   - Optimizado para tamaño reducido en códigos QR
+   - Elementos con nombres cortos: `<i>`, `<n>`, `<q>`, `<u>`, `<s>`, `<dur>`, `<desc>`, `<ings>`, `<ing>`
+   - Referencias a ingredientes por nombre
+   - Típicamente ~40% más pequeño que el formato completo
+
+2. **Formato Completo (Exportación)**
+   - Nombres de elementos descriptivos: `<ingredient>`, `<name>`, `<quantity>`, `<unit>`, `<sequence>`, `<duration>`, `<description>`
+   - Referencias a ingredientes por ID único
+   - Incluye metadatos completos y multimedia
+
+3. **Formato Mixto**
+   - Soporte automático para XML con elementos de ambos formatos
+   - Conversión transparente entre formatos
+
+### Características Técnicas
+
+- **Parser unificado:** Clase `XMLImporter` con lógica consolidada
+- **Mapeo de IDs:** Sistema inteligente que mapea nombres/IDs antiguos a nuevos IDs
+- **Validación robusta:** Verificación de estructura XML y datos de receta
+- **Manejo de errores:** Mensajes descriptivos para cada tipo de error
+- **Optimización:** Selectores CSS eficientes y caché de elementos DOM
+- **Testing:** Suite completa de pruebas en `test-xml-improvements.html`
 
 ## 💡 Uso de Códigos QR
 
