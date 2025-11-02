@@ -7255,9 +7255,12 @@ class RecipeApp {
             name: recipe.name,
             author: recipe.author,
             history: recipe.history,
-            caravanFriendly: recipe.caravanFriendly
+            caravanFriendly: recipe.caravanFriendly,
+            ingredientsCount: recipe.ingredients?.length || 0,
+            sequencesCount: recipe.additionSequences?.length || 0
         });
-        console.log('[Share] XML generated:', xmlString.substring(0, 500));
+        console.log('[Share] Ingredients:', recipe.ingredients);
+        console.log('[Share] XML generated:', xmlString.substring(0, 800));
         
         // Encode and create share URL with recipe name for preview
         const base64Data = btoa(encodeURIComponent(xmlString));
