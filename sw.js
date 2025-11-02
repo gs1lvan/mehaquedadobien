@@ -1,4 +1,4 @@
-const CACHE_VERSION = Date.now() + 1;
+const CACHE_VERSION = Date.now() + 2;
 const CACHE_NAME = `recetario-personal-v4-${CACHE_VERSION}`;
 const STATIC_CACHE = `recetario-static-v4-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `recetario-dynamic-v4-${CACHE_VERSION}`;
@@ -60,19 +60,20 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Interceptar requests con estrategia cache-first para assets estáticos
+// Interceptar requests con estrategia network-first para desarrollo
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Estrategia cache-first para assets estáticos
-  if (isStaticAsset(url)) {
-    event.respondWith(cacheFirst(request));
-  }
-  // Network-first para datos dinámicos (IndexedDB no se cachea)
-  else {
-    event.respondWith(networkFirst(request));
-  }
+  // TEMPORAL: Network-first para todo durante desarrollo
+  event.respondWith(networkFirst(request));
+  
+  // TODO: Restaurar cache-first para producción
+  // if (isStaticAsset(url)) {
+  //   event.respondWith(cacheFirst(request));
+  // } else {
+  //   event.respondWith(networkFirst(request));
+  // }
 });
 
 // Determinar si es un asset estático
