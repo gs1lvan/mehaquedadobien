@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Task 3.2 - Date Column Sorting</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f7f7f7;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #222;
+            border-bottom: 2px solid #FF385C;
+            padding-bottom: 10px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .test-result.pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-result.fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-result.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background: #FF385C;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #E31C5F;
+        }
+        .test-controls {
+            margin: 20px 0;
+        }
+        .requirement {
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #FF385C;
+        }
+        .requirement-title {
+            font-weight: 600;
+            color: #222;
+        }
+        .test-details {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .visual-test {
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .visual-test h3 {
+            margin-top: 0;
+            color: #FF385C;
+        }
+        .recipe-order {
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Task 3.2: Test Date Column Sorting</h1>
+    
+    <div class="test-section">
+        <h2>Requirements Being Tested</h2>
+        <div class="requirement">
+            <div class="requirement-title">Requirement 4.1</div>
+            <div class="test-details">WHEN the user clicks the Date column header, THE Recipe App SHALL sort recipes by date (newest to oldest)</div>
+        </div>
+        <div class="requirement">
+            <div class="requirement-title">Requirement 4.2</div>
+            <div class="test-details">WHEN the user clicks the Date column header again, THE Recipe App SHALL reverse the sort order (oldest to newest)</div>
+        </div>
+        <div class="requirement">
+            <div class="requirement-title">Requirement 4.3</div>
+            <div class="test-details">WHEN the user clicks the Date column header a third time, THE Recipe App SHALL reset to the default sort order</div>
+        </div>
+        <div class="requirement">
+            <div class="requirement-title">Requirement 4.4</div>
+            <div class="test-details">THE Recipe App SHALL display dates in MM/YYYY format in the Date column</div>
+        </div>
+        <div class="requirement">
+            <div class="requirement-title">Requirement 4.5</div>
+            <div class="test-details">THE Recipe App SHALL maintain the current sort order when filters are applied or removed</div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Controls</h2>
+        <div class="test-controls">
+            <button onclick="runAllTests()">▶️ Run All Tests</button>
+            <button onclick="clearResults()">🗑️ Clear Results</button>
+            <button onclick="switchToListView()">📋 Switch to List View</button>
+            <button onclick="clickDateHeader()">📅 Click Date Header</button>
+            <button onclick="showRecipeOrder()">📊 Show Recipe Order</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Visual Verification</h2>
+        <div class="visual-test">
+            <h3>Current Sort State</h3>
+            <div id="sort-state"></div>
+        </div>
+        <div class="visual-test">
+            <h3>Recipe Order (with dates)</h3>
+            <div id="recipe-order"></div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+        let app = null;
+
+        function logResult(testName, passed, message) {
+            const result = {
+                testName,
+                passed,
+                message,
+                timestamp: new Date().toLocaleTimeString()
+            };
+            testResults.push(result);
+            displayResults();
+        }
+
+        function displayResults() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '';
+            
+            testResults.forEach(result => {
+                const div = document.createElement('div');
+                div.className = `test-result ${result.passed ? 'pass' : 'fail'}`;
+                div.innerHTML = `
+                    <strong>[${result.timestamp}] ${result.testName}</strong><br>
+                    ${result.message}
+                `;
+                resultsDiv.appendChild(div);
+            });
+
+            // Summary
+            const passed = testResults.filter(r => r.passed).length;
+            const total = testResults.length;
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = `test-result ${passed === total ? 'pass' : 'info'}`;
+            summaryDiv.innerHTML = `<strong>Summary: ${passed}/${total} tests passed</strong>`;
+            resultsDiv.insertBefore(summaryDiv, resultsDiv.firstChild);
+        }
+
+        function clearResults() {
+            testResults = [];
+            document.getElementById('test-results').innerHTML = '';
+        }
+
+        function switchToListView() {
+            const listBtn = document.getElementById('view-list-btn');
+            listBtn?.click();
+            updateVisualStatus();
+        }
+
+        function clickDateHeader() {
+            const dateHeader = document.getElementById('sort-by-date');
+            dateHeader?.click();
+            updateVisualStatus();
+        }
+
+        function getAppInstance() {
+            if (window.app) {
+                return window.app;
+            }
+            return null;
+        }
+
+        function updateVisualStatus() {
+            setTimeout(() => {
+                app = getAppInstance();
+                if (!app) {
+                    document.getElementById('sort-state').innerHTML = 
+                        '<p>⚠️ Cannot access app instance</p>';
+                    return;
+                }
+
+                const sortStateDiv = document.getElementById('sort-state');
+                sortStateDiv.innerHTML = `
+                    <p><strong>Sort By:</strong> ${app.sortBy}</p>
+                    <p><strong>Sort Order:</strong> ${app.sortOrder}</p>
+                    <p><strong>View Mode:</strong> ${app.viewMode}</p>
+                `;
+
+                showRecipeOrder();
+            }, 200);
+        }
+
+        function showRecipeOrder() {
+            app = getAppInstance();
+            if (!app) {
+                document.getElementById('recipe-order').innerHTML = 
+                    '<p>⚠️ Cannot access app instance</p>';
+                return;
+            }
+
+            const recipesGrid = document.getElementById('recipes-grid');
+            const recipeCards = recipesGrid?.querySelectorAll('.recipe-card');
+            
+            if (!recipeCards || recipeCards.length === 0) {
+                document.getElementById('recipe-order').innerHTML = 
+                    '<p>⚠️ No recipes found</p>';
+                return;
+            }
+
+            const orderDiv = document.getElementById('recipe-order');
+            orderDiv.innerHTML = '<p><strong>Current recipe order (first 10):</strong></p>';
+            
+            Array.from(recipeCards).slice(0, 10).forEach((card, index) => {
+                const nameEl = card.querySelector('.recipe-name');
+                const dateEl = card.querySelector('.recipe-date');
+                const name = nameEl?.textContent || 'Unknown';
+                const date = dateEl?.textContent || 'No date';
+                const orderItem = document.createElement('div');
+                orderItem.className = 'recipe-order';
+                orderItem.textContent = `${index + 1}. ${name} - ${date}`;
+                orderDiv.appendChild(orderItem);
+            });
+        }
+
+        function getRecipeDates() {
+            const recipesGrid = document.getElementById('recipes-grid');
+            const recipeCards = recipesGrid?.querySelectorAll('.recipe-card');
+            
+            if (!recipeCards) return [];
+            
+            return Array.from(recipeCards).map(card => {
+                const recipeId = card.dataset.recipeId;
+                const app = getAppInstance();
+                const recipe = app?.recipes.find(r => r.id === recipeId);
+                return recipe ? new Date(recipe.updatedAt) : null;
+            }).filter(date => date !== null);
+        }
+
+        function isSortedNewestFirst(dates) {
+            for (let i = 0; i < dates.length - 1; i++) {
+                if (dates[i] < dates[i + 1]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function isSortedOldestFirst(dates) {
+            for (let i = 0; i < dates.length - 1; i++) {
+                if (dates[i] > dates[i + 1]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function checkDateFormat() {
+            const recipesGrid = document.getElementById('recipes-grid');
+            const dateElements = recipesGrid?.querySelectorAll('.recipe-date');
+            
+            if (!dateElements || dateElements.length === 0) return { valid: false, message: 'No date elements found' };
+            
+            const dateRegex = /^\d{2}\/\d{4}$/; // MM/YYYY format
+            let allValid = true;
+            let invalidDates = [];
+            
+            dateElements.forEach((el, index) => {
+                const dateText = el.textContent.trim();
+                if (!dateRegex.test(dateText)) {
+                    allValid = false;
+                    invalidDates.push(`Index ${index}: "${dateText}"`);
+                }
+            });
+            
+            return {
+                valid: allValid,
+                message: allValid ? 'All dates in MM/YYYY format' : `Invalid dates: ${invalidDates.join(', ')}`
+            };
+        }
+
+        async function runAllTests() {
+            clearResults();
+            
+            // Switch to list view first
+            switchToListView();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Test 1: Date header exists and is clickable
+            await testDateHeaderExists();
+            
+            // Test 2: First click sorts newest-to-oldest
+            await testFirstClickNewestFirst();
+            
+            // Test 3: Second click sorts oldest-to-newest
+            await testSecondClickOldestFirst();
+            
+            // Test 4: Third click resets to default
+            await testThirdClickReset();
+            
+            // Test 5: Date format MM/YYYY
+            await testDateFormat();
+            
+            // Test 6: Sort persists with filters
+            await testSortPersistsWithFilters();
+            
+            // Test 7: Sort indicator updates
+            await testSortIndicatorUpdates();
+            
+            // Update visual status
+            updateVisualStatus();
+        }
+
+        async function testDateHeaderExists() {
+            const dateHeader = document.getElementById('sort-by-date');
+            const styles = dateHeader ? window.getComputedStyle(dateHeader) : null;
+            const cursor = styles?.cursor;
+            
+            if (dateHeader && cursor === 'pointer') {
+                logResult(
+                    'Test 1: Date Header Exists',
+                    true,
+                    '✅ Date column header exists and has pointer cursor'
+                );
+            } else {
+                logResult(
+                    'Test 1: Date Header Exists',
+                    false,
+                    `❌ Date header issue - Exists: ${!!dateHeader}, Cursor: ${cursor}`
+                );
+            }
+        }
+
+        async function testFirstClickNewestFirst() {
+            app = getAppInstance();
+            
+            // Reset to name sorting first
+            if (app) {
+                app.sortBy = 'name';
+                app.sortOrder = 'asc';
+                app.renderRecipeList();
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            
+            // Click date header
+            const dateHeader = document.getElementById('sort-by-date');
+            dateHeader?.click();
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            app = getAppInstance();
+            const dates = getRecipeDates();
+            const isNewestFirst = isSortedNewestFirst(dates);
+            
+            if (app && app.sortBy === 'date' && app.sortOrder === 'desc' && isNewestFirst) {
+                logResult(
+                    'Test 2: First Click Sorts Newest-to-Oldest',
+                    true,
+                    `✅ First click sorts newest-to-oldest correctly (sortBy: ${app.sortBy}, sortOrder: ${app.sortOrder})`
+                );
+            } else {
+                logResult(
+                    'Test 2: First Click Sorts Newest-to-Oldest',
+                    false,
+                    `❌ First click failed - sortBy: ${app?.sortBy}, sortOrder: ${app?.sortOrder}, isNewestFirst: ${isNewestFirst}`
+                );
+            }
+        }
+
+        async function testSecondClickOldestFirst() {
+            // Click date header again
+            const dateHeader = document.getElementById('sort-by-date');
+            dateHeader?.click();
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            app = getAppInstance();
+            const dates = getRecipeDates();
+            const isOldestFirst = isSortedOldestFirst(dates);
+            
+            if (app && app.sortBy === 'date' && app.sortOrder === 'asc' && isOldestFirst) {
+                logResult(
+                    'Test 3: Second Click Sorts Oldest-to-Newest',
+                    true,
+                    `✅ Second click sorts oldest-to-newest correctly (sortBy: ${app.sortBy}, sortOrder: ${app.sortOrder})`
+                );
+            } else {
+                logResult(
+                    'Test 3: Second Click Sorts Oldest-to-Newest',
+                    false,
+                    `❌ Second click failed - sortBy: ${app?.sortBy}, sortOrder: ${app?.sortOrder}, isOldestFirst: ${isOldestFirst}`
+                );
+            }
+        }
+
+        async function testThirdClickReset() {
+            // Click date header a third time
+            const dateHeader = document.getElementById('sort-by-date');
+            dateHeader?.click();
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            app = getAppInstance();
+            
+            // Check if it resets to default (date, desc)
+            if (app && app.sortBy === 'date' && app.sortOrder === 'desc') {
+                logResult(
+                    'Test 4: Third Click Resets to Default',
+                    true,
+                    `✅ Third click resets to default (sortBy: ${app.sortBy}, sortOrder: ${app.sortOrder})`
+                );
+            } else {
+                logResult(
+                    'Test 4: Third Click Resets to Default',
+                    false,
+                    `❌ Third click failed to reset - sortBy: ${app?.sortBy}, sortOrder: ${app?.sortOrder}`
+                );
+            }
+        }
+
+        async function testDateFormat() {
+            const formatCheck = checkDateFormat();
+            
+            if (formatCheck.valid) {
+                logResult(
+                    'Test 5: Date Format MM/YYYY',
+                    true,
+                    `✅ ${formatCheck.message}`
+                );
+            } else {
+                logResult(
+                    'Test 5: Date Format MM/YYYY',
+                    false,
+                    `❌ ${formatCheck.message}`
+                );
+            }
+        }
+
+        async function testSortPersistsWithFilters() {
+            // Set sort to date oldest-first
+            const dateHeader = document.getElementById('sort-by-date');
+            dateHeader?.click();
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            app = getAppInstance();
+            const sortByBefore = app?.sortBy;
+            const sortOrderBefore = app?.sortOrder;
+            
+            // Apply a filter
+            const filterChip = document.querySelector('.filter-chip[data-category="verdura"]');
+            filterChip?.click();
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            app = getAppInstance();
+            const sortByAfter = app?.sortBy;
+            const sortOrderAfter = app?.sortOrder;
+            
+            // Remove filter
+            filterChip?.click();
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            if (sortByBefore === sortByAfter && sortOrderBefore === sortOrderAfter) {
+                logResult(
+                    'Test 6: Sort Persists with Filters',
+                    true,
+                    `✅ Sort order maintained when filters applied/removed`
+                );
+            } else {
+                logResult(
+                    'Test 6: Sort Persists with Filters',
+                    false,
+                    `❌ Sort changed - Before: ${sortByBefore}/${sortOrderBefore}, After: ${sortByAfter}/${sortOrderAfter}`
+                );
+            }
+        }
+
+        async function testSortIndicatorUpdates() {
+            // Click date header to sort newest-first
+            const dateHeader = document.getElementById('sort-by-date');
+            dateHeader?.click();
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            const dateIndicator = document.querySelector('#sort-by-date .sort-indicator');
+            const indicatorNewest = dateIndicator?.textContent;
+            
+            // Click again to sort oldest-first
+            dateHeader?.click();
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            const indicatorOldest = dateIndicator?.textContent;
+            
+            if (indicatorNewest === '▼' && indicatorOldest === '▲') {
+                logResult(
+                    'Test 7: Sort Indicator Updates',
+                    true,
+                    `✅ Sort indicators update correctly (Newest: ${indicatorNewest}, Oldest: ${indicatorOldest})`
+                );
+            } else {
+                logResult(
+                    'Test 7: Sort Indicator Updates',
+                    false,
+                    `❌ Sort indicators incorrect - Newest: ${indicatorNewest}, Oldest: ${indicatorOldest}`
+                );
+            }
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                runAllTests();
+            }, 1000);
+        });
+    </script>
+
+    <!-- Include the main application -->
+    <script src="models.js"></script>
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    
+    <script>
+        // Expose app instance to window for testing
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (typeof app !== 'undefined') {
+                    window.app = app;
+                }
+            }, 500);
+        });
+    </script>
+</body>
+</html>

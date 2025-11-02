@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Task 4.1 - Hover Effects on Sortable Columns</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f7f7f7;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #222;
+            border-bottom: 2px solid #FF385C;
+            padding-bottom: 10px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .test-result.pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-result.fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-result.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background: #FF385C;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #E31C5F;
+        }
+        .test-controls {
+            margin: 20px 0;
+        }
+        .requirement {
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #FF385C;
+        }
+        .requirement-title {
+            font-weight: 600;
+            color: #222;
+        }
+        .test-details {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .visual-test {
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .visual-test h3 {
+            margin-top: 0;
+            color: #FF385C;
+        }
+        .style-display {
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Task 4.1: Hover Effects on Sortable Columns</h1>
+    
+    <div class="test-section">
+        <h2>Requirements Being Tested</h2>
+        <div class="requirement">
+            <div class="requirement-title">Requirement 5.1</div>
+            <div class="test-details">THE Recipe App SHALL provide visual feedback when hovering over the Name column header</div>
+        </div>
+        <div class="requirement">
+            <div class="requirement-title">Requirement 5.2</div>
+            <div class="test-details">THE Recipe App SHALL provide visual feedback when hovering over the Date column header</div>
+        </div>
+        <div class="requirement">
+            <div class="requirement-title">Requirement 5.3</div>
+            <div class="test-details">THE Recipe App SHALL display a pointer cursor on sortable column headers</div>
+        </div>
+        <div class="requirement">
+            <div class="requirement-title">Requirement 5.4</div>
+            <div class="test-details">THE Recipe App SHALL apply consistent hover behavior across all sortable headers</div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Controls</h2>
+        <div class="test-controls">
+            <button onclick="runAllTests()">▶️ Run All Tests</button>
+            <button onclick="clearResults()">🗑️ Clear Results</button>
+            <button onclick="switchToListView()">📋 Switch to List View</button>
+            <button onclick="simulateHover('name')">🖱️ Simulate Name Hover</button>
+            <button onclick="simulateHover('date')">🖱️ Simulate Date Hover</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Visual Verification</h2>
+        <div class="visual-test">
+            <h3>Name Column Header Styles</h3>
+            <div id="name-styles"></div>
+        </div>
+        <div class="visual-test">
+            <h3>Date Column Header Styles</h3>
+            <div id="date-styles"></div>
+        </div>
+        <div class="visual-test">
+            <h3>Instructions</h3>
+            <p>👆 Hover over the Name and Date column headers in the list view to see the hover effects in action.</p>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+
+        function logResult(testName, passed, message) {
+            const result = {
+                testName,
+                passed,
+                message,
+                timestamp: new Date().toLocaleTimeString()
+            };
+            testResults.push(result);
+            displayResults();
+        }
+
+        function displayResults() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '';
+            
+            testResults.forEach(result => {
+                const div = document.createElement('div');
+                div.className = `test-result ${result.passed ? 'pass' : 'fail'}`;
+                div.innerHTML = `
+                    <strong>[${result.timestamp}] ${result.testName}</strong><br>
+                    ${result.message}
+                `;
+                resultsDiv.appendChild(div);
+            });
+
+            // Summary
+            const passed = testResults.filter(r => r.passed).length;
+            const total = testResults.length;
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = `test-result ${passed === total ? 'pass' : 'info'}`;
+            summaryDiv.innerHTML = `<strong>Summary: ${passed}/${total} tests passed</strong>`;
+            resultsDiv.insertBefore(summaryDiv, resultsDiv.firstChild);
+        }
+
+        function clearResults() {
+            testResults = [];
+            document.getElementById('test-results').innerHTML = '';
+        }
+
+        function switchToListView() {
+            const listBtn = document.getElementById('view-list-btn');
+            listBtn?.click();
+            updateVisualStatus();
+        }
+
+        function simulateHover(column) {
+            const header = column === 'name' 
+                ? document.getElementById('sort-by-name')
+                : document.getElementById('sort-by-date');
+            
+            if (header) {
+                // Trigger hover effect
+                header.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+                setTimeout(() => {
+                    header.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+                }, 1000);
+            }
+        }
+
+        function getHeaderStyles(column) {
+            const header = column === 'name' 
+                ? document.getElementById('sort-by-name')
+                : document.getElementById('sort-by-date');
+            
+            if (!header) return null;
+            
+            const styles = window.getComputedStyle(header);
+            return {
+                cursor: styles.cursor,
+                transition: styles.transition,
+                color: styles.color,
+                backgroundColor: styles.backgroundColor,
+                padding: styles.padding,
+                borderRadius: styles.borderRadius,
+                userSelect: styles.userSelect
+            };
+        }
+
+        function updateVisualStatus() {
+            setTimeout(() => {
+                const nameStyles = getHeaderStyles('name');
+                const dateStyles = getHeaderStyles('date');
+                
+                if (nameStyles) {
+                    const nameDiv = document.getElementById('name-styles');
+                    nameDiv.innerHTML = `
+                        <div class="style-display">cursor: ${nameStyles.cursor}</div>
+                        <div class="style-display">transition: ${nameStyles.transition}</div>
+                        <div class="style-display">color: ${nameStyles.color}</div>
+                        <div class="style-display">background: ${nameStyles.backgroundColor}</div>
+                        <div class="style-display">padding: ${nameStyles.padding}</div>
+                        <div class="style-display">border-radius: ${nameStyles.borderRadius}</div>
+                        <div class="style-display">user-select: ${nameStyles.userSelect}</div>
+                    `;
+                }
+                
+                if (dateStyles) {
+                    const dateDiv = document.getElementById('date-styles');
+                    dateDiv.innerHTML = `
+                        <div class="style-display">cursor: ${dateStyles.cursor}</div>
+                        <div class="style-display">transition: ${dateStyles.transition}</div>
+                        <div class="style-display">color: ${dateStyles.color}</div>
+                        <div class="style-display">background: ${dateStyles.backgroundColor}</div>
+                        <div class="style-display">padding: ${dateStyles.padding}</div>
+                        <div class="style-display">border-radius: ${dateStyles.borderRadius}</div>
+                        <div class="style-display">user-select: ${dateStyles.userSelect}</div>
+                    `;
+                }
+            }, 200);
+        }
+
+        async function runAllTests() {
+            clearResults();
+            
+            // Switch to list view first
+            switchToListView();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Test 1: Headers have pointer cursor
+            await testPointerCursor();
+            
+            // Test 2: Headers have transition
+            await testTransition();
+            
+            // Test 3: Headers have user-select none
+            await testUserSelect();
+            
+            // Test 4: Headers have padding for hover area
+            await testPadding();
+            
+            // Test 5: Headers have border-radius
+            await testBorderRadius();
+            
+            // Test 6: Consistent styling between headers
+            await testConsistentStyling();
+            
+            // Update visual status
+            updateVisualStatus();
+        }
+
+        async function testPointerCursor() {
+            const nameStyles = getHeaderStyles('name');
+            const dateStyles = getHeaderStyles('date');
+            
+            const namePointer = nameStyles?.cursor === 'pointer';
+            const datePointer = dateStyles?.cursor === 'pointer';
+            
+            if (namePointer && datePointer) {
+                logResult(
+                    'Test 1: Pointer Cursor',
+                    true,
+                    '✅ Both headers have pointer cursor'
+                );
+            } else {
+                logResult(
+                    'Test 1: Pointer Cursor',
+                    false,
+                    `❌ Cursor issue - Name: ${nameStyles?.cursor}, Date: ${dateStyles?.cursor}`
+                );
+            }
+        }
+
+        async function testTransition() {
+            const nameStyles = getHeaderStyles('name');
+            const dateStyles = getHeaderStyles('date');
+            
+            const nameHasTransition = nameStyles?.transition && nameStyles.transition !== 'all 0s ease 0s';
+            const dateHasTransition = dateStyles?.transition && dateStyles.transition !== 'all 0s ease 0s';
+            
+            if (nameHasTransition && dateHasTransition) {
+                logResult(
+                    'Test 2: Transition Effects',
+                    true,
+                    '✅ Both headers have transition effects'
+                );
+            } else {
+                logResult(
+                    'Test 2: Transition Effects',
+                    false,
+                    `❌ Transition missing - Name: ${nameHasTransition}, Date: ${dateHasTransition}`
+                );
+            }
+        }
+
+        async function testUserSelect() {
+            const nameStyles = getHeaderStyles('name');
+            const dateStyles = getHeaderStyles('date');
+            
+            const nameNoSelect = nameStyles?.userSelect === 'none';
+            const dateNoSelect = dateStyles?.userSelect === 'none';
+            
+            if (nameNoSelect && dateNoSelect) {
+                logResult(
+                    'Test 3: User Select None',
+                    true,
+                    '✅ Both headers have user-select: none'
+                );
+            } else {
+                logResult(
+                    'Test 3: User Select None',
+                    false,
+                    `❌ User-select issue - Name: ${nameStyles?.userSelect}, Date: ${dateStyles?.userSelect}`
+                );
+            }
+        }
+
+        async function testPadding() {
+            const nameStyles = getHeaderStyles('name');
+            const dateStyles = getHeaderStyles('date');
+            
+            const nameHasPadding = nameStyles?.padding && nameStyles.padding !== '0px';
+            const dateHasPadding = dateStyles?.padding && dateStyles.padding !== '0px';
+            
+            if (nameHasPadding && dateHasPadding) {
+                logResult(
+                    'Test 4: Padding for Hover Area',
+                    true,
+                    '✅ Both headers have padding for larger hover area'
+                );
+            } else {
+                logResult(
+                    'Test 4: Padding for Hover Area',
+                    false,
+                    `❌ Padding issue - Name: ${nameStyles?.padding}, Date: ${dateStyles?.padding}`
+                );
+            }
+        }
+
+        async function testBorderRadius() {
+            const nameStyles = getHeaderStyles('name');
+            const dateStyles = getHeaderStyles('date');
+            
+            const nameHasRadius = nameStyles?.borderRadius && nameStyles.borderRadius !== '0px';
+            const dateHasRadius = dateStyles?.borderRadius && dateStyles.borderRadius !== '0px';
+            
+            if (nameHasRadius && dateHasRadius) {
+                logResult(
+                    'Test 5: Border Radius',
+                    true,
+                    '✅ Both headers have border-radius for rounded hover effect'
+                );
+            } else {
+                logResult(
+                    'Test 5: Border Radius',
+                    false,
+                    `❌ Border-radius issue - Name: ${nameStyles?.borderRadius}, Date: ${dateStyles?.borderRadius}`
+                );
+            }
+        }
+
+        async function testConsistentStyling() {
+            const nameStyles = getHeaderStyles('name');
+            const dateStyles = getHeaderStyles('date');
+            
+            const cursorMatch = nameStyles?.cursor === dateStyles?.cursor;
+            const userSelectMatch = nameStyles?.userSelect === dateStyles?.userSelect;
+            
+            if (cursorMatch && userSelectMatch) {
+                logResult(
+                    'Test 6: Consistent Styling',
+                    true,
+                    '✅ Headers have consistent styling (cursor, user-select)'
+                );
+            } else {
+                logResult(
+                    'Test 6: Consistent Styling',
+                    false,
+                    `❌ Inconsistent styling - Cursor match: ${cursorMatch}, User-select match: ${userSelectMatch}`
+                );
+            }
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                runAllTests();
+            }, 1000);
+        });
+    </script>
+
+    <!-- Include the main application -->
+    <script src="models.js"></script>
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</body>
+</html>

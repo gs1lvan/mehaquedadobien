@@ -703,6 +703,9 @@ class RecipeApp {
         this.activeFilters = new Set(); // Track active category filters
         this.activeTimeFilter = 'all'; // Track active time filter
         this.currentView = 'list'; // 'list', 'detail', 'form'
+        this.viewMode = localStorage.getItem('viewMode') || 'grid'; // 'grid' or 'list'
+        this.sortBy = 'date'; // 'name' or 'date'
+        this.sortOrder = 'desc'; // 'asc' or 'desc'
         this.ingredients = []; // Current recipe ingredients
         this.editingIngredientId = null; // Track which ingredient is being edited
         this.sequences = []; // Current recipe sequences
@@ -1003,6 +1006,41 @@ class RecipeApp {
             });
         }
 
+        // View toggle buttons
+        const viewGridBtn = document.getElementById('view-grid-btn');
+        const viewListBtn = document.getElementById('view-list-btn');
+        
+        if (viewGridBtn) {
+            viewGridBtn.addEventListener('click', () => {
+                this.setViewMode('grid');
+            });
+        }
+        
+        if (viewListBtn) {
+            viewListBtn.addEventListener('click', () => {
+                this.setViewMode('list');
+            });
+        }
+        
+        // Sort buttons in list view header
+        const sortByNameBtn = document.getElementById('sort-by-name');
+        const sortByDateBtn = document.getElementById('sort-by-date');
+        
+        if (sortByNameBtn) {
+            sortByNameBtn.addEventListener('click', () => {
+                this.toggleSort('name');
+            });
+        }
+        
+        if (sortByDateBtn) {
+            sortByDateBtn.addEventListener('click', () => {
+                this.toggleSort('date');
+            });
+        }
+        
+        // Initialize view mode
+        this.setViewMode(this.viewMode);
+
         // XML file input
         const xmlFileInput = document.getElementById('xml-file-input');
         if (xmlFileInput) {
@@ -1087,6 +1125,14 @@ class RecipeApp {
             newRecipeBtn.addEventListener('click', () => {
                 this.showRecipeForm();
                 closeMenu();
+            });
+        }
+
+        // New recipe button on home page
+        const newRecipeBtnHome = document.getElementById('new-recipe-btn-home');
+        if (newRecipeBtnHome) {
+            newRecipeBtnHome.addEventListener('click', () => {
+                this.showRecipeForm();
             });
         }
 
@@ -1821,24 +1867,38 @@ class RecipeApp {
      * Setup cooking action buttons event listeners
      */
     setupCookingActionButtons() {
-        const buttonsContainer = document.getElementById('cooking-actions-buttons');
-        const descriptionTextarea = document.getElementById('sequence-description');
+        const cookingButtonsContainer = document.getElementById('cooking-actions-buttons');
+        const ingredientButtonsContainer = document.getElementById('ingredient-action-buttons');
+        let descriptionTextarea = document.getElementById('sequence-description');
         
-        if (!descriptionTextarea || !buttonsContainer) return;
+        if (!descriptionTextarea || !cookingButtonsContainer) return;
+        
+        // Clone textarea to remove all previous event listeners
+        const newTextarea = descriptionTextarea.cloneNode(true);
+        descriptionTextarea.parentNode.replaceChild(newTextarea, descriptionTextarea);
+        descriptionTextarea = newTextarea;
         
         // Render ingredient buttons dynamically
         this.renderIngredientButtons();
         
-        // Get all buttons (actions + ingredients)
-        let allButtons = buttonsContainer.querySelectorAll('.cooking-action-btn');
+        // Get all buttons from both containers
+        const getAllButtons = () => {
+            const cookingButtons = Array.from(cookingButtonsContainer.querySelectorAll('.cooking-action-btn'));
+            const ingredientButtons = ingredientButtonsContainer ? 
+                Array.from(ingredientButtonsContainer.querySelectorAll('.cooking-action-btn')) : [];
+            return [...ingredientButtons, ...cookingButtons];
+        };
         
+        let allButtons = getAllButtons();
         let currentSuggestedButton = null;
         
-        // Handle button clicks
-        allButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                this.insertActionIntoTextarea(button.dataset.action, descriptionTextarea);
-                // Clear suggested state after insertion
+        // Clone and replace cooking buttons to remove old listeners
+        cookingButtonsContainer.querySelectorAll('.cooking-action-btn').forEach(button => {
+            const newButton = button.cloneNode(true);
+            button.parentNode.replaceChild(newButton, button);
+            
+            newButton.addEventListener('click', () => {
+                this.insertActionIntoTextarea(newButton.dataset.action, descriptionTextarea);
                 if (currentSuggestedButton) {
                     currentSuggestedButton.classList.remove('suggested');
                     currentSuggestedButton = null;
@@ -1858,7 +1918,7 @@ class RecipeApp {
             }
             
             // Refresh button list in case ingredients changed
-            allButtons = buttonsContainer.querySelectorAll('.cooking-action-btn');
+            allButtons = getAllButtons();
             
             // Find and highlight suggested button
             currentSuggestedButton = this.findSuggestedButton(descriptionTextarea, allButtons);
@@ -1877,18 +1937,20 @@ class RecipeApp {
                 currentSuggestedButton = null;
             }
         });
+        
+        console.log('[CookingActions] Cooking action buttons initialized');
     }
     
     /**
      * Render ingredient buttons dynamically
      */
     renderIngredientButtons() {
-        const buttonsContainer = document.getElementById('cooking-actions-buttons');
+        const ingredientButtonsContainer = document.getElementById('ingredient-action-buttons');
         const descriptionTextarea = document.getElementById('sequence-description');
-        if (!buttonsContainer) return;
+        if (!ingredientButtonsContainer) return;
         
-        // Remove old ingredient buttons
-        buttonsContainer.querySelectorAll('.cooking-action-btn.ingredient-btn').forEach(btn => btn.remove());
+        // Clear existing ingredient buttons
+        ingredientButtonsContainer.innerHTML = '';
         
         // Add ingredient buttons
         this.ingredients.forEach(ingredient => {
@@ -1905,7 +1967,7 @@ class RecipeApp {
                 });
             }
             
-            buttonsContainer.appendChild(button);
+            ingredientButtonsContainer.appendChild(button);
         });
     }
     
@@ -1947,12 +2009,13 @@ class RecipeApp {
         
         // If replacing partial word, remove the current word being typed
         if (replacePartialWord) {
-            const words = textBefore.split(/[\s,]+/);
-            const currentWord = words[words.length - 1];
-            if (currentWord.length > 0) {
-                // Remove the partial word
-                textBefore = textBefore.substring(0, textBefore.length - currentWord.length);
+            // Find the start of the current word
+            let wordStart = cursorPos;
+            while (wordStart > 0 && !/[\s,]/.test(currentValue[wordStart - 1])) {
+                wordStart--;
             }
+            // Remove the partial word
+            textBefore = currentValue.substring(0, wordStart);
         }
         
         // Check if we need to capitalize (start of text or after period)
@@ -2708,8 +2771,8 @@ class RecipeApp {
                 return true;
             });
 
-            // Sort by proximity to selected time filter
-            if (this.activeTimeFilter !== 'none') {
+            // Sort by proximity to selected time filter (only if not manually sorting)
+            if (this.activeTimeFilter !== 'none' && this.sortBy === 'date' && this.sortOrder === 'desc') {
                 const targetMinutes = parseInt(this.activeTimeFilter);
                 
                 filtered.sort((a, b) => {
@@ -2726,7 +2789,122 @@ class RecipeApp {
             }
         }
 
+        // Apply manual sorting (name or date)
+        if (this.sortBy === 'name') {
+            filtered.sort((a, b) => {
+                const nameA = a.name.toLowerCase();
+                const nameB = b.name.toLowerCase();
+                
+                if (this.sortOrder === 'asc') {
+                    return nameA.localeCompare(nameB);
+                } else {
+                    return nameB.localeCompare(nameA);
+                }
+            });
+        } else if (this.sortBy === 'date') {
+            filtered.sort((a, b) => {
+                const aDate = new Date(a.updatedAt);
+                const bDate = new Date(b.updatedAt);
+                
+                if (this.sortOrder === 'asc') {
+                    return aDate - bDate; // Oldest first
+                } else {
+                    return bDate - aDate; // Most recent first
+                }
+            });
+        }
+
         return filtered;
+    }
+
+    /**
+     * Set view mode (grid or list)
+     * @param {string} mode - 'grid' or 'list'
+     */
+    setViewMode(mode) {
+        this.viewMode = mode;
+        localStorage.setItem('viewMode', mode);
+        
+        // Update button states
+        const viewGridBtn = document.getElementById('view-grid-btn');
+        const viewListBtn = document.getElementById('view-list-btn');
+        const recipesGrid = document.getElementById('recipes-grid');
+        const listHeader = document.getElementById('list-view-header');
+        
+        if (viewGridBtn && viewListBtn) {
+            if (mode === 'grid') {
+                viewGridBtn.classList.add('active');
+                viewListBtn.classList.remove('active');
+            } else {
+                viewGridBtn.classList.remove('active');
+                viewListBtn.classList.add('active');
+            }
+        }
+        
+        // Update grid class and header visibility
+        if (recipesGrid) {
+            if (mode === 'list') {
+                recipesGrid.classList.add('list-view');
+                if (listHeader) listHeader.classList.remove('hidden');
+            } else {
+                recipesGrid.classList.remove('list-view');
+                if (listHeader) listHeader.classList.add('hidden');
+            }
+        }
+        
+        // Re-render recipes
+        this.renderRecipeList();
+    }
+
+    /**
+     * Toggle sort order for a column
+     * @param {string} column - 'name' or 'date'
+     */
+    toggleSort(column) {
+        // If clicking the same column, cycle through: asc -> desc -> reset
+        if (this.sortBy === column) {
+            if (this.sortOrder === 'asc') {
+                this.sortOrder = 'desc';
+            } else if (this.sortOrder === 'desc') {
+                // Reset to default (date, desc)
+                this.sortBy = 'date';
+                this.sortOrder = 'desc';
+            }
+        } else {
+            // If clicking a different column, set it as active with default order
+            this.sortBy = column;
+            this.sortOrder = column === 'name' ? 'asc' : 'desc';
+        }
+        
+        // Update sort indicators
+        this.updateSortIndicators();
+        
+        // Re-render recipes
+        this.renderRecipeList();
+    }
+
+    /**
+     * Update sort indicator arrows in header
+     */
+    updateSortIndicators() {
+        const nameIndicator = document.querySelector('#sort-by-name .sort-indicator');
+        const dateIndicator = document.querySelector('#sort-by-date .sort-indicator');
+        
+        if (nameIndicator) {
+            if (this.sortBy === 'name') {
+                nameIndicator.textContent = this.sortOrder === 'asc' ? '▲' : '▼';
+            } else {
+                nameIndicator.textContent = '';
+            }
+        }
+        
+        if (dateIndicator) {
+            if (this.sortBy === 'date') {
+                dateIndicator.textContent = this.sortOrder === 'asc' ? '▲' : '▼';
+            } else {
+                dateIndicator.textContent = '';
+            }
+        }
     }
 
     /**
@@ -2850,14 +3028,108 @@ class RecipeApp {
     }
 
     /**
+     * Create a recipe list item (for list view)
+     * @param {Recipe} recipe - Recipe to display
+     * @returns {HTMLElement} Recipe list item element
+     */
+    createRecipeListItem(recipe) {
+        const card = document.createElement('div');
+        card.className = 'recipe-card list-item';
+        card.dataset.recipeId = recipe.id;
+        
+        // Add highlight class if this is the recently saved recipe
+        if (this.lastSavedRecipeId && recipe.id === this.lastSavedRecipeId) {
+            card.classList.add('recipe-card-highlight');
+            setTimeout(() => {
+                card.classList.remove('recipe-card-highlight');
+                this.lastSavedRecipeId = null;
+            }, 2000);
+        }
+        
+        // Create thumbnail image
+        const imageDiv = document.createElement('div');
+        imageDiv.className = 'recipe-image';
+        
+        if (recipe.images && recipe.images.length > 0) {
+            const img = document.createElement('img');
+            img.src = recipe.images[0].data;
+            img.alt = recipe.name;
+            imageDiv.appendChild(img);
+        } else {
+            imageDiv.textContent = '📷';
+            imageDiv.style.display = 'flex';
+            imageDiv.style.alignItems = 'center';
+            imageDiv.style.justifyContent = 'center';
+            imageDiv.style.fontSize = '2rem';
+            imageDiv.style.background = 'var(--color-background-secondary)';
+        }
+        
+        // Create content section
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'recipe-content';
+        
+        // Recipe name
+        const nameH3 = document.createElement('h3');
+        nameH3.className = 'recipe-name';
+        nameH3.textContent = recipe.name;
+        
+        // Recipe date (MM/YYYY format)
+        const dateSpan = document.createElement('span');
+        dateSpan.className = 'recipe-date';
+        const date = new Date(recipe.updatedAt);
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        dateSpan.textContent = `${month}/${year}`;
+        
+        // Share button
+        const shareBtn = document.createElement('button');
+        shareBtn.className = 'recipe-share-btn';
+        shareBtn.textContent = '📤';
+        shareBtn.title = 'Compartir receta';
+        shareBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.shareRecipe(recipe.id);
+        });
+        
+        contentDiv.appendChild(nameH3);
+        contentDiv.appendChild(dateSpan);
+        contentDiv.appendChild(shareBtn);
+        
+        card.appendChild(imageDiv);
+        card.appendChild(contentDiv);
+        
+        // Click handler for the whole row (except share button)
+        card.addEventListener('click', () => {
+            this.showRecipeDetail(recipe.id);
+        });
+        
+        return card;
+    }
+
+    /**
      * Create a recipe card element
      * @param {Recipe} recipe - Recipe to display
      * @returns {HTMLElement} Recipe card element
      */
     createRecipeCard(recipe) {
+        // Check if we're in list view mode
+        if (this.viewMode === 'list') {
+            return this.createRecipeListItem(recipe);
+        }
+        
         const card = document.createElement('div');
         card.className = 'recipe-card';
         card.dataset.recipeId = recipe.id;
+        
+        // Add highlight class if this is the recently saved recipe
+        if (this.lastSavedRecipeId && recipe.id === this.lastSavedRecipeId) {
+            card.classList.add('recipe-card-highlight');
+            // Remove the highlight after animation completes
+            setTimeout(() => {
+                card.classList.remove('recipe-card-highlight');
+                this.lastSavedRecipeId = null;
+            }, 2000);
+        }
 
         // Create image section
         const imageDiv = document.createElement('div');
@@ -3092,6 +3364,8 @@ class RecipeApp {
         // Re-initialize ingredient autocomplete to ensure it works
         setTimeout(() => {
             this.setupIngredientAutocomplete();
+            // Re-initialize cooking action buttons for edit mode
+            this.setupCookingActionButtons();
         }, 100);
 
         // Scroll to top
@@ -3434,11 +3708,14 @@ class RecipeApp {
         }
 
         try {
-            // Save recipe
-            await this.saveRecipe(formData);
+            // Save recipe and get the ID
+            const savedRecipeId = await this.saveRecipe(formData);
 
             // Show success message
             this.showSuccess('¡Receta guardada exitosamente!');
+
+            // Store the ID for highlighting
+            this.lastSavedRecipeId = savedRecipeId;
 
             // Reload recipes and close form
             await this.loadRecipes();

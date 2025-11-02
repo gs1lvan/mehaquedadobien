@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test: Alternancia de Vista (Grid/List)</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .test-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            font-size: 0.875rem;
+            max-width: 300px;
+        }
+        
+        body.dark-theme .test-panel {
+            background: rgba(30, 30, 30, 0.95);
+        }
+        
+        .test-panel h3 {
+            margin: 0 0 10px 0;
+            font-size: 1rem;
+        }
+        
+        .test-status {
+            margin: 8px 0;
+            padding: 8px;
+            border-radius: 4px;
+            background: var(--color-background-secondary);
+        }
+        
+        .test-status.pass {
+            background: rgba(0, 138, 5, 0.1);
+            color: var(--color-success);
+        }
+        
+        .test-status.fail {
+            background: rgba(193, 53, 21, 0.1);
+            color: var(--color-danger);
+        }
+        
+        .test-controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--color-background-secondary);
+            border-radius: var(--radius-md);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-panel">
+        <h3>🧪 Test de Alternancia</h3>
+        <div id="test-results"></div>
+        <button class="btn-primary" onclick="runTests()" style="margin-top: 10px; width: 100%;">
+            🔄 Ejecutar Tests
+        </button>
+    </div>
+
+    <div class="container">
+        <header class="recipe-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>🍳 Test: Vista Grid/List</h1>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="test-controls">
+                <h2>Controles de Prueba</h2>
+                <p>Usa los botones de alternancia para cambiar entre vista de cuadrícula y lista.</p>
+                
+                <div class="filter-toggle-container">
+                    <div class="view-toggle-buttons">
+                        <button id="view-grid-btn" class="btn-view-toggle active" title="Vista de tarjetas">
+                            🔲
+                        </button>
+                        <button id="view-list-btn" class="btn-view-toggle" title="Vista de lista">
+                            ☰
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <button class="btn-secondary" onclick="clearLocalStorage()">🗑️ Limpiar localStorage</button>
+                    <button class="btn-secondary" onclick="location.reload()">🔄 Recargar página</button>
+                </div>
+            </div>
+
+            <div class="recipe-list">
+                <!-- List view header -->
+                <div id="list-view-header" class="list-view-header hidden">
+                    <div class="list-header-img"></div>
+                    <div class="list-header-name">Nombre</div>
+                    <div class="list-header-date">Fecha</div>
+                    <div class="list-header-actions"></div>
+                </div>
+
+                <!-- Recipe grid -->
+                <div class="recipes-grid" id="recipes-grid">
+                    <!-- Recetas de prueba -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let currentView = 'grid';
+        
+        // Generar recetas de prueba
+        function generateRecipes() {
+            const grid = document.getElementById('recipes-grid');
+            const categories = ['carne', 'verdura', 'pescado', 'fruta'];
+            
+            for (let i = 1; i <= 8; i++) {
+                const category = categories[i % categories.length];
+                const card = document.createElement('div');
+                card.className = 'recipe-card';
+                card.innerHTML = `
+                    <div class="recipe-image">
+                        <div class="recipe-time-badge">30 min</div>
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23${Math.floor(Math.random()*16777215).toString(16)}' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' font-size='48' text-anchor='middle' dy='.3em' fill='white'%3EReceta ${i}%3C/text%3E%3C/svg%3E" alt="Receta ${i}">
+                    </div>
+                    <div class="recipe-content">
+                        <h3 class="recipe-name">Receta de Prueba ${i}</h3>
+                        <span class="recipe-category" data-category="${category}">${category}</span>
+                        <p class="recipe-preview">Esta es una receta de prueba para verificar la alternancia entre vista de cuadrícula y lista.</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            }
+        }
+        
+        // Configurar alternancia de vista
+        function setupViewToggle() {
+            const viewGridBtn = document.getElementById('view-grid-btn');
+            const viewListBtn = document.getElementById('view-list-btn');
+            const recipesGrid = document.getElementById('recipes-grid');
+            const listHeader = document.getElementById('list-view-header');
+            
+            // Cargar vista guardada
+            const savedView = localStorage.getItem('viewMode');
+            if (savedView) {
+                setView(savedView);
+            }
+            
+            viewGridBtn.addEventListener('click', () => {
+                setView('grid');
+            });
+            
+            viewListBtn.addEventListener('click', () => {
+                setView('list');
+            });
+            
+            function setView(mode) {
+                currentView = mode;
+                localStorage.setItem('viewMode', mode);
+                
+                if (mode === 'grid') {
+                    viewGridBtn.classList.add('active');
+                    viewListBtn.classList.remove('active');
+                    recipesGrid.classList.remove('list-view');
+                    listHeader.classList.add('hidden');
+                } else {
+                    viewGridBtn.classList.remove('active');
+                    viewListBtn.classList.add('active');
+                    recipesGrid.classList.add('list-view');
+                    listHeader.classList.remove('hidden');
+                }
+            }
+        }
+        
+        // Tests automatizados
+        function runTests() {
+            const results = [];
+            const viewGridBtn = document.getElementById('view-grid-btn');
+            const viewListBtn = document.getElementById('view-list-btn');
+            const recipesGrid = document.getElementById('recipes-grid');
+            const listHeader = document.getElementById('list-view-header');
+            
+            // Test 1: Botones existen
+            results.push({
+                name: 'Botones de alternancia existen',
+                pass: viewGridBtn && viewListBtn
+            });
+            
+            // Test 2: Estado activo inicial
+            results.push({
+                name: 'Estado activo inicial correcto',
+                pass: currentView === 'grid' ? 
+                    viewGridBtn.classList.contains('active') : 
+                    viewListBtn.classList.contains('active')
+            });
+            
+            // Test 3: Clase list-view en grid
+            results.push({
+                name: 'Clase list-view aplicada correctamente',
+                pass: currentView === 'list' ? 
+                    recipesGrid.classList.contains('list-view') : 
+                    !recipesGrid.classList.contains('list-view')
+            });
+            
+            // Test 4: Header visible solo en list
+            results.push({
+                name: 'Header visible solo en modo lista',
+                pass: currentView === 'list' ? 
+                    !listHeader.classList.contains('hidden') : 
+                    listHeader.classList.contains('hidden')
+            });
+            
+            // Test 5: localStorage
+            const savedView = localStorage.getItem('viewMode');
+            results.push({
+                name: 'Vista guardada en localStorage',
+                pass: savedView === currentView
+            });
+            
+            // Test 6: Estilos de botón activo
+            const activeBtn = currentView === 'grid' ? viewGridBtn : viewListBtn;
+            const computedStyle = window.getComputedStyle(activeBtn);
+            results.push({
+                name: 'Estilos de botón activo aplicados',
+                pass: activeBtn.classList.contains('active')
+            });
+            
+            // Mostrar resultados
+            displayResults(results);
+        }
+        
+        function displayResults(results) {
+            const container = document.getElementById('test-results');
+            container.innerHTML = '';
+            
+            results.forEach(result => {
+                const div = document.createElement('div');
+                div.className = `test-status ${result.pass ? 'pass' : 'fail'}`;
+                div.innerHTML = `
+                    <strong>${result.pass ? '✅' : '❌'}</strong> ${result.name}
+                `;
+                container.appendChild(div);
+            });
+            
+            const summary = document.createElement('div');
+            const passed = results.filter(r => r.pass).length;
+            summary.style.marginTop = '10px';
+            summary.style.fontWeight = 'bold';
+            summary.innerHTML = `Total: ${passed}/${results.length} tests pasados`;
+            container.appendChild(summary);
+        }
+        
+        function clearLocalStorage() {
+            localStorage.removeItem('viewMode');
+            alert('localStorage limpiado. Recarga la página para ver el efecto.');
+        }
+        
+        // Inicializar
+        generateRecipes();
+        setupViewToggle();
+        
+        // Ejecutar tests automáticamente después de 1 segundo
+        setTimeout(runTests, 1000);
+    </script>
+</body>
+</html>

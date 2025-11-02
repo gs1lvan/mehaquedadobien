@@ -93,11 +93,24 @@
         <main>
             <!-- Filter toggle button -->
             <div class="filter-toggle-container">
-                <button id="toggle-filters-btn" class="btn-toggle-filters">
-                    🔍 Filtros
-                </button>
-                <button id="clear-all-filters-btn" class="btn-clear-filters hidden">
-                    🗑️ Limpiar filtros
+                <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
+                    <button id="toggle-filters-btn" class="btn-toggle-filters">
+                        🔍 Filtros
+                    </button>
+                    <button id="clear-all-filters-btn" class="btn-clear-filters hidden">
+                        🗑️ Limpiar filtros
+                    </button>
+                    <div class="view-toggle-buttons">
+                        <button id="view-grid-btn" class="btn-view-toggle active" title="Vista de tarjetas">
+                            🔲
+                        </button>
+                        <button id="view-list-btn" class="btn-view-toggle" title="Vista de lista">
+                            ☰
+                        </button>
+                    </div>
+                </div>
+                <button id="new-recipe-btn-home" class="btn-new-recipe-home">
+                    ➕ Nueva Receta
                 </button>
             </div>
 
@@ -177,6 +190,18 @@
 
             <!-- Recipe grid -->
             <section id="recipe-list-view" class="recipe-list">
+                <!-- List view header (only visible in list mode) -->
+                <div id="list-view-header" class="list-view-header hidden">
+                    <div class="list-header-img"></div>
+                    <div class="list-header-name" id="sort-by-name">
+                        NOMBRE <span class="sort-indicator"></span>
+                    </div>
+                    <div class="list-header-date" id="sort-by-date">
+                        FECHA <span class="sort-indicator">▼</span>
+                    </div>
+                    <div class="list-header-actions"></div>
+                </div>
+                
                 <div id="recipes-grid" class="recipes-grid">
                     <!-- Recipe cards will be dynamically inserted here -->
                     <!-- Example structure:
@@ -477,57 +502,69 @@
                                             <textarea id="sequence-description" class="form-textarea sequence-input"
                                                 placeholder="Ej: Añadir al sofrito y cocinar" rows="4"
                                                 autocomplete="off"></textarea>
-                                            <div id="cooking-actions-buttons" class="cooking-actions-buttons">
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="a la plancha">a la plancha</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="añadir">añadir</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="cocer">cocer</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="cocinar al vapor">cocinar al vapor</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="desglasar">desglasar</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="freír">freír</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="gratinar">gratinar</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="guisar">guisar</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="hornear">hornear</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="lavar">lavar</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="pelar">pelar</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="rebozar">rebozar</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="reducir">reducir</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="rehogar">rehogar</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="reposar">reposar</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="saltear">saltear</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="sellar">sellar</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="tapar">tapar</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="tostar">tostar</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="retirar">retirar</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="rallar">rallar</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="picar">picar</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="escaldar">escaldar</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action="y">y</button>
-                                                <button type="button" class="cooking-action-btn"
-                                                    data-action=",">,</button>
+                                            <!-- Ingredient buttons (dynamic) -->
+                                            <div class="cooking-buttons-section">
+                                                <label class="cooking-buttons-label">Ingredientes de la receta:</label>
+                                                <div id="ingredient-action-buttons" class="cooking-actions-buttons">
+                                                    <!-- Ingredient buttons will be dynamically added here -->
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Cooking action buttons (static) -->
+                                            <div class="cooking-buttons-section">
+                                                <label class="cooking-buttons-label">Acciones de cocina:</label>
+                                                <div id="cooking-actions-buttons" class="cooking-actions-buttons">
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="a la plancha">a la plancha</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="añadir">añadir</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="cocer">cocer</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="cocinar al vapor">cocinar al vapor</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="desglasar">desglasar</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="freír">freír</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="gratinar">gratinar</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="guisar">guisar</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="hornear">hornear</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="lavar">lavar</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="pelar">pelar</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="rebozar">rebozar</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="reducir">reducir</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="rehogar">rehogar</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="reposar">reposar</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="saltear">saltear</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="sellar">sellar</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="tapar">tapar</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="tostar">tostar</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="retirar">retirar</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="rallar">rallar</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="picar">picar</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="escaldar">escaldar</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="y">y</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action=",">,</button>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="sequence-input-group">
