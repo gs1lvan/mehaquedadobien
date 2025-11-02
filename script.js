@@ -8569,7 +8569,9 @@ async function checkForRecipeImport() {
             console.log('[Import] Base64 length:', importParam.length);
             
             const decodedData = decodeURIComponent(atob(importParam));
-            console.log('[Import] Decoded data:', decodedData.substring(0, 200));
+            console.log('[Import] Decoded data length:', decodedData.length);
+            console.log('[Import] Decoded data (first 200 chars):', decodedData.substring(0, 200));
+            console.log('[Import] Decoded data (last 200 chars):', decodedData.substring(decodedData.length - 200));
             
             let recipeData;
             
@@ -8751,8 +8753,13 @@ function parseCompactXML(xmlString) {
     const parserError = root.querySelector('parsererror');
     if (parserError) {
         console.error('[Parse] XML parsing error:', parserError.textContent);
+        console.error('[Parse] Full XML string length:', xmlString.length);
+        console.error('[Parse] XML starts with:', xmlString.substring(0, 100));
+        console.error('[Parse] XML ends with:', xmlString.substring(xmlString.length - 100));
         throw new Error('Invalid XML format: ' + parserError.textContent);
     }
+    
+    console.log('[Parse] XML parsed successfully, root element:', root.tagName);
     
     const getElementText = (tagName) => {
         const el = root.querySelector(tagName);
