@@ -7199,7 +7199,7 @@ class RecipeApp {
      * Show share options for recipe
      * @param {Recipe} recipe - Recipe object to share
      */
-    showShareRecipe(recipe) {
+    async showShareRecipe(recipe) {
         const shareLink = this.generateShareLink(recipe);
         
         // Create modal
@@ -7213,13 +7213,13 @@ class RecipeApp {
         modalContent.innerHTML = `
             <h2 style="margin: 0 0 16px 0; color: var(--color-text);">🔗 Compartir Receta</h2>
             <p style="margin: 0 0 12px 0; color: var(--color-text-secondary); font-size: 0.875rem;">
-                Comparte esta receta con un enlace:
+                Generando enlace corto...
             </p>
-            <div style="background: var(--color-surface); padding: 12px; border-radius: 8px; margin: 16px 0; word-break: break-all; font-size: 0.75rem; color: var(--color-text-secondary);">
-                ${shareLink}
+            <div id="link-container" style="background: var(--color-surface); padding: 12px; border-radius: 8px; margin: 16px 0; word-break: break-all; font-size: 0.875rem; color: var(--color-text-secondary); text-align: center;">
+                ⏳ Acortando enlace...
             </div>
             <div style="display: flex; gap: 12px;">
-                <button id="copy-link-btn" class="btn-primary" style="flex: 1; padding: 12px;">
+                <button id="copy-link-btn" class="btn-primary" style="flex: 1; padding: 12px;" disabled>
                     📋 Copiar Enlace
                 </button>
                 <button id="close-share-modal" class="btn-secondary" style="padding: 12px;">
@@ -7231,9 +7231,28 @@ class RecipeApp {
         modal.appendChild(modalContent);
         document.body.appendChild(modal);
         
-        // Copy button
-        document.getElementById('copy-link-btn').addEventListener('click', () => {
-            navigator.clipboard.writeText(shareLink).then(() => {
+        // Shorten URL using is.gd (free, no API key needed)
+        let finalLink = shareLink;
+        try {
+            const response = await fetch(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(shareLink)}`);
+            if (response.ok) {
+                finalLink = await response.text();
+                document.getElementById('link-container').textContent = finalLink;
+                document.querySelector('#link-container').previousElementSibling.textContent = 'Comparte esta receta con este enlace corto:';
+            } else {
+                throw new Error('URL shortener failed');
+            }
+        } catch (error) {
+            console.warn('[Share] Could not shorten URL, using original:', error);
+            document.getElementById('link-container').textContent = shareLink;
+            document.querySelector('#link-container').previousElementSibling.textContent = 'Comparte esta receta con un enlace:';
+        }
+        
+        // Enable copy button
+        const copyBtn = document.getElementById('copy-link-btn');
+        copyBtn.disabled = false;
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(finalLink).then(() => {
                 showNotification('✓ Enlace copiado al portapapeles', 'success');
                 modal.remove();
             }).catch(() => {
@@ -8601,6 +8620,7 @@ async function checkForRecipeImport() {
             }
             
             console.log('[Import] Parsed recipe data:', recipeData);
+            console.log('[Import] Ingredients:', JSON.stringify(recipeData.ingredients, null, 2));
             
             // Import automatically without confirmation
             await importRecipeFromLink(recipeData);
@@ -8657,22 +8677,22 @@ function showImportSuccessModal(recipeData) {
     // Create modal overlay
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
-    modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 16px;';
     
     // Create modal content
     const modalContent = document.createElement('div');
-    modalContent.style.cssText = 'background: var(--color-background); padding: 32px; border-radius: 12px; max-width: 450px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.2); text-align: center;';
+    modalContent.style.cssText = 'background: var(--color-background); padding: 24px 20px; border-radius: 12px; max-width: 400px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.2); text-align: center;';
     
     modalContent.innerHTML = `
-        <div style="font-size: 64px; margin-bottom: 16px;">✅</div>
-        <h2 style="margin: 0 0 12px 0; color: var(--color-text);">¡Receta Importada!</h2>
-        <p style="margin: 0 0 8px 0; color: var(--color-text); font-size: 1.125rem; font-weight: 500;">
+        <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
+        <h2 style="margin: 0 0 8px 0; color: var(--color-text); font-size: 1.25rem;">¡Receta Importada!</h2>
+        <p style="margin: 0 0 6px 0; color: var(--color-text); font-size: 1rem; font-weight: 500;">
             ${recipeData.name}
         </p>
-        <p style="margin: 0 0 24px 0; color: var(--color-text-secondary); font-size: 0.875rem;">
-            La receta se ha añadido correctamente a tu colección
+        <p style="margin: 0 0 20px 0; color: var(--color-text-secondary); font-size: 0.8125rem;">
+            La receta se ha añadido a tu colección
         </p>
-        <button id="close-success-modal" class="btn-primary" style="padding: 12px 32px; width: 100%;">
+        <button id="close-success-modal" class="btn-primary" style="padding: 10px 24px; width: 100%; font-size: 0.9375rem;">
             Ver Receta
         </button>
     `;
