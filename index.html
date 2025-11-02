@@ -4,7 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>mehaquedadobien 🍳</title>
+    <title id="page-title">mehaquedadobien 🍳</title>
+    
+    <!-- Open Graph meta tags for WhatsApp preview -->
+    <meta property="og:title" content="mehaquedadobien 🍳" id="og-title">
+    <meta property="og:description" content="Recetario personal - Comparte y guarda tus recetas favoritas" id="og-description">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://gs1lvan.github.io/mehaquedadobien/">
     
     <!-- Apply theme immediately to prevent flash -->
     <script>
@@ -12,6 +18,29 @@
             const theme = localStorage.getItem('recetario_theme');
             if (theme === 'dark') {
                 document.documentElement.classList.add('dark-theme');
+            }
+            
+            // Update title if importing recipe
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('import')) {
+                try {
+                    const base64Data = urlParams.get('import');
+                    const decodedData = decodeURIComponent(atob(base64Data));
+                    if (decodedData.trim().startsWith('<')) {
+                        const parser = new DOMParser();
+                        const xmlDoc = parser.parseFromString(decodedData, 'text/xml');
+                        const recipeName = xmlDoc.querySelector('name')?.textContent;
+                        if (recipeName) {
+                            document.title = `${recipeName} - mehaquedadobien 🍳`;
+                            const ogTitle = document.getElementById('og-title');
+                            if (ogTitle) ogTitle.setAttribute('content', `${recipeName} - mehaquedadobien 🍳`);
+                            const ogDesc = document.getElementById('og-description');
+                            if (ogDesc) ogDesc.setAttribute('content', `Receta: ${recipeName}`);
+                        }
+                    }
+                } catch (e) {
+                    // Ignore errors
+                }
             }
         })();
     </script>

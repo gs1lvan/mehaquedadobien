@@ -8652,7 +8652,21 @@ function showImportSuccessModal(recipeData) {
             // Clear all filters to ensure imported recipe is visible
             window.recipeApp.activeFilters.clear();
             window.recipeApp.activeTimeFilter = 'all';
-            window.recipeApp.showListView();
+            
+            // Hide other views
+            const detailView = document.getElementById('recipe-detail-view');
+            const formView = document.getElementById('recipe-form-view');
+            const shoppingView = document.getElementById('shopping-lists-view');
+            if (detailView) detailView.classList.add('hidden');
+            if (formView) formView.classList.add('hidden');
+            if (shoppingView) shoppingView.classList.add('hidden');
+            
+            // Show list view
+            const listView = document.getElementById('recipe-list-view');
+            if (listView) listView.classList.remove('hidden');
+            
+            // Update and render
+            window.recipeApp.currentView = 'list';
             window.recipeApp.renderRecipeList();
         }
     }, 2000);
@@ -8676,7 +8690,21 @@ function showImportSuccessModal(recipeData) {
                 // Clear all filters to ensure imported recipe is visible
                 window.recipeApp.activeFilters.clear();
                 window.recipeApp.activeTimeFilter = 'all';
-                window.recipeApp.showListView();
+                
+                // Hide other views
+                const detailView = document.getElementById('recipe-detail-view');
+                const formView = document.getElementById('recipe-form-view');
+                const shoppingView = document.getElementById('shopping-lists-view');
+                if (detailView) detailView.classList.add('hidden');
+                if (formView) formView.classList.add('hidden');
+                if (shoppingView) shoppingView.classList.add('hidden');
+                
+                // Show list view
+                const listView = document.getElementById('recipe-list-view');
+                if (listView) listView.classList.remove('hidden');
+                
+                // Update and render
+                window.recipeApp.currentView = 'list';
                 window.recipeApp.renderRecipeList();
             }
         }
