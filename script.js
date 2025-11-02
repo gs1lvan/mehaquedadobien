@@ -1,3 +1,57 @@
+// ===== Debug Logging Utility =====
+
+/**
+ * Debug logger with configurable levels
+ * Set DEBUG_LEVEL in localStorage to control verbosity:
+ * - 0: No debug logs (production)
+ * - 1: Errors only
+ * - 2: Warnings and errors
+ * - 3: Info, warnings, and errors (default for development)
+ * - 4: Verbose (all logs including detailed parsing)
+ */
+const DebugLogger = {
+    LEVELS: {
+        NONE: 0,
+        ERROR: 1,
+        WARN: 2,
+        INFO: 3,
+        VERBOSE: 4
+    },
+    
+    get level() {
+        const stored = localStorage.getItem('DEBUG_LEVEL');
+        return stored !== null ? parseInt(stored) : this.LEVELS.INFO;
+    },
+    
+    set level(value) {
+        localStorage.setItem('DEBUG_LEVEL', value.toString());
+    },
+    
+    error(prefix, ...args) {
+        if (this.level >= this.LEVELS.ERROR) {
+            console.error(`[${prefix}]`, ...args);
+        }
+    },
+    
+    warn(prefix, ...args) {
+        if (this.level >= this.LEVELS.WARN) {
+            console.warn(`[${prefix}]`, ...args);
+        }
+    },
+    
+    info(prefix, ...args) {
+        if (this.level >= this.LEVELS.INFO) {
+            console.log(`[${prefix}]`, ...args);
+        }
+    },
+    
+    verbose(prefix, ...args) {
+        if (this.level >= this.LEVELS.VERBOSE) {
+            console.log(`[${prefix}]`, ...args);
+        }
+    }
+};
+
 // ===== Category Management =====
 
 /**
@@ -8828,7 +8882,10 @@ function parseCompactXML(xmlString) {
     
     console.log('[Parse] Parsed sequences:', sequences.length);
     console.log('[Parse] ID mapping size:', idMapping.size);
-    console.log('[Parse] ID mapping entries:', Array.from(idMapping.entries()));
+    console.log('[Parse] ID mapping entries (first 5):', Array.from(idMapping.entries()).slice(0, 5));
+    
+    // Create ingredient lookup map for O(1) access
+    const ingredientMap = new Map(ingredients.map(ing => [ing.id, ing]));
     
     // Convert Sequence objects to plain objects with ingredientNames for compatibility
     recipeData.additionSequences = sequences.map(seq => {
@@ -8836,13 +8893,15 @@ function parseCompactXML(xmlString) {
         
         // Convert ingredient IDs back to names for the legacy format
         const ingredientNames = seq.ingredientIds.map(id => {
-            const ingredient = ingredients.find(ing => ing.id === id);
+            const ingredient = ingredientMap.get(id);
             const name = ingredient ? ingredient.name : id;
-            console.log('[Parse] Mapped ID', id, 'to name:', name);
+            if (!ingredient) {
+                console.warn('[Parse] Ingredient ID not found in map:', id);
+            }
             return name;
         });
         
-        console.log('[Parse] Sequence', seq.step, 'final ingredientNames:', ingredientNames);
+        console.log('[Parse] Sequence', seq.step, 'ingredientNames:', ingredientNames);
         
         return {
             step: seq.step,
@@ -8864,16 +8923,12 @@ function parseCompactXML(xmlString) {
     // Note: Images and videos are not imported from share links
     // They remain empty arrays as initialized above
     
-    // Debug: Log what we parsed
-    console.log('[Parse] Parsed recipe data:', {
+    // Info-level logging for successful parse
+    DebugLogger.info('Parse', 'Successfully parsed recipe:', {
         name: recipeData.name,
-        author: recipeData.author,
-        history: recipeData.history,
-        caravanFriendly: recipeData.caravanFriendly,
         ingredients: recipeData.ingredients.length,
         sequences: recipeData.additionSequences.length,
-        hasImages: recipeData.images.length > 0,
-        hasVideos: recipeData.videos.length > 0
+        appliances: recipeData.kitchenAppliances.length
     });
     
     return recipeData;

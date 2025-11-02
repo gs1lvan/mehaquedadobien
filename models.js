@@ -2,7 +2,7 @@
  * Utility function to generate UUIDs
  */
 function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         const r = Math.random() * 16 | 0;
         const v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
@@ -19,10 +19,10 @@ class MediaFile {
         this.type = data.type || '';
         this.data = data.data || ''; // Base64 encoded
         this.size = data.size || 0;
-        
+
         this.validate();
     }
-    
+
     validate() {
         if (!this.name) {
             throw new Error('MediaFile name is required');
@@ -34,7 +34,7 @@ class MediaFile {
             throw new Error('MediaFile data is required');
         }
     }
-    
+
     toJSON() {
         return {
             id: this.id,
@@ -44,7 +44,7 @@ class MediaFile {
             size: this.size
         };
     }
-    
+
     static fromJSON(json) {
         return new MediaFile(json);
     }
@@ -60,10 +60,10 @@ class Ingredient {
         this.quantity = data.quantity || 0;
         this.unit = data.unit || '';
         this.order = data.order || 0;
-        
+
         this.validate();
     }
-    
+
     validate() {
         if (!this.name || this.name.trim() === '') {
             throw new Error('Ingredient name is required');
@@ -72,7 +72,7 @@ class Ingredient {
             throw new Error('Ingredient quantity must be a non-negative number');
         }
     }
-    
+
     toJSON() {
         return {
             id: this.id,
@@ -82,7 +82,7 @@ class Ingredient {
             order: this.order
         };
     }
-    
+
     static fromJSON(json) {
         return new Ingredient(json);
     }
@@ -98,10 +98,16 @@ class Sequence {
         this.ingredientIds = data.ingredientIds || [];
         this.description = data.description || '';
         this.duration = data.duration || ''; // Optional duration field
-        
+
+        // Preserve ingredientNames temporarily for import processing
+        // This field is used during XML import to map names to IDs
+        if (data.ingredientNames) {
+            this.ingredientNames = data.ingredientNames;
+        }
+
         this.validate();
     }
-    
+
     validate() {
         if (typeof this.step !== 'number' || this.step < 0) {
             throw new Error('Sequence step must be a non-negative number');
@@ -110,7 +116,7 @@ class Sequence {
             throw new Error('Sequence ingredientIds must be an array');
         }
     }
-    
+
     toJSON() {
         return {
             id: this.id,
@@ -120,7 +126,7 @@ class Sequence {
             duration: this.duration
         };
     }
-    
+
     static fromJSON(json) {
         return new Sequence(json);
     }
@@ -136,53 +142,53 @@ class Recipe {
         this.category = data.category || null; // 'carne', 'verdura', 'pescado', 'fruta', 'cereales', 'mix', null
         this.totalTime = data.totalTime || ''; // Optional total time field
         this.caravanFriendly = data.caravanFriendly || false; // Apto para Caravana
-        this.ingredients = data.ingredients ? data.ingredients.map(i => 
+        this.ingredients = data.ingredients ? data.ingredients.map(i =>
             i instanceof Ingredient ? i : new Ingredient(i)
         ) : [];
         this.preparationMethod = data.preparationMethod || ''; // Legacy field - kept for backward compatibility
         this.kitchenAppliances = data.kitchenAppliances || []; // Array of kitchen appliance names
         this.author = data.author || ''; // Optional author field
         this.history = data.history || ''; // Optional history field
-        this.additionSequences = data.additionSequences ? data.additionSequences.map(s => 
+        this.additionSequences = data.additionSequences ? data.additionSequences.map(s =>
             s instanceof Sequence ? s : new Sequence(s)
         ) : [];
-        this.images = data.images ? data.images.map(img => 
+        this.images = data.images ? data.images.map(img =>
             img instanceof MediaFile ? img : new MediaFile(img)
         ) : [];
-        this.videos = data.videos ? data.videos.map(vid => 
+        this.videos = data.videos ? data.videos.map(vid =>
             vid instanceof MediaFile ? vid : new MediaFile(vid)
         ) : [];
         this.createdAt = data.createdAt ? new Date(data.createdAt) : new Date();
         this.updatedAt = data.updatedAt ? new Date(data.updatedAt) : new Date();
-        
+
         this.validate();
     }
-    
+
     validate() {
         if (!this.name || this.name.trim() === '') {
             throw new Error('Recipe name is required');
         }
-        
+
         // Category validation removed - categories are now managed dynamically
         // Allow any string or null as category
-        
+
         if (!Array.isArray(this.ingredients)) {
             throw new Error('Recipe ingredients must be an array');
         }
-        
+
         if (!Array.isArray(this.additionSequences)) {
             throw new Error('Recipe additionSequences must be an array');
         }
-        
+
         if (!Array.isArray(this.images)) {
             throw new Error('Recipe images must be an array');
         }
-        
+
         if (!Array.isArray(this.videos)) {
             throw new Error('Recipe videos must be an array');
         }
     }
-    
+
     toJSON() {
         return {
             id: this.id,
@@ -202,7 +208,7 @@ class Recipe {
             updatedAt: this.updatedAt.toISOString()
         };
     }
-    
+
     static fromJSON(json) {
         return new Recipe(json);
     }
@@ -249,7 +255,7 @@ class StorageManager {
         this.useLocalStorageFallback = false;
         this.localStorageKey = 'recetario_recipes';
     }
-    
+
     /**
      * Initialize IndexedDB connection and create object stores
      * Requirements: 13.1, 13.2, 13.3
@@ -261,7 +267,7 @@ class StorageManager {
             if (!window.indexedDB) {
                 console.warn('[Storage] IndexedDB no disponible, usando localStorage como fallback');
                 this.useLocalStorageFallback = true;
-                
+
                 // Check if localStorage is available
                 if (!this._isLocalStorageAvailable()) {
                     reject(new StorageError(
@@ -270,19 +276,19 @@ class StorageManager {
                     ));
                     return;
                 }
-                
+
                 resolve(null);
                 return;
             }
-            
+
             const request = indexedDB.open(this.dbName, this.dbVersion);
-            
+
             request.onerror = () => {
                 console.error('[Storage] Error al abrir IndexedDB:', request.error);
                 console.warn('[Storage] Intentando usar localStorage como fallback');
-                
+
                 this.useLocalStorageFallback = true;
-                
+
                 // Check if localStorage is available
                 if (!this._isLocalStorageAvailable()) {
                     reject(new StorageError(
@@ -291,33 +297,33 @@ class StorageManager {
                     ));
                     return;
                 }
-                
+
                 resolve(null);
             };
-            
+
             request.onsuccess = () => {
                 this.db = request.result;
                 console.log('[Storage] IndexedDB inicializado correctamente');
                 resolve(this.db);
             };
-            
+
             request.onupgradeneeded = (event) => {
                 const db = event.target.result;
-                
+
                 // Create recipes object store if it doesn't exist
                 if (!db.objectStoreNames.contains('recipes')) {
                     const recipeStore = db.createObjectStore('recipes', { keyPath: 'id' });
-                    
+
                     // Create indexes for efficient querying
                     recipeStore.createIndex('name', 'name', { unique: false });
                     recipeStore.createIndex('category', 'category', { unique: false });
                     recipeStore.createIndex('createdAt', 'createdAt', { unique: false });
                 }
-                
+
                 // Create media object store if it doesn't exist
                 if (!db.objectStoreNames.contains('media')) {
                     const mediaStore = db.createObjectStore('media', { keyPath: 'id' });
-                    
+
                     // Create indexes
                     mediaStore.createIndex('recipeId', 'recipeId', { unique: false });
                     mediaStore.createIndex('type', 'type', { unique: false });
@@ -325,7 +331,7 @@ class StorageManager {
             };
         });
     }
-    
+
     /**
      * Check if localStorage is available
      * Requirements: 13.3
@@ -342,7 +348,7 @@ class StorageManager {
             return false;
         }
     }
-    
+
     /**
      * Get all recipes from localStorage
      * Requirements: 13.3
@@ -358,7 +364,7 @@ class StorageManager {
             return [];
         }
     }
-    
+
     /**
      * Save all recipes to localStorage
      * Requirements: 13.3
@@ -381,7 +387,7 @@ class StorageManager {
             );
         }
     }
-    
+
     /**
      * Ensure database is initialized
      * @private
@@ -391,7 +397,7 @@ class StorageManager {
             await this.initDB();
         }
     }
-    
+
     /**
      * Save a new recipe or update existing one
      * Requirements: 1.2, 13.1, 13.2, 13.3
@@ -401,7 +407,7 @@ class StorageManager {
     async saveRecipe(recipe) {
         try {
             await this._ensureDB();
-            
+
             // Validate recipe
             if (!(recipe instanceof Recipe)) {
                 throw new StorageError(
@@ -409,37 +415,37 @@ class StorageManager {
                     StorageError.INVALID_DATA
                 );
             }
-            
+
             // Update timestamp
             recipe.updatedAt = new Date();
-            
+
             // Use localStorage fallback if needed
             if (this.useLocalStorageFallback) {
                 console.log('[Storage] Guardando receta en localStorage');
                 const recipes = this._getLocalStorageRecipes();
                 const existingIndex = recipes.findIndex(r => r.id === recipe.id);
-                
+
                 if (existingIndex >= 0) {
                     recipes[existingIndex] = recipe.toJSON();
                 } else {
                     recipes.push(recipe.toJSON());
                 }
-                
+
                 this._setLocalStorageRecipes(recipes);
                 return recipe.id;
             }
-            
+
             // Use IndexedDB
             return new Promise((resolve, reject) => {
                 const transaction = this.db.transaction(['recipes'], 'readwrite');
                 const store = transaction.objectStore('recipes');
                 const request = store.put(recipe.toJSON());
-                
+
                 request.onsuccess = () => {
                     console.log('[Storage] Receta guardada en IndexedDB:', recipe.id);
                     resolve(recipe.id);
                 };
-                
+
                 request.onerror = () => {
                     console.error('[Storage] Error al guardar receta:', request.error);
                     if (request.error.name === 'QuotaExceededError') {
@@ -454,7 +460,7 @@ class StorageManager {
                         ));
                     }
                 };
-                
+
                 transaction.onerror = () => {
                     console.error('[Storage] Error en transacción:', transaction.error);
                     reject(new StorageError(
@@ -474,7 +480,7 @@ class StorageManager {
             );
         }
     }
-    
+
     /**
      * Get a recipe by ID
      * @param {string} id - Recipe ID
@@ -483,12 +489,12 @@ class StorageManager {
     async getRecipe(id) {
         try {
             await this._ensureDB();
-            
+
             return new Promise((resolve, reject) => {
                 const transaction = this.db.transaction(['recipes'], 'readonly');
                 const store = transaction.objectStore('recipes');
                 const request = store.get(id);
-                
+
                 request.onsuccess = () => {
                     if (request.result) {
                         resolve(Recipe.fromJSON(request.result));
@@ -496,7 +502,7 @@ class StorageManager {
                         resolve(null);
                     }
                 };
-                
+
                 request.onerror = () => {
                     reject(new StorageError(
                         'Failed to get recipe: ' + request.error,
@@ -514,7 +520,7 @@ class StorageManager {
             );
         }
     }
-    
+
     /**
      * Get all recipes
      * Requirements: 13.1, 13.2, 13.3
@@ -523,26 +529,26 @@ class StorageManager {
     async getAllRecipes() {
         try {
             await this._ensureDB();
-            
+
             // Use localStorage fallback if needed
             if (this.useLocalStorageFallback) {
                 console.log('[Storage] Cargando recetas desde localStorage');
                 const recipes = this._getLocalStorageRecipes();
                 return recipes.map(data => Recipe.fromJSON(data));
             }
-            
+
             // Use IndexedDB
             return new Promise((resolve, reject) => {
                 const transaction = this.db.transaction(['recipes'], 'readonly');
                 const store = transaction.objectStore('recipes');
                 const request = store.getAll();
-                
+
                 request.onsuccess = () => {
                     const recipes = request.result.map(data => Recipe.fromJSON(data));
                     console.log('[Storage] Recetas cargadas desde IndexedDB:', recipes.length);
                     resolve(recipes);
                 };
-                
+
                 request.onerror = () => {
                     console.error('[Storage] Error al cargar recetas:', request.error);
                     reject(new StorageError(
@@ -562,7 +568,7 @@ class StorageManager {
             );
         }
     }
-    
+
     /**
      * Update an existing recipe
      * @param {string} id - Recipe ID
@@ -572,11 +578,11 @@ class StorageManager {
     async updateRecipe(id, recipe) {
         try {
             await this._ensureDB();
-            
+
             // Ensure the recipe has the correct ID
             recipe.id = id;
             recipe.updatedAt = new Date();
-            
+
             // Check if recipe exists
             const existingRecipe = await this.getRecipe(id);
             if (!existingRecipe) {
@@ -585,7 +591,7 @@ class StorageManager {
                     StorageError.NOT_FOUND
                 );
             }
-            
+
             // Save the updated recipe
             return await this.saveRecipe(recipe);
         } catch (error) {
@@ -598,7 +604,7 @@ class StorageManager {
             );
         }
     }
-    
+
     /**
      * Delete a recipe by ID
      * Requirements: 8.2, 13.3
@@ -608,7 +614,7 @@ class StorageManager {
     async deleteRecipe(id) {
         try {
             await this._ensureDB();
-            
+
             // Use localStorage fallback if needed
             if (this.useLocalStorageFallback) {
                 console.log('[Storage] Eliminando receta de localStorage:', id);
@@ -617,18 +623,18 @@ class StorageManager {
                 this._setLocalStorageRecipes(filteredRecipes);
                 return;
             }
-            
+
             // Use IndexedDB
             return new Promise((resolve, reject) => {
                 const transaction = this.db.transaction(['recipes'], 'readwrite');
                 const store = transaction.objectStore('recipes');
                 const request = store.delete(id);
-                
+
                 request.onsuccess = () => {
                     console.log('[Storage] Receta eliminada de IndexedDB:', id);
                     resolve();
                 };
-                
+
                 request.onerror = () => {
                     console.error('[Storage] Error al eliminar receta:', request.error);
                     reject(new StorageError(
@@ -636,7 +642,7 @@ class StorageManager {
                         StorageError.TRANSACTION_FAILED
                     ));
                 };
-                
+
                 transaction.onerror = () => {
                     console.error('[Storage] Error en transacción:', transaction.error);
                     reject(new StorageError(
@@ -656,7 +662,7 @@ class StorageManager {
             );
         }
     }
-    
+
     /**
      * Get recipes by category
      * @param {string} category - Category name
@@ -665,18 +671,18 @@ class StorageManager {
     async getRecipesByCategory(category) {
         try {
             await this._ensureDB();
-            
+
             return new Promise((resolve, reject) => {
                 const transaction = this.db.transaction(['recipes'], 'readonly');
                 const store = transaction.objectStore('recipes');
                 const index = store.index('category');
                 const request = index.getAll(category);
-                
+
                 request.onsuccess = () => {
                     const recipes = request.result.map(data => Recipe.fromJSON(data));
                     resolve(recipes);
                 };
-                
+
                 request.onerror = () => {
                     reject(new StorageError(
                         'Failed to get recipes by category: ' + request.error,
@@ -694,7 +700,7 @@ class StorageManager {
             );
         }
     }
-    
+
     /**
      * Clear all recipes (for testing or reset)
      * @returns {Promise<void>}
@@ -702,16 +708,16 @@ class StorageManager {
     async clearAllRecipes() {
         try {
             await this._ensureDB();
-            
+
             return new Promise((resolve, reject) => {
                 const transaction = this.db.transaction(['recipes'], 'readwrite');
                 const store = transaction.objectStore('recipes');
                 const request = store.clear();
-                
+
                 request.onsuccess = () => {
                     resolve();
                 };
-                
+
                 request.onerror = () => {
                     reject(new StorageError(
                         'Failed to clear recipes: ' + request.error,
@@ -852,27 +858,27 @@ class XMLExporter {
             const ingredientsElement = xmlDoc.createElement('ingredients');
             recipe.ingredients.forEach(ingredient => {
                 const ingredientElement = xmlDoc.createElement('ingredient');
-                
+
                 const ingIdElement = xmlDoc.createElement('id');
                 ingIdElement.textContent = ingredient.id;
                 ingredientElement.appendChild(ingIdElement);
-                
+
                 const ingNameElement = xmlDoc.createElement('name');
                 ingNameElement.textContent = ingredient.name;
                 ingredientElement.appendChild(ingNameElement);
-                
+
                 const ingQuantityElement = xmlDoc.createElement('quantity');
                 ingQuantityElement.textContent = ingredient.quantity.toString();
                 ingredientElement.appendChild(ingQuantityElement);
-                
+
                 const ingUnitElement = xmlDoc.createElement('unit');
                 ingUnitElement.textContent = ingredient.unit;
                 ingredientElement.appendChild(ingUnitElement);
-                
+
                 const ingOrderElement = xmlDoc.createElement('order');
                 ingOrderElement.textContent = ingredient.order.toString();
                 ingredientElement.appendChild(ingOrderElement);
-                
+
                 ingredientsElement.appendChild(ingredientElement);
             });
             root.appendChild(ingredientsElement);
@@ -881,19 +887,19 @@ class XMLExporter {
             // Create ingredient lookup map for O(1) access
             const ingredientMap = new Map();
             recipe.ingredients.forEach(ing => ingredientMap.set(ing.id, ing));
-            
+
             const sequencesElement = xmlDoc.createElement('additionSequences');
             recipe.additionSequences.forEach(sequence => {
                 const sequenceElement = xmlDoc.createElement('sequence');
-                
+
                 const seqIdElement = xmlDoc.createElement('id');
                 seqIdElement.textContent = sequence.id;
                 sequenceElement.appendChild(seqIdElement);
-                
+
                 const seqStepElement = xmlDoc.createElement('step');
                 seqStepElement.textContent = sequence.step.toString();
                 sequenceElement.appendChild(seqStepElement);
-                
+
                 // Export ingredient names instead of IDs for portability
                 const seqIngredientsElement = xmlDoc.createElement('ingredientNames');
                 if (sequence.ingredientIds && sequence.ingredientIds.length > 0) {
@@ -909,15 +915,15 @@ class XMLExporter {
                     });
                 }
                 sequenceElement.appendChild(seqIngredientsElement);
-                
+
                 const seqDurationElement = xmlDoc.createElement('duration');
                 seqDurationElement.textContent = sequence.duration || '';
                 sequenceElement.appendChild(seqDurationElement);
-                
+
                 const seqDescElement = xmlDoc.createElement('description');
                 seqDescElement.textContent = sequence.description || '';
                 sequenceElement.appendChild(seqDescElement);
-                
+
                 sequencesElement.appendChild(sequenceElement);
             });
             root.appendChild(sequencesElement);
@@ -926,27 +932,27 @@ class XMLExporter {
             const imagesElement = xmlDoc.createElement('images');
             recipe.images.forEach(image => {
                 const imageElement = xmlDoc.createElement('image');
-                
+
                 const imgIdElement = xmlDoc.createElement('id');
                 imgIdElement.textContent = image.id;
                 imageElement.appendChild(imgIdElement);
-                
+
                 const imgNameElement = xmlDoc.createElement('name');
                 imgNameElement.textContent = image.name;
                 imageElement.appendChild(imgNameElement);
-                
+
                 const imgTypeElement = xmlDoc.createElement('type');
                 imgTypeElement.textContent = image.type;
                 imageElement.appendChild(imgTypeElement);
-                
+
                 const imgDataElement = xmlDoc.createElement('data');
                 imgDataElement.textContent = image.data;
                 imageElement.appendChild(imgDataElement);
-                
+
                 const imgSizeElement = xmlDoc.createElement('size');
                 imgSizeElement.textContent = image.size.toString();
                 imageElement.appendChild(imgSizeElement);
-                
+
                 imagesElement.appendChild(imageElement);
             });
             root.appendChild(imagesElement);
@@ -955,27 +961,27 @@ class XMLExporter {
             const videosElement = xmlDoc.createElement('videos');
             recipe.videos.forEach(video => {
                 const videoElement = xmlDoc.createElement('video');
-                
+
                 const vidIdElement = xmlDoc.createElement('id');
                 vidIdElement.textContent = video.id;
                 videoElement.appendChild(vidIdElement);
-                
+
                 const vidNameElement = xmlDoc.createElement('name');
                 vidNameElement.textContent = video.name;
                 videoElement.appendChild(vidNameElement);
-                
+
                 const vidTypeElement = xmlDoc.createElement('type');
                 vidTypeElement.textContent = video.type;
                 videoElement.appendChild(vidTypeElement);
-                
+
                 const vidDataElement = xmlDoc.createElement('data');
                 vidDataElement.textContent = video.data;
                 videoElement.appendChild(vidDataElement);
-                
+
                 const vidSizeElement = xmlDoc.createElement('size');
                 vidSizeElement.textContent = video.size.toString();
                 videoElement.appendChild(vidSizeElement);
-                
+
                 videosElement.appendChild(videoElement);
             });
             root.appendChild(videosElement);
@@ -992,7 +998,7 @@ class XMLExporter {
             // Serialize to string with proper formatting
             const serializer = new XMLSerializer();
             let xmlString = serializer.serializeToString(xmlDoc);
-            
+
             // Add XML declaration
             xmlString = '<?xml version="1.0" encoding="UTF-8"?>\n' + xmlString;
 
@@ -1020,17 +1026,17 @@ class XMLExporter {
         try {
             // Create blob with XML content
             const blob = new Blob([xmlString], { type: 'application/xml' });
-            
+
             // Create download link
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
             link.download = filename;
-            
+
             // Trigger download
             document.body.appendChild(link);
             link.click();
-            
+
             // Cleanup
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
@@ -1054,14 +1060,14 @@ class XMLExporter {
         try {
             // Generate XML
             const xmlString = this.generateXML(recipe);
-            
+
             // Create filename
             const sanitizedName = recipe.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
             const filename = `receta_${sanitizedName}_${recipe.id.substring(0, 8)}.xml`;
-            
+
             // Download file
             this.downloadXML(xmlString, filename);
-            
+
             return xmlString;
 
         } catch (error) {
@@ -1109,10 +1115,10 @@ class PDFExporter {
             // Create new PDF document
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
+
             // Set default font to Times for a more elegant, editorial style
             doc.setFont('times', 'normal');
-            
+
             let yPosition = 20;
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
@@ -1135,7 +1141,7 @@ class PDFExporter {
             doc.setFontSize(24);
             doc.setFont(undefined, 'bold');
             doc.text(recipe.name, margin, yPosition, { align: 'left' });
-            
+
             // Add time total right after the title with different style (smaller, small caps effect)
             if (recipe.totalTime && recipe.totalTime.trim() !== '') {
                 const titleWidth = doc.getTextWidth(recipe.name);
@@ -1148,7 +1154,7 @@ class PDFExporter {
                 doc.setTextColor(0, 0, 0); // Reset to black
                 doc.setFontSize(24); // Reset font size
             }
-            
+
             yPosition += 5; // Reduced space after header (between title and image)
 
             // Save starting Y position for image and ingredients side-by-side layout
@@ -1160,18 +1166,18 @@ class PDFExporter {
             // Images section - only first image, 50% width, cropped to fixed height
             if (recipe.images && recipe.images.length > 0) {
                 checkPageBreak(70);
-                
+
                 // Add only the first image
                 const image = recipe.images[0];
                 // Fixed dimensions for image
                 const targetWidth = pageWidth * 0.50; // 50% of page width
                 const targetHeight = 60; // Fixed height in mm
-                
+
                 try {
                     // Create image element
                     const img = new Image();
                     img.src = image.data;
-                    
+
                     // Wait for image to load to get dimensions
                     await new Promise((resolve) => {
                         if (img.complete) {
@@ -1180,17 +1186,17 @@ class PDFExporter {
                             img.onload = resolve;
                         }
                     });
-                    
+
                     // Create canvas for cropping
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    
+
                     // Calculate dimensions to fill target area (cover mode)
                     const targetAspect = targetWidth / targetHeight;
                     const imgAspect = img.width / img.height;
-                    
+
                     let sourceWidth, sourceHeight, sourceX, sourceY;
-                    
+
                     if (imgAspect > targetAspect) {
                         // Image is wider - crop sides
                         sourceHeight = img.height;
@@ -1204,40 +1210,40 @@ class PDFExporter {
                         sourceX = 0;
                         sourceY = (img.height - sourceHeight) / 2;
                     }
-                    
+
                     // Set canvas size to target dimensions (in pixels, will scale)
                     canvas.width = 800; // High resolution
                     canvas.height = 800 * (targetHeight / targetWidth);
-                    
+
                     // Draw cropped image
                     ctx.drawImage(
                         img,
                         sourceX, sourceY, sourceWidth, sourceHeight, // Source rectangle
                         0, 0, canvas.width, canvas.height // Destination rectangle
                     );
-                    
+
                     // Convert canvas to base64
                     const croppedImageData = canvas.toDataURL('image/jpeg', 0.92);
-                    
+
                     // Add frame with padding
                     const framePadding = 2;
                     const frameX = margin;
                     const frameY = yPosition;
                     const frameWidth = targetWidth + (framePadding * 2);
                     const frameHeight = targetHeight + (framePadding * 2);
-                    
+
                     // Draw frame background (light gray)
                     doc.setFillColor(245, 245, 245);
                     doc.rect(frameX, frameY, frameWidth, frameHeight, 'F');
-                    
+
                     // Add cropped image
                     doc.addImage(croppedImageData, 'JPEG', margin + framePadding, yPosition + framePadding, targetWidth, targetHeight);
-                    
+
                     // Add frame border
                     doc.setDrawColor(200, 200, 200);
                     doc.setLineWidth(0.3);
                     doc.rect(frameX, frameY, frameWidth, frameHeight);
-                    
+
                     imageHeight = frameHeight;
                     actualImageWidth = frameWidth;
                     // Don't move yPosition yet - ingredients will be beside the image
@@ -1254,7 +1260,7 @@ class PDFExporter {
             // Calculate ingredients height first
             const ingredientsPadding = 3;
             let tempY = ingredientsY + ingredientsPadding + 6; // Title space
-            
+
             if (recipe.ingredients && recipe.ingredients.length > 0) {
                 tempY += recipe.ingredients.length * 5; // Each ingredient line
             } else {
@@ -1266,7 +1272,7 @@ class PDFExporter {
             // Draw ingredients background box (light gray)
             doc.setFillColor(240, 240, 240);
             doc.rect(ingredientsX, ingredientsY, ingredientsWidth, ingredientsHeight, 'F');
-            
+
             // Draw ingredients border
             doc.setDrawColor(200, 200, 200);
             doc.setLineWidth(0.3);
@@ -1299,7 +1305,7 @@ class PDFExporter {
                         // No quantity and no unit - show dash
                         quantityText = '-';
                     }
-                    
+
                     const ingredientText = `${index + 1}. ${ingredient.name} - ${quantityText}`;
                     doc.text(ingredientText, ingredientsX + 5, ingredientsY + 4, { align: 'left' });
                     ingredientsY += 5;
@@ -1371,14 +1377,14 @@ class PDFExporter {
 
                 recipe.additionSequences.forEach((sequence, index) => {
                     checkPageBreak(10);
-                    
+
                     // Sequence number
                     doc.setFont(undefined, 'bold');
                     doc.text(`Paso ${index + 1}:`, margin + 3, yPosition, { align: 'left' });
                     yPosition += 5;
-                    
+
                     doc.setFont(undefined, 'normal');
-                    
+
                     // Ingredients in this sequence
                     if (sequence.ingredientIds && sequence.ingredientIds.length > 0) {
                         const ingredientNames = sequence.ingredientIds
@@ -1388,7 +1394,7 @@ class PDFExporter {
                             })
                             .filter(name => name !== '')
                             .join(', ');
-                        
+
                         if (ingredientNames) {
                             doc.setTextColor(100, 100, 100);
                             doc.text(`Ingredientes: ${ingredientNames}`, margin + 6, yPosition, { align: 'left' });
@@ -1396,7 +1402,7 @@ class PDFExporter {
                             yPosition += 5;
                         }
                     }
-                    
+
                     // Description (before duration)
                     if (sequence.description) {
                         const descLines = doc.splitTextToSize(sequence.description, maxLineWidth - 6);
@@ -1407,7 +1413,7 @@ class PDFExporter {
                             yPosition += 5;
                         });
                     }
-                    
+
                     // Duration (last, without icon)
                     if (sequence.duration && sequence.duration.trim() !== '') {
                         // Format duration for display
@@ -1415,7 +1421,7 @@ class PDFExporter {
                         const minutesMatch = sequence.duration.match(/(\d+)\s*min/);
                         const hours = hoursMatch ? parseInt(hoursMatch[1]) : 0;
                         const minutes = minutesMatch ? parseInt(minutesMatch[1]) : 0;
-                        
+
                         const parts = [];
                         if (hours > 0) {
                             parts.push(hours === 1 ? '1 hora' : `${hours} horas`);
@@ -1423,7 +1429,7 @@ class PDFExporter {
                         if (minutes > 0) {
                             parts.push(minutes === 1 ? '1 minuto' : `${minutes} minutos`);
                         }
-                        
+
                         if (parts.length > 0) {
                             doc.setFont(undefined, 'bold');
                             doc.text(`Duración: ${parts.join(' ')}`, margin + 6, yPosition, { align: 'left' });
@@ -1431,7 +1437,7 @@ class PDFExporter {
                             yPosition += 5;
                         }
                     }
-                    
+
                     yPosition += 2;
                 });
             }
@@ -1439,7 +1445,7 @@ class PDFExporter {
             // Additional Information Section (Author and History) - MOVED TO END
             const hasAuthor = recipe.author && recipe.author.trim() !== '';
             const hasHistory = recipe.history && recipe.history.trim() !== '';
-            
+
             if (hasAuthor || hasHistory) {
                 checkPageBreak(15);
                 doc.setFontSize(12);
@@ -1466,7 +1472,7 @@ class PDFExporter {
                     doc.setFont(undefined, 'bold');
                     doc.text('Historia:', margin + 3, yPosition, { align: 'left' });
                     yPosition += 5;
-                    
+
                     doc.setFont(undefined, 'normal');
                     const historyLines = doc.splitTextToSize(recipe.history, maxLineWidth - 3);
                     historyLines.forEach((line) => {
@@ -1486,47 +1492,47 @@ class PDFExporter {
                 const remainingImages = recipe.images.slice(1);
                 const imageWidth = (maxLineWidth - 5) / 2; // Two images side by side with 5mm gap
                 const imageHeight = 50; // Fixed height for gallery images
-                
+
                 // Check if we have enough space for title + at least one row of images
                 // If not, move to next page to keep title with images
                 const requiredSpace = 8 + imageHeight + 10; // title height + image height + margins
                 checkPageBreak(requiredSpace);
-                
+
                 yPosition += 5;
-                
+
                 doc.setFontSize(12);
                 doc.setFont(undefined, 'bold');
                 doc.text('Galería de Imágenes', margin, yPosition, { align: 'left' });
                 yPosition += 8;
-                
+
                 for (let i = 0; i < remainingImages.length; i += 2) {
                     // Only check page break for subsequent rows (not the first one)
                     if (i > 0) {
                         checkPageBreak(imageHeight + 10);
                     }
-                    
+
                     const rowStartY = yPosition;
-                    
+
                     // First image in row (left)
                     const img1 = remainingImages[i];
                     try {
                         const imgElement1 = new Image();
                         imgElement1.src = img1.data;
-                        
+
                         await new Promise((resolve) => {
                             if (imgElement1.complete) resolve();
                             else imgElement1.onload = resolve;
                         });
-                        
+
                         // Create canvas for cropping
                         const canvas1 = document.createElement('canvas');
                         const ctx1 = canvas1.getContext('2d');
-                        
+
                         const targetAspect = imageWidth / imageHeight;
                         const imgAspect1 = imgElement1.width / imgElement1.height;
-                        
+
                         let sourceWidth1, sourceHeight1, sourceX1, sourceY1;
-                        
+
                         if (imgAspect1 > targetAspect) {
                             sourceHeight1 = imgElement1.height;
                             sourceWidth1 = imgElement1.height * targetAspect;
@@ -1538,32 +1544,32 @@ class PDFExporter {
                             sourceX1 = 0;
                             sourceY1 = (imgElement1.height - sourceHeight1) / 2;
                         }
-                        
+
                         canvas1.width = 600;
                         canvas1.height = 600 * (imageHeight / imageWidth);
-                        
+
                         ctx1.drawImage(
                             imgElement1,
                             sourceX1, sourceY1, sourceWidth1, sourceHeight1,
                             0, 0, canvas1.width, canvas1.height
                         );
-                        
+
                         const croppedData1 = canvas1.toDataURL('image/jpeg', 0.90);
-                        
+
                         // Add frame for first image
                         const framePadding = 2;
                         const frameX1 = margin;
                         const frameY1 = yPosition;
                         const frameWidth1 = imageWidth + (framePadding * 2);
                         const frameHeight1 = imageHeight + (framePadding * 2);
-                        
+
                         // Draw frame background (light gray)
                         doc.setFillColor(245, 245, 245);
                         doc.rect(frameX1, frameY1, frameWidth1, frameHeight1, 'F');
-                        
+
                         // Add image
                         doc.addImage(croppedData1, 'JPEG', margin + framePadding, yPosition + framePadding, imageWidth, imageHeight);
-                        
+
                         // Add frame border
                         doc.setDrawColor(200, 200, 200);
                         doc.setLineWidth(0.3);
@@ -1571,27 +1577,27 @@ class PDFExporter {
                     } catch (error) {
                         console.warn('Could not add gallery image:', error);
                     }
-                    
+
                     // Second image in row (right) - if exists
                     if (i + 1 < remainingImages.length) {
                         const img2 = remainingImages[i + 1];
                         try {
                             const imgElement2 = new Image();
                             imgElement2.src = img2.data;
-                            
+
                             await new Promise((resolve) => {
                                 if (imgElement2.complete) resolve();
                                 else imgElement2.onload = resolve;
                             });
-                            
+
                             const canvas2 = document.createElement('canvas');
                             const ctx2 = canvas2.getContext('2d');
-                            
+
                             const targetAspect = imageWidth / imageHeight;
                             const imgAspect2 = imgElement2.width / imgElement2.height;
-                            
+
                             let sourceWidth2, sourceHeight2, sourceX2, sourceY2;
-                            
+
                             if (imgAspect2 > targetAspect) {
                                 sourceHeight2 = imgElement2.height;
                                 sourceWidth2 = imgElement2.height * targetAspect;
@@ -1603,33 +1609,33 @@ class PDFExporter {
                                 sourceX2 = 0;
                                 sourceY2 = (imgElement2.height - sourceHeight2) / 2;
                             }
-                            
+
                             canvas2.width = 600;
                             canvas2.height = 600 * (imageHeight / imageWidth);
-                            
+
                             ctx2.drawImage(
                                 imgElement2,
                                 sourceX2, sourceY2, sourceWidth2, sourceHeight2,
                                 0, 0, canvas2.width, canvas2.height
                             );
-                            
+
                             const croppedData2 = canvas2.toDataURL('image/jpeg', 0.90);
                             const secondImageX = margin + imageWidth + 5; // 5mm gap
-                            
+
                             // Add frame for second image
                             const framePadding = 2;
                             const frameX2 = secondImageX;
                             const frameY2 = yPosition;
                             const frameWidth2 = imageWidth + (framePadding * 2);
                             const frameHeight2 = imageHeight + (framePadding * 2);
-                            
+
                             // Draw frame background (light gray)
                             doc.setFillColor(245, 245, 245);
                             doc.rect(frameX2, frameY2, frameWidth2, frameHeight2, 'F');
-                            
+
                             // Add image
                             doc.addImage(croppedData2, 'JPEG', secondImageX + framePadding, yPosition + framePadding, imageWidth, imageHeight);
-                            
+
                             // Add frame border
                             doc.setDrawColor(200, 200, 200);
                             doc.setLineWidth(0.3);
@@ -1638,7 +1644,7 @@ class PDFExporter {
                             console.warn('Could not add gallery image:', error);
                         }
                     }
-                    
+
                     yPosition += imageHeight + 4 + 8; // Move down for next row (image + frame padding + gap)
                 }
             }
@@ -1691,14 +1697,14 @@ class PDFExporter {
         try {
             // Generate PDF
             const doc = await this.generatePDF(recipe);
-            
+
             // Create filename
             const sanitizedName = recipe.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
             const filename = `receta_${sanitizedName}_${recipe.id.substring(0, 8)}.pdf`;
-            
+
             // Download file
             this.downloadPDF(doc, filename);
-            
+
             return doc;
 
         } catch (error) {
@@ -1746,7 +1752,7 @@ class XMLImporter {
     static createMultiSelector(selectors) {
         return selectors.join(', ');
     }
-    
+
     /**
      * Import recipes from XML file
      * Requirements: 1.2, 4.1
@@ -1757,13 +1763,13 @@ class XMLImporter {
         try {
             // Validate file
             this.validateFile(file);
-            
+
             // Read file content
             const xmlString = await this.readFileContent(file);
-            
+
             // Parse XML and import recipes
             return await this.parseXMLString(xmlString);
-            
+
         } catch (error) {
             console.error('[XMLImporter] Error importing from file:', error);
             if (error instanceof ImportError) {
@@ -1775,7 +1781,7 @@ class XMLImporter {
             );
         }
     }
-    
+
     /**
      * Validate file before processing
      * Requirements: 1.2, 4.1
@@ -1789,7 +1795,7 @@ class XMLImporter {
                 ImportError.INVALID_FILE
             );
         }
-        
+
         // Check file type
         if (!file.type.includes('xml') && !file.name.toLowerCase().endsWith('.xml')) {
             throw new ImportError(
@@ -1797,7 +1803,7 @@ class XMLImporter {
                 ImportError.INVALID_FILE
             );
         }
-        
+
         // Check file size (50MB limit)
         const maxSize = 50 * 1024 * 1024; // 50MB
         if (file.size > maxSize) {
@@ -1807,7 +1813,7 @@ class XMLImporter {
                 ImportError.INVALID_FILE
             );
         }
-        
+
         // Check minimum size
         if (file.size < 10) {
             throw new ImportError(
@@ -1816,7 +1822,7 @@ class XMLImporter {
             );
         }
     }
-    
+
     /**
      * Read file content as text
      * @param {File} file - File to read
@@ -1825,22 +1831,22 @@ class XMLImporter {
     static readFileContent(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            
+
             reader.onload = (e) => {
                 resolve(e.target.result);
             };
-            
+
             reader.onerror = () => {
                 reject(new ImportError(
                     'Error al leer el archivo',
                     ImportError.INVALID_FILE
                 ));
             };
-            
+
             reader.readAsText(file, 'UTF-8');
         });
     }
-    
+
     /**
      * Parse XML string and extract recipes
      * Requirements: 1.3, 1.4, 4.2
@@ -1852,7 +1858,7 @@ class XMLImporter {
             // Parse XML
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
-            
+
             // Check for parsing errors
             const parserError = xmlDoc.querySelector('parsererror');
             if (parserError) {
@@ -1861,23 +1867,23 @@ class XMLImporter {
                     ImportError.INVALID_XML
                 );
             }
-            
+
             // Validate XML structure
             this.validateXMLStructure(xmlDoc);
-            
+
             // Determine if single or multiple recipes
             const recipesElement = xmlDoc.querySelector('recipes');
-            const recipeElements = recipesElement ? 
-                xmlDoc.querySelectorAll('recipes > recipe') : 
+            const recipeElements = recipesElement ?
+                xmlDoc.querySelectorAll('recipes > recipe') :
                 xmlDoc.querySelectorAll('recipe');
-            
+
             if (recipeElements.length === 0) {
                 throw new ImportError(
                     'No se encontraron recetas en el archivo XML',
                     ImportError.INVALID_STRUCTURE
                 );
             }
-            
+
             // Process recipes
             const results = {
                 successful: [],
@@ -1888,7 +1894,7 @@ class XMLImporter {
                     errors: 0
                 }
             };
-            
+
             for (let i = 0; i < recipeElements.length; i++) {
                 try {
                     const recipe = await this.parseRecipeElement(recipeElements[i]);
@@ -1904,9 +1910,9 @@ class XMLImporter {
                     results.summary.errors++;
                 }
             }
-            
+
             return results;
-            
+
         } catch (error) {
             console.error('[XMLImporter] Error parsing XML:', error);
             if (error instanceof ImportError) {
@@ -1918,7 +1924,7 @@ class XMLImporter {
             );
         }
     }
-    
+
     /**
      * Validate XML structure
      * Requirements: 1.4, 4.2
@@ -1929,14 +1935,14 @@ class XMLImporter {
         // Check for single recipe format
         const singleRecipe = xmlDoc.querySelector('recipe');
         const multipleRecipes = xmlDoc.querySelector('recipes');
-        
+
         if (!singleRecipe && !multipleRecipes) {
             throw new ImportError(
                 'El archivo XML no contiene recetas válidas. Debe tener un elemento <recipe> o <recipes>',
                 ImportError.INVALID_STRUCTURE
             );
         }
-        
+
         // If multiple recipes format, validate structure
         if (multipleRecipes) {
             const recipes = xmlDoc.querySelectorAll('recipes > recipe');
@@ -1948,7 +1954,7 @@ class XMLImporter {
             }
         }
     }
-    
+
     /**
      * Extract recipe name for error reporting
      * @param {Element} recipeElement - Recipe XML element
@@ -1962,7 +1968,7 @@ class XMLImporter {
             return null;
         }
     }
-    
+
     /**
      * Parse single recipe element
      * Requirements: 1.3, 2.1, 2.2, 2.3, 2.4
@@ -1979,7 +1985,7 @@ class XMLImporter {
             const preparationMethod = this.getElementText(recipeElement, 'preparationMethod');
             const author = this.getElementText(recipeElement, 'author');
             const history = this.getElementText(recipeElement, 'history');
-            
+
             // Validate required fields
             if (!name || name.trim() === '') {
                 throw new ImportError(
@@ -1987,24 +1993,24 @@ class XMLImporter {
                     ImportError.INVALID_RECIPE_DATA
                 );
             }
-            
+
             // Parse ingredients and create ID mapping
             const { ingredients, idMapping } = this.parseIngredientsWithMapping(recipeElement, {
                 supportCompactFormat: false
             });
-            
+
             // Parse addition sequences with ID mapping
             const additionSequences = this.parseSequences(recipeElement, idMapping, {
                 supportCompactFormat: false
             });
-            
+
             // Parse kitchen appliances
             const kitchenAppliances = this.parseKitchenAppliances(recipeElement);
-            
+
             // Parse multimedia
             const images = await this.parseImages(recipeElement);
             const videos = await this.parseVideos(recipeElement);
-            
+
             // Create recipe with new ID and current timestamp
             const recipeData = {
                 name: name.trim(),
@@ -2021,9 +2027,9 @@ class XMLImporter {
                 createdAt: new Date(),
                 updatedAt: new Date()
             };
-            
+
             return new Recipe(recipeData);
-            
+
         } catch (error) {
             console.error('[XMLImporter] Error parsing recipe element:', error);
             if (error instanceof ImportError) {
@@ -2035,7 +2041,7 @@ class XMLImporter {
             );
         }
     }
-    
+
     /**
      * Get text content from XML element
      * @param {Element} parent - Parent element
@@ -2046,7 +2052,7 @@ class XMLImporter {
         const element = parent.querySelector(tagName);
         return element ? element.textContent.trim() : '';
     }
-    
+
     /**
      * Parse ingredients from XML
      * @param {Element} recipeElement - Recipe XML element
@@ -2056,7 +2062,7 @@ class XMLImporter {
         const result = this.parseIngredientsWithMapping(recipeElement);
         return result.ingredients;
     }
-    
+
     /**
      * Parse ingredients from XML with ID mapping
      * Supports both full format (with <ingredient> elements) and compact format (with <i> elements)
@@ -2071,27 +2077,27 @@ class XMLImporter {
         const ingredients = [];
         const idMapping = new Map(); // oldId/name -> newId
         const ingredientsElement = recipeElement.querySelector('ingredients');
-        
+
         if (ingredientsElement) {
-            const selector = supportCompactFormat 
+            const selector = supportCompactFormat
                 ? this.createMultiSelector(['ingredient', 'i'])
                 : 'ingredient';
             const ingredientElements = ingredientsElement.querySelectorAll(selector);
-            
+
             ingredientElements.forEach((ingElement, index) => {
                 try {
                     // Support both formats for each field
                     const oldId = supportCompactFormat
                         ? (ingElement.querySelector('id')?.textContent || '').trim()
                         : this.getElementText(ingElement, 'id');
-                    
+
                     const nameSelector = supportCompactFormat
                         ? this.createMultiSelector(['n', 'name'])
                         : 'name';
                     const name = supportCompactFormat
                         ? (ingElement.querySelector(nameSelector)?.textContent || '').trim()
                         : this.getElementText(ingElement, 'name');
-                    
+
                     const quantitySelector = supportCompactFormat
                         ? this.createMultiSelector(['q', 'quantity'])
                         : 'quantity';
@@ -2099,16 +2105,16 @@ class XMLImporter {
                         ? (ingElement.querySelector(quantitySelector)?.textContent || '0')
                         : this.getElementText(ingElement, 'quantity');
                     const quantity = parseFloat(quantityText) || 0;
-                    
+
                     const unitSelector = supportCompactFormat
                         ? this.createMultiSelector(['u', 'unit'])
                         : 'unit';
                     const unit = supportCompactFormat
                         ? (ingElement.querySelector(unitSelector)?.textContent || '').trim()
                         : this.getElementText(ingElement, 'unit');
-                    
+
                     const order = parseInt(this.getElementText(ingElement, 'order')) || index;
-                    
+
                     if (name) {
                         const ingredient = new Ingredient({
                             name: name,
@@ -2116,14 +2122,14 @@ class XMLImporter {
                             unit: unit,
                             order: order
                         });
-                        
+
                         ingredients.push(ingredient);
-                        
+
                         // Map old ID to new ID
                         if (oldId) {
                             idMapping.set(oldId, ingredient.id);
                         }
-                        
+
                         // Also map by name for compact format (where sequences reference by name)
                         if (supportCompactFormat) {
                             idMapping.set(name, ingredient.id);
@@ -2134,10 +2140,10 @@ class XMLImporter {
                 }
             });
         }
-        
+
         return { ingredients, idMapping };
     }
-    
+
     /**
      * Parse addition sequences from XML with support for multiple formats
      * 
@@ -2158,27 +2164,27 @@ class XMLImporter {
     static parseSequences(recipeElement, idMapping = new Map(), options = {}) {
         const { supportCompactFormat = false } = options;
         const sequences = [];
-        
+
         // Support both formats
-        const sequencesElement = supportCompactFormat 
+        const sequencesElement = supportCompactFormat
             ? (recipeElement.querySelector('sequences') || recipeElement.querySelector('additionSequences'))
             : recipeElement.querySelector('additionSequences');
-        
+
         if (!sequencesElement) {
             console.log('[XMLImporter] No sequences found in recipe');
             return sequences;
         }
-        
-        const selector = supportCompactFormat 
+
+        const selector = supportCompactFormat
             ? this.createMultiSelector(['s', 'sequence'])
             : 'sequence';
         const sequenceElements = sequencesElement.querySelectorAll(selector);
-        
+
         if (sequenceElements.length === 0) {
             console.warn('[XMLImporter] Sequences element found but contains no sequence items');
             return sequences;
         }
-        
+
         sequenceElements.forEach((seqElement, index) => {
             try {
                 // Parse step number
@@ -2187,28 +2193,28 @@ class XMLImporter {
                     console.warn(`[XMLImporter] Sequence ${index + 1} missing step number, using index`);
                 }
                 const step = parseInt(stepText) || index + 1;
-                
+
                 // Parse duration - support both formats
                 const durationSelector = supportCompactFormat
                     ? this.createMultiSelector(['dur', 'duration'])
                     : 'duration';
                 const durationEl = seqElement.querySelector(durationSelector);
                 const duration = durationEl?.textContent || '';
-                
+
                 // Parse description - support both formats
                 const descriptionSelector = supportCompactFormat
                     ? this.createMultiSelector(['desc', 'description'])
                     : 'description';
                 const descriptionEl = seqElement.querySelector(descriptionSelector);
                 const description = descriptionEl?.textContent || '';
-                
+
                 // Parse ingredient references
                 const ingredientIds = this.parseSequenceIngredients(
-                    seqElement, 
-                    idMapping, 
+                    seqElement,
+                    idMapping,
                     supportCompactFormat
                 );
-                
+
                 sequences.push(new Sequence({
                     step: step,
                     ingredientIds: ingredientIds,
@@ -2219,10 +2225,10 @@ class XMLImporter {
                 console.warn(`[XMLImporter] Error parsing sequence ${index + 1}:`, error);
             }
         });
-        
+
         return sequences;
     }
-    
+
     /**
      * Parse ingredient references from a sequence element
      * Handles both compact format (ingredient names) and full format (ingredient IDs)
@@ -2234,13 +2240,13 @@ class XMLImporter {
      */
     static parseSequenceIngredients(seqElement, idMapping, supportCompactFormat) {
         const ingredientIds = [];
-        
+
         if (supportCompactFormat) {
             // Handle both compact (ings/ing) and full (ingredientNames/ingredientName or ingredientIds/ingredientId) formats
-            const ingsEl = seqElement.querySelector('ings') || 
-                          seqElement.querySelector('ingredientNames') ||
-                          seqElement.querySelector('ingredientIds');
-            
+            const ingsEl = seqElement.querySelector('ings') ||
+                seqElement.querySelector('ingredientNames') ||
+                seqElement.querySelector('ingredientIds');
+
             if (ingsEl) {
                 const ingSelector = XMLImporter.createMultiSelector(['ing', 'ingredientName', 'ingredientId']);
                 const ingElements = ingsEl.querySelectorAll(ingSelector);
@@ -2268,10 +2274,10 @@ class XMLImporter {
                 });
             }
         }
-        
+
         return ingredientIds;
     }
-    
+
     /**
      * Parse kitchen appliances from XML
      * @param {Element} recipeElement - Recipe XML element
@@ -2280,10 +2286,10 @@ class XMLImporter {
     static parseKitchenAppliances(recipeElement) {
         const appliances = [];
         const appliancesElement = recipeElement.querySelector('kitchenAppliances');
-        
+
         if (appliancesElement) {
             const applianceElements = appliancesElement.querySelectorAll('appliance');
-            
+
             applianceElements.forEach(appElement => {
                 const applianceId = appElement.textContent.trim();
                 if (applianceId) {
@@ -2291,10 +2297,10 @@ class XMLImporter {
                 }
             });
         }
-        
+
         return appliances;
     }
-    
+
     /**
      * Parse images from XML
      * Requirements: 3.1, 3.2, 3.3, 3.4
@@ -2304,24 +2310,24 @@ class XMLImporter {
     static async parseImages(recipeElement) {
         const images = [];
         const imagesElement = recipeElement.querySelector('images');
-        
+
         if (imagesElement) {
             const imageElements = imagesElement.querySelectorAll('image');
-            
+
             for (const imgElement of imageElements) {
                 try {
                     const name = this.getElementText(imgElement, 'name');
                     const type = this.getElementText(imgElement, 'type');
                     const data = this.getElementText(imgElement, 'data');
                     const size = parseInt(this.getElementText(imgElement, 'size')) || 0;
-                    
+
                     if (name && type && data) {
                         // Validate image data
                         if (!data.startsWith('data:image/')) {
                             console.warn(`[XMLImporter] Invalid image data format for ${name}`);
                             continue;
                         }
-                        
+
                         images.push(new MediaFile({
                             name: name,
                             type: type,
@@ -2334,10 +2340,10 @@ class XMLImporter {
                 }
             }
         }
-        
+
         return images;
     }
-    
+
     /**
      * Parse videos from XML
      * Requirements: 3.1, 3.2, 3.3, 3.4
@@ -2347,24 +2353,24 @@ class XMLImporter {
     static async parseVideos(recipeElement) {
         const videos = [];
         const videosElement = recipeElement.querySelector('videos');
-        
+
         if (videosElement) {
             const videoElements = videosElement.querySelectorAll('video');
-            
+
             for (const vidElement of videoElements) {
                 try {
                     const name = this.getElementText(vidElement, 'name');
                     const type = this.getElementText(vidElement, 'type');
                     const data = this.getElementText(vidElement, 'data');
                     const size = parseInt(this.getElementText(vidElement, 'size')) || 0;
-                    
+
                     if (name && type && data) {
                         // Validate video data
                         if (!data.startsWith('data:video/')) {
                             console.warn(`[XMLImporter] Invalid video data format for ${name}`);
                             continue;
                         }
-                        
+
                         videos.push(new MediaFile({
                             name: name,
                             type: type,
@@ -2377,7 +2383,7 @@ class XMLImporter {
                 }
             }
         }
-        
+
         return videos;
     }
 }
