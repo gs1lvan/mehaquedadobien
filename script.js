@@ -5566,7 +5566,12 @@ class RecipeApp {
         const imagesGallery = document.getElementById('detail-images-gallery');
         const videosGallery = document.getElementById('detail-videos-gallery');
 
-        if (!sectionElement || !imagesGallery || !videosGallery) return;
+        console.log('[Multimedia] Rendering:', { images: images?.length, videos: videos?.length });
+
+        if (!sectionElement || !imagesGallery || !videosGallery) {
+            console.warn('[Multimedia] Missing elements');
+            return;
+        }
 
         // Clear galleries
         imagesGallery.innerHTML = '';
@@ -5581,6 +5586,7 @@ class RecipeApp {
         }
 
         sectionElement.style.display = 'block';
+        console.log('[Multimedia] Showing section with', images?.length, 'images');
 
         // NUEVO: Render images using gallery for 2+ images
         if (hasImages) {
