@@ -7196,81 +7196,33 @@ class RecipeApp {
     }
 
     /**
-     * Show share options for recipe
+     * Share recipe - generates short link and copies to clipboard
      * @param {Recipe} recipe - Recipe object to share
      */
     async showShareRecipe(recipe) {
+        // Show loading notification
+        showNotification('⏳ Generando enlace...', 'info');
+        
         const shareLink = this.generateShareLink(recipe);
         
-        // Create modal
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
-        
-        const modalContent = document.createElement('div');
-        modalContent.style.cssText = 'background: var(--color-background); padding: 24px; border-radius: 12px; max-width: 500px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.2);';
-        
-        modalContent.innerHTML = `
-            <h2 style="margin: 0 0 16px 0; color: var(--color-text);">🔗 Compartir Receta</h2>
-            <p style="margin: 0 0 12px 0; color: var(--color-text-secondary); font-size: 0.875rem;">
-                Generando enlace corto...
-            </p>
-            <div id="link-container" style="background: var(--color-surface); padding: 12px; border-radius: 8px; margin: 16px 0; word-break: break-all; font-size: 0.875rem; color: var(--color-text-secondary); text-align: center;">
-                ⏳ Acortando enlace...
-            </div>
-            <div style="display: flex; gap: 12px;">
-                <button id="copy-link-btn" class="btn-primary" style="flex: 1; padding: 12px;" disabled>
-                    📋 Copiar Enlace
-                </button>
-                <button id="close-share-modal" class="btn-secondary" style="padding: 12px;">
-                    Cerrar
-                </button>
-            </div>
-        `;
-        
-        modal.appendChild(modalContent);
-        document.body.appendChild(modal);
-        
-        // Shorten URL using is.gd (free, no API key needed)
+        // Try to shorten URL using is.gd (free, no API key needed)
         let finalLink = shareLink;
         try {
             const response = await fetch(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(shareLink)}`);
             if (response.ok) {
                 finalLink = await response.text();
-                document.getElementById('link-container').textContent = finalLink;
-                document.querySelector('#link-container').previousElementSibling.textContent = 'Comparte esta receta con este enlace corto:';
-            } else {
-                throw new Error('URL shortener failed');
             }
         } catch (error) {
             console.warn('[Share] Could not shorten URL, using original:', error);
-            document.getElementById('link-container').textContent = shareLink;
-            document.querySelector('#link-container').previousElementSibling.textContent = 'Comparte esta receta con un enlace:';
         }
         
-        // Enable copy button
-        const copyBtn = document.getElementById('copy-link-btn');
-        copyBtn.disabled = false;
-        copyBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(finalLink).then(() => {
-                showNotification('✓ Enlace copiado al portapapeles', 'success');
-                modal.remove();
-            }).catch(() => {
-                showNotification('Error al copiar el enlace', 'error');
-            });
-        });
-        
-        // Close button
-        document.getElementById('close-share-modal').addEventListener('click', () => {
-            modal.remove();
-        });
-        
-        // Close on overlay click
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.remove();
-            }
-        });
+        // Copy to clipboard
+        try {
+            await navigator.clipboard.writeText(finalLink);
+            showNotification('✓ Enlace copiado. Comparte: ' + finalLink, 'success');
+        } catch (error) {
+            showNotification('Error al copiar el enlace', 'error');
+        }
     }
 
     // ===== Shopping Lists Management =====
@@ -9044,10 +8996,10 @@ window.addEventListener('beforeinstallprompt', (e) => {
     // Guardar el evento para usarlo después
     deferredPrompt = e;
 
-    // Mostrar botón de instalación personalizado si no está instalado
-    if (!isStandalone()) {
-        showInstallButton();
-    }
+    // Banner de instalación desactivado
+    // if (!isStandalone()) {
+    //     showInstallButton();
+    // }
 });
 
 /**
