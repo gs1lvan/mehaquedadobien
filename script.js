@@ -7285,6 +7285,15 @@ class RecipeApp {
         const serializer = new XMLSerializer();
         const xmlString = serializer.serializeToString(xmlDoc);
         
+        // Debug: Log what we're exporting
+        console.log('[Share] Exporting recipe:', {
+            name: recipe.name,
+            author: recipe.author,
+            history: recipe.history,
+            caravanFriendly: recipe.caravanFriendly
+        });
+        console.log('[Share] XML generated:', xmlString.substring(0, 500));
+        
         // Encode and create share URL with recipe name for preview
         const base64Data = btoa(encodeURIComponent(xmlString));
         const recipeName = encodeURIComponent(recipe.name);
@@ -8929,6 +8938,16 @@ function parseCompactXML(xmlString) {
         });
     }
     
+    // Debug: Log what we parsed
+    console.log('[Parse] Parsed recipe data:', {
+        name: recipeData.name,
+        author: recipeData.author,
+        history: recipeData.history,
+        caravanFriendly: recipeData.caravanFriendly,
+        hasImages: recipeData.images.length > 0,
+        hasVideos: recipeData.videos.length > 0
+    });
+    
     return recipeData;
 }
 
@@ -9037,6 +9056,14 @@ async function importRecipeFromLink(recipeData) {
         // If name exists, add " - importado" suffix
         const finalName = nameExists ? `${recipeData.name} - importado` : recipeData.name;
         
+        // Debug: Log what we're importing
+        console.log('[Import] Creating recipe with data:', {
+            name: finalName,
+            author: recipeData.author,
+            history: recipeData.history,
+            caravanFriendly: recipeData.caravanFriendly
+        });
+        
         // Create new Recipe instance with imported data
         const newRecipe = new Recipe({
             name: finalName,
@@ -9051,6 +9078,15 @@ async function importRecipeFromLink(recipeData) {
             kitchenAppliances: recipeData.kitchenAppliances || [],
             images: recipeData.images || [],
             videos: recipeData.videos || []
+        });
+        
+        // Debug: Log created recipe
+        console.log('[Import] Recipe created:', {
+            id: newRecipe.id,
+            name: newRecipe.name,
+            author: newRecipe.author,
+            history: newRecipe.history,
+            caravanFriendly: newRecipe.caravanFriendly
         });
         
         // Save recipe using StorageManager
