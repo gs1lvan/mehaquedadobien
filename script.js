@@ -4,6 +4,7 @@
  * Predefined categories that come with the application
  */
 const PREDEFINED_CATEGORIES = [
+    { id: 'caldo', name: 'Caldo', emoji: '🍲', color: '#FF8C42', isPredefined: true },
     { id: 'carne', name: 'Carne', emoji: '🥩', color: '#D93B30', isPredefined: true },
     { id: 'cereales', name: 'Cereales', emoji: '🌾', color: '#C4A053', isPredefined: true },
     { id: 'cerdo', name: 'Cerdo', emoji: '🐷', color: '#FFB6C1', isPredefined: true },

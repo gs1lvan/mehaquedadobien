@@ -4376,9 +4376,12 @@ select {
 }
 
 @keyframes pulse-green {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.85;
     }
@@ -4545,10 +4548,13 @@ select {
 }
 
 @keyframes reorderPulse {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
         background: transparent;
     }
+
     50% {
         transform: scale(1.02);
         background: var(--color-background-secondary);
