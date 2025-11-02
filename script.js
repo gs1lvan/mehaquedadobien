@@ -8864,29 +8864,15 @@ async function importRecipeFromLink(recipeData) {
         }
         
         // Create new Recipe instance with imported data
-        const newRecipe = new Recipe(
-            recipeData.name,
-            recipeData.category || '',
-            recipeData.ingredients || [],
-            recipeData.preparationMethod || '',
-            recipeData.totalTime || ''
-        );
-        
-        // Add addition sequences if present
-        if (recipeData.additionSequences && recipeData.additionSequences.length > 0) {
-            newRecipe.additionSequences = recipeData.additionSequences.map((seq, index) => ({
-                id: Date.now() + index,
-                step: seq.step || index + 1,
-                ingredientIds: seq.ingredientIds || [],
-                duration: seq.duration || '',
-                description: seq.description || ''
-            }));
-        }
-        
-        // Add kitchen appliances if present
-        if (recipeData.kitchenAppliances && recipeData.kitchenAppliances.length > 0) {
-            newRecipe.kitchenAppliances = recipeData.kitchenAppliances;
-        }
+        const newRecipe = new Recipe({
+            name: recipeData.name,
+            category: recipeData.category || '',
+            ingredients: recipeData.ingredients || [],
+            preparationMethod: recipeData.preparationMethod || '',
+            totalTime: recipeData.totalTime || '',
+            additionSequences: recipeData.additionSequences || [],
+            kitchenAppliances: recipeData.kitchenAppliances || []
+        });
         
         // Save recipe using StorageManager
         await window.recipeApp.storageManager.saveRecipe(newRecipe);
