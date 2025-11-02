@@ -7205,12 +7205,18 @@ class RecipeApp {
         // Encode recipe XML in base64
         const base64Data = btoa(encodeURIComponent(recipeData));
         
-        // Build URL with GitHub Pages domain
-        const appURL = `https://gs1lvan.github.io/mehaquedadobien/#import=${base64Data}`;
+        // Build URL with GitHub Pages domain (using query parameter instead of hash)
+        const appURL = `https://gs1lvan.github.io/mehaquedadobien/?import=${base64Data}`;
+        console.log('[QR] Generated app URL:', appURL.substring(0, 100) + '...');
+        console.log('[QR] Base64 length:', base64Data.length);
+        
         const encodedURL = encodeURIComponent(appURL);
         
         // Build QR API URL with options
-        return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodedURL}&ecc=${errorCorrection}&margin=${margin}`;
+        const qrApiURL = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodedURL}&ecc=${errorCorrection}&margin=${margin}`;
+        console.log('[QR] QR API URL length:', qrApiURL.length);
+        
+        return qrApiURL;
     }
 
     /**
@@ -8624,21 +8630,19 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Check URL hash for recipe import data and import automatically
+ * Check URL for recipe import data and import automatically
  */
 async function checkForRecipeImport() {
-    const hash = window.location.hash;
+    // Check query parameters first (more reliable on mobile)
+    const urlParams = new URLSearchParams(window.location.search);
+    const importParam = urlParams.get('import');
     
-    // Handle full recipe import
-    if (hash.startsWith('#import=')) {
+    if (importParam) {
         try {
-            console.log('[Import] Hash detected:', hash.substring(0, 50) + '...');
+            console.log('[Import] Query parameter detected');
+            console.log('[Import] Base64 length:', importParam.length);
             
-            // Extract and decode recipe data
-            const base64Data = hash.substring(8); // Remove '#import='
-            console.log('[Import] Base64 length:', base64Data.length);
-            
-            const decodedData = decodeURIComponent(atob(base64Data));
+            const decodedData = decodeURIComponent(atob(importParam));
             console.log('[Import] Decoded data:', decodedData.substring(0, 200));
             
             let recipeData;
@@ -8646,11 +8650,9 @@ async function checkForRecipeImport() {
             // Detect if data is XML or JSON
             if (decodedData.trim().startsWith('<')) {
                 console.log('[Import] Detected XML format');
-                // XML format - parse it
                 recipeData = parseCompactXML(decodedData);
             } else {
                 console.log('[Import] Detected JSON format');
-                // JSON format (legacy support)
                 const rawData = JSON.parse(decodedData);
                 recipeData = expandRecipeData(rawData);
             }
@@ -8663,7 +8665,7 @@ async function checkForRecipeImport() {
             // Show success modal
             showImportSuccessModal(recipeData);
             
-            // Clean URL hash
+            // Clean URL
             history.replaceState(null, '', window.location.pathname);
             
         } catch (error) {
@@ -8671,16 +8673,35 @@ async function checkForRecipeImport() {
             console.error('[Import] Error stack:', error.stack);
             showNotification('Error al importar la receta. Código QR inválido. Ver consola para detalles.', 'error');
         }
+        return;
     }
     
-    // Handle recipe ID reference (for very small QR codes)
-    if (hash.startsWith('#r=')) {
+    // Fallback: check hash for legacy support
+    const hash = window.location.hash;
+    
+    if (hash.startsWith('#import=')) {
         try {
-            const recipeId = parseInt(hash.substring(3));
-            showNotification('Este QR requiere sincronización con el dispositivo original.', 'info');
-            // Future: Could fetch from a shared database
+            console.log('[Import] Hash detected (legacy):', hash.substring(0, 50) + '...');
+            
+            const base64Data = hash.substring(8);
+            const decodedData = decodeURIComponent(atob(base64Data));
+            
+            let recipeData;
+            
+            if (decodedData.trim().startsWith('<')) {
+                recipeData = parseCompactXML(decodedData);
+            } else {
+                const rawData = JSON.parse(decodedData);
+                recipeData = expandRecipeData(rawData);
+            }
+            
+            await importRecipeFromQR(recipeData);
+            showImportSuccessModal(recipeData);
+            history.replaceState(null, '', window.location.pathname);
+            
         } catch (error) {
-            console.error('[Import] Error parsing recipe ID:', error);
+            console.error('[Import] Error details:', error);
+            showNotification('Error al importar la receta. Código QR inválido.', 'error');
         }
     }
 }

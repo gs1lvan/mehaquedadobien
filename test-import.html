@@ -79,12 +79,16 @@
         // Mostrar URL completa
         document.getElementById('full-url').textContent = window.location.href;
         
+        // Check query parameters first
+        const urlParams = new URLSearchParams(window.location.search);
+        const importParam = urlParams.get('import');
+        
         // Mostrar hash
         const hash = window.location.hash;
-        document.getElementById('hash').textContent = hash || '(vacío)';
+        document.getElementById('hash').textContent = importParam ? `?import=${importParam.substring(0, 50)}...` : (hash || '(vacío)');
         
-        // Verificar si tiene #import=
-        const hasImport = hash.startsWith('#import=');
+        // Verificar si tiene import
+        const hasImport = importParam || hash.startsWith('#import=');
         document.getElementById('has-import').textContent = hasImport ? '✅ SÍ' : '❌ NO';
         
         if (hasImport) {
@@ -92,7 +96,7 @@
             
             try {
                 // Extraer base64
-                const base64Data = hash.substring(8);
+                const base64Data = importParam || hash.substring(8);
                 document.getElementById('base64').textContent = base64Data.substring(0, 100) + '...';
                 
                 // Decodificar
