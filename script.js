@@ -8647,9 +8647,13 @@ function showImportSuccessModal(recipeData) {
     // Auto-close after 2 seconds and go to home
     const autoCloseTimer = setTimeout(() => {
         modal.remove();
-        // Go to home page (list view)
+        // Go to home page (list view) and ensure recipe is visible
         if (window.recipeApp) {
+            // Clear all filters to ensure imported recipe is visible
+            window.recipeApp.activeFilters.clear();
+            window.recipeApp.activeTimeFilter = 'all';
             window.recipeApp.showListView();
+            window.recipeApp.renderRecipeList();
         }
     }, 2000);
     
@@ -8669,7 +8673,11 @@ function showImportSuccessModal(recipeData) {
             clearTimeout(autoCloseTimer);
             modal.remove();
             if (window.recipeApp) {
+                // Clear all filters to ensure imported recipe is visible
+                window.recipeApp.activeFilters.clear();
+                window.recipeApp.activeTimeFilter = 'all';
                 window.recipeApp.showListView();
+                window.recipeApp.renderRecipeList();
             }
         }
     });
