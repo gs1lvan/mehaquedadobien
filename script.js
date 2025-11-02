@@ -2108,9 +2108,12 @@ class RecipeApp {
             });
         }
 
-        // Allow Enter key to add ingredient
+        // Allow Enter key to add ingredient (except for ingredient-name which has autocomplete)
         const ingredientInputs = document.querySelectorAll('.ingredient-input');
         ingredientInputs.forEach(input => {
+            // Skip ingredient-name input as it has special autocomplete handling
+            if (input.id === 'ingredient-name') return;
+            
             input.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -2130,13 +2133,21 @@ class RecipeApp {
         const nameInput = document.getElementById('ingredient-name');
         const autocompleteDiv = document.getElementById('ingredient-autocomplete');
         
-        if (!nameInput || !autocompleteDiv) return;
+        if (!nameInput || !autocompleteDiv) {
+            console.warn('[Autocomplete] Ingredient name input or autocomplete div not found');
+            return;
+        }
+
+        // Remove existing listeners to avoid duplicates
+        const newNameInput = nameInput.cloneNode(true);
+        nameInput.parentNode.replaceChild(newNameInput, nameInput);
+        const nameInputRef = document.getElementById('ingredient-name');
 
         let currentSuggestionIndex = -1;
 
         // Show autocomplete on input
-        nameInput.addEventListener('input', () => {
-            const value = nameInput.value.trim().toLowerCase();
+        nameInputRef.addEventListener('input', () => {
+            const value = nameInputRef.value.trim().toLowerCase();
             
             // Hide if less than 2 characters
             if (value.length < 2) {
@@ -2144,14 +2155,14 @@ class RecipeApp {
                 return;
             }
 
-            // Filter predefined ingredients
+            // Filter predefined ingredients (only match from the start)
             const matches = PREDEFINED_INGREDIENTS.filter(ingredient => 
-                ingredient.toLowerCase().includes(value)
+                ingredient.toLowerCase().startsWith(value)
             );
 
             // Show suggestions if there are matches
             if (matches.length > 0) {
-                this.showIngredientAutocomplete(nameInput, autocompleteDiv, matches);
+                this.showIngredientAutocomplete(nameInputRef, autocompleteDiv, matches);
                 currentSuggestionIndex = -1;
             } else {
                 autocompleteDiv.style.display = 'none';
@@ -2159,10 +2170,27 @@ class RecipeApp {
         });
 
         // Keyboard navigation
-        nameInput.addEventListener('keydown', (e) => {
-            if (!autocompleteDiv || autocompleteDiv.style.display === 'none') return;
-
+        nameInputRef.addEventListener('keydown', (e) => {
+            const isAutocompleteVisible = autocompleteDiv && autocompleteDiv.style.display !== 'none';
             const suggestions = autocompleteDiv.querySelectorAll('.autocomplete-item');
+            
+            if (e.key === 'Enter') {
+                // If autocomplete is visible and a suggestion is selected
+                if (isAutocompleteVisible && currentSuggestionIndex >= 0) {
+                    e.preventDefault();
+                    suggestions[currentSuggestionIndex].click();
+                    return;
+                }
+                // If autocomplete is NOT visible, add the ingredient
+                if (!isAutocompleteVisible) {
+                    e.preventDefault();
+                    this.handleAddIngredient();
+                    return;
+                }
+            }
+            
+            // Only handle arrow keys if autocomplete is visible
+            if (!isAutocompleteVisible) return;
             
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
@@ -2172,9 +2200,6 @@ class RecipeApp {
                 e.preventDefault();
                 currentSuggestionIndex = currentSuggestionIndex <= 0 ? suggestions.length - 1 : currentSuggestionIndex - 1;
                 this.highlightSuggestion(suggestions, currentSuggestionIndex);
-            } else if (e.key === 'Enter' && currentSuggestionIndex >= 0) {
-                e.preventDefault();
-                suggestions[currentSuggestionIndex].click();
             } else if (e.key === 'Escape') {
                 autocompleteDiv.style.display = 'none';
                 currentSuggestionIndex = -1;
@@ -2182,12 +2207,20 @@ class RecipeApp {
         });
 
         // Close autocomplete when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!nameInput.contains(e.target) && !autocompleteDiv.contains(e.target)) {
+        const closeAutocomplete = (e) => {
+            if (!nameInputRef.contains(e.target) && !autocompleteDiv.contains(e.target)) {
                 autocompleteDiv.style.display = 'none';
                 currentSuggestionIndex = -1;
             }
-        });
+        };
+        
+        // Store reference to remove later if needed
+        if (!this._ingredientAutocompleteClickHandler) {
+            this._ingredientAutocompleteClickHandler = closeAutocomplete;
+            document.addEventListener('click', closeAutocomplete);
+        }
+        
+        console.log('[Autocomplete] Ingredient autocomplete initialized successfully');
     }
 
     /**
@@ -3055,6 +3088,11 @@ class RecipeApp {
         // Update current view state
         this.currentView = 'form';
         this.currentRecipeId = recipeId;
+
+        // Re-initialize ingredient autocomplete to ensure it works
+        setTimeout(() => {
+            this.setupIngredientAutocomplete();
+        }, 100);
 
         // Scroll to top
         window.scrollTo(0, 0);

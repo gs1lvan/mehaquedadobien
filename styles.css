@@ -4732,3 +4732,37 @@ body.dark-theme .empty-state {
 body.dark-theme .shopping-item-input.existing-item::after {
     background: var(--color-background);
 }
+
+
+/* ===== Ingredient Autocomplete ===== */
+.autocomplete-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    margin-top: 4px;
+}
+
+.autocomplete-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    font-size: 0.9375rem;
+    color: var(--color-text);
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.active {
+    background: var(--color-background-secondary);
+}
+
+.autocomplete-item:active {
+    background: var(--color-border-light);
+}
