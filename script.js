@@ -8624,7 +8624,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Check URL hash for recipe import data and show import modal
+ * Check URL hash for recipe import data and import automatically
  */
 function checkForRecipeImport() {
     const hash = window.location.hash;
@@ -8634,14 +8634,25 @@ function checkForRecipeImport() {
         try {
             // Extract and decode recipe data
             const base64Data = hash.substring(8); // Remove '#import='
-            const jsonData = decodeURIComponent(atob(base64Data));
-            const rawData = JSON.parse(jsonData);
+            const decodedData = decodeURIComponent(atob(base64Data));
             
-            // Convert compact format to full format if needed
-            const recipeData = expandRecipeData(rawData);
+            let recipeData;
             
-            // Show import confirmation modal
-            showRecipeImportModal(recipeData);
+            // Detect if data is XML or JSON
+            if (decodedData.trim().startsWith('<')) {
+                // XML format - parse it
+                recipeData = parseCompactXML(decodedData);
+            } else {
+                // JSON format (legacy support)
+                const rawData = JSON.parse(decodedData);
+                recipeData = expandRecipeData(rawData);
+            }
+            
+            // Import automatically without confirmation
+            importRecipeFromQR(recipeData);
+            
+            // Show success modal
+            showImportSuccessModal(recipeData);
             
             // Clean URL hash
             history.replaceState(null, '', window.location.pathname);
@@ -8662,6 +8673,127 @@ function checkForRecipeImport() {
             console.error('[Import] Error parsing recipe ID:', error);
         }
     }
+}
+
+/**
+ * Show success modal after automatic import
+ * @param {Object} recipeData - Imported recipe data
+ */
+function showImportSuccessModal(recipeData) {
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+    
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = 'background: var(--color-background); padding: 32px; border-radius: 12px; max-width: 450px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.2); text-align: center;';
+    
+    modalContent.innerHTML = `
+        <div style="font-size: 64px; margin-bottom: 16px;">✅</div>
+        <h2 style="margin: 0 0 12px 0; color: var(--color-text);">¡Receta Importada!</h2>
+        <p style="margin: 0 0 8px 0; color: var(--color-text); font-size: 1.125rem; font-weight: 500;">
+            ${recipeData.name}
+        </p>
+        <p style="margin: 0 0 24px 0; color: var(--color-text-secondary); font-size: 0.875rem;">
+            La receta se ha añadido correctamente a tu colección
+        </p>
+        <button id="close-success-modal" class="btn-primary" style="padding: 12px 32px; width: 100%;">
+            Ver Receta
+        </button>
+    `;
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    // Close button handler
+    document.getElementById('close-success-modal').addEventListener('click', () => {
+        modal.remove();
+        // Show the imported recipe if app is ready
+        if (window.recipeApp) {
+            const recipes = JSON.parse(localStorage.getItem('recipes') || '[]');
+            const importedRecipe = recipes.find(r => r.name === recipeData.name);
+            if (importedRecipe) {
+                window.recipeApp.showRecipeDetail(importedRecipe.id);
+            }
+        }
+    });
+    
+    // Close on overlay click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+}
+
+/**
+ * Parse compact XML format from QR code
+ * @param {string} xmlString - Compact XML string
+ * @returns {Object} Recipe data object
+ */
+function parseCompactXML(xmlString) {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+    const root = xmlDoc.documentElement;
+    
+    // Check for parsing errors
+    if (root.querySelector('parsererror')) {
+        throw new Error('Invalid XML format');
+    }
+    
+    const getElementText = (tagName) => {
+        const el = root.querySelector(tagName);
+        return el ? el.textContent : '';
+    };
+    
+    // Extract basic fields
+    const recipeData = {
+        name: getElementText('name'),
+        category: getElementText('category'),
+        totalTime: getElementText('totalTime'),
+        preparationMethod: getElementText('preparationMethod'),
+        ingredients: [],
+        additionSequences: [],
+        kitchenAppliances: []
+    };
+    
+    // Parse ingredients
+    const ingredientsEl = root.querySelector('ingredients');
+    if (ingredientsEl) {
+        const ingElements = ingredientsEl.querySelectorAll('i');
+        ingElements.forEach(ingEl => {
+            recipeData.ingredients.push({
+                name: ingEl.querySelector('n')?.textContent || '',
+                quantity: ingEl.querySelector('q')?.textContent || '',
+                unit: ingEl.querySelector('u')?.textContent || ''
+            });
+        });
+    }
+    
+    // Parse sequences
+    const sequencesEl = root.querySelector('sequences');
+    if (sequencesEl) {
+        const seqElements = sequencesEl.querySelectorAll('s');
+        seqElements.forEach(seqEl => {
+            recipeData.additionSequences.push({
+                step: parseInt(seqEl.querySelector('step')?.textContent || '0'),
+                duration: seqEl.querySelector('dur')?.textContent || '',
+                description: seqEl.querySelector('desc')?.textContent || ''
+            });
+        });
+    }
+    
+    // Parse appliances
+    const appliancesEl = root.querySelector('appliances');
+    if (appliancesEl) {
+        const appElements = appliancesEl.querySelectorAll('a');
+        appElements.forEach(appEl => {
+            recipeData.kitchenAppliances.push(appEl.textContent);
+        });
+    }
+    
+    return recipeData;
 }
 
 /**
