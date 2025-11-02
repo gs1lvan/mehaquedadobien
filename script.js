@@ -7242,45 +7242,9 @@ class RecipeApp {
             root.appendChild(appEl);
         }
         
-        // Images
-        if (recipe.images && recipe.images.length > 0) {
-            const imgsEl = xmlDoc.createElement('images');
-            recipe.images.forEach(img => {
-                const imgEl = xmlDoc.createElement('img');
-                if (img.url) {
-                    const urlEl = xmlDoc.createElement('url');
-                    urlEl.textContent = img.url;
-                    imgEl.appendChild(urlEl);
-                }
-                if (img.caption) {
-                    const capEl = xmlDoc.createElement('cap');
-                    capEl.textContent = img.caption;
-                    imgEl.appendChild(capEl);
-                }
-                imgsEl.appendChild(imgEl);
-            });
-            root.appendChild(imgsEl);
-        }
-        
-        // Videos
-        if (recipe.videos && recipe.videos.length > 0) {
-            const vidsEl = xmlDoc.createElement('videos');
-            recipe.videos.forEach(vid => {
-                const vidEl = xmlDoc.createElement('vid');
-                if (vid.url) {
-                    const urlEl = xmlDoc.createElement('url');
-                    urlEl.textContent = vid.url;
-                    vidEl.appendChild(urlEl);
-                }
-                if (vid.caption) {
-                    const capEl = xmlDoc.createElement('cap');
-                    capEl.textContent = vid.caption;
-                    vidEl.appendChild(capEl);
-                }
-                vidsEl.appendChild(vidEl);
-            });
-            root.appendChild(vidsEl);
-        }
+        // Note: Images and videos are not exported in share links
+        // because they contain large base64 data that would make URLs too long
+        // They are only preserved when exporting to XML file
         
         const serializer = new XMLSerializer();
         const xmlString = serializer.serializeToString(xmlDoc);
@@ -8914,29 +8878,8 @@ function parseCompactXML(xmlString) {
         });
     }
     
-    // Parse images
-    const imagesEl = root.querySelector('images');
-    if (imagesEl) {
-        const imgElements = imagesEl.querySelectorAll('img');
-        imgElements.forEach(imgEl => {
-            recipeData.images.push({
-                url: imgEl.querySelector('url')?.textContent || '',
-                caption: imgEl.querySelector('cap')?.textContent || ''
-            });
-        });
-    }
-    
-    // Parse videos
-    const videosEl = root.querySelector('videos');
-    if (videosEl) {
-        const vidElements = videosEl.querySelectorAll('vid');
-        vidElements.forEach(vidEl => {
-            recipeData.videos.push({
-                url: vidEl.querySelector('url')?.textContent || '',
-                caption: vidEl.querySelector('cap')?.textContent || ''
-            });
-        });
-    }
+    // Note: Images and videos are not imported from share links
+    // They remain empty arrays as initialized above
     
     // Debug: Log what we parsed
     console.log('[Parse] Parsed recipe data:', {
@@ -9064,6 +9007,14 @@ async function importRecipeFromLink(recipeData) {
             caravanFriendly: recipeData.caravanFriendly
         });
         
+        // Filter images and videos to only include valid MediaFiles
+        const validImages = (recipeData.images || []).filter(img => 
+            img.name && img.type && img.data
+        );
+        const validVideos = (recipeData.videos || []).filter(vid => 
+            vid.name && vid.type && vid.data
+        );
+        
         // Create new Recipe instance with imported data
         const newRecipe = new Recipe({
             name: finalName,
@@ -9076,8 +9027,8 @@ async function importRecipeFromLink(recipeData) {
             caravanFriendly: recipeData.caravanFriendly || false,
             additionSequences: recipeData.additionSequences || [],
             kitchenAppliances: recipeData.kitchenAppliances || [],
-            images: recipeData.images || [],
-            videos: recipeData.videos || []
+            images: validImages,
+            videos: validVideos
         });
         
         // Debug: Log created recipe

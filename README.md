@@ -70,15 +70,20 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 ## 🎨 Última Actualización
 
 **Fecha:** 2 de noviembre de 2025  
-**Cambio:** Importación completa de recetas compartidas - Se ha completado la funcionalidad de compartir recetas para garantizar que todos los campos se importen correctamente:
+**Cambio:** Validación mejorada de archivos multimedia en importación - Se ha añadido filtrado automático de archivos multimedia durante la importación de recetas:
+- ✅ Validación de imágenes: solo se importan archivos con propiedades válidas (name, type, data)
+- ✅ Validación de videos: filtrado de archivos corruptos o incompletos
+- ✅ Mayor robustez: previene errores al importar recetas con datos multimedia malformados
+- ✅ Compatibilidad: mantiene retrocompatibilidad con recetas antiguas
+
+**Fecha:** 2 de noviembre de 2025  
+**Cambio anterior:** Exportación mejorada de recetas al compartir - Se ha completado la funcionalidad de compartir recetas para incluir todos los campos principales:
 - ✅ Campos básicos: nombre, categoría, ingredientes, método de preparación, tiempo total
 - ✅ Información adicional: autor, historia
 - ✅ Apto para caravana (caravanFriendly)
 - ✅ Secuencias de adición con ingredientes asociados
 - ✅ Aparatos de cocina seleccionados
-- ✅ Imágenes con URLs y descripciones
-- ✅ Videos con URLs y descripciones
-- Todos los campos se exportan e importan correctamente al compartir recetas mediante enlace, preservando la integridad completa de los datos
+- ⚠️ **Nota:** Las imágenes y videos no se incluyen en enlaces compartidos para mantener URLs manejables (contienen datos base64 muy grandes). Se preservan al exportar/importar mediante archivos XML.
 
 ## 📝 Actualizaciones Anteriores
 
