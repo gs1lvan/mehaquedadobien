@@ -9084,22 +9084,28 @@ async function importRecipeFromLink(recipeData) {
         // Convert ingredient names to IDs in sequences
         if (newRecipe.additionSequences && newRecipe.additionSequences.length > 0) {
             console.log('[Import] Converting ingredient names to IDs in sequences...');
+            console.log('[Import] Available ingredients:', newRecipe.ingredients.map(i => ({name: i.name, id: i.id})));
             newRecipe.additionSequences.forEach(seq => {
                 if (seq.ingredientNames && seq.ingredientNames.length > 0) {
                     seq.ingredientIds = [];
                     console.log('[Import] Sequence', seq.step, 'ingredient names:', seq.ingredientNames);
                     seq.ingredientNames.forEach(ingName => {
-                        const ingredient = newRecipe.ingredients.find(i => i.name === ingName);
+                        // Case-insensitive comparison
+                        const ingredient = newRecipe.ingredients.find(i => 
+                            i.name.toLowerCase() === ingName.toLowerCase()
+                        );
                         if (ingredient) {
                             seq.ingredientIds.push(ingredient.id);
                             console.log('[Import] Matched', ingName, 'to ID', ingredient.id);
                         } else {
-                            console.warn('[Import] Could not find ingredient:', ingName);
+                            console.warn('[Import] Could not find ingredient:', ingName, 'Available:', newRecipe.ingredients.map(i => i.name));
                         }
                     });
                     console.log('[Import] Sequence', seq.step, 'final ingredientIds:', seq.ingredientIds);
                     // Clean up temporary property
                     delete seq.ingredientNames;
+                } else {
+                    console.warn('[Import] Sequence', seq.step, 'has no ingredientNames');
                 }
             });
         }

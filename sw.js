@@ -1,4 +1,4 @@
-const CACHE_VERSION = Date.now();
+const CACHE_VERSION = Date.now() + 1;
 const CACHE_NAME = `recetario-personal-v4-${CACHE_VERSION}`;
 const STATIC_CACHE = `recetario-static-v4-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `recetario-dynamic-v4-${CACHE_VERSION}`;
