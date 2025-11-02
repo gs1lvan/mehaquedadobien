@@ -8644,8 +8644,18 @@ function showImportSuccessModal(recipeData) {
     modal.appendChild(modalContent);
     document.body.appendChild(modal);
     
-    // Close button handler
+    // Auto-close after 2 seconds and go to home
+    const autoCloseTimer = setTimeout(() => {
+        modal.remove();
+        // Go to home page (list view)
+        if (window.recipeApp) {
+            window.recipeApp.showListView();
+        }
+    }, 2000);
+    
+    // Close button handler - shows recipe detail
     document.getElementById('close-success-modal').addEventListener('click', () => {
+        clearTimeout(autoCloseTimer);
         modal.remove();
         // Show the imported recipe using the stored ID
         if (window.recipeApp && window.lastImportedRecipeId) {
@@ -8653,10 +8663,14 @@ function showImportSuccessModal(recipeData) {
         }
     });
     
-    // Close on overlay click
+    // Close on overlay click - goes to home
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
+            clearTimeout(autoCloseTimer);
             modal.remove();
+            if (window.recipeApp) {
+                window.recipeApp.showListView();
+            }
         }
     });
 }
