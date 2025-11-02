@@ -165,10 +165,6 @@ class Recipe {
     }
 
     validate() {
-        if (!this.name || this.name.trim() === '') {
-            throw new Error('Recipe name is required');
-        }
-
         // Category validation removed - categories are now managed dynamically
         // Allow any string or null as category
 

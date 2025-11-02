@@ -3145,14 +3145,6 @@ class RecipeApp {
 
         const name = nameInput.value.trim();
 
-        // Check if empty
-        if (name === '') {
-            errorMessage.textContent = 'El nombre de la receta es obligatorio';
-            nameInput.classList.add('invalid');
-            console.warn('[Validation] Recipe name is empty');
-            return false;
-        }
-
         // Check minimum length
         if (name.length < 3) {
             errorMessage.textContent = 'El nombre debe tener al menos 3 caracteres';
@@ -3306,11 +3298,6 @@ class RecipeApp {
      */
     async saveRecipe(formData) {
         try {
-            // Validate form data
-            if (!formData.name || formData.name.trim() === '') {
-                throw new Error('El nombre de la receta es obligatorio');
-            }
-
             // Capitalize first letter of recipe name
             const capitalizedName = this.capitalizeFirstLetter(formData.name.trim());
 
