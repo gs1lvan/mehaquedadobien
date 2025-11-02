@@ -412,10 +412,11 @@
                                 <!-- Add ingredient form -->
                                 <div class="ingredient-add-form">
                                     <div class="ingredient-inputs">
-                                        <div class="ingredient-input-group">
+                                        <div class="ingredient-input-group" style="position: relative;">
                                             <label for="ingredient-name">Nombre (libre)</label>
                                             <input type="text" id="ingredient-name" class="form-input ingredient-input"
                                                 placeholder="Ej: Pollo" autocomplete="off">
+                                            <div id="ingredient-autocomplete" class="autocomplete-suggestions" style="display: none;"></div>
                                         </div>
                                         <div class="ingredient-input-group">
                                             <label for="ingredient-quantity">Cantidad (libre y opcional)</label>

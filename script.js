@@ -117,6 +117,23 @@ const KITCHEN_APPLIANCES = [
 ];
 
 /**
+ * Predefined ingredients for autocomplete
+ */
+const PREDEFINED_INGREDIENTS = [
+    // Pollo
+    'pollo', 'pechuga', 'muslo', 'contramuslo', 'alita', 'carcasa', 'piel', 'molleja', 'hígado', 'cuello', 'patas',
+    // Verduras
+    'zanahoria', 'cebolla', 'ajo', 'pimiento', 'tomate', 'calabacín', 'berenjena', 'patata', 'apio', 'puerro', 
+    'espinaca', 'col', 'lechuga', 'pepino', 'brócoli',
+    // Frutas
+    'manzana', 'plátano', 'naranja', 'pera', 'limón', 'uva', 'fresa', 'melón', 'sandía', 'mango', 'piña', 
+    'cereza', 'kiwi', 'melocotón', 'arándano',
+    // Especias
+    'pimienta', 'comino', 'pimentón', 'canela', 'nuez moscada', 'clavo', 'cúrcuma', 'jengibre', 'orégano', 
+    'tomillo', 'romero', 'laurel', 'perejil', 'albahaca', 'cilantro'
+];
+
+/**
  * CategoryManager - Manages predefined and custom categories
  */
 class CategoryManager {
@@ -2100,6 +2117,117 @@ class RecipeApp {
                     this.handleAddIngredient();
                 }
             });
+        });
+
+        // Setup autocomplete for ingredient name input
+        this.setupIngredientAutocomplete();
+    }
+
+    /**
+     * Setup autocomplete for ingredient name input
+     */
+    setupIngredientAutocomplete() {
+        const nameInput = document.getElementById('ingredient-name');
+        const autocompleteDiv = document.getElementById('ingredient-autocomplete');
+        
+        if (!nameInput || !autocompleteDiv) return;
+
+        let currentSuggestionIndex = -1;
+
+        // Show autocomplete on input
+        nameInput.addEventListener('input', () => {
+            const value = nameInput.value.trim().toLowerCase();
+            
+            // Hide if less than 2 characters
+            if (value.length < 2) {
+                autocompleteDiv.style.display = 'none';
+                return;
+            }
+
+            // Filter predefined ingredients
+            const matches = PREDEFINED_INGREDIENTS.filter(ingredient => 
+                ingredient.toLowerCase().includes(value)
+            );
+
+            // Show suggestions if there are matches
+            if (matches.length > 0) {
+                this.showIngredientAutocomplete(nameInput, autocompleteDiv, matches);
+                currentSuggestionIndex = -1;
+            } else {
+                autocompleteDiv.style.display = 'none';
+            }
+        });
+
+        // Keyboard navigation
+        nameInput.addEventListener('keydown', (e) => {
+            if (!autocompleteDiv || autocompleteDiv.style.display === 'none') return;
+
+            const suggestions = autocompleteDiv.querySelectorAll('.autocomplete-item');
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                currentSuggestionIndex = (currentSuggestionIndex + 1) % suggestions.length;
+                this.highlightSuggestion(suggestions, currentSuggestionIndex);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                currentSuggestionIndex = currentSuggestionIndex <= 0 ? suggestions.length - 1 : currentSuggestionIndex - 1;
+                this.highlightSuggestion(suggestions, currentSuggestionIndex);
+            } else if (e.key === 'Enter' && currentSuggestionIndex >= 0) {
+                e.preventDefault();
+                suggestions[currentSuggestionIndex].click();
+            } else if (e.key === 'Escape') {
+                autocompleteDiv.style.display = 'none';
+                currentSuggestionIndex = -1;
+            }
+        });
+
+        // Close autocomplete when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!nameInput.contains(e.target) && !autocompleteDiv.contains(e.target)) {
+                autocompleteDiv.style.display = 'none';
+                currentSuggestionIndex = -1;
+            }
+        });
+    }
+
+    /**
+     * Show ingredient autocomplete suggestions
+     * @param {HTMLElement} input - Input element
+     * @param {HTMLElement} container - Autocomplete container
+     * @param {Array} suggestions - Array of suggestion strings
+     */
+    showIngredientAutocomplete(input, container, suggestions) {
+        container.innerHTML = '';
+        
+        suggestions.forEach(suggestion => {
+            const item = document.createElement('div');
+            item.className = 'autocomplete-item';
+            item.textContent = this.capitalizeFirstLetter(suggestion);
+            
+            item.addEventListener('click', () => {
+                input.value = this.capitalizeFirstLetter(suggestion);
+                container.style.display = 'none';
+                input.focus();
+            });
+            
+            container.appendChild(item);
+        });
+        
+        container.style.display = 'block';
+    }
+
+    /**
+     * Highlight suggestion at index
+     * @param {NodeList} suggestions - List of suggestion elements
+     * @param {number} index - Index to highlight
+     */
+    highlightSuggestion(suggestions, index) {
+        suggestions.forEach((item, i) => {
+            if (i === index) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
         });
     }
 
