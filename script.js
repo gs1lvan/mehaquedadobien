@@ -8568,10 +8568,12 @@ async function checkForRecipeImport() {
             console.log('[Import] Ingredients:', JSON.stringify(recipeData.ingredients, null, 2));
             
             // Import automatically without confirmation
-            await importRecipeFromLink(recipeData);
+            const importResult = await importRecipeFromLink(recipeData);
             
-            // Show success modal
-            showImportSuccessModal(recipeData);
+            // Show success modal with final name
+            if (importResult) {
+                showImportSuccessModal(importResult.finalName);
+            }
             
             // Clean URL
             history.replaceState(null, '', window.location.pathname);
@@ -8603,8 +8605,10 @@ async function checkForRecipeImport() {
                 recipeData = expandRecipeData(rawData);
             }
             
-            await importRecipeFromLink(recipeData);
-            showImportSuccessModal(recipeData);
+            const importResult = await importRecipeFromLink(recipeData);
+            if (importResult) {
+                showImportSuccessModal(importResult.finalName);
+            }
             history.replaceState(null, '', window.location.pathname);
             
         } catch (error) {
@@ -8616,9 +8620,9 @@ async function checkForRecipeImport() {
 
 /**
  * Show success modal after automatic import
- * @param {Object} recipeData - Imported recipe data
+ * @param {string} recipeName - Final name of the imported recipe
  */
-function showImportSuccessModal(recipeData) {
+function showImportSuccessModal(recipeName) {
     // Create modal overlay
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
@@ -8632,7 +8636,7 @@ function showImportSuccessModal(recipeData) {
         <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
         <h2 style="margin: 0 0 8px 0; color: var(--color-text); font-size: 1.25rem;">¡Receta Importada!</h2>
         <p style="margin: 0 0 6px 0; color: var(--color-text); font-size: 1rem; font-weight: 500;">
-            ${recipeData.name}
+            ${recipeName}
         </p>
         <p style="margin: 0 0 20px 0; color: var(--color-text-secondary); font-size: 0.8125rem;">
             La receta se ha añadido a tu colección
@@ -8870,21 +8874,22 @@ function showRecipeImportModal(recipeData) {
 /**
  * Import recipe from share link data
  * @param {Object} recipeData - Recipe data to import
+ * @returns {Object} Object with recipe ID and final name used
  */
 async function importRecipeFromLink(recipeData) {
     try {
         if (!window.recipeApp) {
             console.error('[Import] RecipeApp not initialized');
             showNotification('Error: La aplicación no está lista', 'error');
-            return;
+            return null;
         }
         
         // Check if recipe with same name already exists
         const existingRecipes = window.recipeApp.recipes || [];
         const nameExists = existingRecipes.some(r => r.name.toLowerCase() === recipeData.name.toLowerCase());
         
-        // If name exists, add " - importada" suffix
-        const finalName = nameExists ? `${recipeData.name} - importada` : recipeData.name;
+        // If name exists, add " - importado" suffix
+        const finalName = nameExists ? `${recipeData.name} - importado` : recipeData.name;
         
         // Create new Recipe instance with imported data
         const newRecipe = new Recipe({
@@ -8907,6 +8912,12 @@ async function importRecipeFromLink(recipeData) {
         
         // Store the recipe ID for the success modal
         window.lastImportedRecipeId = newRecipe.id;
+        
+        // Return the final name and ID
+        return {
+            id: newRecipe.id,
+            finalName: finalName
+        };
         
     } catch (error) {
         console.error('[Import] Error importing recipe:', error);
