@@ -4290,14 +4290,6 @@ select {
     flex-wrap: wrap;
 }
 
-.shopping-lists-buttons_gonso {
-    display: flex;
-    flex-direction: row;
-    gap: var(--spacing-sm);
-    align-self: flex-start;
-    flex-wrap: wrap;
-}
-
 .shopping-lists-buttons .btn-primary {
     flex: 0 0 auto;
     min-width: 150px;
