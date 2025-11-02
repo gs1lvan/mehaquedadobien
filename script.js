@@ -797,6 +797,16 @@ class RecipeApp {
             minutesInput.value = '';
         }
     }
+    
+    /**
+     * Capitalize first letter of a string
+     * @param {string} str - String to capitalize
+     * @returns {string} String with first letter capitalized
+     */
+    capitalizeFirstLetter(str) {
+        if (!str || str.length === 0) return str;
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
 
     /**
      * Validate time input values
@@ -1794,46 +1804,189 @@ class RecipeApp {
      * Setup cooking action buttons event listeners
      */
     setupCookingActionButtons() {
-        const actionButtons = document.querySelectorAll('.cooking-action-btn');
+        const buttonsContainer = document.getElementById('cooking-actions-buttons');
         const descriptionTextarea = document.getElementById('sequence-description');
+        
+        if (!descriptionTextarea || !buttonsContainer) return;
+        
+        // Render ingredient buttons dynamically
+        this.renderIngredientButtons();
+        
+        // Get all buttons (actions + ingredients)
+        let allButtons = buttonsContainer.querySelectorAll('.cooking-action-btn');
+        
+        let currentSuggestedButton = null;
+        
+        // Handle button clicks
+        allButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                this.insertActionIntoTextarea(button.dataset.action, descriptionTextarea);
+                // Clear suggested state after insertion
+                if (currentSuggestedButton) {
+                    currentSuggestedButton.classList.remove('suggested');
+                    currentSuggestedButton = null;
+                }
+            });
+        });
+        
+        // New autocomplete: highlight matching button as user types
+        descriptionTextarea.addEventListener('input', () => {
+            // Update used actions (green marking)
+            this.updateUsedCookingActions();
+            
+            // Clear previous suggestion
+            if (currentSuggestedButton) {
+                currentSuggestedButton.classList.remove('suggested');
+                currentSuggestedButton = null;
+            }
+            
+            // Refresh button list in case ingredients changed
+            allButtons = buttonsContainer.querySelectorAll('.cooking-action-btn');
+            
+            // Find and highlight suggested button
+            currentSuggestedButton = this.findSuggestedButton(descriptionTextarea, allButtons);
+            if (currentSuggestedButton) {
+                currentSuggestedButton.classList.add('suggested');
+            }
+        });
+        
+        // Handle Enter/Tab to accept suggestion
+        descriptionTextarea.addEventListener('keydown', (e) => {
+            if ((e.key === 'Enter' || e.key === 'Tab') && currentSuggestedButton) {
+                e.preventDefault();
+                // Replace the partial word with the complete action
+                this.insertActionIntoTextarea(currentSuggestedButton.dataset.action, descriptionTextarea, true);
+                currentSuggestedButton.classList.remove('suggested');
+                currentSuggestedButton = null;
+            }
+        });
+    }
+    
+    /**
+     * Render ingredient buttons dynamically
+     */
+    renderIngredientButtons() {
+        const buttonsContainer = document.getElementById('cooking-actions-buttons');
+        const descriptionTextarea = document.getElementById('sequence-description');
+        if (!buttonsContainer) return;
+        
+        // Remove old ingredient buttons
+        buttonsContainer.querySelectorAll('.cooking-action-btn.ingredient-btn').forEach(btn => btn.remove());
+        
+        // Add ingredient buttons
+        this.ingredients.forEach(ingredient => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'cooking-action-btn ingredient-btn';
+            button.dataset.action = ingredient.name;
+            button.textContent = ingredient.name;
+            
+            // Add click handler
+            if (descriptionTextarea) {
+                button.addEventListener('click', () => {
+                    this.insertActionIntoTextarea(ingredient.name, descriptionTextarea);
+                });
+            }
+            
+            buttonsContainer.appendChild(button);
+        });
+    }
+    
+    /**
+     * Find suggested button based on current text
+     */
+    findSuggestedButton(textarea, buttons) {
+        const cursorPos = textarea.selectionStart;
+        const textBeforeCursor = textarea.value.substring(0, cursorPos);
+        
+        // Get the current word being typed
+        const words = textBeforeCursor.split(/[\s,]+/);
+        const currentWord = words[words.length - 1].toLowerCase();
+        
+        if (currentWord.length < 2) {
+            return null;
+        }
+        
+        // Find first button that matches
+        for (const button of buttons) {
+            const action = button.dataset.action.toLowerCase();
+            if (action.startsWith(currentWord) && action !== currentWord) {
+                return button;
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Insert action into textarea at cursor position
+     * If there's a partial word, it will be replaced
+     */
+    insertActionIntoTextarea(action, textarea, replacePartialWord = false) {
+        const currentValue = textarea.value;
+        const cursorPos = textarea.selectionStart;
+        let textBefore = currentValue.substring(0, cursorPos);
+        const textAfter = currentValue.substring(cursorPos);
+        
+        // If replacing partial word, remove the current word being typed
+        if (replacePartialWord) {
+            const words = textBefore.split(/[\s,]+/);
+            const currentWord = words[words.length - 1];
+            if (currentWord.length > 0) {
+                // Remove the partial word
+                textBefore = textBefore.substring(0, textBefore.length - currentWord.length);
+            }
+        }
+        
+        // Check if we need to capitalize (start of text or after period)
+        const shouldCapitalize = textBefore.length === 0 || 
+                               textBefore.trimEnd().endsWith('.') ||
+                               textBefore.trimEnd().endsWith('!') ||
+                               textBefore.trimEnd().endsWith('?');
+        
+        // Capitalize first letter if needed
+        if (shouldCapitalize && action.length > 0) {
+            action = action.charAt(0).toUpperCase() + action.slice(1);
+        }
+        
+        // Add space before if needed (only if not replacing partial word)
+        const needsSpaceBefore = !replacePartialWord && textBefore.length > 0 && !textBefore.endsWith(' ') && !textBefore.endsWith('\n');
+        const prefix = needsSpaceBefore ? ' ' : '';
+        
+        // Update textarea value
+        textarea.value = textBefore + prefix + action + textAfter;
+        
+        // Set cursor position after inserted text
+        const newCursorPos = textBefore.length + prefix.length + action.length;
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+        
+        // Focus textarea
+        textarea.focus();
+        
+        // Update used buttons
+        this.updateUsedCookingActions();
+    }
+    
+    /**
+     * Update cooking action buttons to show which ones are used
+     */
+    updateUsedCookingActions() {
+        const descriptionTextarea = document.getElementById('sequence-description');
+        const actionButtons = document.querySelectorAll('.cooking-action-btn');
         
         if (!descriptionTextarea) return;
         
+        const description = descriptionTextarea.value.toLowerCase();
+        
         actionButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                let action = button.dataset.action;
-                const currentValue = descriptionTextarea.value;
-                
-                // Insert action at cursor position or at the end
-                const cursorPos = descriptionTextarea.selectionStart;
-                const textBefore = currentValue.substring(0, cursorPos);
-                const textAfter = currentValue.substring(cursorPos);
-                
-                // Check if we need to capitalize (start of text or after period)
-                const shouldCapitalize = textBefore.length === 0 || 
-                                       textBefore.trimEnd().endsWith('.') ||
-                                       textBefore.trimEnd().endsWith('!') ||
-                                       textBefore.trimEnd().endsWith('?');
-                
-                // Capitalize first letter if needed
-                if (shouldCapitalize && action.length > 0) {
-                    action = action.charAt(0).toUpperCase() + action.slice(1);
-                }
-                
-                // Add space before if needed
-                const needsSpaceBefore = textBefore.length > 0 && !textBefore.endsWith(' ') && !textBefore.endsWith('\n');
-                const prefix = needsSpaceBefore ? ' ' : '';
-                
-                // Update textarea value
-                descriptionTextarea.value = textBefore + prefix + action + textAfter;
-                
-                // Set cursor position after inserted text
-                const newCursorPos = cursorPos + prefix.length + action.length;
-                descriptionTextarea.setSelectionRange(newCursorPos, newCursorPos);
-                
-                // Focus textarea
-                descriptionTextarea.focus();
-            });
+            const action = button.dataset.action.toLowerCase();
+            
+            // Check if the action is in the description
+            if (description.includes(action)) {
+                button.classList.add('used');
+            } else {
+                button.classList.remove('used');
+            }
         });
     }
 
@@ -3158,6 +3311,9 @@ class RecipeApp {
                 throw new Error('El nombre de la receta es obligatorio');
             }
 
+            // Capitalize first letter of recipe name
+            const capitalizedName = this.capitalizeFirstLetter(formData.name.trim());
+
             // Create or update recipe
             let recipe;
 
@@ -3171,7 +3327,7 @@ class RecipeApp {
                 // Update recipe data
                 recipe = new Recipe({
                     id: existingRecipe.id,
-                    name: formData.name,
+                    name: capitalizedName,
                     category: formData.category || null,
                     totalTime: formData.totalTime,
                     caravanFriendly: formData.caravanFriendly || false,
@@ -3189,7 +3345,7 @@ class RecipeApp {
             } else {
                 // Creating new recipe
                 recipe = new Recipe({
-                    name: formData.name,
+                    name: capitalizedName,
                     category: formData.category || null,
                     totalTime: formData.totalTime,
                     caravanFriendly: formData.caravanFriendly || false,
@@ -3299,6 +3455,9 @@ class RecipeApp {
 
         // Update sequence ingredient selector
         this.updateSequenceIngredientSelector();
+        
+        // Update ingredient buttons for autocomplete
+        this.renderIngredientButtons();
     }
 
     /**
@@ -3626,6 +3785,9 @@ class RecipeApp {
         // Re-render lists
         this.renderIngredientsList();
         this.renderSequencesList();
+        
+        // Update ingredient buttons for autocomplete
+        this.renderIngredientButtons();
     }
 
     /**
@@ -3745,6 +3907,9 @@ class RecipeApp {
         selectedChips.forEach(chip => chip.classList.remove('selected'));
         this.populateTimeInput('sequence', '');
         descriptionTextarea.value = '';
+        
+        // Clear used cooking actions
+        this.updateUsedCookingActions();
 
         // Re-render sequences list
         this.renderSequencesList();
@@ -5047,7 +5212,7 @@ class RecipeApp {
 
             const nameSpan = document.createElement('span');
             nameSpan.className = 'ingredient-detail-name';
-            nameSpan.textContent = `${index + 1}. ${ingredient.name}`;
+            nameSpan.textContent = ingredient.name;
 
             const quantityContainer = document.createElement('span');
             quantityContainer.className = 'ingredient-detail-quantity-container';
@@ -5076,11 +5241,12 @@ class RecipeApp {
             basketBtn.className = 'btn-icon ingredient-basket-btn';
             basketBtn.title = 'Añadir a lista de compra';
             basketBtn.setAttribute('aria-label', 'Añadir a lista de compra');
-            basketBtn.textContent = '🧺';
+            basketBtn.textContent = '🛒';
             basketBtn.dataset.ingredientName = ingredient.name;
             basketBtn.dataset.ingredientQuantity = quantityText;
             basketBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
+                // Show modal to select shopping list
                 this.showSelectShoppingListModal(ingredient.name, quantityText);
             });
 
@@ -5634,6 +5800,26 @@ class RecipeApp {
     }
 
     // ===== End Photo Gallery Methods =====
+
+    // ===== Utility Methods =====
+
+    /**
+     * Capitalize the first letter of a string
+     * Handles edge cases: empty strings, numbers, special characters
+     * @param {string} str - String to capitalize
+     * @returns {string} String with first letter capitalized
+     */
+    capitalizeFirstLetter(str) {
+        // Handle null, undefined, or empty string
+        if (!str || typeof str !== 'string' || str.length === 0) {
+            return str || '';
+        }
+        
+        // Capitalize first character (works for letters, returns unchanged for numbers/special chars)
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    // ===== End Utility Methods =====
 
     /**
      * Render detail multimedia
@@ -8751,36 +8937,8 @@ function showImportSuccessModal(recipeName) {
     modal.appendChild(modalContent);
     document.body.appendChild(modal);
     
-    // Auto-close after 2 seconds and go to home
-    const autoCloseTimer = setTimeout(() => {
-        modal.remove();
-        // Go to home page (list view) and ensure recipe is visible
-        if (window.recipeApp) {
-            // Clear all filters to ensure imported recipe is visible
-            window.recipeApp.activeFilters.clear();
-            window.recipeApp.activeTimeFilter = 'all';
-            
-            // Hide other views
-            const detailView = document.getElementById('recipe-detail-view');
-            const formView = document.getElementById('recipe-form-view');
-            const shoppingView = document.getElementById('shopping-lists-view');
-            if (detailView) detailView.classList.add('hidden');
-            if (formView) formView.classList.add('hidden');
-            if (shoppingView) shoppingView.classList.add('hidden');
-            
-            // Show list view
-            const listView = document.getElementById('recipe-list-view');
-            if (listView) listView.classList.remove('hidden');
-            
-            // Update and render
-            window.recipeApp.currentView = 'list';
-            window.recipeApp.renderRecipeList();
-        }
-    }, 2000);
-    
     // Close button handler - shows recipe detail
     document.getElementById('close-success-modal').addEventListener('click', () => {
-        clearTimeout(autoCloseTimer);
         modal.remove();
         // Show the imported recipe using the stored ID
         if (window.recipeApp && window.lastImportedRecipeId) {
@@ -8791,7 +8949,6 @@ function showImportSuccessModal(recipeName) {
     // Close on overlay click - goes to home
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
-            clearTimeout(autoCloseTimer);
             modal.remove();
             if (window.recipeApp) {
                 // Clear all filters to ensure imported recipe is visible

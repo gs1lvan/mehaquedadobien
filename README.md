@@ -9,7 +9,7 @@ Una aplicación web moderna para gestionar tus recetas personales con funcionali
 - ✅ **Gestión completa de recetas** - Crear, editar, duplicar y eliminar
 - ✅ **Categorías personalizables** - 16 categorías predefinidas + categorías personalizadas
 - ✅ **Listas de compra** - Crea y gestiona múltiples listas de compra con elementos marcables
-- ✅ **Aparatos de cocina** - Selección visual de 12 aparatos con emojis grandes (2.5em)
+- ✅ **Aparatos de cocina** - Selección visual de 12 aparatos con emojis grandes en diseño compacto de 2 columnas
 - ✅ **Ingredientes inteligentes** - Gestión con cantidades y unidades opcionales
 - ✅ **Secuencias de adición** - Pasos numerados con ingredientes asociados
 - ✅ **Multimedia** - Múltiples imágenes y videos por receta
@@ -91,10 +91,18 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 - ✅ **Botones de acciones rápidas:** Mantiene los 16 botones de acciones de cocina para facilitar la descripción
 
 **Fecha:** 2 de noviembre de 2025  
-**Cambio anterior:** Nuevas acciones de cocina añadidas - Se han incorporado dos nuevas acciones de cocina en el editor de secuencias de adición:
-- ✅ **Lavar:** Para indicar el lavado de ingredientes
-- ✅ **Pelar:** Para indicar el pelado de ingredientes
-- ✅ Total de acciones disponibles: 16 (a la plancha, añadir, cocer, cocinar al vapor, desglasar, freír, gratinar, guisar, hornear, lavar, pelar, rebozar, reducir, rehogar, reposar, saltear, sellar)
+**Cambio anterior:** Botones de conectores añadidos al editor de secuencias - Se han incorporado dos nuevos botones de conectores en el editor de secuencias de adición:
+- ✅ **"y":** Conector para unir acciones o ingredientes
+- ✅ **",":** Separador para enumerar elementos
+- ✅ Total de botones disponibles: 21 (19 acciones de cocina + 2 conectores)
+- ✅ Facilita la escritura de descripciones fluidas y bien estructuradas
+
+**Fecha:** 2 de noviembre de 2025  
+**Cambio anterior:** Nuevas acciones de cocina añadidas - Se han incorporado tres nuevas acciones de cocina en el editor de secuencias de adición:
+- ✅ **Rallar:** Para indicar el rallado de ingredientes (queso, limón, etc.)
+- ✅ **Picar:** Para indicar el picado de ingredientes (cebolla, ajo, etc.)
+- ✅ **Escaldar:** Para indicar el escaldado de ingredientes (tomates, almendras, etc.)
+- ✅ Total de acciones disponibles: 19 (a la plancha, añadir, cocer, cocinar al vapor, desglasar, escaldar, freír, gratinar, guisar, hornear, lavar, pelar, picar, rallar, rebozar, reducir, rehogar, reposar, retirar, saltear, sellar)
 - ✅ Facilita la descripción de pasos de preparación con botones de acceso rápido
 
 **Fecha:** 2 de noviembre de 2025  
