@@ -8603,7 +8603,7 @@ async function checkForRecipeImport() {
             console.log('[Import] Parsed recipe data:', recipeData);
             
             // Import automatically without confirmation
-            await importRecipeFromQR(recipeData);
+            await importRecipeFromLink(recipeData);
             
             // Show success modal
             showImportSuccessModal(recipeData);
@@ -8638,7 +8638,7 @@ async function checkForRecipeImport() {
                 recipeData = expandRecipeData(rawData);
             }
             
-            await importRecipeFromQR(recipeData);
+            await importRecipeFromLink(recipeData);
             showImportSuccessModal(recipeData);
             history.replaceState(null, '', window.location.pathname);
             
@@ -8839,7 +8839,7 @@ function showRecipeImportModal(recipeData) {
     
     // Confirm import handler
     document.getElementById('confirm-import').addEventListener('click', () => {
-        importRecipeFromQR(recipeData);
+        importRecipeFromLink(recipeData);
         modal.remove();
     });
     
@@ -8852,10 +8852,10 @@ function showRecipeImportModal(recipeData) {
 }
 
 /**
- * Import recipe from QR code data
+ * Import recipe from share link data
  * @param {Object} recipeData - Recipe data to import
  */
-async function importRecipeFromQR(recipeData) {
+async function importRecipeFromLink(recipeData) {
     try {
         if (!window.recipeApp) {
             console.error('[Import] RecipeApp not initialized');
