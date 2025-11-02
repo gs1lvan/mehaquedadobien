@@ -7185,12 +7185,28 @@ class RecipeApp {
             sequencesCount: recipe.additionSequences?.length || 0
         });
         console.log('[Share] Ingredients:', recipe.ingredients);
-        console.log('[Share] XML generated:', xmlString.substring(0, 800));
+        console.log('[Share] XML generated length:', xmlString.length);
+        console.log('[Share] XML preview:', xmlString.substring(0, 200));
         
-        // Encode and create share URL with recipe name for preview
-        const base64Data = btoa(encodeURIComponent(xmlString));
+        // Encode XML to Base64 safely (handle Unicode characters)
+        // First encode to UTF-8, then to Base64
+        const utf8Bytes = new TextEncoder().encode(xmlString);
+        let binaryString = '';
+        for (let i = 0; i < utf8Bytes.length; i++) {
+            binaryString += String.fromCharCode(utf8Bytes[i]);
+        }
+        const base64Data = btoa(binaryString);
+        
+        console.log('[Share] XML length:', xmlString.length);
+        console.log('[Share] UTF-8 bytes length:', utf8Bytes.length);
+        console.log('[Share] Base64 length:', base64Data.length);
+        
+        // URL-encode the Base64 to ensure it's safe in URLs
+        const urlSafeBase64 = encodeURIComponent(base64Data);
+        console.log('[Share] URL-safe Base64 length:', urlSafeBase64.length);
+        
         const recipeName = encodeURIComponent(recipe.name);
-        return `https://gs1lvan.github.io/mehaquedadobien/?r=${recipeName}&import=${base64Data}`;
+        return `https://gs1lvan.github.io/mehaquedadobien/?r=${recipeName}&import=${urlSafeBase64}`;
     }
 
     /**
@@ -8568,7 +8584,18 @@ async function checkForRecipeImport() {
             console.log('[Import] Query parameter detected');
             console.log('[Import] Base64 length:', importParam.length);
             
-            const decodedData = decodeURIComponent(atob(importParam));
+            // Decode URL encoding first (in case Base64 characters were URL-encoded)
+            const base64String = decodeURIComponent(importParam);
+            console.log('[Import] After URL decode length:', base64String.length);
+            
+            // Decode Base64 to UTF-8 safely (handle Unicode characters)
+            const binaryString = atob(base64String);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            const decodedData = new TextDecoder().decode(bytes);
+            
             console.log('[Import] Decoded data length:', decodedData.length);
             console.log('[Import] Decoded data (first 200 chars):', decodedData.substring(0, 200));
             console.log('[Import] Decoded data (last 200 chars):', decodedData.substring(decodedData.length - 200));
@@ -8799,13 +8826,23 @@ function parseCompactXML(xmlString) {
         supportCompactFormat: true
     });
     
+    console.log('[Parse] Parsed sequences:', sequences.length);
+    console.log('[Parse] ID mapping size:', idMapping.size);
+    console.log('[Parse] ID mapping entries:', Array.from(idMapping.entries()));
+    
     // Convert Sequence objects to plain objects with ingredientNames for compatibility
     recipeData.additionSequences = sequences.map(seq => {
+        console.log('[Parse] Processing sequence', seq.step, 'with ingredientIds:', seq.ingredientIds);
+        
         // Convert ingredient IDs back to names for the legacy format
         const ingredientNames = seq.ingredientIds.map(id => {
             const ingredient = ingredients.find(ing => ing.id === id);
-            return ingredient ? ingredient.name : id;
+            const name = ingredient ? ingredient.name : id;
+            console.log('[Parse] Mapped ID', id, 'to name:', name);
+            return name;
         });
+        
+        console.log('[Parse] Sequence', seq.step, 'final ingredientNames:', ingredientNames);
         
         return {
             step: seq.step,
