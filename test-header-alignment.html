@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Header Alignment - NOMBRE desde margen izquierdo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f7f7f7;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #222;
+            border-bottom: 2px solid #FF385C;
+            padding-bottom: 10px;
+        }
+        button {
+            background: #FF385C;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #E31C5F;
+        }
+        .info-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .diagram {
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .measurement {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test Header Alignment</h1>
+    
+    <div class="test-section">
+        <h2>Objetivo</h2>
+        <div class="info-box">
+            <strong>Verificar que la columna NOMBRE en el header:</strong><br>
+            • Empiece desde el margen izquierdo (donde empiezan las imágenes de las recetas)<br>
+            • La columna IMG del header esté oculta<br>
+            • El padding-left del header compense el espacio de la imagen
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Diagrama Esperado</h2>
+        <div class="diagram">
+HEADER:
+┌──────────────────────────────────────────┬──────────┬────────┐
+│         NOMBRE (desde margen izq)        │  FECHA   │ ACTIONS│
+│    ← padding-left: 96px (80+16) →       │  100px   │  50px  │
+└──────────────────────────────────────────┴──────────┴────────┘
+
+RECETA:
+┌────────┬─────────────────────────────────┬──────────┬────────┐
+│  IMG   │         Nombre Receta           │  Fecha   │   📤   │
+│  80px  │                                 │          │        │
+└────────┴─────────────────────────────────┴──────────┴────────┘
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Controles</h2>
+        <button onclick="switchToListView()">📋 Activar Vista Lista</button>
+        <button onclick="measureAlignment()">📏 Medir Alineación</button>
+        <button onclick="location.reload()">🔄 Refrescar Página</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Mediciones</h2>
+        <div id="measurements"></div>
+    </div>
+
+    <script>
+        function switchToListView() {
+            const listBtn = document.getElementById('view-list-btn');
+            if (listBtn) {
+                listBtn.click();
+                setTimeout(measureAlignment, 500);
+            }
+        }
+
+        function measureAlignment() {
+            const header = document.getElementById('list-view-header');
+            const headerImg = header?.querySelector('.list-header-img');
+            const headerName = header?.querySelector('.list-header-name');
+            const firstRecipe = document.querySelector('.recipe-card.list-item');
+            const recipeImg = firstRecipe?.querySelector('.recipe-image');
+            const recipeName = firstRecipe?.querySelector('.recipe-name');
+
+            const measurementsDiv = document.getElementById('measurements');
+            
+            if (!header) {
+                measurementsDiv.innerHTML = '<div class="measurement">❌ Header no encontrado. Activa la vista lista primero.</div>';
+                return;
+            }
+
+            const headerStyles = window.getComputedStyle(header);
+            const headerImgDisplay = headerImg ? window.getComputedStyle(headerImg).display : 'N/A';
+            const headerNameRect = headerName?.getBoundingClientRect();
+            const recipeImgRect = recipeImg?.getBoundingClientRect();
+            const recipeNameRect = recipeName?.getBoundingClientRect();
+
+            let html = '<div class="measurement">';
+            html += '<strong>📊 Mediciones del Header:</strong><br>';
+            html += `Padding-left: ${headerStyles.paddingLeft}<br>`;
+            html += `IMG column display: ${headerImgDisplay} ${headerImgDisplay === 'none' ? '✅' : '❌'}<br>`;
+            html += `NOMBRE left position: ${headerNameRect?.left.toFixed(2)}px<br>`;
+            html += '</div>';
+
+            if (recipeImgRect && recipeNameRect && headerNameRect) {
+                const imgLeft = recipeImgRect.left;
+                const nameHeaderLeft = headerNameRect.left;
+                const nameRecipeLeft = recipeNameRect.left;
+                const difference = Math.abs(imgLeft - nameHeaderLeft);
+
+                html += '<div class="measurement">';
+                html += '<strong>📊 Alineación:</strong><br>';
+                html += `Imagen receta left: ${imgLeft.toFixed(2)}px<br>`;
+                html += `NOMBRE header left: ${nameHeaderLeft.toFixed(2)}px<br>`;
+                html += `NOMBRE receta left: ${nameRecipeLeft.toFixed(2)}px<br>`;
+                html += `Diferencia header-imagen: ${difference.toFixed(2)}px ${difference < 5 ? '✅' : '⚠️'}<br>`;
+                html += '</div>';
+
+                html += '<div class="measurement">';
+                if (difference < 5) {
+                    html += '✅ <strong>PERFECTO:</strong> La columna NOMBRE del header está alineada con las imágenes de las recetas';
+                } else {
+                    html += `⚠️ <strong>DESALINEADO:</strong> Hay ${difference.toFixed(2)}px de diferencia`;
+                }
+                html += '</div>';
+            }
+
+            measurementsDiv.innerHTML = html;
+        }
+
+        // Auto-activate on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                switchToListView();
+            }, 1000);
+        });
+    </script>
+
+    <!-- Include the main application -->
+    <script src="models.js"></script>
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</body>
+</html>
