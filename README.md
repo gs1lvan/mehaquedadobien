@@ -28,7 +28,7 @@ Una aplicación web moderna para gestionar tus recetas personales con funcionali
 - **Exportación:** jsPDF 2.5.1 para PDF, XML nativo
 - **QR Code:** API de QRServer (https://api.qrserver.com) para generación de códigos QR
 - **Diseño:** Sistema inspirado en Airbnb
-
+|
 ## 📖 Documentación
 
 - **[INFORME-TECNICO.md](INFORME-TECNICO.md)** - Documentación técnica completa
