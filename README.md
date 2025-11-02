@@ -155,6 +155,7 @@ La aplicación permite compartir e importar recetas mediante códigos QR:
 - Notificaciones visuales con animaciones suaves para confirmar importaciones exitosas o errores
 - Los códigos QR contienen datos completos: nombre, categoría, ingredientes, método de preparación y tiempo total
 - Sistema de confirmación antes de importar para revisar los datos
+- Detección automática de duplicados: si ya existe una receta con el mismo nombre, se añade el sufijo "- importada" automáticamente
 
 ## 🔧 Instalación
 

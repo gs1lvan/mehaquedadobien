@@ -8992,6 +8992,12 @@ async function importRecipeFromLink(recipeData) {
             return null;
         }
         
+        // Ensure recipes are loaded before checking for duplicates
+        if (!window.recipeApp.recipes || window.recipeApp.recipes.length === 0) {
+            console.log('[Import] Recipes not loaded yet, loading from storage...');
+            await window.recipeApp.loadRecipes();
+        }
+        
         // Check if recipe with same name already exists
         const existingRecipes = window.recipeApp.recipes || [];
         console.log('[Import] Checking for duplicates. Existing recipes:', existingRecipes.length);
