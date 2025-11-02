@@ -4927,8 +4927,11 @@ class RecipeApp {
         // Metadata
         this.renderDetailMetadata(recipe);
 
-        // QR Code
-        this.renderDetailQRCode(recipe);
+        // Share button
+        const shareBtn = document.getElementById('share-recipe-btn');
+        if (shareBtn) {
+            shareBtn.onclick = () => this.showShareRecipe(recipe);
+        }
     }
 
     /**
@@ -7096,16 +7099,15 @@ class RecipeApp {
     }
 
     /**
-     * Prepare recipe data for QR code export
+     * Generate share link for recipe
      * @param {Recipe} recipe - Recipe object
-     * @returns {string} XML string of recipe data (compact version)
+     * @returns {string} Share URL
      */
-    prepareRecipeDataForQR(recipe) {
-        // Create compact XML manually for QR (only essential fields)
+    generateShareLink(recipe) {
+        // Create compact XML
         const xmlDoc = document.implementation.createDocument(null, 'recipe');
         const root = xmlDoc.documentElement;
         
-        // Essential fields only
         const addElement = (name, value) => {
             if (value) {
                 const el = xmlDoc.createElement(name);
@@ -7119,7 +7121,7 @@ class RecipeApp {
         addElement('totalTime', recipe.totalTime);
         addElement('preparationMethod', recipe.preparationMethod);
         
-        // Ingredients (simplified - no IDs or order)
+        // Ingredients
         if (recipe.ingredients && recipe.ingredients.length > 0) {
             const ingredientsEl = xmlDoc.createElement('ingredients');
             recipe.ingredients.forEach(ing => {
@@ -7145,7 +7147,7 @@ class RecipeApp {
             root.appendChild(ingredientsEl);
         }
         
-        // Addition sequences (simplified - no IDs)
+        // Sequences
         if (recipe.additionSequences && recipe.additionSequences.length > 0) {
             const seqsEl = xmlDoc.createElement('sequences');
             recipe.additionSequences.forEach(seq => {
@@ -7174,7 +7176,7 @@ class RecipeApp {
             root.appendChild(seqsEl);
         }
         
-        // Kitchen appliances (if any)
+        // Appliances
         if (recipe.kitchenAppliances && recipe.kitchenAppliances.length > 0) {
             const appEl = xmlDoc.createElement('appliances');
             recipe.kitchenAppliances.forEach(appId => {
@@ -7185,130 +7187,71 @@ class RecipeApp {
             root.appendChild(appEl);
         }
         
-        // Serialize to string
         const serializer = new XMLSerializer();
-        return serializer.serializeToString(xmlDoc);
+        const xmlString = serializer.serializeToString(xmlDoc);
+        
+        // Encode and create share URL
+        const base64Data = btoa(encodeURIComponent(xmlString));
+        return `https://gs1lvan.github.io/mehaquedadobien/?import=${base64Data}`;
     }
 
     /**
-     * Generate QR code URL for recipe data
-     * @param {string} recipeData - XML string of recipe data
-     * @param {number} size - QR code size in pixels (default: 200)
-     * @param {Object} options - QR generation options
-     * @param {string} options.errorCorrection - Error correction level: L, M, Q, H (default: M)
-     * @param {number} options.margin - Margin size in modules (default: 1)
-     * @returns {string} QR code image URL
+     * Show share options for recipe
+     * @param {Recipe} recipe - Recipe object to share
      */
-    generateQRCodeURL(recipeData, size = 200, options = {}) {
-        const { errorCorrection = 'M', margin = 1 } = options;
+    showShareRecipe(recipe) {
+        const shareLink = this.generateShareLink(recipe);
         
-        // Encode recipe XML in base64
-        const base64Data = btoa(encodeURIComponent(recipeData));
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
         
-        // Build URL with GitHub Pages domain (using query parameter instead of hash)
-        const appURL = `https://gs1lvan.github.io/mehaquedadobien/?import=${base64Data}`;
-        console.log('[QR] Generated app URL:', appURL.substring(0, 100) + '...');
-        console.log('[QR] Base64 length:', base64Data.length);
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = 'background: var(--color-background); padding: 24px; border-radius: 12px; max-width: 500px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.2);';
         
-        const encodedURL = encodeURIComponent(appURL);
+        modalContent.innerHTML = `
+            <h2 style="margin: 0 0 16px 0; color: var(--color-text);">🔗 Compartir Receta</h2>
+            <p style="margin: 0 0 12px 0; color: var(--color-text-secondary); font-size: 0.875rem;">
+                Comparte esta receta con un enlace:
+            </p>
+            <div style="background: var(--color-surface); padding: 12px; border-radius: 8px; margin: 16px 0; word-break: break-all; font-size: 0.75rem; color: var(--color-text-secondary);">
+                ${shareLink}
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button id="copy-link-btn" class="btn-primary" style="flex: 1; padding: 12px;">
+                    📋 Copiar Enlace
+                </button>
+                <button id="close-share-modal" class="btn-secondary" style="padding: 12px;">
+                    Cerrar
+                </button>
+            </div>
+        `;
         
-        // Build QR API URL with options
-        const qrApiURL = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodedURL}&ecc=${errorCorrection}&margin=${margin}`;
-        console.log('[QR] QR API URL length:', qrApiURL.length);
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
         
-        return qrApiURL;
-    }
-
-    /**
-     * Render QR code in detail view
-     * @param {Recipe} recipe - Recipe object to generate QR for
-     */
-    renderDetailQRCode(recipe) {
-        const qrContainer = document.getElementById('detail-qr-code');
-        const downloadBtn = document.getElementById('detail-download-qr-btn');
-        
-        if (!qrContainer) return;
-        
-        // Clear previous QR
-        qrContainer.innerHTML = 'Generando código QR...';
-        
-        try {
-            // Generate XML data for QR
-            const recipeData = this.prepareRecipeDataForQR(recipe);
-            
-            // Encode XML in Base64 for size estimation
-            const base64Data = btoa(encodeURIComponent(recipeData));
-            
-            // Estimate QR size (approximate QR version calculation)
-            const estimateQRSize = (dataLength) => {
-                // Rough estimation: QR versions and their capacity with error correction M
-                // Version 10: 57x57 (up to ~750 chars)
-                // Version 20: 97x97 (up to ~1500 chars)
-                // Version 30: 137x137 (up to ~2500 chars)
-                // Version 40: 177x177 (up to ~3700 chars)
-                if (dataLength <= 750) return '57×57';
-                if (dataLength <= 1500) return '97×97';
-                if (dataLength <= 2500) return '137×137';
-                if (dataLength <= 3700) return '177×177';
-                return '177×177+';
-            };
-            
-            const qrSizeEstimate = estimateQRSize(base64Data.length);
-            
-            // Generate QR with medium error correction for better capacity
-            const qrUrl = this.generateQRCodeURL(recipeData, 400, {
-                errorCorrection: 'M', // Medium error correction = good balance
-                margin: 2 // Small margin for better scanning
+        // Copy button
+        document.getElementById('copy-link-btn').addEventListener('click', () => {
+            navigator.clipboard.writeText(shareLink).then(() => {
+                showNotification('✓ Enlace copiado al portapapeles', 'success');
+                modal.remove();
+            }).catch(() => {
+                showNotification('Error al copiar el enlace', 'error');
             });
-            
-            // Create image element
-            const qrImg = document.createElement('img');
-            qrImg.style.width = '300px';
-            qrImg.style.height = '300px';
-            qrImg.alt = 'Código QR de la receta';
-            
-            qrImg.onload = () => {
-                qrContainer.innerHTML = '';
-                qrContainer.appendChild(qrImg);
-                
-                // Add info about QR format and size
-                const info = document.createElement('p');
-                info.style.cssText = 'margin-top: 8px; font-size: 0.75rem; color: var(--color-text-secondary);';
-                info.textContent = `Formato XML • ${base64Data.length} caracteres • QR ${qrSizeEstimate}`;
-                qrContainer.appendChild(info);
-                
-                // Add helpful tip for large QR codes
-                if (base64Data.length > 2500) {
-                    const tip = document.createElement('p');
-                    tip.style.cssText = 'margin-top: 4px; font-size: 0.75rem; color: var(--color-info);';
-                    tip.textContent = '💡 Para mejor escaneo, usa buena iluminación y mantén la cámara estable';
-                    qrContainer.appendChild(tip);
-                }
-            };
-            
-            qrImg.onerror = () => {
-                qrContainer.innerHTML = '<p style="color: var(--color-danger); font-size: 0.875rem;">Error al generar el código QR</p>';
-            };
-            
-            qrImg.src = qrUrl;
-            
-            // Update download button
-            if (downloadBtn) {
-                downloadBtn.onclick = () => {
-                    if (qrImg.complete && qrImg.naturalHeight !== 0) {
-                        const link = document.createElement('a');
-                        link.download = `qr-${recipe.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.png`;
-                        link.href = qrUrl;
-                        link.target = '_blank';
-                        link.click();
-                    }
-                };
+        });
+        
+        // Close button
+        document.getElementById('close-share-modal').addEventListener('click', () => {
+            modal.remove();
+        });
+        
+        // Close on overlay click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
             }
-            
-        } catch (error) {
-            console.error('[QR] Error generating QR code:', error);
-            qrContainer.innerHTML = '<p style="color: var(--color-danger); font-size: 0.875rem;">Error al generar el código QR</p>';
-        }
+        });
     }
 
     // ===== Shopping Lists Management =====
@@ -8625,7 +8568,7 @@ class RecipeApp {
 document.addEventListener('DOMContentLoaded', () => {
     window.recipeApp = new RecipeApp();
     
-    // Check if URL contains recipe import data from QR scan
+    // Check if URL contains recipe import data
     checkForRecipeImport();
 });
 
@@ -8671,7 +8614,7 @@ async function checkForRecipeImport() {
         } catch (error) {
             console.error('[Import] Error details:', error);
             console.error('[Import] Error stack:', error.stack);
-            showNotification('Error al importar la receta. Código QR inválido. Ver consola para detalles.', 'error');
+            showNotification('Error al importar la receta. Enlace inválido.', 'error');
         }
         return;
     }
@@ -8701,7 +8644,7 @@ async function checkForRecipeImport() {
             
         } catch (error) {
             console.error('[Import] Error details:', error);
-            showNotification('Error al importar la receta. Código QR inválido.', 'error');
+            showNotification('Error al importar la receta. Enlace inválido.', 'error');
         }
     }
 }
@@ -8755,7 +8698,7 @@ function showImportSuccessModal(recipeData) {
 }
 
 /**
- * Parse compact XML format from QR code
+ * Parse compact XML format from share link
  * @param {string} xmlString - Compact XML string
  * @returns {Object} Recipe data object
  */
@@ -8848,8 +8791,8 @@ function expandRecipeData(data) {
 }
 
 /**
- * Show modal to confirm recipe import from QR scan
- * @param {Object} recipeData - Recipe data from QR code
+ * Show modal to confirm recipe import from share link
+ * @param {Object} recipeData - Recipe data from share link
  */
 function showRecipeImportModal(recipeData) {
     // Create modal overlay
@@ -8864,7 +8807,7 @@ function showRecipeImportModal(recipeData) {
     modalContent.innerHTML = `
         <h2 style="margin: 0 0 16px 0; color: var(--color-text);">📱 Importar Receta</h2>
         <p style="margin: 0 0 8px 0; color: var(--color-text-secondary);">
-            Se ha detectado una receta desde el código QR:
+            Se ha detectado una receta compartida:
         </p>
         <div style="background: var(--color-surface); padding: 16px; border-radius: 8px; margin: 16px 0;">
             <h3 style="margin: 0 0 8px 0; color: var(--color-text);">${recipeData.name}</h3>
