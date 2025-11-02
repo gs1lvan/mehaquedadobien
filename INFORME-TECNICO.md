@@ -174,7 +174,7 @@
 ### 3. Secuencias de Adición
 - ✅ Pasos numerados con ingredientes asociados
 - ✅ Descripción y duración opcionales
-- ✅ Botones de acciones de cocina (Sofreír, Añadir, Mezclar, etc.)
+- ✅ Botones de acciones de cocina (16 acciones: a la plancha, añadir, cocer, cocinar al vapor, desglasar, freír, gratinar, guisar, hornear, lavar, pelar, rebozar, reducir, rehogar, reposar, saltear, sellar)
 - ✅ Reordenamiento de secuencias
 
 ### 4. Multimedia

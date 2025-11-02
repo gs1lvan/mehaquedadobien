@@ -70,7 +70,21 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 ## 🎨 Última Actualización
 
 **Fecha:** 2 de noviembre de 2025  
-**Cambio:** Validación mejorada de archivos multimedia en importación - Se ha añadido filtrado automático de archivos multimedia durante la importación de recetas:
+**Cambio:** Simplificación del formulario de secuencias - Se ha simplificado el formulario de adición de secuencias eliminando la selección previa de ingredientes:
+- ✅ **Interfaz más limpia:** El formulario ahora solo requiere la descripción del paso
+- ✅ **Flujo más rápido:** Añade secuencias directamente sin pasos adicionales
+- ✅ **Mayor flexibilidad:** Describe los pasos libremente sin restricciones de ingredientes preseleccionados
+- ✅ **Botones de acciones rápidas:** Mantiene los 16 botones de acciones de cocina para facilitar la descripción
+
+**Fecha:** 2 de noviembre de 2025  
+**Cambio anterior:** Nuevas acciones de cocina añadidas - Se han incorporado dos nuevas acciones de cocina en el editor de secuencias de adición:
+- ✅ **Lavar:** Para indicar el lavado de ingredientes
+- ✅ **Pelar:** Para indicar el pelado de ingredientes
+- ✅ Total de acciones disponibles: 16 (a la plancha, añadir, cocer, cocinar al vapor, desglasar, freír, gratinar, guisar, hornear, lavar, pelar, rebozar, reducir, rehogar, reposar, saltear, sellar)
+- ✅ Facilita la descripción de pasos de preparación con botones de acceso rápido
+
+**Fecha:** 2 de noviembre de 2025  
+**Cambio anterior:** Validación mejorada de archivos multimedia en importación - Se ha añadido filtrado automático de archivos multimedia durante la importación de recetas:
 - ✅ Validación de imágenes: solo se importan archivos con propiedades válidas (name, type, data)
 - ✅ Validación de videos: filtrado de archivos corruptos o incompletos
 - ✅ Mayor robustez: previene errores al importar recetas con datos multimedia malformados

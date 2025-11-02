@@ -5174,25 +5174,7 @@ class RecipeApp {
             const contentDiv = document.createElement('div');
             contentDiv.className = 'detail-sequence-content';
 
-            // Ingredients tags (first line)
-            if (sequence.ingredientIds && sequence.ingredientIds.length > 0) {
-                const ingredientsDiv = document.createElement('div');
-                ingredientsDiv.className = 'detail-sequence-ingredients';
-
-                sequence.ingredientIds.forEach(ingredientId => {
-                    const ingredient = ingredients.find(ing => ing.id === ingredientId);
-                    if (ingredient) {
-                        const tag = document.createElement('span');
-                        tag.className = 'detail-sequence-ingredient-tag';
-                        tag.textContent = ingredient.name;
-                        ingredientsDiv.appendChild(tag);
-                    }
-                });
-
-                contentDiv.appendChild(ingredientsDiv);
-            }
-
-            // Description and duration container (second line)
+            // Description and duration container (first line)
             if (sequence.description || sequence.duration) {
                 const descDurationDiv = document.createElement('div');
                 descDurationDiv.className = 'detail-sequence-desc-duration';
@@ -5215,6 +5197,24 @@ class RecipeApp {
                 }
 
                 contentDiv.appendChild(descDurationDiv);
+            }
+
+            // Ingredients tags (second line)
+            if (sequence.ingredientIds && sequence.ingredientIds.length > 0) {
+                const ingredientsDiv = document.createElement('div');
+                ingredientsDiv.className = 'detail-sequence-ingredients';
+
+                sequence.ingredientIds.forEach(ingredientId => {
+                    const ingredient = ingredients.find(ing => ing.id === ingredientId);
+                    if (ingredient) {
+                        const tag = document.createElement('span');
+                        tag.className = 'detail-sequence-ingredient-tag';
+                        tag.textContent = ingredient.name;
+                        ingredientsDiv.appendChild(tag);
+                    }
+                });
+
+                contentDiv.appendChild(ingredientsDiv);
             }
 
             item.appendChild(numberDiv);
