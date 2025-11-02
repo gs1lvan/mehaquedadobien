@@ -299,6 +299,14 @@ class ShoppingListManager {
             const stored = localStorage.getItem(this.storageKey);
             if (stored) {
                 this.lists = JSON.parse(stored);
+                
+                // Migrate old lists without enabled property
+                this.lists.forEach(list => {
+                    if (list.enabled === undefined) {
+                        list.enabled = true;
+                    }
+                });
+                
                 console.log('[ShoppingListManager] Loaded lists:', this.lists.length);
             }
         } catch (error) {
@@ -330,6 +338,7 @@ class ShoppingListManager {
             id: Date.now(),
             name: name,
             items: [],
+            enabled: true,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };
@@ -387,6 +396,26 @@ class ShoppingListManager {
         this.saveLists();
         
         console.log('[ShoppingListManager] Deleted list:', id);
+        return true;
+    }
+
+    /**
+     * Toggle enabled status of a shopping list
+     * @param {number} id - List ID
+     * @returns {boolean} Success status
+     */
+    toggleListEnabled(id) {
+        const list = this.getList(id);
+        if (!list) {
+            console.error('[ShoppingListManager] List not found:', id);
+            return false;
+        }
+
+        list.enabled = !list.enabled;
+        list.updatedAt = new Date().toISOString();
+        this.saveLists();
+        
+        console.log('[ShoppingListManager] Toggled list enabled:', id, list.enabled);
         return true;
     }
 
@@ -6058,6 +6087,7 @@ class RecipeApp {
         const overlay = modal.querySelector('.modal-overlay');
         const editBtn = document.getElementById('recipe-option-edit');
         const duplicateBtn = document.getElementById('recipe-option-duplicate');
+        const shareBtn = document.getElementById('recipe-option-share');
         const pdfBtn = document.getElementById('recipe-option-pdf');
         const deleteBtn = document.getElementById('recipe-option-delete');
         
@@ -6080,6 +6110,16 @@ class RecipeApp {
             duplicateBtn.onclick = () => {
                 this.closeRecipeOptionsModal();
                 this.duplicateRecipe(recipeId);
+            };
+        }
+        
+        if (shareBtn) {
+            shareBtn.onclick = () => {
+                this.closeRecipeOptionsModal();
+                const recipe = this.recipes.find(r => r.id === recipeId);
+                if (recipe) {
+                    this.showShareRecipe(recipe);
+                }
             };
         }
         
@@ -7456,6 +7496,22 @@ class RecipeApp {
         const actions = document.createElement('div');
         actions.className = 'shopping-list-actions';
         
+        // Create toggle enabled button (eye icon)
+        const toggleEnabledBtn = this.createButton({
+            className: 'btn-icon',
+            text: list.enabled !== false ? '👁️' : '👁️‍🗨️',
+            title: list.enabled !== false ? 'Deshabilitar lista' : 'Habilitar lista',
+            onClick: (e) => {
+                e.stopPropagation();
+                this.toggleShoppingListEnabled(list.id);
+            }
+        });
+        
+        // Add visual indicator if disabled
+        if (list.enabled === false) {
+            card.style.opacity = '0.5';
+        }
+        
         // Create edit button
         const editBtn = this.createButton({
             className: 'btn-icon',
@@ -7478,6 +7534,7 @@ class RecipeApp {
             }
         });
         
+        actions.appendChild(toggleEnabledBtn);
         actions.appendChild(editBtn);
         actions.appendChild(moreBtn);
         
@@ -8017,12 +8074,6 @@ class RecipeApp {
             }
         });
         
-        // Validate at least one item
-        if (items.length === 0) {
-            this.showToast('Por favor añade al menos un elemento', 'error');
-            return;
-        }
-        
         // Save list
         const listId = this.shoppingListManager.currentListId;
         
@@ -8053,6 +8104,23 @@ class RecipeApp {
         // Close modal and refresh view
         this.closeShoppingListModal();
         this.renderShoppingLists();
+    }
+
+    /**
+     * Toggle shopping list enabled status
+     * @param {number} listId - List ID
+     */
+    toggleShoppingListEnabled(listId) {
+        const list = this.shoppingListManager.getList(listId);
+        if (!list) return;
+        
+        const success = this.shoppingListManager.toggleListEnabled(listId);
+        
+        if (success) {
+            const status = list.enabled ? 'habilitada' : 'deshabilitada';
+            this.showToast(`Lista ${status} correctamente`, 'success');
+            this.renderShoppingLists();
+        }
     }
 
     /**
@@ -8292,11 +8360,11 @@ class RecipeApp {
         // Clear previous lists
         listsContainer.innerHTML = '';
         
-        // Get all shopping lists
-        const lists = this.shoppingListManager.lists;
+        // Get all shopping lists (only enabled ones)
+        const lists = this.shoppingListManager.lists.filter(list => list.enabled !== false);
         
         if (lists.length === 0) {
-            listsContainer.innerHTML = '<p class="modal-description">No tienes listas de compra. Crea una nueva lista para añadir este ingrediente.</p>';
+            listsContainer.innerHTML = '<p class="modal-description">No tienes listas de compra habilitadas. Crea una nueva lista o habilita una existente para añadir este ingrediente.</p>';
         } else {
             // Render each list as an option
             lists.forEach(list => {

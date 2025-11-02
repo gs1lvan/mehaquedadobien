@@ -49,6 +49,8 @@ La aplicación incluye un sistema completo de gestión de listas de compra:
 ### Características
 
 - **Múltiples listas:** Crea y gestiona varias listas de compra simultáneamente
+- **Listas vacías:** Crea listas sin elementos y añádelos cuando los necesites
+- **Habilitar/Deshabilitar:** Control de visibilidad de listas mediante botón de ojo (👁️) - las listas deshabilitadas no aparecen al añadir ingredientes desde recetas
 - **Elementos con cantidad:** Añade elementos con nombre y cantidad opcional
 - **Marcar completados:** Marca elementos como comprados mientras haces la compra
 - **Expandir/Colapsar:** Listas desplegables para una vista organizada
@@ -67,10 +69,23 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 
 ## 🎨 Última Actualización
 
-**Fecha:** 1 de noviembre de 2025  
-**Cambio:** Etiquetado automático de ingredientes desde recetas - Cuando se añade un ingrediente desde una receta a una lista de compra, el sistema ahora añade automáticamente la etiqueta "recetario" a la cantidad para identificar su origen. Esto permite distinguir fácilmente entre ingredientes añadidos manualmente y los que provienen de recetas.
+**Fecha:** 2 de noviembre de 2025  
+**Cambio:** Control de habilitación de listas de compra - Se ha añadido un botón de ojo (👁️) en cada lista de compra para habilitar/deshabilitar su visibilidad. Las listas deshabilitadas:
+- Se muestran con opacidad reducida (50%) en la vista de listas
+- No aparecen en el selector al añadir ingredientes desde recetas
+- Mantienen todos sus datos y pueden reactivarse en cualquier momento
+- Útil para archivar listas temporalmente sin eliminarlas
 
 ## 📝 Actualizaciones Anteriores
+
+**Fecha:** 2 de noviembre de 2025  
+**Cambio:** Listas de compra vacías permitidas - Se ha eliminado la validación que requería al menos un elemento al crear o guardar una lista de compra. Ahora puedes crear listas vacías y añadir elementos posteriormente, ofreciendo mayor flexibilidad en la gestión de tus listas.
+
+**Fecha:** 2 de noviembre de 2025  
+**Cambio:** Botón de compartir en menú de opciones - Se ha añadido un botón "Compartir" en el menú de opciones de las tarjetas de recetas (menú de tres puntos), facilitando el acceso rápido a la funcionalidad de compartir recetas mediante enlace sin necesidad de abrir la vista de detalle.
+
+**Fecha:** 1 de noviembre de 2025  
+**Cambio:** Etiquetado automático de ingredientes desde recetas - Cuando se añade un ingrediente desde una receta a una lista de compra, el sistema ahora añade automáticamente la etiqueta "recetario" a la cantidad para identificar su origen. Esto permite distinguir fácilmente entre ingredientes añadidos manualmente y los que provienen de recetas.
 
 **Fecha:** 1 de noviembre de 2025  
 **Cambio:** Mejora de contraste en tema oscuro para listas de compra - Los badges de contador y fecha/hora en las listas de compra ahora usan un fondo gris oscuro (#3a3a3a) en lugar de morado en el tema oscuro, mejorando la legibilidad y consistencia visual con el resto de la interfaz oscura.
