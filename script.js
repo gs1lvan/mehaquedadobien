@@ -9044,8 +9044,13 @@ async function importRecipeFromLink(recipeData) {
             ingredients: recipeData.ingredients || [],
             preparationMethod: recipeData.preparationMethod || '',
             totalTime: recipeData.totalTime || '',
+            author: recipeData.author || '',
+            history: recipeData.history || '',
+            caravanFriendly: recipeData.caravanFriendly || false,
             additionSequences: recipeData.additionSequences || [],
-            kitchenAppliances: recipeData.kitchenAppliances || []
+            kitchenAppliances: recipeData.kitchenAppliances || [],
+            images: recipeData.images || [],
+            videos: recipeData.videos || []
         });
         
         // Save recipe using StorageManager

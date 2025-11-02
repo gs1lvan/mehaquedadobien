@@ -70,12 +70,15 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 ## 🎨 Última Actualización
 
 **Fecha:** 2 de noviembre de 2025  
-**Cambio:** Exportación completa de recetas al compartir - Se ha mejorado la funcionalidad de compartir recetas para incluir todos los campos disponibles:
-- Campos básicos: autor, historia
-- Apto para caravana (caravanFriendly)
-- Imágenes con URLs y descripciones
-- Videos con URLs y descripciones
-- Todos los campos se exportan e importan correctamente al compartir recetas mediante enlace
+**Cambio:** Importación completa de recetas compartidas - Se ha completado la funcionalidad de compartir recetas para garantizar que todos los campos se importen correctamente:
+- ✅ Campos básicos: nombre, categoría, ingredientes, método de preparación, tiempo total
+- ✅ Información adicional: autor, historia
+- ✅ Apto para caravana (caravanFriendly)
+- ✅ Secuencias de adición con ingredientes asociados
+- ✅ Aparatos de cocina seleccionados
+- ✅ Imágenes con URLs y descripciones
+- ✅ Videos con URLs y descripciones
+- Todos los campos se exportan e importan correctamente al compartir recetas mediante enlace, preservando la integridad completa de los datos
 
 ## 📝 Actualizaciones Anteriores
 
