@@ -878,6 +878,10 @@ class XMLExporter {
             root.appendChild(ingredientsElement);
 
             // Add addition sequences
+            // Create ingredient lookup map for O(1) access
+            const ingredientMap = new Map();
+            recipe.ingredients.forEach(ing => ingredientMap.set(ing.id, ing));
+            
             const sequencesElement = xmlDoc.createElement('additionSequences');
             recipe.additionSequences.forEach(sequence => {
                 const sequenceElement = xmlDoc.createElement('sequence');
@@ -890,12 +894,20 @@ class XMLExporter {
                 seqStepElement.textContent = sequence.step.toString();
                 sequenceElement.appendChild(seqStepElement);
                 
-                const seqIngredientsElement = xmlDoc.createElement('ingredientIds');
-                sequence.ingredientIds.forEach(ingredientId => {
-                    const ingredientIdElement = xmlDoc.createElement('ingredientId');
-                    ingredientIdElement.textContent = ingredientId;
-                    seqIngredientsElement.appendChild(ingredientIdElement);
-                });
+                // Export ingredient names instead of IDs for portability
+                const seqIngredientsElement = xmlDoc.createElement('ingredientNames');
+                if (sequence.ingredientIds && sequence.ingredientIds.length > 0) {
+                    sequence.ingredientIds.forEach(ingredientId => {
+                        const ingredient = ingredientMap.get(ingredientId);
+                        if (ingredient) {
+                            const ingredientNameElement = xmlDoc.createElement('ingredientName');
+                            ingredientNameElement.textContent = ingredient.name;
+                            seqIngredientsElement.appendChild(ingredientNameElement);
+                        } else {
+                            console.warn('[XMLExporter] Ingredient ID not found in sequence:', ingredientId);
+                        }
+                    });
+                }
                 sequenceElement.appendChild(seqIngredientsElement);
                 
                 const seqDurationElement = xmlDoc.createElement('duration');

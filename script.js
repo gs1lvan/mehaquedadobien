@@ -7205,6 +7205,12 @@ class RecipeApp {
         
         // Sequences
         if (recipe.additionSequences && recipe.additionSequences.length > 0) {
+            // Create ingredient lookup map for O(1) access
+            const ingredientMap = new Map();
+            if (recipe.ingredients) {
+                recipe.ingredients.forEach(ing => ingredientMap.set(ing.id, ing));
+            }
+            
             const seqsEl = xmlDoc.createElement('sequences');
             recipe.additionSequences.forEach(seq => {
                 const seqEl = xmlDoc.createElement('s');
@@ -7225,6 +7231,24 @@ class RecipeApp {
                     const descEl = xmlDoc.createElement('desc');
                     descEl.textContent = seq.description;
                     seqEl.appendChild(descEl);
+                }
+                
+                // Export ingredient names for portability (IDs are internal)
+                if (seq.ingredientIds && seq.ingredientIds.length > 0) {
+                    const ingsEl = xmlDoc.createElement('ings');
+                    seq.ingredientIds.forEach(ingId => {
+                        const ingredient = ingredientMap.get(ingId);
+                        if (ingredient) {
+                            const ingNameEl = xmlDoc.createElement('ing');
+                            ingNameEl.textContent = ingredient.name;
+                            ingsEl.appendChild(ingNameEl);
+                        } else {
+                            console.warn('[Share] Ingredient ID not found:', ingId);
+                        }
+                    });
+                    if (ingsEl.childNodes.length > 0) {
+                        seqEl.appendChild(ingsEl);
+                    }
                 }
                 
                 seqsEl.appendChild(seqEl);
@@ -8865,11 +8889,23 @@ function parseCompactXML(xmlString) {
     if (sequencesEl) {
         const seqElements = sequencesEl.querySelectorAll('s');
         seqElements.forEach(seqEl => {
-            recipeData.additionSequences.push({
+            const sequence = {
                 step: parseInt(seqEl.querySelector('step')?.textContent || '0'),
                 duration: seqEl.querySelector('dur')?.textContent || '',
-                description: seqEl.querySelector('desc')?.textContent || ''
-            });
+                description: seqEl.querySelector('desc')?.textContent || '',
+                ingredientNames: [] // Store names temporarily, will convert to IDs later
+            };
+            
+            // Parse ingredient names
+            const ingsEl = seqEl.querySelector('ings');
+            if (ingsEl) {
+                const ingElements = ingsEl.querySelectorAll('ing');
+                ingElements.forEach(ingEl => {
+                    sequence.ingredientNames.push(ingEl.textContent);
+                });
+            }
+            
+            recipeData.additionSequences.push(sequence);
         });
     }
     
@@ -9043,6 +9079,23 @@ async function importRecipeFromLink(recipeData) {
             images: validImages,
             videos: validVideos
         });
+        
+        // Convert ingredient names to IDs in sequences
+        if (newRecipe.additionSequences && newRecipe.additionSequences.length > 0) {
+            newRecipe.additionSequences.forEach(seq => {
+                if (seq.ingredientNames && seq.ingredientNames.length > 0) {
+                    seq.ingredientIds = [];
+                    seq.ingredientNames.forEach(ingName => {
+                        const ingredient = newRecipe.ingredients.find(i => i.name === ingName);
+                        if (ingredient) {
+                            seq.ingredientIds.push(ingredient.id);
+                        }
+                    });
+                    // Clean up temporary property
+                    delete seq.ingredientNames;
+                }
+            });
+        }
         
         // Debug: Log created recipe
         console.log('[Import] Recipe created:', {

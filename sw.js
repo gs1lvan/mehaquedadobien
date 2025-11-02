@@ -1,6 +1,6 @@
-const CACHE_NAME = 'recetario-personal-v2';
-const STATIC_CACHE = 'recetario-static-v2';
-const DYNAMIC_CACHE = 'recetario-dynamic-v2';
+const CACHE_NAME = 'recetario-personal-v3';
+const STATIC_CACHE = 'recetario-static-v3';
+const DYNAMIC_CACHE = 'recetario-dynamic-v3';
 
 // Assets estáticos que se cachean en la instalación
 const staticAssets = [
