@@ -7200,9 +7200,6 @@ class RecipeApp {
      * @param {Recipe} recipe - Recipe object to share
      */
     async showShareRecipe(recipe) {
-        // Show loading notification
-        showNotification('⏳ Generando enlace...', 'info');
-        
         const shareLink = this.generateShareLink(recipe);
         
         // Try to shorten URL using is.gd (free, no API key needed)
@@ -7219,7 +7216,7 @@ class RecipeApp {
         // Copy to clipboard
         try {
             await navigator.clipboard.writeText(finalLink);
-            showNotification('✓ Enlace copiado. Comparte: ' + finalLink, 'success');
+            showNotification('✓ Receta empaquetada y lista para pegar', 'success');
         } catch (error) {
             showNotification('Error al copiar el enlace', 'error');
         }
