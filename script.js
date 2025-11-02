@@ -8836,9 +8836,16 @@ async function importRecipeFromLink(recipeData) {
             return;
         }
         
+        // Check if recipe with same name already exists
+        const existingRecipes = window.recipeApp.recipes || [];
+        const nameExists = existingRecipes.some(r => r.name.toLowerCase() === recipeData.name.toLowerCase());
+        
+        // If name exists, add " - importada" suffix
+        const finalName = nameExists ? `${recipeData.name} - importada` : recipeData.name;
+        
         // Create new Recipe instance with imported data
         const newRecipe = new Recipe({
-            name: recipeData.name,
+            name: finalName,
             category: recipeData.category || '',
             ingredients: recipeData.ingredients || [],
             preparationMethod: recipeData.preparationMethod || '',
