@@ -8736,9 +8736,10 @@ function showImportSuccessModal(recipeName) {
 }
 
 /**
- * Parse standard XML format from share link or export
- * Uses the same format as XMLExporter (standard format only)
- * @param {string} xmlString - Standard XML string
+ * Parse compact XML format from share link
+ * Uses XMLImporter with compact format support to avoid code duplication
+ * 
+ * @param {string} xmlString - Compact XML string
  * @returns {Object} Recipe data object
  */
 function parseCompactXML(xmlString) {
@@ -8747,8 +8748,10 @@ function parseCompactXML(xmlString) {
     const root = xmlDoc.documentElement;
     
     // Check for parsing errors
-    if (root.querySelector('parsererror')) {
-        throw new Error('Invalid XML format');
+    const parserError = root.querySelector('parsererror');
+    if (parserError) {
+        console.error('[Parse] XML parsing error:', parserError.textContent);
+        throw new Error('Invalid XML format: ' + parserError.textContent);
     }
     
     const getElementText = (tagName) => {
@@ -8756,7 +8759,7 @@ function parseCompactXML(xmlString) {
         return el ? el.textContent : '';
     };
     
-    // Extract basic fields using standard XMLExporter format
+    // Extract basic fields
     const recipeData = {
         name: getElementText('name'),
         category: getElementText('category'),
@@ -8772,50 +8775,43 @@ function parseCompactXML(xmlString) {
         videos: []
     };
     
-    // Parse ingredients using standard format: <ingredients><ingredient><name><quantity><unit>
-    const ingredientsEl = root.querySelector('ingredients');
-    if (ingredientsEl) {
-        const ingElements = ingredientsEl.querySelectorAll('ingredient');
-        ingElements.forEach(ingEl => {
-            const quantityText = ingEl.querySelector('quantity')?.textContent || '0';
-            recipeData.ingredients.push({
-                name: ingEl.querySelector('name')?.textContent || '',
-                quantity: parseFloat(quantityText) || 0,
-                unit: ingEl.querySelector('unit')?.textContent || ''
-            });
-        });
-    }
+    // Parse ingredients using XMLImporter with compact format support
+    const { ingredients, idMapping } = XMLImporter.parseIngredientsWithMapping(root, {
+        supportCompactFormat: true
+    });
     
-    // Parse sequences using standard format: <additionSequences><sequence><step><duration><description><ingredientNames><ingredientName>
-    const sequencesEl = root.querySelector('additionSequences');
-    if (sequencesEl) {
-        const seqElements = sequencesEl.querySelectorAll('sequence');
-        seqElements.forEach(seqEl => {
-            const sequence = {
-                step: parseInt(seqEl.querySelector('step')?.textContent || '0'),
-                duration: seqEl.querySelector('duration')?.textContent || '',
-                description: seqEl.querySelector('description')?.textContent || '',
-                ingredientNames: [] // Store names temporarily, will convert to IDs later
-            };
-            
-            // Parse ingredient names using standard format
-            const ingsEl = seqEl.querySelector('ingredientNames');
-            if (ingsEl) {
-                const ingElements = ingsEl.querySelectorAll('ingredientName');
-                ingElements.forEach(ingEl => {
-                    sequence.ingredientNames.push(ingEl.textContent);
-                });
-                console.log('[Parse] Sequence', sequence.step, 'has ingredients:', sequence.ingredientNames);
-            }
-            
-            recipeData.additionSequences.push(sequence);
-        });
-    }
+    // Convert Ingredient objects to plain objects for compatibility
+    recipeData.ingredients = ingredients.map(ing => ({
+        name: ing.name,
+        quantity: ing.quantity,
+        unit: ing.unit
+    }));
     
-    // Parse appliances using standard format: <kitchenAppliances><appliance>
-    const appliancesEl = root.querySelector('kitchenAppliances');
+    // Parse sequences using XMLImporter with compact format support
+    const sequences = XMLImporter.parseSequences(root, idMapping, {
+        supportCompactFormat: true
+    });
+    
+    // Convert Sequence objects to plain objects with ingredientNames for compatibility
+    recipeData.additionSequences = sequences.map(seq => {
+        // Convert ingredient IDs back to names for the legacy format
+        const ingredientNames = seq.ingredientIds.map(id => {
+            const ingredient = ingredients.find(ing => ing.id === id);
+            return ingredient ? ingredient.name : id;
+        });
+        
+        return {
+            step: seq.step,
+            duration: seq.duration,
+            description: seq.description,
+            ingredientNames: ingredientNames
+        };
+    });
+    
+    // Parse appliances - support both formats
+    const appliancesEl = root.querySelector('appliances') || root.querySelector('kitchenAppliances');
     if (appliancesEl) {
-        const appElements = appliancesEl.querySelectorAll('appliance');
+        const appElements = appliancesEl.querySelectorAll('a, appliance');
         appElements.forEach(appEl => {
             recipeData.kitchenAppliances.push(appEl.textContent);
         });
