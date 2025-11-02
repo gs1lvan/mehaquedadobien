@@ -7165,7 +7165,16 @@ class RecipeApp {
         addElement('name', recipe.name);
         addElement('category', recipe.category);
         addElement('totalTime', recipe.totalTime);
+        addElement('author', recipe.author);
+        addElement('history', recipe.history);
         addElement('preparationMethod', recipe.preparationMethod);
+        
+        // Caravan friendly flag
+        if (recipe.caravanFriendly) {
+            const cfEl = xmlDoc.createElement('caravanFriendly');
+            cfEl.textContent = 'true';
+            root.appendChild(cfEl);
+        }
         
         // Ingredients
         if (recipe.ingredients && recipe.ingredients.length > 0) {
@@ -7231,6 +7240,46 @@ class RecipeApp {
                 appEl.appendChild(aEl);
             });
             root.appendChild(appEl);
+        }
+        
+        // Images
+        if (recipe.images && recipe.images.length > 0) {
+            const imgsEl = xmlDoc.createElement('images');
+            recipe.images.forEach(img => {
+                const imgEl = xmlDoc.createElement('img');
+                if (img.url) {
+                    const urlEl = xmlDoc.createElement('url');
+                    urlEl.textContent = img.url;
+                    imgEl.appendChild(urlEl);
+                }
+                if (img.caption) {
+                    const capEl = xmlDoc.createElement('cap');
+                    capEl.textContent = img.caption;
+                    imgEl.appendChild(capEl);
+                }
+                imgsEl.appendChild(imgEl);
+            });
+            root.appendChild(imgsEl);
+        }
+        
+        // Videos
+        if (recipe.videos && recipe.videos.length > 0) {
+            const vidsEl = xmlDoc.createElement('videos');
+            recipe.videos.forEach(vid => {
+                const vidEl = xmlDoc.createElement('vid');
+                if (vid.url) {
+                    const urlEl = xmlDoc.createElement('url');
+                    urlEl.textContent = vid.url;
+                    vidEl.appendChild(urlEl);
+                }
+                if (vid.caption) {
+                    const capEl = xmlDoc.createElement('cap');
+                    capEl.textContent = vid.caption;
+                    vidEl.appendChild(capEl);
+                }
+                vidsEl.appendChild(vidEl);
+            });
+            root.appendChild(vidsEl);
         }
         
         const serializer = new XMLSerializer();
@@ -8809,10 +8858,15 @@ function parseCompactXML(xmlString) {
         name: getElementText('name'),
         category: getElementText('category'),
         totalTime: getElementText('totalTime'),
+        author: getElementText('author'),
+        history: getElementText('history'),
         preparationMethod: getElementText('preparationMethod'),
+        caravanFriendly: getElementText('caravanFriendly') === 'true',
         ingredients: [],
         additionSequences: [],
-        kitchenAppliances: []
+        kitchenAppliances: [],
+        images: [],
+        videos: []
     };
     
     // Parse ingredients
@@ -8848,6 +8902,30 @@ function parseCompactXML(xmlString) {
         const appElements = appliancesEl.querySelectorAll('a');
         appElements.forEach(appEl => {
             recipeData.kitchenAppliances.push(appEl.textContent);
+        });
+    }
+    
+    // Parse images
+    const imagesEl = root.querySelector('images');
+    if (imagesEl) {
+        const imgElements = imagesEl.querySelectorAll('img');
+        imgElements.forEach(imgEl => {
+            recipeData.images.push({
+                url: imgEl.querySelector('url')?.textContent || '',
+                caption: imgEl.querySelector('cap')?.textContent || ''
+            });
+        });
+    }
+    
+    // Parse videos
+    const videosEl = root.querySelector('videos');
+    if (videosEl) {
+        const vidElements = videosEl.querySelectorAll('vid');
+        vidElements.forEach(vidEl => {
+            recipeData.videos.push({
+                url: vidEl.querySelector('url')?.textContent || '',
+                caption: vidEl.querySelector('cap')?.textContent || ''
+            });
         });
     }
     

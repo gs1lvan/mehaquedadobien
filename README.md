@@ -70,13 +70,17 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 ## 🎨 Última Actualización
 
 **Fecha:** 2 de noviembre de 2025  
-**Cambio:** Control de habilitación de listas de compra - Se ha añadido un botón de ojo (👁️) en cada lista de compra para habilitar/deshabilitar su visibilidad. Las listas deshabilitadas:
-- Se muestran con opacidad reducida (50%) en la vista de listas
-- No aparecen en el selector al añadir ingredientes desde recetas
-- Mantienen todos sus datos y pueden reactivarse en cualquier momento
-- Útil para archivar listas temporalmente sin eliminarlas
+**Cambio:** Exportación completa de recetas al compartir - Se ha mejorado la funcionalidad de compartir recetas para incluir todos los campos disponibles:
+- Campos básicos: autor, historia
+- Apto para caravana (caravanFriendly)
+- Imágenes con URLs y descripciones
+- Videos con URLs y descripciones
+- Todos los campos se exportan e importan correctamente al compartir recetas mediante enlace
 
 ## 📝 Actualizaciones Anteriores
+
+**Fecha:** 2 de noviembre de 2025  
+**Cambio:** Control de habilitación de listas de compra - Se ha añadido un botón de ojo (👁️) en cada lista de compra para habilitar/deshabilitar su visibilidad. Las listas deshabilitadas se muestran con opacidad reducida y no aparecen al añadir ingredientes desde recetas.
 
 **Fecha:** 2 de noviembre de 2025  
 **Cambio:** Listas de compra vacías permitidas - Se ha eliminado la validación que requería al menos un elemento al crear o guardar una lista de compra. Ahora puedes crear listas vacías y añadir elementos posteriormente, ofreciendo mayor flexibilidad en la gestión de tus listas.
