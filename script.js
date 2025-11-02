@@ -8733,9 +8733,10 @@ function parseCompactXML(xmlString) {
     if (ingredientsEl) {
         const ingElements = ingredientsEl.querySelectorAll('i');
         ingElements.forEach(ingEl => {
+            const quantityText = ingEl.querySelector('q')?.textContent || '0';
             recipeData.ingredients.push({
                 name: ingEl.querySelector('n')?.textContent || '',
-                quantity: ingEl.querySelector('q')?.textContent || '',
+                quantity: parseFloat(quantityText) || 0,
                 unit: ingEl.querySelector('u')?.textContent || ''
             });
         });
