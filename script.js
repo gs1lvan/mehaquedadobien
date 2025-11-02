@@ -7196,26 +7196,15 @@ class RecipeApp {
     }
 
     /**
-     * Share recipe - generates short link and copies to clipboard
+     * Share recipe - generates link and copies to clipboard
      * @param {Recipe} recipe - Recipe object to share
      */
     async showShareRecipe(recipe) {
         const shareLink = this.generateShareLink(recipe);
         
-        // Try to shorten URL using is.gd (free, no API key needed)
-        let finalLink = shareLink;
-        try {
-            const response = await fetch(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(shareLink)}`);
-            if (response.ok) {
-                finalLink = await response.text();
-            }
-        } catch (error) {
-            console.warn('[Share] Could not shorten URL, using original:', error);
-        }
-        
         // Copy to clipboard
         try {
-            await navigator.clipboard.writeText(finalLink);
+            await navigator.clipboard.writeText(shareLink);
             showNotification('✓ Receta empaquetada y lista para pegar', 'success');
         } catch (error) {
             showNotification('Error al copiar el enlace', 'error');
