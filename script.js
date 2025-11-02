@@ -7196,9 +7196,10 @@ class RecipeApp {
         const serializer = new XMLSerializer();
         const xmlString = serializer.serializeToString(xmlDoc);
         
-        // Encode and create share URL
+        // Encode and create share URL with recipe name for preview
         const base64Data = btoa(encodeURIComponent(xmlString));
-        return `https://gs1lvan.github.io/mehaquedadobien/?import=${base64Data}`;
+        const recipeName = encodeURIComponent(recipe.name);
+        return `https://gs1lvan.github.io/mehaquedadobien/?r=${recipeName}&import=${base64Data}`;
     }
 
     /**

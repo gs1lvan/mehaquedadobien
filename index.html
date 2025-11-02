@@ -22,25 +22,14 @@
             
             // Update title if importing recipe
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('import')) {
-                try {
-                    const base64Data = urlParams.get('import');
-                    const decodedData = decodeURIComponent(atob(base64Data));
-                    if (decodedData.trim().startsWith('<')) {
-                        const parser = new DOMParser();
-                        const xmlDoc = parser.parseFromString(decodedData, 'text/xml');
-                        const recipeName = xmlDoc.querySelector('name')?.textContent;
-                        if (recipeName) {
-                            document.title = `${recipeName} - mehaquedadobien 🍳`;
-                            const ogTitle = document.getElementById('og-title');
-                            if (ogTitle) ogTitle.setAttribute('content', `${recipeName} - mehaquedadobien 🍳`);
-                            const ogDesc = document.getElementById('og-description');
-                            if (ogDesc) ogDesc.setAttribute('content', `Receta: ${recipeName}`);
-                        }
-                    }
-                } catch (e) {
-                    // Ignore errors
-                }
+            const recipeName = urlParams.get('r');
+            if (recipeName) {
+                const decodedName = decodeURIComponent(recipeName);
+                document.title = `${decodedName} - mehaquedadobien 🍳`;
+                const ogTitle = document.getElementById('og-title');
+                if (ogTitle) ogTitle.setAttribute('content', `${decodedName} - mehaquedadobien 🍳`);
+                const ogDesc = document.getElementById('og-description');
+                if (ogDesc) ogDesc.setAttribute('content', `Receta: ${decodedName}`);
             }
         })();
     </script>
