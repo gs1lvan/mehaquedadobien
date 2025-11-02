@@ -8903,6 +8903,7 @@ function parseCompactXML(xmlString) {
                 ingElements.forEach(ingEl => {
                     sequence.ingredientNames.push(ingEl.textContent);
                 });
+                console.log('[Parse] Sequence', sequence.step, 'has ingredients:', sequence.ingredientNames);
             }
             
             recipeData.additionSequences.push(sequence);
@@ -9082,15 +9083,21 @@ async function importRecipeFromLink(recipeData) {
         
         // Convert ingredient names to IDs in sequences
         if (newRecipe.additionSequences && newRecipe.additionSequences.length > 0) {
+            console.log('[Import] Converting ingredient names to IDs in sequences...');
             newRecipe.additionSequences.forEach(seq => {
                 if (seq.ingredientNames && seq.ingredientNames.length > 0) {
                     seq.ingredientIds = [];
+                    console.log('[Import] Sequence', seq.step, 'ingredient names:', seq.ingredientNames);
                     seq.ingredientNames.forEach(ingName => {
                         const ingredient = newRecipe.ingredients.find(i => i.name === ingName);
                         if (ingredient) {
                             seq.ingredientIds.push(ingredient.id);
+                            console.log('[Import] Matched', ingName, 'to ID', ingredient.id);
+                        } else {
+                            console.warn('[Import] Could not find ingredient:', ingName);
                         }
                     });
+                    console.log('[Import] Sequence', seq.step, 'final ingredientIds:', seq.ingredientIds);
                     // Clean up temporary property
                     delete seq.ingredientNames;
                 }
