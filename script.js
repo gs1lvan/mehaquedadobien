@@ -8626,30 +8626,39 @@ document.addEventListener('DOMContentLoaded', () => {
 /**
  * Check URL hash for recipe import data and import automatically
  */
-function checkForRecipeImport() {
+async function checkForRecipeImport() {
     const hash = window.location.hash;
     
     // Handle full recipe import
     if (hash.startsWith('#import=')) {
         try {
+            console.log('[Import] Hash detected:', hash.substring(0, 50) + '...');
+            
             // Extract and decode recipe data
             const base64Data = hash.substring(8); // Remove '#import='
+            console.log('[Import] Base64 length:', base64Data.length);
+            
             const decodedData = decodeURIComponent(atob(base64Data));
+            console.log('[Import] Decoded data:', decodedData.substring(0, 200));
             
             let recipeData;
             
             // Detect if data is XML or JSON
             if (decodedData.trim().startsWith('<')) {
+                console.log('[Import] Detected XML format');
                 // XML format - parse it
                 recipeData = parseCompactXML(decodedData);
             } else {
+                console.log('[Import] Detected JSON format');
                 // JSON format (legacy support)
                 const rawData = JSON.parse(decodedData);
                 recipeData = expandRecipeData(rawData);
             }
             
+            console.log('[Import] Parsed recipe data:', recipeData);
+            
             // Import automatically without confirmation
-            importRecipeFromQR(recipeData);
+            await importRecipeFromQR(recipeData);
             
             // Show success modal
             showImportSuccessModal(recipeData);
@@ -8658,8 +8667,9 @@ function checkForRecipeImport() {
             history.replaceState(null, '', window.location.pathname);
             
         } catch (error) {
-            console.error('[Import] Error parsing recipe data:', error);
-            showNotification('Error al importar la receta. Código QR inválido.', 'error');
+            console.error('[Import] Error details:', error);
+            console.error('[Import] Error stack:', error.stack);
+            showNotification('Error al importar la receta. Código QR inválido. Ver consola para detalles.', 'error');
         }
     }
     
@@ -8709,13 +8719,9 @@ function showImportSuccessModal(recipeData) {
     // Close button handler
     document.getElementById('close-success-modal').addEventListener('click', () => {
         modal.remove();
-        // Show the imported recipe if app is ready
-        if (window.recipeApp) {
-            const recipes = JSON.parse(localStorage.getItem('recipes') || '[]');
-            const importedRecipe = recipes.find(r => r.name === recipeData.name);
-            if (importedRecipe) {
-                window.recipeApp.showRecipeDetail(importedRecipe.id);
-            }
+        // Show the imported recipe using the stored ID
+        if (window.recipeApp && window.lastImportedRecipeId) {
+            window.recipeApp.showRecipeDetail(window.lastImportedRecipeId);
         }
     });
     
@@ -8885,42 +8891,54 @@ function showRecipeImportModal(recipeData) {
  * Import recipe from QR code data
  * @param {Object} recipeData - Recipe data to import
  */
-function importRecipeFromQR(recipeData) {
+async function importRecipeFromQR(recipeData) {
     try {
-        // Create new recipe with imported data
-        const newRecipe = {
-            id: Date.now(),
-            name: recipeData.name,
-            category: recipeData.category || '',
-            ingredients: recipeData.ingredients || [],
-            preparationMethod: recipeData.preparationMethod || '',
-            totalTime: recipeData.totalTime || '',
-            images: [], // QR doesn't include images
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
-        
-        // Add recipe to storage
-        const recipes = JSON.parse(localStorage.getItem('recipes') || '[]');
-        recipes.push(newRecipe);
-        localStorage.setItem('recipes', JSON.stringify(recipes));
-        
-        // Show success notification
-        showNotification(`✓ Receta "${recipeData.name}" importada correctamente`, 'success');
-        
-        // Reload recipes if app is initialized
-        if (window.recipeApp) {
-            window.recipeApp.loadRecipes();
-            
-            // Show the imported recipe detail after a short delay
-            setTimeout(() => {
-                window.recipeApp.showRecipeDetail(newRecipe.id);
-            }, 500);
+        if (!window.recipeApp) {
+            console.error('[Import] RecipeApp not initialized');
+            showNotification('Error: La aplicación no está lista', 'error');
+            return;
         }
+        
+        // Create new Recipe instance with imported data
+        const newRecipe = new Recipe(
+            recipeData.name,
+            recipeData.category || '',
+            recipeData.ingredients || [],
+            recipeData.preparationMethod || '',
+            recipeData.totalTime || ''
+        );
+        
+        // Add addition sequences if present
+        if (recipeData.additionSequences && recipeData.additionSequences.length > 0) {
+            newRecipe.additionSequences = recipeData.additionSequences.map((seq, index) => ({
+                id: Date.now() + index,
+                step: seq.step || index + 1,
+                ingredientIds: seq.ingredientIds || [],
+                duration: seq.duration || '',
+                description: seq.description || ''
+            }));
+        }
+        
+        // Add kitchen appliances if present
+        if (recipeData.kitchenAppliances && recipeData.kitchenAppliances.length > 0) {
+            newRecipe.kitchenAppliances = recipeData.kitchenAppliances;
+        }
+        
+        // Save recipe using StorageManager
+        await window.recipeApp.storageManager.saveRecipe(newRecipe);
+        
+        console.log('[Import] Recipe saved successfully:', newRecipe.id);
+        
+        // Reload recipes in the app
+        await window.recipeApp.loadRecipes();
+        
+        // Store the recipe ID for the success modal
+        window.lastImportedRecipeId = newRecipe.id;
         
     } catch (error) {
         console.error('[Import] Error importing recipe:', error);
         showNotification('Error al importar la receta', 'error');
+        throw error;
     }
 }
 
