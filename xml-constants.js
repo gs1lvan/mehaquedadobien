@@ -1,6 +1,6 @@
 /**
  * XML Element Name Constants
- * Defines element names for both compact (QR code) and full (export) XML formats
+ * Defines element names for both compact and full (export) XML formats
  * 
  * This centralized configuration makes it easier to:
  * - Maintain consistency across parsers
@@ -120,16 +120,6 @@ const XML_FORMATS = {
         IMAGES: {
             CONTAINER: 'images',
             ITEM: 'image',
-            FIELDS: {
-                NAME: 'name',
-                TYPE: 'type',
-                DATA: 'data',
-                SIZE: 'size'
-            }
-        },
-        VIDEOS: {
-            CONTAINER: 'videos',
-            ITEM: 'video',
             FIELDS: {
                 NAME: 'name',
                 TYPE: 'type',

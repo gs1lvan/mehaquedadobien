@@ -711,7 +711,6 @@ class RecipeApp {
         this.sequences = []; // Current recipe sequences
         this.editingSequenceId = null; // Track which sequence is being edited
         this.images = []; // Current recipe images
-        this.videos = []; // Current recipe videos
         this.selectedAppliances = []; // Current recipe kitchen appliances
 
         // Image modal state
@@ -2359,20 +2358,6 @@ class RecipeApp {
                 this.handleImageUpload(e.target.files);
             });
         }
-
-        // Upload video button
-        const uploadVideoBtn = document.getElementById('upload-video-btn');
-        const videoUploadInput = document.getElementById('video-upload');
-
-        if (uploadVideoBtn && videoUploadInput) {
-            uploadVideoBtn.addEventListener('click', () => {
-                videoUploadInput.click();
-            });
-
-            videoUploadInput.addEventListener('change', (e) => {
-                this.handleVideoUpload(e.target.files);
-            });
-        }
     }
 
     /**
@@ -3477,11 +3462,6 @@ class RecipeApp {
         if (imageError) {
             imageError.textContent = '';
         }
-
-        const videoError = document.getElementById('video-error');
-        if (videoError) {
-            videoError.textContent = '';
-        }
         
         // Reset kitchen appliances
         this.selectedAppliances = [];
@@ -3768,7 +3748,6 @@ class RecipeApp {
                     ingredients: formData.ingredients,
                     additionSequences: formData.additionSequences,
                     images: formData.images,
-                    videos: formData.videos,
                     createdAt: existingRecipe.createdAt,
                     updatedAt: new Date()
                 });
@@ -3786,7 +3765,6 @@ class RecipeApp {
                     ingredients: formData.ingredients,
                     additionSequences: formData.additionSequences,
                     images: formData.images,
-                    videos: formData.videos,
                     createdAt: new Date(),
                     updatedAt: new Date()
                 });
@@ -3821,8 +3799,7 @@ class RecipeApp {
             history: document.getElementById('recipe-history')?.value.trim() || '',
             ingredients: this.ingredients,
             additionSequences: this.sequences,
-            images: this.images,
-            videos: this.videos
+            images: this.images
         };
     }
 
@@ -4826,9 +4803,7 @@ class RecipeApp {
 
             // Load multimedia
             this.images = recipe.images ? [...recipe.images] : [];
-            this.videos = recipe.videos ? [...recipe.videos] : [];
             this.renderImagesPreview();
-            this.renderVideosPreview();
             
             // Load kitchen appliances
             this.selectedAppliances = recipe.kitchenAppliances ? [...recipe.kitchenAppliances] : [];
@@ -5083,195 +5058,6 @@ class RecipeApp {
     }
 
     /**
-     * Handle video upload with enhanced error handling
-     * Requirements: 5.1, 5.2, 5.3, 5.4, 1.3
-     * @param {FileList} files - Files to upload
-     */
-    async handleVideoUpload(files) {
-        const errorMessage = document.getElementById('video-error');
-        if (errorMessage) {
-            errorMessage.textContent = '';
-        }
-
-        if (!files || files.length === 0) {
-            console.warn('[Upload] No files selected for video upload');
-            return;
-        }
-
-        console.log('[Upload] Iniciando carga de', files.length, 'video(s)');
-
-        // Show loading state
-        const uploadBtn = document.getElementById('upload-video-btn');
-        const originalText = uploadBtn?.textContent;
-        if (uploadBtn) {
-            uploadBtn.disabled = true;
-            uploadBtn.textContent = '⏳ Procesando...';
-        }
-
-        let successCount = 0;
-        let errorCount = 0;
-        const errors = [];
-
-        try {
-            for (const file of files) {
-                try {
-                    console.log('[Upload] Procesando video:', file.name);
-
-                    // Validate file
-                    this.validateVideoFile(file);
-
-                    // Convert to Base64
-                    const mediaFile = await this.processVideoFile(file);
-
-                    // Add to videos array
-                    this.videos.push(mediaFile);
-                    successCount++;
-
-                    console.log('[Upload] Video procesado exitosamente:', file.name);
-                } catch (error) {
-                    errorCount++;
-                    console.error('[Upload] Error procesando video:', file.name, error);
-                    errors.push(`${file.name}: ${error.message}`);
-
-                    if (errorMessage) {
-                        errorMessage.textContent = `Error con ${file.name}: ${error.message}`;
-                    }
-                }
-            }
-
-            // Clear file input
-            const videoUploadInput = document.getElementById('video-upload');
-            if (videoUploadInput) {
-                videoUploadInput.value = '';
-            }
-
-            // Re-render videos preview
-            this.renderVideosPreview();
-
-            // Show summary message
-            if (successCount > 0 && errorCount === 0) {
-                this.showSuccess(`${successCount} video(s) cargado(s) exitosamente`);
-            } else if (successCount > 0 && errorCount > 0) {
-                this.showWarning(`${successCount} video(s) cargado(s), ${errorCount} con errores`);
-            } else if (errorCount > 0) {
-                this.showError(`Error al cargar todos los videos`);
-            }
-
-        } catch (error) {
-            console.error('[Upload] Error general al cargar videos:', error);
-            this.showError('Error al cargar videos: ' + error.message);
-            if (errorMessage) {
-                errorMessage.textContent = 'Error al cargar videos: ' + error.message;
-            }
-        } finally {
-            // Restore button state
-            if (uploadBtn) {
-                uploadBtn.disabled = false;
-                uploadBtn.textContent = originalText;
-            }
-        }
-    }
-
-    /**
-     * Validate video file with comprehensive checks
-     * Requirements: 5.2, 1.3
-     * @param {File} file - File to validate
-     * @throws {MediaError} If validation fails
-     */
-    validateVideoFile(file) {
-        console.log('[Validation] Validando video:', file.name, 'Tipo:', file.type, 'Tamaño:', file.size);
-
-        // Check if file exists
-        if (!file) {
-            console.error('[Validation] No file provided');
-            throw new MediaError(
-                'No se proporcionó ningún archivo',
-                MediaError.INVALID_FORMAT
-            );
-        }
-
-        // Check file type
-        const validTypes = ['video/mp4', 'video/webm', 'video/quicktime'];
-        if (!validTypes.includes(file.type.toLowerCase())) {
-            console.warn('[Validation] Invalid video format:', file.type);
-            throw new MediaError(
-                `Formato no soportado: ${file.type}. Use MP4 o WebM`,
-                MediaError.INVALID_FORMAT
-            );
-        }
-
-        // Check file size (50MB limit)
-        const maxSize = 50 * 1024 * 1024; // 50MB in bytes
-        if (file.size > maxSize) {
-            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-            console.warn('[Validation] Video too large:', sizeMB, 'MB');
-            throw new MediaError(
-                `El video es demasiado grande (${sizeMB}MB). Máximo 50MB`,
-                MediaError.FILE_TOO_LARGE
-            );
-        }
-
-        // Check minimum size (avoid empty files)
-        if (file.size < 1000) {
-            console.warn('[Validation] Video too small:', file.size, 'bytes');
-            throw new MediaError(
-                'El archivo parece estar vacío o corrupto',
-                MediaError.INVALID_FORMAT
-            );
-        }
-
-        // Warning for localStorage fallback
-        if (this.storageManager.useLocalStorageFallback && file.size > 5 * 1024 * 1024) {
-            console.warn('[Validation] Large video with localStorage fallback');
-            this.showWarning('Advertencia: Está usando almacenamiento limitado. Videos grandes pueden causar problemas.');
-        }
-
-        console.log('[Validation] Video válido:', file.name);
-    }
-
-    /**
-     * Process video file - convert to Base64
-     * Requirements: 5.3, 5.4
-     * @param {File} file - File to process
-     * @returns {Promise<MediaFile>} Processed media file
-     */
-    async processVideoFile(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-
-            reader.onload = (e) => {
-                try {
-                    const videoData = e.target.result;
-
-                    // Create MediaFile
-                    const mediaFile = new MediaFile({
-                        name: file.name,
-                        type: file.type,
-                        data: videoData,
-                        size: videoData.length
-                    });
-
-                    resolve(mediaFile);
-                } catch (error) {
-                    reject(new MediaError(
-                        'Error al procesar video: ' + error.message,
-                        MediaError.UPLOAD_FAILED
-                    ));
-                }
-            };
-
-            reader.onerror = () => {
-                reject(new MediaError(
-                    'Error al leer archivo',
-                    MediaError.UPLOAD_FAILED
-                ));
-            };
-
-            reader.readAsDataURL(file);
-        });
-    }
-
-    /**
      * Render images preview
      * Requirements: 5.5
      */
@@ -5304,43 +5090,11 @@ class RecipeApp {
     }
 
     /**
-     * Render videos preview
-     * Requirements: 5.5
-     */
-    renderVideosPreview() {
-        const videosPreview = document.getElementById('videos-preview');
-        const videosEmpty = document.getElementById('videos-empty');
-
-        if (!videosPreview || !videosEmpty) {
-            return;
-        }
-
-        // Clear preview
-        videosPreview.innerHTML = '';
-
-        // Show/hide empty state
-        if (this.videos.length === 0) {
-            videosEmpty.classList.remove('hidden');
-            videosPreview.style.display = 'none';
-            return;
-        }
-
-        videosEmpty.classList.add('hidden');
-        videosPreview.style.display = 'grid';
-
-        // Render each video
-        this.videos.forEach((video, index) => {
-            const previewItem = this.createMediaPreviewItem(video, index, 'video');
-            videosPreview.appendChild(previewItem);
-        });
-    }
-
-    /**
      * Create media preview item
      * Requirements: 5.5
      * @param {MediaFile} mediaFile - Media file to preview
      * @param {number} index - Index in array
-     * @param {string} type - 'image' or 'video'
+     * @param {string} type - 'image'
      * @returns {HTMLElement} Preview item element
      */
     createMediaPreviewItem(mediaFile, index, type) {
@@ -5352,19 +5106,11 @@ class RecipeApp {
         const previewContainer = document.createElement('div');
         previewContainer.className = 'media-preview-container';
 
-        if (type === 'image') {
-            const img = document.createElement('img');
-            img.src = mediaFile.data;
-            img.alt = mediaFile.name;
-            img.className = 'media-preview-image';
-            previewContainer.appendChild(img);
-        } else if (type === 'video') {
-            const video = document.createElement('video');
-            video.src = mediaFile.data;
-            video.className = 'media-preview-video';
-            video.controls = true;
-            previewContainer.appendChild(video);
-        }
+        const img = document.createElement('img');
+        img.src = mediaFile.data;
+        img.alt = mediaFile.name;
+        img.className = 'media-preview-image';
+        previewContainer.appendChild(img);
 
         // Delete button overlay
         const deleteBtn = document.createElement('button');
@@ -5403,20 +5149,15 @@ class RecipeApp {
      * Handle deleting a media file
      * Requirements: 5.5
      * @param {string} mediaId - Media file ID to delete
-     * @param {string} type - 'image' or 'video'
+     * @param {string} type - 'image'
      */
     handleDeleteMedia(mediaId, type) {
         if (!confirm('¿Estás seguro de que quieres eliminar este archivo?')) {
             return;
         }
 
-        if (type === 'image') {
-            this.images = this.images.filter(img => img.id !== mediaId);
-            this.renderImagesPreview();
-        } else if (type === 'video') {
-            this.videos = this.videos.filter(vid => vid.id !== mediaId);
-            this.renderVideosPreview();
-        }
+        this.images = this.images.filter(img => img.id !== mediaId);
+        this.renderImagesPreview();
     }
 
     /**
@@ -9236,498 +8977,19 @@ class RecipeApp {
 // Initialize the application when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     window.recipeApp = new RecipeApp();
-    
-    // Check if URL contains recipe import data
-    checkForRecipeImport();
 });
 
-/**
- * Check URL for recipe import data and import automatically
- */
-async function checkForRecipeImport() {
-    // Check query parameters first (more reliable on mobile)
-    const urlParams = new URLSearchParams(window.location.search);
-    const importParam = urlParams.get('import');
-    
-    if (importParam) {
-        try {
-            console.log('[Import] Query parameter detected');
-            console.log('[Import] Base64 length:', importParam.length);
-            
-            // Decode URL encoding first (in case Base64 characters were URL-encoded)
-            const base64String = decodeURIComponent(importParam);
-            console.log('[Import] After URL decode length:', base64String.length);
-            
-            // Decode Base64 to UTF-8 safely (handle Unicode characters)
-            const binaryString = atob(base64String);
-            const bytes = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-            }
-            const decodedData = new TextDecoder().decode(bytes);
-            
-            console.log('[Import] Decoded data length:', decodedData.length);
-            console.log('[Import] Decoded data (first 200 chars):', decodedData.substring(0, 200));
-            console.log('[Import] Decoded data (last 200 chars):', decodedData.substring(decodedData.length - 200));
-            
-            let recipeData;
-            
-            // Detect if data is XML or JSON
-            if (decodedData.trim().startsWith('<')) {
-                console.log('[Import] Detected XML format');
-                recipeData = parseCompactXML(decodedData);
-            } else {
-                console.log('[Import] Detected JSON format');
-                const rawData = JSON.parse(decodedData);
-                recipeData = expandRecipeData(rawData);
-            }
-            
-            console.log('[Import] Parsed recipe data:', recipeData);
-            console.log('[Import] Ingredients:', JSON.stringify(recipeData.ingredients, null, 2));
-            
-            // Import automatically without confirmation
-            const importResult = await importRecipeFromLink(recipeData);
-            
-            // Show success modal with final name
-            if (importResult) {
-                showImportSuccessModal(importResult.finalName);
-            }
-            
-            // Clean URL
-            history.replaceState(null, '', window.location.pathname);
-            
-        } catch (error) {
-            console.error('[Import] Error details:', error);
-            console.error('[Import] Error stack:', error.stack);
-            showNotification('Error al importar la receta. Enlace inválido.', 'error');
-        }
-        return;
-    }
-    
-    // Fallback: check hash for legacy support
-    const hash = window.location.hash;
-    
-    if (hash.startsWith('#import=')) {
-        try {
-            console.log('[Import] Hash detected (legacy):', hash.substring(0, 50) + '...');
-            
-            const base64Data = hash.substring(8);
-            const decodedData = decodeURIComponent(atob(base64Data));
-            
-            let recipeData;
-            
-            if (decodedData.trim().startsWith('<')) {
-                recipeData = parseCompactXML(decodedData);
-            } else {
-                const rawData = JSON.parse(decodedData);
-                recipeData = expandRecipeData(rawData);
-            }
-            
-            const importResult = await importRecipeFromLink(recipeData);
-            if (importResult) {
-                showImportSuccessModal(importResult.finalName);
-            }
-            history.replaceState(null, '', window.location.pathname);
-            
-        } catch (error) {
-            console.error('[Import] Error details:', error);
-            showNotification('Error al importar la receta. Enlace inválido.', 'error');
-        }
-    }
-}
 
-/**
- * Show success modal after automatic import
- * @param {string} recipeName - Final name of the imported recipe
- */
-function showImportSuccessModal(recipeName) {
-    // Create modal overlay
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 16px;';
-    
-    // Create modal content
-    const modalContent = document.createElement('div');
-    modalContent.style.cssText = 'background: var(--color-background); padding: 24px 20px; border-radius: 12px; max-width: 400px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.2); text-align: center;';
-    
-    modalContent.innerHTML = `
-        <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
-        <h2 style="margin: 0 0 8px 0; color: var(--color-text); font-size: 1.25rem;">¡Receta Importada!</h2>
-        <p style="margin: 0 0 6px 0; color: var(--color-text); font-size: 1rem; font-weight: 500;">
-            ${recipeName}
-        </p>
-        <p style="margin: 0 0 20px 0; color: var(--color-text-secondary); font-size: 0.8125rem;">
-            La receta se ha añadido a tu colección
-        </p>
-        <button id="close-success-modal" class="btn-primary" style="padding: 10px 24px; width: 100%; font-size: 0.9375rem;">
-            Ver Receta
-        </button>
-    `;
-    
-    modal.appendChild(modalContent);
-    document.body.appendChild(modal);
-    
-    // Close button handler - shows recipe detail
-    document.getElementById('close-success-modal').addEventListener('click', () => {
-        modal.remove();
-        // Show the imported recipe using the stored ID
-        if (window.recipeApp && window.lastImportedRecipeId) {
-            window.recipeApp.showRecipeDetail(window.lastImportedRecipeId);
-        }
-    });
-    
-    // Close on overlay click - goes to home
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.remove();
-            if (window.recipeApp) {
-                // Clear all filters to ensure imported recipe is visible
-                window.recipeApp.activeFilters.clear();
-                window.recipeApp.activeTimeFilter = 'all';
-                
-                // Hide other views
-                const detailView = document.getElementById('recipe-detail-view');
-                const formView = document.getElementById('recipe-form-view');
-                const shoppingView = document.getElementById('shopping-lists-view');
-                if (detailView) detailView.classList.add('hidden');
-                if (formView) formView.classList.add('hidden');
-                if (shoppingView) shoppingView.classList.add('hidden');
-                
-                // Show list view
-                const listView = document.getElementById('recipe-list-view');
-                if (listView) listView.classList.remove('hidden');
-                
-                // Update and render
-                window.recipeApp.currentView = 'list';
-                window.recipeApp.renderRecipeList();
-            }
-        }
-    });
-}
 
-/**
- * Parse compact XML format from share link
- * Uses XMLImporter with compact format support to avoid code duplication
- * 
- * @param {string} xmlString - Compact XML string
- * @returns {Object} Recipe data object
- */
-function parseCompactXML(xmlString) {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
-    const root = xmlDoc.documentElement;
-    
-    // Check for parsing errors
-    const parserError = root.querySelector('parsererror');
-    if (parserError) {
-        console.error('[Parse] XML parsing error:', parserError.textContent);
-        console.error('[Parse] Full XML string length:', xmlString.length);
-        console.error('[Parse] XML starts with:', xmlString.substring(0, 100));
-        console.error('[Parse] XML ends with:', xmlString.substring(xmlString.length - 100));
-        throw new Error('Invalid XML format: ' + parserError.textContent);
-    }
-    
-    console.log('[Parse] XML parsed successfully, root element:', root.tagName);
-    
-    const getElementText = (tagName) => {
-        const el = root.querySelector(tagName);
-        return el ? el.textContent : '';
-    };
-    
-    // Extract basic fields
-    const recipeData = {
-        name: getElementText('name'),
-        category: getElementText('category'),
-        totalTime: getElementText('totalTime'),
-        author: getElementText('author'),
-        history: getElementText('history'),
-        preparationMethod: getElementText('preparationMethod'),
-        caravanFriendly: getElementText('caravanFriendly') === 'true',
-        ingredients: [],
-        additionSequences: [],
-        kitchenAppliances: [],
-        images: [],
-        videos: []
-    };
-    
-    // Parse ingredients using XMLImporter with compact format support
-    const { ingredients, idMapping } = XMLImporter.parseIngredientsWithMapping(root, {
-        supportCompactFormat: true
-    });
-    
-    // Convert Ingredient objects to plain objects for compatibility
-    recipeData.ingredients = ingredients.map(ing => ({
-        name: ing.name,
-        quantity: ing.quantity,
-        unit: ing.unit
-    }));
-    
-    // Parse sequences using XMLImporter with compact format support
-    const sequences = XMLImporter.parseSequences(root, idMapping, {
-        supportCompactFormat: true
-    });
-    
-    console.log('[Parse] Parsed sequences:', sequences.length);
-    console.log('[Parse] ID mapping size:', idMapping.size);
-    console.log('[Parse] ID mapping entries (first 5):', Array.from(idMapping.entries()).slice(0, 5));
-    
-    // Create ingredient lookup map for O(1) access
-    const ingredientMap = new Map(ingredients.map(ing => [ing.id, ing]));
-    
-    // Convert Sequence objects to plain objects with ingredientNames for compatibility
-    recipeData.additionSequences = sequences.map(seq => {
-        console.log('[Parse] Processing sequence', seq.step, 'with ingredientIds:', seq.ingredientIds);
-        
-        // Convert ingredient IDs back to names for the legacy format
-        const ingredientNames = seq.ingredientIds.map(id => {
-            const ingredient = ingredientMap.get(id);
-            const name = ingredient ? ingredient.name : id;
-            if (!ingredient) {
-                console.warn('[Parse] Ingredient ID not found in map:', id);
-            }
-            return name;
-        });
-        
-        console.log('[Parse] Sequence', seq.step, 'ingredientNames:', ingredientNames);
-        
-        return {
-            step: seq.step,
-            duration: seq.duration,
-            description: seq.description,
-            ingredientNames: ingredientNames
-        };
-    });
-    
-    // Parse appliances - support both formats
-    const appliancesEl = root.querySelector('appliances') || root.querySelector('kitchenAppliances');
-    if (appliancesEl) {
-        const appElements = appliancesEl.querySelectorAll('a, appliance');
-        appElements.forEach(appEl => {
-            recipeData.kitchenAppliances.push(appEl.textContent);
-        });
-    }
-    
-    // Note: Images and videos are not imported from share links
-    // They remain empty arrays as initialized above
-    
-    // Info-level logging for successful parse
-    DebugLogger.info('Parse', 'Successfully parsed recipe:', {
-        name: recipeData.name,
-        ingredients: recipeData.ingredients.length,
-        sequences: recipeData.additionSequences.length,
-        appliances: recipeData.kitchenAppliances.length
-    });
-    
-    return recipeData;
-}
 
-/**
- * Expand compact recipe data format to full format
- * @param {Object} data - Recipe data (compact or full format)
- * @returns {Object} Recipe data in full format
- */
-function expandRecipeData(data) {
-    // Check if data is in compact format (has 'n' instead of 'name')
-    if (data.n !== undefined) {
-        return {
-            name: data.n,
-            category: data.c,
-            ingredients: data.i.split(';').map(ing => {
-                const [name, quantity, unit] = ing.split('|');
-                return { name, quantity, unit };
-            }),
-            preparationMethod: data.p,
-            totalTime: data.t
-        };
-    }
-    
-    // Already in full format
-    return data;
-}
 
-/**
- * Show modal to confirm recipe import from share link
- * @param {Object} recipeData - Recipe data from share link
- */
-function showRecipeImportModal(recipeData) {
-    // Create modal overlay
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
-    
-    // Create modal content
-    const modalContent = document.createElement('div');
-    modalContent.style.cssText = 'background: var(--color-background); padding: 24px; border-radius: 12px; max-width: 500px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.2);';
-    
-    modalContent.innerHTML = `
-        <h2 style="margin: 0 0 16px 0; color: var(--color-text);">📱 Importar Receta</h2>
-        <p style="margin: 0 0 8px 0; color: var(--color-text-secondary);">
-            Se ha detectado una receta compartida:
-        </p>
-        <div style="background: var(--color-surface); padding: 16px; border-radius: 8px; margin: 16px 0;">
-            <h3 style="margin: 0 0 8px 0; color: var(--color-text);">${recipeData.name}</h3>
-            <p style="margin: 0; color: var(--color-text-secondary); font-size: 0.875rem;">
-                ${recipeData.ingredients?.length || 0} ingredientes
-                ${recipeData.totalTime ? `• ${recipeData.totalTime}` : ''}
-            </p>
-        </div>
-        <p style="margin: 0 0 16px 0; color: var(--color-text-secondary); font-size: 0.875rem;">
-            ¿Deseas importar esta receta a tu colección?
-        </p>
-        <div style="display: flex; gap: 12px; justify-content: flex-end;">
-            <button id="cancel-import" class="btn-secondary" style="padding: 10px 20px;">
-                Cancelar
-            </button>
-            <button id="confirm-import" class="btn-primary" style="padding: 10px 20px;">
-                ✓ Importar Receta
-            </button>
-        </div>
-    `;
-    
-    modal.appendChild(modalContent);
-    document.body.appendChild(modal);
-    
-    // Cancel button handler
-    document.getElementById('cancel-import').addEventListener('click', () => {
-        modal.remove();
-    });
-    
-    // Confirm import handler
-    document.getElementById('confirm-import').addEventListener('click', () => {
-        importRecipeFromLink(recipeData);
-        modal.remove();
-    });
-    
-    // Close on overlay click
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.remove();
-        }
-    });
-}
 
-/**
- * Import recipe from share link data
- * @param {Object} recipeData - Recipe data to import
- * @returns {Object} Object with recipe ID and final name used
- */
-async function importRecipeFromLink(recipeData) {
-    try {
-        if (!window.recipeApp) {
-            console.error('[Import] RecipeApp not initialized');
-            showNotification('Error: La aplicación no está lista', 'error');
-            return null;
-        }
-        
-        // Ensure recipes are loaded before checking for duplicates
-        if (!window.recipeApp.recipes || window.recipeApp.recipes.length === 0) {
-            console.log('[Import] Recipes not loaded yet, loading from storage...');
-            await window.recipeApp.loadRecipes();
-        }
-        
-        // Check if recipe with same name already exists
-        const existingRecipes = window.recipeApp.recipes || [];
-        console.log('[Import] Checking for duplicates. Existing recipes:', existingRecipes.length);
-        console.log('[Import] Recipe names:', existingRecipes.map(r => r.name));
-        const nameExists = existingRecipes.some(r => r.name.toLowerCase() === recipeData.name.toLowerCase());
-        console.log('[Import] Name exists?', nameExists, 'for recipe:', recipeData.name);
-        
-        // If name exists, add " - importada" suffix
-        const finalName = nameExists ? `${recipeData.name} - importada` : recipeData.name;
-        
-        // Debug: Log what we're importing
-        console.log('[Import] Creating recipe with data:', {
-            name: finalName,
-            author: recipeData.author,
-            history: recipeData.history,
-            caravanFriendly: recipeData.caravanFriendly
-        });
-        
-        // Filter images and videos to only include valid MediaFiles
-        const validImages = (recipeData.images || []).filter(img => 
-            img.name && img.type && img.data
-        );
-        const validVideos = (recipeData.videos || []).filter(vid => 
-            vid.name && vid.type && vid.data
-        );
-        
-        // Create new Recipe instance with imported data
-        const newRecipe = new Recipe({
-            name: finalName,
-            category: recipeData.category || '',
-            ingredients: recipeData.ingredients || [],
-            preparationMethod: recipeData.preparationMethod || '',
-            totalTime: recipeData.totalTime || '',
-            author: recipeData.author || '',
-            history: recipeData.history || '',
-            caravanFriendly: recipeData.caravanFriendly || false,
-            additionSequences: recipeData.additionSequences || [],
-            kitchenAppliances: recipeData.kitchenAppliances || [],
-            images: validImages,
-            videos: validVideos
-        });
-        
-        // Convert ingredient names to IDs in sequences
-        if (newRecipe.additionSequences && newRecipe.additionSequences.length > 0) {
-            console.log('[Import] Converting ingredient names to IDs in sequences...');
-            console.log('[Import] Available ingredients:', newRecipe.ingredients.map(i => ({name: i.name, id: i.id})));
-            newRecipe.additionSequences.forEach(seq => {
-                if (seq.ingredientNames && seq.ingredientNames.length > 0) {
-                    seq.ingredientIds = [];
-                    console.log('[Import] Sequence', seq.step, 'ingredient names:', seq.ingredientNames);
-                    seq.ingredientNames.forEach(ingName => {
-                        // Case-insensitive comparison
-                        const ingredient = newRecipe.ingredients.find(i => 
-                            i.name.toLowerCase() === ingName.toLowerCase()
-                        );
-                        if (ingredient) {
-                            seq.ingredientIds.push(ingredient.id);
-                            console.log('[Import] Matched', ingName, 'to ID', ingredient.id);
-                        } else {
-                            console.warn('[Import] Could not find ingredient:', ingName, 'Available:', newRecipe.ingredients.map(i => i.name));
-                        }
-                    });
-                    console.log('[Import] Sequence', seq.step, 'final ingredientIds:', seq.ingredientIds);
-                    // Clean up temporary property
-                    delete seq.ingredientNames;
-                } else {
-                    console.warn('[Import] Sequence', seq.step, 'has no ingredientNames');
-                }
-            });
-        }
-        
-        // Debug: Log created recipe
-        console.log('[Import] Recipe created:', {
-            id: newRecipe.id,
-            name: newRecipe.name,
-            author: newRecipe.author,
-            history: newRecipe.history,
-            caravanFriendly: newRecipe.caravanFriendly
-        });
-        
-        // Save recipe using StorageManager
-        await window.recipeApp.storageManager.saveRecipe(newRecipe);
-        
-        console.log('[Import] Recipe saved successfully:', newRecipe.id);
-        
-        // Reload recipes in the app
-        await window.recipeApp.loadRecipes();
-        
-        // Store the recipe ID for the success modal
-        window.lastImportedRecipeId = newRecipe.id;
-        
-        // Return the final name and ID
-        return {
-            id: newRecipe.id,
-            finalName: finalName
-        };
-        
-    } catch (error) {
-        console.error('[Import] Error importing recipe:', error);
-        showNotification('Error al importar la receta', 'error');
-        throw error;
-    }
-}
+
+
+
+
+
+
 
 /**
  * Show notification message

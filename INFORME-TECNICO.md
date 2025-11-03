@@ -53,7 +53,6 @@
   ingredients: Ingredient[],
   additionSequences: Sequence[],
   images: MediaFile[],
-  videos: MediaFile[],
   createdAt: Date,
   updatedAt: Date
 }
@@ -182,7 +181,6 @@
 - ✅ Galería con navegación
 - ✅ Modal de imagen ampliada
 - ✅ Compresión automática de imágenes
-- ✅ Soporte para videos (almacenamiento Base64)
 
 ### 5. Filtrado y Búsqueda
 - ✅ Filtro por categoría (múltiple selección)
@@ -298,7 +296,7 @@
 4. Seleccionar aparatos de cocina (opcional)
 5. Añadir ingredientes
 6. Añadir secuencias de adición (opcional)
-7. Subir imágenes/videos (opcional)
+7. Subir imágenes (opcional)
 8. Completar autor/historia (opcional)
 9. Guardar (sin campos obligatorios, todo se auto-completa)
 
@@ -370,9 +368,18 @@
 
 ---
 
-## 📝 CAMBIOS RECIENTES (Sesión Actual - 31 de octubre de 2025)
+## 📝 CAMBIOS RECIENTES (Sesión Actual - 3 de noviembre de 2025)
 
-### 🗑️ Eliminación Completa de Funcionalidad OCR/IA
+### 🗑️ Eliminación de Soporte para Videos
+
+#### Cambios en Modelo de Datos
+- ✅ **Campo `videos` eliminado** del modelo `Recipe` en models.js
+- ✅ Simplificación del modelo de datos multimedia
+- ✅ La aplicación ahora solo soporta imágenes
+
+**Motivo:** Simplificación de la aplicación y reducción del uso de almacenamiento. Los videos en Base64 ocupan mucho espacio en IndexedDB/localStorage.
+
+### 🗑️ Eliminación Completa de Funcionalidad OCR/IA (31 de octubre de 2025)
 
 #### Archivos Eliminados
 - ✅ **test-ocr.html** - Archivo de prueba de OCR
@@ -570,5 +577,5 @@
 ---
 
 **Fin del Informe Técnico**  
-*Última actualización: 31 de octubre de 2025*  
-*Versión: 2.2 - Eliminación de OCR/IA, corrección de bugs y mejoras de UX móvil*
+*Última actualización: 3 de noviembre de 2025*  
+*Versión: 2.3 - Eliminación de soporte para videos*

@@ -15,7 +15,6 @@ Una aplicación web moderna para gestionar tus recetas personales con funcionali
 - ✅ **Multimedia** - Múltiples imágenes y videos por receta
 - ✅ **Filtrado avanzado** - Por categoría, tiempo y compatibilidad con caravana
 - ✅ **Exportación** - PDF con formato editorial y XML para intercambio
-- ✅ **Código QR** - Generación y escaneo de códigos QR para compartir e importar recetas
 - ✅ **PWA** - Funciona offline, instalable en móviles y desktop
 - ✅ **Tema oscuro** - Activado por defecto con opción de tema claro
 - ✅ **Responsive** - Optimizado para móviles, tablets y desktop
@@ -26,7 +25,6 @@ Una aplicación web moderna para gestionar tus recetas personales con funcionali
 - **Almacenamiento:** IndexedDB con fallback a localStorage
 - **PWA:** Service Worker para funcionalidad offline
 - **Exportación:** jsPDF 2.5.1 para PDF, XML nativo
-- **QR Code:** API de QRServer (https://api.qrserver.com) para generación de códigos QR
 - **Diseño:** Sistema inspirado en Airbnb
 |
 ## 📖 Documentación
@@ -41,7 +39,6 @@ Una aplicación web moderna para gestionar tus recetas personales con funcionali
 
 El proyecto incluye múltiples archivos de prueba HTML (prefijo `test-*.html`) para verificar funcionalidades específicas:
 - **test-chips-simple.html** - Verifica consistencia visual de chips de electrodomésticos en diferentes contextos
-- **test-qr.html** - Prueba de generación de códigos QR con datos de receta de ejemplo
 - **test-xml-improvements.html** - Prueba las mejoras de parsing XML (formatos compacto, completo y mixto)
 - **test-xml-parsing.md** - Documentación de casos de prueba para validación de XML
 - Otros archivos de prueba para ingredientes, secuencias, multimedia, filtrado, exportación, etc.
@@ -76,7 +73,7 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 **Fecha:** 2 de noviembre de 2025  
 **Cambio:** Mejoras en el sistema de parsing XML - Se ha refactorizado y consolidado el código de importación XML:
 - ✅ **Código consolidado:** Eliminación de ~100 líneas de código duplicado entre parsers
-- ✅ **Soporte dual de formatos:** Parsing unificado para formato compacto (QR) y completo (exportación)
+- ✅ **Soporte dual de formatos:** Parsing unificado para formato compacto y completo (exportación)
 - ✅ **Mejor mantenibilidad:** Lógica centralizada en XMLImporter con métodos helper reutilizables
 - ✅ **Manejo robusto de errores:** Validación mejorada y mensajes de error descriptivos
 - ✅ **Optimización de rendimiento:** Reducción de llamadas DOM y selectores CSS más eficientes
@@ -153,30 +150,14 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 **Fecha:** 1 de noviembre de 2025  
 **Cambio:** Añadido botón de Listas de Compra al menú - Se ha agregado acceso directo a la funcionalidad de listas de compra desde el menú principal de la aplicación.
 
-**Fecha:** 31 de octubre de 2025  
-**Cambio:** Sistema optimizado de códigos QR con importación automática - Se ha implementado un sistema completo para compartir e importar recetas mediante códigos QR optimizados:
-- Generación automática de código QR al abrir la vista de detalle de cualquier receta
-- **Modo Compacto:** QR optimizados de ~29×29 módulos (40% más pequeños)
-- Visualización del código QR (200x200px) con información de tamaño
-- Los códigos QR redirigen a `https://guiavfr.enaire.es/#import=BASE64_DATA`
-- Detección automática de parámetro de importación al cargar la app
-- Modal de confirmación con preview de la receta a importar
-- Importación automática a localStorage con notificación de éxito
-- Soporte para formato compacto y completo con conversión automática
-- Páginas de prueba: `test-qr-import.html` y `test-qr-sizes.html`
-- Documentación completa: `QR_IMPORT_DOCUMENTATION.md` y `QR_SIZE_GUIDE.md`
-- Sistema de notificaciones con animaciones suaves (slideIn/slideOut) para feedback visual
-- Uso de API externa (QRServer) para la generación de códigos QR
-- Diseño integrado con el sistema de estilos Airbnb de la aplicación
-
 ## 🔧 Arquitectura de Importación XML
 
 La aplicación utiliza un sistema robusto de importación XML con soporte para múltiples formatos:
 
 ### Formatos Soportados
 
-1. **Formato Compacto (QR Codes)**
-   - Optimizado para tamaño reducido en códigos QR
+1. **Formato Compacto**
+   - Optimizado para tamaño reducido
    - Elementos con nombres cortos: `<i>`, `<n>`, `<q>`, `<u>`, `<s>`, `<dur>`, `<desc>`, `<ings>`, `<ing>`
    - Referencias a ingredientes por nombre
    - Típicamente ~40% más pequeño que el formato completo
@@ -199,29 +180,7 @@ La aplicación utiliza un sistema robusto de importación XML con soporte para m
 - **Optimización:** Selectores CSS eficientes y caché de elementos DOM
 - **Testing:** Suite completa de pruebas en `test-xml-improvements.html`
 
-## 💡 Uso de Códigos QR
 
-La aplicación permite compartir e importar recetas mediante códigos QR:
-
-### Compartir Recetas
-
-1. **Visualizar receta:** Abre cualquier receta para ver su vista de detalle
-2. **Código QR:** Desplázate hasta la sección "📱 Compartir Receta" al final de la ficha
-3. **Generación automática:** El código QR se genera automáticamente con los datos de la receta
-4. **Compartir:** Escanea el código QR con cualquier lector para acceder a los datos de la receta
-
-### Importar Recetas
-
-1. **Escanear QR:** Usa cualquier lector de códigos QR para escanear un código de receta
-2. **Abrir enlace:** El código QR contiene un enlace que abre la aplicación automáticamente
-3. **Confirmar importación:** Se mostrará un modal de confirmación con los datos de la receta
-4. **Importar:** Confirma para añadir la receta a tu colección
-
-**Características:**
-- Notificaciones visuales con animaciones suaves para confirmar importaciones exitosas o errores
-- Los códigos QR contienen datos completos: nombre, categoría, ingredientes, método de preparación y tiempo total
-- Sistema de confirmación antes de importar para revisar los datos
-- Detección automática de duplicados: si ya existe una receta con el mismo nombre, se añade el sufijo "- importada" automáticamente
 
 ## 🔧 Instalación
 

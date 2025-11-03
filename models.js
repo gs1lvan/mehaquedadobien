@@ -155,9 +155,6 @@ class Recipe {
         this.images = data.images ? data.images.map(img =>
             img instanceof MediaFile ? img : new MediaFile(img)
         ) : [];
-        this.videos = data.videos ? data.videos.map(vid =>
-            vid instanceof MediaFile ? vid : new MediaFile(vid)
-        ) : [];
         this.createdAt = data.createdAt ? new Date(data.createdAt) : new Date();
         this.updatedAt = data.updatedAt ? new Date(data.updatedAt) : new Date();
 
@@ -180,9 +177,6 @@ class Recipe {
             throw new Error('Recipe images must be an array');
         }
 
-        if (!Array.isArray(this.videos)) {
-            throw new Error('Recipe videos must be an array');
-        }
     }
 
     toJSON() {
@@ -199,7 +193,6 @@ class Recipe {
             history: this.history,
             additionSequences: this.additionSequences.map(s => s.toJSON()),
             images: this.images.map(img => img.toJSON()),
-            videos: this.videos.map(vid => vid.toJSON()),
             createdAt: this.createdAt.toISOString(),
             updatedAt: this.updatedAt.toISOString()
         };
@@ -952,35 +945,6 @@ class XMLExporter {
                 imagesElement.appendChild(imageElement);
             });
             root.appendChild(imagesElement);
-
-            // Add videos (Base64 encoded)
-            const videosElement = xmlDoc.createElement('videos');
-            recipe.videos.forEach(video => {
-                const videoElement = xmlDoc.createElement('video');
-
-                const vidIdElement = xmlDoc.createElement('id');
-                vidIdElement.textContent = video.id;
-                videoElement.appendChild(vidIdElement);
-
-                const vidNameElement = xmlDoc.createElement('name');
-                vidNameElement.textContent = video.name;
-                videoElement.appendChild(vidNameElement);
-
-                const vidTypeElement = xmlDoc.createElement('type');
-                vidTypeElement.textContent = video.type;
-                videoElement.appendChild(vidTypeElement);
-
-                const vidDataElement = xmlDoc.createElement('data');
-                vidDataElement.textContent = video.data;
-                videoElement.appendChild(vidDataElement);
-
-                const vidSizeElement = xmlDoc.createElement('size');
-                vidSizeElement.textContent = video.size.toString();
-                videoElement.appendChild(vidSizeElement);
-
-                videosElement.appendChild(videoElement);
-            });
-            root.appendChild(videosElement);
 
             // Add timestamps
             const createdAtElement = xmlDoc.createElement('createdAt');
@@ -2005,7 +1969,6 @@ class XMLImporter {
 
             // Parse multimedia
             const images = await this.parseImages(recipeElement);
-            const videos = await this.parseVideos(recipeElement);
 
             // Create recipe with new ID and current timestamp
             const recipeData = {
@@ -2019,7 +1982,6 @@ class XMLImporter {
                 ingredients: ingredients,
                 additionSequences: additionSequences,
                 images: images,
-                videos: videos,
                 createdAt: new Date(),
                 updatedAt: new Date()
             };
@@ -2126,10 +2088,8 @@ class XMLImporter {
                             idMapping.set(oldId, ingredient.id);
                         }
 
-                        // Also map by name for compact format (where sequences reference by name)
-                        if (supportCompactFormat) {
-                            idMapping.set(name, ingredient.id);
-                        }
+                        // Always map by name (sequences may reference by name for portability)
+                        idMapping.set(name, ingredient.id);
                     }
                 } catch (error) {
                     console.warn(`[XMLImporter] Error parsing ingredient ${index + 1}:`, error);
@@ -2144,7 +2104,7 @@ class XMLImporter {
      * Parse addition sequences from XML with support for multiple formats
      * 
      * Supports two XML formats:
-     * 1. Compact format (used in QR codes for size optimization):
+     * 1. Compact format (with abbreviated element names for size optimization):
      *    <sequences><s><step>1</step><dur>5min</dur><desc>...</desc><ings><ing>Name</ing></ings></s></sequences>
      * 
      * 2. Full format (used in file exports for clarity):
@@ -2256,18 +2216,37 @@ class XMLImporter {
                 });
             }
         } else {
-            // Standard format with ingredient IDs
-            const ingredientIdsElement = seqElement.querySelector('ingredientIds');
-            if (ingredientIdsElement) {
-                const idElements = ingredientIdsElement.querySelectorAll('ingredientId');
-                idElements.forEach(idElement => {
-                    const oldId = idElement.textContent.trim();
-                    if (oldId) {
-                        // Map old ID to new ID if mapping exists
-                        const newId = idMapping.get(oldId) || oldId;
-                        ingredientIds.push(newId);
+            // Standard format - check for both ingredientNames and ingredientIds
+            // Try ingredientNames first (exported format uses names for portability)
+            const ingredientNamesElement = seqElement.querySelector('ingredientNames');
+            if (ingredientNamesElement) {
+                const nameElements = ingredientNamesElement.querySelectorAll('ingredientName');
+                nameElements.forEach(nameElement => {
+                    const ingredientName = nameElement.textContent.trim();
+                    if (ingredientName) {
+                        // Map ingredient name to new ID using idMapping
+                        const newId = idMapping.get(ingredientName);
+                        if (newId) {
+                            ingredientIds.push(newId);
+                        } else {
+                            console.warn('[XMLImporter] Could not find ingredient ID for name:', ingredientName);
+                        }
                     }
                 });
+            } else {
+                // Fallback to ingredientIds format (legacy)
+                const ingredientIdsElement = seqElement.querySelector('ingredientIds');
+                if (ingredientIdsElement) {
+                    const idElements = ingredientIdsElement.querySelectorAll('ingredientId');
+                    idElements.forEach(idElement => {
+                        const oldId = idElement.textContent.trim();
+                        if (oldId) {
+                            // Map old ID to new ID if mapping exists
+                            const newId = idMapping.get(oldId) || oldId;
+                            ingredientIds.push(newId);
+                        }
+                    });
+                }
             }
         }
 
@@ -2340,48 +2319,6 @@ class XMLImporter {
         return images;
     }
 
-    /**
-     * Parse videos from XML
-     * Requirements: 3.1, 3.2, 3.3, 3.4
-     * @param {Element} recipeElement - Recipe XML element
-     * @returns {Promise<MediaFile[]>} Array of video MediaFiles
-     */
-    static async parseVideos(recipeElement) {
-        const videos = [];
-        const videosElement = recipeElement.querySelector('videos');
-
-        if (videosElement) {
-            const videoElements = videosElement.querySelectorAll('video');
-
-            for (const vidElement of videoElements) {
-                try {
-                    const name = this.getElementText(vidElement, 'name');
-                    const type = this.getElementText(vidElement, 'type');
-                    const data = this.getElementText(vidElement, 'data');
-                    const size = parseInt(this.getElementText(vidElement, 'size')) || 0;
-
-                    if (name && type && data) {
-                        // Validate video data
-                        if (!data.startsWith('data:video/')) {
-                            console.warn(`[XMLImporter] Invalid video data format for ${name}`);
-                            continue;
-                        }
-
-                        videos.push(new MediaFile({
-                            name: name,
-                            type: type,
-                            data: data,
-                            size: size
-                        }));
-                    }
-                } catch (error) {
-                    console.warn('[XMLImporter] Error parsing video:', error);
-                }
-            }
-        }
-
-        return videos;
-    }
 }
 
 // Export for use in other modules
