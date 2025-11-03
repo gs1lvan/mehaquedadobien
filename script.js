@@ -1284,6 +1284,28 @@ class RecipeApp {
             });
         }
 
+        // Color picker modal buttons
+        const openColorPickerBtn = document.getElementById('open-color-picker-btn');
+        if (openColorPickerBtn) {
+            openColorPickerBtn.addEventListener('click', () => {
+                this.openColorPickerModal('new-category-color-preview', 'selected-color');
+            });
+        }
+
+        const openEditColorPickerBtn = document.getElementById('open-edit-color-picker-btn');
+        if (openEditColorPickerBtn) {
+            openEditColorPickerBtn.addEventListener('click', () => {
+                this.openColorPickerModal('edit-category-color-preview', 'edit-selected-color');
+            });
+        }
+
+        const closeColorPickerModalBtn = document.getElementById('close-color-picker-modal');
+        if (closeColorPickerModalBtn) {
+            closeColorPickerModalBtn.addEventListener('click', () => {
+                this.closeColorPickerModal();
+            });
+        }
+
         // Form event listeners
         this.setupFormEventListeners();
     }
@@ -1376,9 +1398,6 @@ class RecipeApp {
      * Render category modal content
      */
     renderCategoryModal() {
-        // Render color palette
-        this.renderColorPalette();
-        
         // Set default emoji
         const emojiSpan = document.getElementById('new-category-emoji');
         const emojiHidden = document.getElementById('new-category-emoji-value');
@@ -1389,48 +1408,22 @@ class RecipeApp {
             emojiHidden.value = DEFAULT_EMOJI;
         }
         
+        // Set default color
+        const colorPreview = document.getElementById('new-category-color-preview');
+        const colorHidden = document.getElementById('selected-color');
+        const defaultColor = CATEGORY_COLORS[0];
+        if (colorPreview) {
+            colorPreview.style.backgroundColor = defaultColor;
+        }
+        if (colorHidden) {
+            colorHidden.value = defaultColor;
+        }
+        
         // Render category lists
         this.renderPredefinedCategoriesList();
         this.renderCustomCategoriesList();
         this.renderHiddenCategoriesList();
     }
-    
-    /**
-     * Render color palette for category creation
-     */
-    renderColorPalette() {
-        const colorPalette = document.getElementById('color-palette');
-        if (!colorPalette) return;
-        
-        colorPalette.innerHTML = '';
-        
-        CATEGORY_COLORS.forEach((color, index) => {
-            const chip = document.createElement('button');
-            chip.type = 'button';
-            chip.className = 'color-chip';
-            chip.style.backgroundColor = color;
-            chip.dataset.color = color;
-            
-            // Select first color by default
-            if (index === 0) {
-                chip.classList.add('selected');
-                document.getElementById('selected-color').value = color;
-            }
-            
-            chip.addEventListener('click', () => {
-                // Remove selected class from all chips
-                colorPalette.querySelectorAll('.color-chip').forEach(c => c.classList.remove('selected'));
-                // Add selected class to clicked chip
-                chip.classList.add('selected');
-                // Update hidden input
-                document.getElementById('selected-color').value = color;
-            });
-            
-            colorPalette.appendChild(chip);
-        });
-    }
-    
-
     
     /**
      * Render predefined categories list
@@ -1599,17 +1592,6 @@ class RecipeApp {
         countSpan.className = 'category-count';
         countSpan.textContent = `(${count} ${count === 1 ? 'receta' : 'recetas'})`;
         
-        infoDiv.appendChild(emoji);
-        infoDiv.appendChild(name);
-        infoDiv.appendChild(badge);
-        infoDiv.appendChild(countSpan);
-        
-        item.appendChild(infoDiv);
-        
-        // Hide button for predefined categories
-        const actionsDiv = document.createElement('div');
-        actionsDiv.className = 'category-actions';
-        
         const hideBtn = document.createElement('button');
         hideBtn.type = 'button';
         hideBtn.className = 'btn-icon btn-hide-category';
@@ -1619,8 +1601,13 @@ class RecipeApp {
             this.handleHideCategory(category.id);
         });
         
-        actionsDiv.appendChild(hideBtn);
-        item.appendChild(actionsDiv);
+        infoDiv.appendChild(emoji);
+        infoDiv.appendChild(name);
+        infoDiv.appendChild(badge);
+        infoDiv.appendChild(countSpan);
+        infoDiv.appendChild(hideBtn);
+        
+        item.appendChild(infoDiv);
         
         return item;
     }
@@ -1656,17 +1643,6 @@ class RecipeApp {
         countSpan.className = 'category-count';
         countSpan.textContent = `(${count} ${count === 1 ? 'receta' : 'recetas'})`;
         
-        infoDiv.appendChild(emoji);
-        infoDiv.appendChild(name);
-        infoDiv.appendChild(badge);
-        infoDiv.appendChild(countSpan);
-        
-        item.appendChild(infoDiv);
-        
-        // Actions for custom categories
-        const actionsDiv = document.createElement('div');
-        actionsDiv.className = 'category-actions';
-        
         const editBtn = document.createElement('button');
         editBtn.type = 'button';
         editBtn.className = 'btn-icon btn-edit-category';
@@ -1694,11 +1670,15 @@ class RecipeApp {
             this.handleDeleteCategory(category.id);
         });
         
-        actionsDiv.appendChild(editBtn);
-        actionsDiv.appendChild(hideBtn);
-        actionsDiv.appendChild(deleteBtn);
+        infoDiv.appendChild(emoji);
+        infoDiv.appendChild(name);
+        infoDiv.appendChild(badge);
+        infoDiv.appendChild(countSpan);
+        infoDiv.appendChild(editBtn);
+        infoDiv.appendChild(hideBtn);
+        infoDiv.appendChild(deleteBtn);
         
-        item.appendChild(actionsDiv);
+        item.appendChild(infoDiv);
         
         return item;
     }
@@ -1718,6 +1698,10 @@ class RecipeApp {
             const emojiHidden = document.getElementById('new-category-emoji-value');
             if (emojiSpan) emojiSpan.textContent = DEFAULT_EMOJI;
             if (emojiHidden) emojiHidden.value = DEFAULT_EMOJI;
+            const colorPreview = document.getElementById('new-category-color-preview');
+            const colorHidden = document.getElementById('selected-color');
+            if (colorPreview) colorPreview.style.backgroundColor = CATEGORY_COLORS[0];
+            if (colorHidden) colorHidden.value = CATEGORY_COLORS[0];
             document.getElementById('category-error').textContent = '';
         }
     }
@@ -1765,18 +1749,10 @@ class RecipeApp {
             if (emojiSpan) emojiSpan.textContent = DEFAULT_EMOJI;
             emojiHidden.value = DEFAULT_EMOJI;
             
-            // Reset color selection
-            const colorPalette = document.getElementById('color-palette');
-            if (colorPalette) {
-                colorPalette.querySelectorAll('.color-chip').forEach((chip, index) => {
-                    if (index === 0) {
-                        chip.classList.add('selected');
-                        colorInput.value = chip.dataset.color;
-                    } else {
-                        chip.classList.remove('selected');
-                    }
-                });
-            }
+            // Reset color
+            const colorPreview = document.getElementById('new-category-color-preview');
+            if (colorPreview) colorPreview.style.backgroundColor = CATEGORY_COLORS[0];
+            colorInput.value = CATEGORY_COLORS[0];
             
             // Show success message
             this.showSuccess(`Categoría "${category.name}" creada correctamente`);
@@ -1818,12 +1794,11 @@ class RecipeApp {
         const emojiHidden = document.getElementById('edit-category-emoji-value');
         if (emojiSpan) emojiSpan.textContent = category.emoji || DEFAULT_EMOJI;
         if (emojiHidden) emojiHidden.value = category.emoji || DEFAULT_EMOJI;
+        const colorPreview = document.getElementById('edit-category-color-preview');
+        if (colorPreview) colorPreview.style.backgroundColor = category.color;
         document.getElementById('edit-category-id').value = category.id;
         document.getElementById('edit-selected-color').value = category.color;
         document.getElementById('edit-category-error').textContent = '';
-        
-        // Render color palette for edit
-        this.renderEditColorPalette(category.color);
         
         // Show modal
         modal.classList.remove('hidden');
@@ -1909,14 +1884,46 @@ class RecipeApp {
     }
     
     /**
-     * Render color palette for edit modal
-     * @param {string} selectedColor - Currently selected color
+     * Open color picker modal
+     * @param {string} targetPreviewId - ID of the preview element to update
+     * @param {string} targetHiddenId - ID of the hidden input to store value
      */
-    renderEditColorPalette(selectedColor) {
-        const colorPalette = document.getElementById('edit-color-palette');
+    openColorPickerModal(targetPreviewId, targetHiddenId) {
+        const modal = document.getElementById('color-picker-modal');
+        if (!modal) return;
+        
+        // Store target IDs
+        this.colorPickerTargetPreview = targetPreviewId;
+        this.colorPickerTargetHidden = targetHiddenId;
+        
+        // Render color palette
+        this.renderColorPickerModal();
+        
+        // Show modal
+        modal.classList.remove('hidden');
+    }
+    
+    /**
+     * Close color picker modal
+     */
+    closeColorPickerModal() {
+        const modal = document.getElementById('color-picker-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+    
+    /**
+     * Render color picker modal content
+     */
+    renderColorPickerModal() {
+        const colorPalette = document.getElementById('color-palette-modal');
         if (!colorPalette) return;
         
         colorPalette.innerHTML = '';
+        
+        // Get current selected color
+        const currentColor = document.getElementById(this.colorPickerTargetHidden)?.value;
         
         CATEGORY_COLORS.forEach((color) => {
             const chip = document.createElement('button');
@@ -1926,17 +1933,25 @@ class RecipeApp {
             chip.dataset.color = color;
             
             // Select current color
-            if (color === selectedColor) {
+            if (color === currentColor) {
                 chip.classList.add('selected');
             }
             
             chip.addEventListener('click', () => {
-                // Remove selected class from all chips
-                colorPalette.querySelectorAll('.color-chip').forEach(c => c.classList.remove('selected'));
-                // Add selected class to clicked chip
-                chip.classList.add('selected');
-                // Update hidden input
-                document.getElementById('edit-selected-color').value = color;
+                // Update preview
+                const targetPreview = document.getElementById(this.colorPickerTargetPreview);
+                if (targetPreview) {
+                    targetPreview.style.backgroundColor = color;
+                }
+                
+                // Update hidden input value
+                const targetHidden = document.getElementById(this.colorPickerTargetHidden);
+                if (targetHidden) {
+                    targetHidden.value = color;
+                }
+                
+                // Close modal
+                this.closeColorPickerModal();
             });
             
             colorPalette.appendChild(chip);
@@ -2158,7 +2173,7 @@ class RecipeApp {
             });
         }
 
-        // Name field validation (real-time)
+        // Name field validation (real-time) - now using contenteditable h2
         const nameInput = document.getElementById('recipe-name');
         if (nameInput) {
             nameInput.addEventListener('input', () => {
@@ -2167,6 +2182,14 @@ class RecipeApp {
 
             nameInput.addEventListener('blur', () => {
                 this.validateNameField();
+            });
+            
+            // Prevent line breaks in contenteditable
+            nameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    nameInput.blur();
+                }
             });
         }
 
@@ -3536,16 +3559,17 @@ class RecipeApp {
             timeBadge.textContent = recipe.totalTime;
             imageDiv.appendChild(timeBadge);
         }
+        
+        // Add caravan badge if recipe is caravan friendly
+        if (recipe.caravanFriendly === true) {
+            const caravanBadge = document.createElement('div');
+            caravanBadge.className = 'recipe-caravan-badge-image';
+            caravanBadge.textContent = '🚐';
+            caravanBadge.title = 'Apto para caravana';
+            imageDiv.appendChild(caravanBadge);
+        }
 
-        // Add action badges
-        const ingredientsBadge = this.createActionBadge({
-            className: 'recipe-ingredients-badge',
-            title: 'Copiar ingredientes',
-            ariaLabel: `Copiar ingredientes de ${recipe.name}`,
-            onClick: (e) => this.copyIngredientsToClipboard(recipe, e),
-            stopPropagation: false
-        });
-        imageDiv.appendChild(ingredientsBadge);
+        // Action badges removed - copy ingredients badge eliminated
 
         /* TEMPORALMENTE OCULTO - Badge de opciones en tarjeta de receta (2025-11-03)
         const optionsBadge = this.createActionBadge({
@@ -3661,8 +3685,8 @@ class RecipeApp {
             formView.classList.remove('hidden');
         }
 
-        // Update form title
-        const formTitle = document.getElementById('form-title');
+        // Update form title (now it's the recipe-name editable h2)
+        const formTitle = document.getElementById('recipe-name');
         if (formTitle) {
             formTitle.textContent = recipeId ? 'Editar Receta' : 'Nueva Receta';
         }
@@ -3818,7 +3842,7 @@ class RecipeApp {
      */
     getFormState() {
         return {
-            name: document.getElementById('recipe-name')?.value || '',
+            name: document.getElementById('recipe-name')?.textContent.trim() || '',
             category: document.getElementById('recipe-category')?.value || '',
             preparationMethod: document.getElementById('preparation-method')?.value || ''
         };
@@ -3897,43 +3921,40 @@ class RecipeApp {
      */
     validateNameField() {
         const nameInput = document.getElementById('recipe-name');
-        const errorMessage = document.getElementById('name-error');
 
-        if (!nameInput || !errorMessage) {
-            console.error('[Validation] Name input or error message element not found');
+        if (!nameInput) {
+            console.error('[Validation] Name input element not found');
             return false;
         }
 
-        const name = nameInput.value.trim();
+        const name = nameInput.textContent.trim();
 
         // Check minimum length
-        if (name.length < 3) {
-            errorMessage.textContent = 'El nombre debe tener al menos 3 caracteres';
-            nameInput.classList.add('invalid');
+        if (name.length > 0 && name.length < 3) {
+            nameInput.style.borderColor = 'var(--color-danger)';
             console.warn('[Validation] Recipe name too short:', name.length);
             return false;
         }
 
         // Check maximum length
         if (name.length > 100) {
-            errorMessage.textContent = 'El nombre no puede exceder 100 caracteres';
-            nameInput.classList.add('invalid');
+            nameInput.style.borderColor = 'var(--color-danger)';
             console.warn('[Validation] Recipe name too long:', name.length);
             return false;
         }
 
         // Check for invalid characters (optional - only allow alphanumeric, spaces, and common punctuation)
-        const validNamePattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s\-.,()&]+$/;
-        if (!validNamePattern.test(name)) {
-            errorMessage.textContent = 'El nombre contiene caracteres no permitidos';
-            nameInput.classList.add('invalid');
-            console.warn('[Validation] Recipe name contains invalid characters');
-            return false;
+        if (name.length > 0) {
+            const validNamePattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s\-.,()&]+$/;
+            if (!validNamePattern.test(name)) {
+                nameInput.style.borderColor = 'var(--color-danger)';
+                console.warn('[Validation] Recipe name contains invalid characters');
+                return false;
+            }
         }
 
         // Valid
-        errorMessage.textContent = '';
-        nameInput.classList.remove('invalid');
+        nameInput.style.borderColor = '';
         console.log('[Validation] Recipe name is valid:', name);
         return true;
     }
@@ -3970,10 +3991,10 @@ class RecipeApp {
     async handleFormSubmit() {
         // Check if name is empty and generate auto name if needed
         const nameInput = document.getElementById('recipe-name');
-        if (nameInput && (!nameInput.value || nameInput.value.trim() === '')) {
+        if (nameInput && (!nameInput.textContent || nameInput.textContent.trim() === '' || nameInput.textContent === 'Nueva Receta' || nameInput.textContent === 'Editar Receta')) {
             // Generate auto name: GonsoReceta [number]
             const autoName = this.generateAutoRecipeName();
-            nameInput.value = autoName;
+            nameInput.textContent = autoName;
             console.log(`Auto-generated recipe name: ${autoName}`);
         }
         
@@ -4206,7 +4227,7 @@ class RecipeApp {
      */
     getFormData() {
         return {
-            name: document.getElementById('recipe-name')?.value.trim() || '',
+            name: document.getElementById('recipe-name')?.textContent.trim() || '',
             category: document.getElementById('recipe-category')?.value || null,
             totalTime: this.parseTimeInput('recipe'),
             caravanFriendly: document.getElementById('recipe-caravan-friendly')?.checked || false,
@@ -4983,27 +5004,33 @@ class RecipeApp {
             const actionsDiv = document.createElement('div');
             actionsDiv.className = 'sequence-actions';
 
-            // Move up button
-            const upBtn = document.createElement('button');
-            upBtn.type = 'button';
-            upBtn.className = 'btn-sequence-action btn-up';
-            upBtn.textContent = '↑';
-            upBtn.title = 'Mover arriba';
-            upBtn.disabled = index === 0;
-            upBtn.addEventListener('click', () => {
-                this.handleMoveSequence(index, 'up');
-            });
+            // Only show move buttons if there are multiple sequences
+            if (this.sequences.length > 1) {
+                // Move up button
+                const upBtn = document.createElement('button');
+                upBtn.type = 'button';
+                upBtn.className = 'btn-sequence-action btn-move btn-up';
+                upBtn.textContent = '▲';
+                upBtn.title = 'Mover arriba';
+                upBtn.disabled = index === 0;
+                upBtn.addEventListener('click', () => {
+                    this.handleMoveSequence(index, 'up');
+                });
 
-            // Move down button
-            const downBtn = document.createElement('button');
-            downBtn.type = 'button';
-            downBtn.className = 'btn-sequence-action btn-down';
-            downBtn.textContent = '↓';
-            downBtn.title = 'Mover abajo';
-            downBtn.disabled = index === this.sequences.length - 1;
-            downBtn.addEventListener('click', () => {
-                this.handleMoveSequence(index, 'down');
-            });
+                // Move down button
+                const downBtn = document.createElement('button');
+                downBtn.type = 'button';
+                downBtn.className = 'btn-sequence-action btn-move btn-down';
+                downBtn.textContent = '▼';
+                downBtn.title = 'Mover abajo';
+                downBtn.disabled = index === this.sequences.length - 1;
+                downBtn.addEventListener('click', () => {
+                    this.handleMoveSequence(index, 'down');
+                });
+                
+                actionsDiv.appendChild(upBtn);
+                actionsDiv.appendChild(downBtn);
+            }
 
             // Edit button
             const editBtn = document.createElement('button');
@@ -5025,8 +5052,6 @@ class RecipeApp {
                 this.handleDeleteSequence(sequence.id);
             });
 
-            actionsDiv.appendChild(upBtn);
-            actionsDiv.appendChild(downBtn);
             actionsDiv.appendChild(editBtn);
             actionsDiv.appendChild(deleteBtn);
 
@@ -5175,7 +5200,7 @@ class RecipeApp {
             // Populate form fields
             const nameInput = document.getElementById('recipe-name');
             if (nameInput) {
-                nameInput.value = recipe.name || '';
+                nameInput.textContent = recipe.name || 'Editar Receta';
             }
 
             const categorySelect = document.getElementById('recipe-category');
@@ -5527,7 +5552,36 @@ class RecipeApp {
         img.className = 'media-preview-image';
         previewContainer.appendChild(img);
 
-        // Delete button overlay
+        // Action buttons overlay
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'media-actions';
+        
+        // Only show move buttons if there are multiple images
+        const hasMultipleImages = this.images.length > 1;
+        
+        if (hasMultipleImages) {
+            const moveUpBtn = document.createElement('button');
+            moveUpBtn.type = 'button';
+            moveUpBtn.className = 'media-move-btn media-move-up';
+            moveUpBtn.textContent = '▲';
+            moveUpBtn.title = 'Mover arriba';
+            moveUpBtn.addEventListener('click', () => {
+                this.handleMoveMedia(mediaFile.id, type, 'up');
+            });
+            
+            const moveDownBtn = document.createElement('button');
+            moveDownBtn.type = 'button';
+            moveDownBtn.className = 'media-move-btn media-move-down';
+            moveDownBtn.textContent = '▼';
+            moveDownBtn.title = 'Mover abajo';
+            moveDownBtn.addEventListener('click', () => {
+                this.handleMoveMedia(mediaFile.id, type, 'down');
+            });
+            
+            actionsDiv.appendChild(moveUpBtn);
+            actionsDiv.appendChild(moveDownBtn);
+        }
+        
         const deleteBtn = document.createElement('button');
         deleteBtn.type = 'button';
         deleteBtn.className = 'media-delete-btn';
@@ -5536,6 +5590,8 @@ class RecipeApp {
         deleteBtn.addEventListener('click', () => {
             this.handleDeleteMedia(mediaFile.id, type);
         });
+        
+        actionsDiv.appendChild(deleteBtn);
 
         // File info
         const infoDiv = document.createElement('div');
@@ -5554,7 +5610,7 @@ class RecipeApp {
         infoDiv.appendChild(sizeSpan);
 
         item.appendChild(previewContainer);
-        item.appendChild(deleteBtn);
+        item.appendChild(actionsDiv);
         item.appendChild(infoDiv);
 
         return item;
@@ -5572,6 +5628,32 @@ class RecipeApp {
         }
 
         this.images = this.images.filter(img => img.id !== mediaId);
+        this.renderImagesPreview();
+    }
+    
+    /**
+     * Handle moving a media file up or down
+     * @param {string} mediaId - Media file ID to move
+     * @param {string} type - 'image'
+     * @param {string} direction - 'up' or 'down'
+     */
+    handleMoveMedia(mediaId, type, direction) {
+        const currentIndex = this.images.findIndex(img => img.id === mediaId);
+        
+        if (currentIndex === -1) return;
+        
+        // Calculate new index
+        const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+        
+        // Check bounds
+        if (newIndex < 0 || newIndex >= this.images.length) return;
+        
+        // Swap elements
+        const temp = this.images[currentIndex];
+        this.images[currentIndex] = this.images[newIndex];
+        this.images[newIndex] = temp;
+        
+        // Re-render
         this.renderImagesPreview();
     }
 
@@ -5732,10 +5814,15 @@ class RecipeApp {
             }
         }
 
-        // Total Time - Now shown on gallery image, hide from header
+        // Total Time - Show next to category
         const totalTimeElement = document.getElementById('detail-total-time');
         if (totalTimeElement) {
-            totalTimeElement.style.display = 'none';
+            if (recipe.totalTime && recipe.totalTime.trim() !== '') {
+                totalTimeElement.textContent = `⏱️ ${recipe.totalTime}`;
+                totalTimeElement.style.display = 'inline-block';
+            } else {
+                totalTimeElement.style.display = 'none';
+            }
         }
 
         // Caravan Friendly Badge - Now shown in image gallery, hide from header
@@ -5757,7 +5844,7 @@ class RecipeApp {
         this.renderDetailSequences(recipe.additionSequences, recipe.ingredients);
 
         // Multimedia
-        this.renderDetailMultimedia(recipe.images, recipe.name, recipe.totalTime, recipe.category, recipe.caravanFriendly);
+        this.renderDetailMultimedia(recipe.images, recipe.videos || [], recipe.name, recipe.totalTime, recipe.category, recipe.caravanFriendly);
 
         // Metadata
         this.renderDetailMetadata(recipe);
@@ -6106,21 +6193,7 @@ class RecipeApp {
 
         item.appendChild(img);
 
-        // Add time badge if totalTime exists
-        if (totalTime && totalTime.trim() !== '') {
-            const timeBadge = document.createElement('div');
-            timeBadge.className = 'recipe-time-badge';
-            timeBadge.textContent = totalTime;
-            item.appendChild(timeBadge);
-        }
-
-        // Add caravan badge if caravanFriendly
-        if (caravanFriendly) {
-            const caravanBadge = document.createElement('div');
-            caravanBadge.className = 'recipe-caravan-badge-image';
-            caravanBadge.textContent = 'Apto para Caravana';
-            item.appendChild(caravanBadge);
-        }
+        // Badges removed from detail gallery view
 
         // Add click to open modal
         item.addEventListener('click', () => {
@@ -6168,21 +6241,7 @@ class RecipeApp {
 
         mainArea.appendChild(img);
 
-        // Add time badge if totalTime exists
-        if (totalTime && totalTime.trim() !== '') {
-            const timeBadge = document.createElement('div');
-            timeBadge.className = 'recipe-time-badge';
-            timeBadge.textContent = totalTime;
-            mainArea.appendChild(timeBadge);
-        }
-
-        // Add caravan badge if caravanFriendly
-        if (caravanFriendly) {
-            const caravanBadge = document.createElement('div');
-            caravanBadge.className = 'recipe-caravan-badge-image';
-            caravanBadge.textContent = 'Apto para Caravana';
-            mainArea.appendChild(caravanBadge);
-        }
+        // Badges removed from detail gallery view
 
         // Previous button
         const prevBtn = document.createElement('button');
@@ -6424,14 +6483,16 @@ class RecipeApp {
 
         console.log('[Multimedia] Rendering:', { images: images?.length, videos: videos?.length });
 
-        if (!sectionElement || !imagesGallery || !videosGallery) {
-            console.warn('[Multimedia] Missing elements');
+        if (!sectionElement || !imagesGallery) {
+            console.warn('[Multimedia] Missing required elements');
             return;
         }
 
         // Clear galleries
         imagesGallery.innerHTML = '';
-        videosGallery.innerHTML = '';
+        if (videosGallery) {
+            videosGallery.innerHTML = '';
+        }
 
         const hasImages = images && images.length > 0;
         const hasVideos = videos && videos.length > 0;
@@ -6460,7 +6521,7 @@ class RecipeApp {
         }
 
         // Render videos (unchanged)
-        if (hasVideos) {
+        if (hasVideos && videosGallery) {
             videos.forEach(video => {
                 const item = document.createElement('div');
                 item.className = 'detail-gallery-item';
@@ -6712,13 +6773,7 @@ class RecipeApp {
             };
         }
 
-        // Copy ingredients button
-        const copyIngredientsBtn = document.getElementById('copy-ingredients-btn');
-        if (copyIngredientsBtn) {
-            copyIngredientsBtn.onclick = async (e) => {
-                await this.copyIngredientsFromDetail(recipe, e);
-            };
-        }
+        // Copy ingredients button removed
     }
 
     /**

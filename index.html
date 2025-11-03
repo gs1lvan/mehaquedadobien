@@ -235,12 +235,13 @@
                     <button id="back-to-list-btn" class="btn-icon" title="Volver a la lista">◀</button>
                     <div class="detail-header-content">
                         <div>
-                            <span id="detail-category" class="recipe-category"
-                                style="display: none; margin-bottom: var(--spacing-xs);">Sin categoría</span>
+                            <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-xs); flex-wrap: wrap;">
+                                <span id="detail-category" class="recipe-category" style="display: none;">Sin categoría</span>
+                                <span id="detail-total-time" class="recipe-total-time" style="display: none;"></span>
+                            </div>
                             <h2 id="detail-recipe-name">Nombre de la Receta</h2>
                             <div class="detail-meta"
                                 style="display: flex; flex-direction: column; align-items: flex-start; gap: var(--spacing-xs); margin-top: var(--spacing-xs);">
-                                <span id="detail-total-time" class="recipe-total-time" style="display: none;"></span>
                                 <span id="detail-caravan-badge" class="recipe-caravan-badge" style="display: none;">Apto
                                     para Caravana</span>
                             </div>
@@ -284,10 +285,6 @@
                     <div class="detail-section">
                         <div class="detail-section-header">
                             <h3 class="detail-section-title">🥘 Ingredientes</h3>
-                            <button id="copy-ingredients-btn" class="btn-copy-ingredients"
-                                title="Copiar ingredientes al portapapeles">
-                                🧺
-                            </button>
                         </div>
                         <ul id="detail-ingredients-list" class="detail-ingredients-list">
                             <!-- Ingredients will be dynamically added here -->
@@ -350,7 +347,7 @@
             <!-- Recipe Form (Create/Edit) -->
             <section id="recipe-form-view" class="recipe-form hidden">
                 <div class="form-header">
-                    <h2 id="form-title">Nueva Receta</h2>
+                    <h2 id="recipe-name" class="editable-title" contenteditable="true" data-placeholder="Nombre de la receta...">Nueva Receta</h2>
                     <button id="close-form-btn" class="btn-icon" title="Cerrar">✕</button>
                 </div>
 
@@ -358,15 +355,6 @@
                     <!-- Basic Information Section -->
                     <div class="form-section">
                         <h3 class="section-title">Información Básica</h3>
-
-                        <div class="form-group">
-                            <label for="recipe-name">Nombre de la receta (opcional)</label>
-                            <input type="text" id="recipe-name" name="name" class="form-input"
-                                placeholder="Ej: Paella Valenciana" maxlength="100" autocomplete="off">
-                            <span class="helper-text">Si lo dejas vacío, se generará automáticamente como "GonsoReceta
-                                1", "GonsoReceta 2", etc.</span>
-                            <span class="error-message" id="name-error"></span>
-                        </div>
 
                         <div class="form-group">
                             <label for="recipe-category">Categoría</label>
@@ -411,22 +399,6 @@
                             </label>
                             <span class="helper-text">Marca esta opción si la receta es adecuada para preparar en
                                 caravana</span>
-                        </div>
-                    </div>
-
-                    <!-- Kitchen Appliances Section -->
-                    <div class="form-section">
-                        <h3 class="section-title collapsible-title collapsed" id="appliances-section-title">
-                            <span class="collapse-icon">▼</span> Método de Preparación
-                        </h3>
-                        <div id="appliances-collapsible-content" class="collapsible-content collapsed">
-                            <div class="form-group">
-                                <label>Selecciona los aparatos que necesitas (opcional)</label>
-                                <div id="kitchen-appliances-chips" class="kitchen-appliances-chips">
-                                    <!-- Chips will be added here by JavaScript -->
-                                </div>
-                                <span class="helper-text">Haz clic en los aparatos que necesitas para esta receta</span>
-                            </div>
                         </div>
                     </div>
 
@@ -488,6 +460,22 @@
                         </div>
                     </div>
 
+                    <!-- Kitchen Appliances Section -->
+                    <div class="form-section">
+                        <h3 class="section-title collapsible-title collapsed" id="appliances-section-title">
+                            <span class="collapse-icon">▼</span> Método de Preparación
+                        </h3>
+                        <div id="appliances-collapsible-content" class="collapsible-content collapsed">
+                            <div class="form-group">
+                                <label>Selecciona los aparatos que necesitas (opcional)</label>
+                                <div id="kitchen-appliances-chips" class="kitchen-appliances-chips">
+                                    <!-- Chips will be added here by JavaScript -->
+                                </div>
+                                <span class="helper-text">Haz clic en los aparatos que necesitas para esta receta</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Addition Sequences Section -->
                     <div class="form-section">
                         <h3 class="section-title collapsible-title" id="sequences-section-title">
@@ -523,6 +511,8 @@
                                                         data-action="añadir">añadir</button>
                                                     <button type="button" class="cooking-action-btn"
                                                         data-action="cocer">cocer</button>
+                                                    <button type="button" class="cooking-action-btn"
+                                                        data-action="cocinar">cocinar</button>
                                                     <button type="button" class="cooking-action-btn"
                                                         data-action="cocinar al vapor">cocinar al vapor</button>
                                                     <button type="button" class="cooking-action-btn"
@@ -730,22 +720,18 @@
                     <div class="category-form">
                         <div class="form-group">
                             <label for="new-category-name">Nombre</label>
-                            <div class="input-with-emoji">
+                            <div class="input-with-emoji-and-color">
                                 <button type="button" id="open-emoji-picker-btn" class="emoji-prefix-btn" title="Seleccionar emoji">
                                     <span id="new-category-emoji">🐱</span>
                                 </button>
                                 <input type="text" id="new-category-name" class="form-input input-with-emoji-field"
                                     placeholder="Nombre de la categoría" maxlength="30">
+                                <button type="button" id="open-color-picker-btn" class="color-suffix-btn" title="Seleccionar color">
+                                    <span id="new-category-color-preview" class="color-preview"></span>
+                                </button>
                                 <input type="hidden" id="new-category-emoji-value" value="🐱">
+                                <input type="hidden" id="selected-color">
                             </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Color</label>
-                            <div id="color-palette" class="color-palette">
-                                <!-- Color chips generated dynamically -->
-                            </div>
-                            <input type="hidden" id="selected-color">
                         </div>
 
                         <button id="create-category-btn" class="btn-primary">
@@ -795,23 +781,19 @@
                 <div class="category-form">
                     <div class="form-group">
                         <label for="edit-category-name">Nombre</label>
-                        <div class="input-with-emoji">
+                        <div class="input-with-emoji-and-color">
                             <button type="button" id="open-edit-emoji-picker-btn" class="emoji-prefix-btn" title="Seleccionar emoji">
                                 <span id="edit-category-emoji">🐱</span>
                             </button>
                             <input type="text" id="edit-category-name" class="form-input input-with-emoji-field"
                                 placeholder="Nombre de la categoría" maxlength="30">
+                            <button type="button" id="open-edit-color-picker-btn" class="color-suffix-btn" title="Seleccionar color">
+                                <span id="edit-category-color-preview" class="color-preview"></span>
+                            </button>
                             <input type="hidden" id="edit-category-emoji-value" value="🐱">
+                            <input type="hidden" id="edit-selected-color">
+                            <input type="hidden" id="edit-category-id">
                         </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Color</label>
-                        <div id="edit-color-palette" class="color-palette">
-                            <!-- Color chips generated dynamically -->
-                        </div>
-                        <input type="hidden" id="edit-selected-color">
-                        <input type="hidden" id="edit-category-id">
                     </div>
 
                     <div class="modal-actions">
@@ -843,6 +825,24 @@
                         <div class="emoji-grid-modal" data-category="food">
                             <!-- Emojis will be added here -->
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Color Picker Modal -->
+    <div id="color-picker-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content color-picker-modal-content">
+            <div class="modal-header">
+                <h2>Seleccionar Color</h2>
+                <button id="close-color-picker-modal" class="btn-icon">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="color-picker-container">
+                    <div id="color-palette-modal" class="color-palette-modal">
+                        <!-- Color chips will be added here -->
                     </div>
                 </div>
             </div>
