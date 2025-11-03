@@ -592,7 +592,14 @@ main {
     grid-template-columns: 1fr;
     gap: var(--spacing-lg);
     margin-bottom: var(--spacing-xl);
-    max-width: 100%;
+}
+
+/* Grid de recetas en PC - múltiples columnas */
+@media (min-width: 769px) {
+    .recipes-grid:not(.list-view) {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: var(--spacing-lg);
+    }
 }
 
 /* ===== Recipe Card - Airbnb Listing Style ===== */
@@ -3332,7 +3339,8 @@ html {
 }
 
 .btn-edit-category,
-.btn-delete-category {
+.btn-delete-category,
+.btn-restore-category {
     padding: var(--spacing-xs);
     font-size: 1rem;
     opacity: 0.7;
@@ -3340,12 +3348,17 @@ html {
 }
 
 .btn-edit-category:hover,
-.btn-delete-category:hover {
+.btn-delete-category:hover,
+.btn-restore-category:hover {
     opacity: 1;
 }
 
 .btn-delete-category:hover {
     color: var(--color-danger);
+}
+
+.btn-restore-category:hover {
+    color: var(--color-success);
 }
 
 .categories-empty {
@@ -3423,6 +3436,119 @@ html {
 .emoji-option.selected {
     border-color: var(--color-primary);
     background: rgba(255, 56, 92, 0.1);
+}
+
+/* Form Row Layout */
+.form-row {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: flex-end;
+}
+
+.form-group-name {
+    flex: 1;
+}
+
+.form-group-emoji {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+    padding-bottom: 2px;
+}
+
+.btn-emoji-picker {
+    padding: 0;
+    background: var(--color-background-secondary);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-emoji-picker span {
+    font-size: 1.75rem;
+}
+
+.btn-emoji-picker:hover {
+    border-color: var(--color-primary);
+    transform: scale(1.05);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-emoji-picker:active {
+    transform: scale(0.95);
+}
+
+/* Emoji Picker Modal */
+.emoji-picker-modal-content {
+    max-width: 500px;
+    max-height: 600px;
+}
+
+.emoji-picker-container {
+    max-height: 450px;
+    overflow-y: auto;
+    padding: var(--spacing-sm);
+}
+
+.emoji-grid-modal {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) 0;
+}
+
+.emoji-grid-modal .emoji-option {
+    width: 45px;
+    height: 45px;
+    font-size: 1.75rem;
+}
+
+/* Mobile adjustments for emoji picker */
+@media (max-width: 767px) {
+    .emoji-picker-modal-content {
+        max-width: 95%;
+        max-height: 80vh;
+    }
+    
+    .emoji-picker-container {
+        max-height: 60vh;
+    }
+    
+    .emoji-grid-modal {
+        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    }
+    
+    .emoji-grid-modal .emoji-option {
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+    }
+    
+    .btn-emoji-picker {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .btn-emoji-picker span {
+        font-size: 1.5rem;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .form-group-emoji {
+        align-items: flex-start;
+    }
 }
 
 /* Mobile adjustments */
@@ -4240,6 +4366,18 @@ body.dark-theme .emoji-item:hover {
     background: var(--color-background);
 }
 
+body.dark-theme .emoji-picker-container {
+    background: var(--color-background);
+}
+
+body.dark-theme .btn-emoji-picker {
+    background: var(--color-primary);
+}
+
+body.dark-theme .btn-emoji-picker:hover {
+    background: var(--color-primary-dark);
+}
+
 /* Ingredient and sequence items in dark theme */
 body.dark-theme .ingredient-item,
 body.dark-theme .sequence-item {
@@ -4870,6 +5008,7 @@ body.dark-theme .shopping-item-input.existing-item::after {
     border: 1px solid var(--color-border-light);
     background: var(--color-background);
     height: auto;
+    width: 100%;
 }
 
 .recipe-card.list-item:hover {

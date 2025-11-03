@@ -139,9 +139,12 @@ const PREDEFINED_INGREDIENTS = [
 class CategoryManager {
     constructor() {
         this.storageKey = 'recetario_custom_categories';
+        this.hiddenCategoriesKey = 'recetario_hidden_categories';
         this.predefinedCategories = PREDEFINED_CATEGORIES;
         this.customCategories = [];
+        this.hiddenCategories = new Set();
         this.loadCustomCategories();
+        this.loadHiddenCategories();
     }
     
     /**
@@ -172,20 +175,98 @@ class CategoryManager {
     }
     
     /**
-     * Get all categories (predefined + custom)
-     * @returns {Array} All categories
+     * Load hidden categories from localStorage
      */
-    getAllCategories() {
-        return [...this.predefinedCategories, ...this.customCategories];
+    loadHiddenCategories() {
+        try {
+            const stored = localStorage.getItem(this.hiddenCategoriesKey);
+            if (stored) {
+                this.hiddenCategories = new Set(JSON.parse(stored));
+            }
+        } catch (error) {
+            console.error('[CategoryManager] Error loading hidden categories:', error);
+            this.hiddenCategories = new Set();
+        }
     }
     
     /**
-     * Get category by ID
+     * Save hidden categories to localStorage
+     */
+    saveHiddenCategories() {
+        try {
+            localStorage.setItem(this.hiddenCategoriesKey, JSON.stringify([...this.hiddenCategories]));
+        } catch (error) {
+            console.error('[CategoryManager] Error saving hidden categories:', error);
+            throw new Error('No se pudieron guardar las categorías ocultas');
+        }
+    }
+    
+    /**
+     * Hide a category (predefined or custom)
+     * @param {string} id - Category ID
+     */
+    hideCategory(id) {
+        this.hiddenCategories.add(id);
+        this.saveHiddenCategories();
+        console.log('[CategoryManager] Hidden category:', id);
+    }
+    
+    /**
+     * Unhide a category
+     * @param {string} id - Category ID
+     */
+    unhideCategory(id) {
+        this.hiddenCategories.delete(id);
+        this.saveHiddenCategories();
+        console.log('[CategoryManager] Unhidden category:', id);
+    }
+    
+    /**
+     * Check if a category is hidden
+     * @param {string} id - Category ID
+     * @returns {boolean} True if hidden
+     */
+    isCategoryHidden(id) {
+        return this.hiddenCategories.has(id);
+    }
+    
+    /**
+     * Get all categories (predefined + custom), excluding hidden ones
+     * @param {boolean} includeHidden - Include hidden categories (default: false)
+     * @returns {Array} All categories
+     */
+    getAllCategories(includeHidden = false) {
+        const all = [...this.predefinedCategories, ...this.customCategories];
+        if (includeHidden) {
+            return all;
+        }
+        return all.filter(cat => !this.isCategoryHidden(cat.id));
+    }
+    
+    /**
+     * Get only visible predefined categories
+     * @returns {Array} Visible predefined categories
+     */
+    getVisiblePredefinedCategories() {
+        return this.predefinedCategories.filter(cat => !this.isCategoryHidden(cat.id));
+    }
+    
+    /**
+     * Get only hidden categories
+     * @returns {Array} Hidden categories
+     */
+    getHiddenCategories() {
+        const all = [...this.predefinedCategories, ...this.customCategories];
+        return all.filter(cat => this.isCategoryHidden(cat.id));
+    }
+    
+    /**
+     * Get category by ID (includes hidden categories)
      * @param {string} id - Category ID
      * @returns {Object|null} Category object or null
      */
     getCategoryById(id) {
-        const all = this.getAllCategories();
+        const all = this.getAllCategories(true); // Include hidden categories
         return all.find(cat => cat.id === id) || null;
     }
     
@@ -313,35 +394,38 @@ class CategoryManager {
     }
     
     /**
-     * Delete custom category
+     * Delete category (custom or predefined - predefined ones are hidden instead)
      * @param {string} id - Category ID
      * @param {Array} recipes - All recipes to check usage
      * @returns {Object} Deletion result with affected recipes
      */
     deleteCategory(id, recipes) {
-        const categoryIndex = this.customCategories.findIndex(cat => cat.id === id);
+        const category = this.getCategoryById(id);
         
-        if (categoryIndex === -1) {
+        if (!category) {
             throw new Error('Categoría no encontrada');
-        }
-        
-        const category = this.customCategories[categoryIndex];
-        
-        if (category.isPredefined) {
-            throw new Error('No se pueden eliminar categorías predefinidas');
         }
         
         // Find recipes using this category
         const affectedRecipes = recipes.filter(recipe => recipe.category === id);
         
-        // Remove category
-        this.customCategories.splice(categoryIndex, 1);
-        this.saveCustomCategories();
-        
-        console.log('[CategoryManager] Deleted category:', id, 'Affected recipes:', affectedRecipes.length);
+        // If it's a predefined category, hide it instead of deleting
+        if (category.isPredefined) {
+            this.hideCategory(id);
+            console.log('[CategoryManager] Hidden predefined category:', id, 'Affected recipes:', affectedRecipes.length);
+        } else {
+            // If it's a custom category, delete it permanently
+            const categoryIndex = this.customCategories.findIndex(cat => cat.id === id);
+            if (categoryIndex !== -1) {
+                this.customCategories.splice(categoryIndex, 1);
+                this.saveCustomCategories();
+                console.log('[CategoryManager] Deleted custom category:', id, 'Affected recipes:', affectedRecipes.length);
+            }
+        }
         
         return {
             deleted: true,
+            isPredefined: category.isPredefined,
             affectedRecipes: affectedRecipes.length,
             affectedRecipeIds: affectedRecipes.map(r => r.id)
         };
@@ -724,6 +808,11 @@ class RecipeApp {
             totalImages: 0,
             recipeName: ''
         };
+
+        // Auto-save state
+        this.autoSaveTimer = null;
+        this.autoSaveDelay = 2000; // 2 seconds after user stops typing
+        this.isAutoSaving = false;
 
         this.init();
     }
@@ -1173,6 +1262,28 @@ class RecipeApp {
             });
         }
 
+        // Emoji picker modal buttons
+        const openEmojiPickerBtn = document.getElementById('open-emoji-picker-btn');
+        if (openEmojiPickerBtn) {
+            openEmojiPickerBtn.addEventListener('click', () => {
+                this.openEmojiPickerModal('new-category-emoji', 'new-category-emoji-value');
+            });
+        }
+
+        const openEditEmojiPickerBtn = document.getElementById('open-edit-emoji-picker-btn');
+        if (openEditEmojiPickerBtn) {
+            openEditEmojiPickerBtn.addEventListener('click', () => {
+                this.openEmojiPickerModal('edit-category-emoji', 'edit-category-emoji-value');
+            });
+        }
+
+        const closeEmojiPickerModalBtn = document.getElementById('close-emoji-picker-modal');
+        if (closeEmojiPickerModalBtn) {
+            closeEmojiPickerModalBtn.addEventListener('click', () => {
+                this.closeEmojiPickerModal();
+            });
+        }
+
         // Form event listeners
         this.setupFormEventListeners();
     }
@@ -1268,12 +1379,20 @@ class RecipeApp {
         // Render color palette
         this.renderColorPalette();
         
-        // Render emoji picker
-        this.renderEmojiPicker();
+        // Set default emoji
+        const emojiSpan = document.getElementById('new-category-emoji');
+        const emojiHidden = document.getElementById('new-category-emoji-value');
+        if (emojiSpan) {
+            emojiSpan.textContent = DEFAULT_EMOJI;
+        }
+        if (emojiHidden) {
+            emojiHidden.value = DEFAULT_EMOJI;
+        }
         
         // Render category lists
         this.renderPredefinedCategoriesList();
         this.renderCustomCategoriesList();
+        this.renderHiddenCategoriesList();
     }
     
     /**
@@ -1311,87 +1430,7 @@ class RecipeApp {
         });
     }
     
-    /**
-     * Render emoji picker for category creation
-     */
-    renderEmojiPicker() {
-        const emojiInput = document.getElementById('new-category-emoji');
-        if (!emojiInput) return;
-        
-        // Set default emoji
-        emojiInput.value = DEFAULT_EMOJI;
-        
-        // Render emoji grids for each category
-        Object.keys(EMOJI_CATEGORIES).forEach(category => {
-            const grid = document.querySelector(`.emoji-grid[data-category="${category}"]`);
-            if (!grid) return;
-            
-            grid.innerHTML = '';
-            
-            EMOJI_CATEGORIES[category].forEach(emoji => {
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'emoji-option';
-                button.textContent = emoji;
-                button.title = emoji;
-                
-                button.addEventListener('click', () => {
-                    // Update input value
-                    emojiInput.value = emoji;
-                    
-                    // Remove selected class from all emojis
-                    document.querySelectorAll('.emoji-option').forEach(opt => {
-                        opt.classList.remove('selected');
-                    });
-                    
-                    // Add selected class to clicked emoji
-                    button.classList.add('selected');
-                });
-                
-                grid.appendChild(button);
-            });
-        });
-    }
-    
-    /**
-     * Render emoji picker for edit modal
-     */
-    renderEditEmojiPicker() {
-        const emojiInput = document.getElementById('edit-category-emoji');
-        if (!emojiInput) return;
-        
-        // Render emoji grids for each category in edit modal
-        Object.keys(EMOJI_CATEGORIES).forEach(category => {
-            const grids = document.querySelectorAll(`#edit-category-modal .emoji-grid[data-category="${category}"]`);
-            
-            grids.forEach(grid => {
-                grid.innerHTML = '';
-                
-                EMOJI_CATEGORIES[category].forEach(emoji => {
-                    const button = document.createElement('button');
-                    button.type = 'button';
-                    button.className = 'emoji-option';
-                    button.textContent = emoji;
-                    button.title = emoji;
-                    
-                    button.addEventListener('click', () => {
-                        // Update input value
-                        emojiInput.value = emoji;
-                        
-                        // Remove selected class from all emojis in edit modal
-                        document.querySelectorAll('#edit-category-modal .emoji-option').forEach(opt => {
-                            opt.classList.remove('selected');
-                        });
-                        
-                        // Add selected class to clicked emoji
-                        button.classList.add('selected');
-                    });
-                    
-                    grid.appendChild(button);
-                });
-            });
-        });
-    }
+
     
     /**
      * Render predefined categories list
@@ -1404,8 +1443,11 @@ class RecipeApp {
         
         const counts = this.categoryManager.getCategoryCounts(this.recipes);
         
-        this.categoryManager.predefinedCategories.forEach(category => {
-            const item = this.createCategoryItem(category, counts[category.id] || 0, false);
+        // Only show visible predefined categories
+        const visibleCategories = this.categoryManager.getVisiblePredefinedCategories();
+        
+        visibleCategories.forEach(category => {
+            const item = this.createPredefinedCategoryItem(category, counts[category.id] || 0);
             listContainer.appendChild(item);
         });
     }
@@ -1420,7 +1462,10 @@ class RecipeApp {
         
         listContainer.innerHTML = '';
         
-        const customCategories = this.categoryManager.customCategories;
+        // Only show visible custom categories
+        const customCategories = this.categoryManager.customCategories.filter(
+            cat => !this.categoryManager.isCategoryHidden(cat.id)
+        );
         
         if (customCategories.length === 0) {
             emptyState.style.display = 'block';
@@ -1432,20 +1477,47 @@ class RecipeApp {
             const counts = this.categoryManager.getCategoryCounts(this.recipes);
             
             customCategories.forEach(category => {
-                const item = this.createCategoryItem(category, counts[category.id] || 0, true);
+                const item = this.createCustomCategoryItem(category, counts[category.id] || 0);
                 listContainer.appendChild(item);
             });
         }
     }
     
     /**
-     * Create category item element
+     * Render hidden categories list
+     */
+    renderHiddenCategoriesList() {
+        const listContainer = document.getElementById('hidden-categories-list');
+        const emptyState = document.getElementById('hidden-categories-empty');
+        if (!listContainer || !emptyState) return;
+        
+        listContainer.innerHTML = '';
+        
+        const hiddenCategories = this.categoryManager.getHiddenCategories();
+        
+        if (hiddenCategories.length === 0) {
+            emptyState.style.display = 'block';
+            listContainer.style.display = 'none';
+        } else {
+            emptyState.style.display = 'none';
+            listContainer.style.display = 'flex';
+            
+            const counts = this.categoryManager.getCategoryCounts(this.recipes);
+            
+            hiddenCategories.forEach(category => {
+                const item = this.createHiddenCategoryItem(category, counts[category.id] || 0);
+                listContainer.appendChild(item);
+            });
+        }
+    }
+    
+    /**
+     * Create hidden category item element with restore button
      * @param {Object} category - Category object
      * @param {number} count - Recipe count
-     * @param {boolean} showActions - Show edit/delete buttons
      * @returns {HTMLElement} Category item element
      */
-    createCategoryItem(category, count, showActions) {
+    createHiddenCategoryItem(category, count) {
         const item = document.createElement('div');
         item.className = 'category-item';
         item.dataset.categoryId = category.id;
@@ -1477,34 +1549,156 @@ class RecipeApp {
         
         item.appendChild(infoDiv);
         
-        // Actions (only for custom categories)
-        if (showActions) {
-            const actionsDiv = document.createElement('div');
-            actionsDiv.className = 'category-actions';
-            
-            const editBtn = document.createElement('button');
-            editBtn.type = 'button';
-            editBtn.className = 'btn-icon btn-edit-category';
-            editBtn.textContent = '✏️';
-            editBtn.title = 'Editar';
-            editBtn.addEventListener('click', () => {
-                this.handleEditCategory(category.id);
-            });
-            
-            const deleteBtn = document.createElement('button');
-            deleteBtn.type = 'button';
-            deleteBtn.className = 'btn-icon btn-delete-category';
-            deleteBtn.textContent = '🗑️';
-            deleteBtn.title = 'Eliminar';
-            deleteBtn.addEventListener('click', () => {
-                this.handleDeleteCategory(category.id);
-            });
-            
-            actionsDiv.appendChild(editBtn);
-            actionsDiv.appendChild(deleteBtn);
-            
-            item.appendChild(actionsDiv);
-        }
+        // Restore button
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'category-actions';
+        
+        const restoreBtn = document.createElement('button');
+        restoreBtn.type = 'button';
+        restoreBtn.className = 'btn-icon btn-restore-category';
+        restoreBtn.textContent = '↩️';
+        restoreBtn.title = 'Restaurar';
+        restoreBtn.addEventListener('click', () => {
+            this.handleRestoreCategory(category.id);
+        });
+        
+        actionsDiv.appendChild(restoreBtn);
+        item.appendChild(actionsDiv);
+        
+        return item;
+    }
+    
+    /**
+     * Create predefined category item element with hide button
+     * @param {Object} category - Category object
+     * @param {number} count - Recipe count
+     * @returns {HTMLElement} Category item element
+     */
+    createPredefinedCategoryItem(category, count) {
+        const item = document.createElement('div');
+        item.className = 'category-item';
+        item.dataset.categoryId = category.id;
+        
+        // Category info
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'category-info';
+        
+        const emoji = document.createElement('span');
+        emoji.className = 'category-emoji';
+        emoji.textContent = category.emoji;
+        
+        const name = document.createElement('span');
+        name.className = 'category-name';
+        name.textContent = category.name;
+        
+        const badge = document.createElement('span');
+        badge.className = 'category-badge';
+        badge.style.backgroundColor = category.color;
+        
+        const countSpan = document.createElement('span');
+        countSpan.className = 'category-count';
+        countSpan.textContent = `(${count} ${count === 1 ? 'receta' : 'recetas'})`;
+        
+        infoDiv.appendChild(emoji);
+        infoDiv.appendChild(name);
+        infoDiv.appendChild(badge);
+        infoDiv.appendChild(countSpan);
+        
+        item.appendChild(infoDiv);
+        
+        // Hide button for predefined categories
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'category-actions';
+        
+        const hideBtn = document.createElement('button');
+        hideBtn.type = 'button';
+        hideBtn.className = 'btn-icon btn-hide-category';
+        hideBtn.textContent = '👁️';
+        hideBtn.title = 'Ocultar';
+        hideBtn.addEventListener('click', () => {
+            this.handleHideCategory(category.id);
+        });
+        
+        actionsDiv.appendChild(hideBtn);
+        item.appendChild(actionsDiv);
+        
+        return item;
+    }
+    
+    /**
+     * Create custom category item element with edit/delete/hide buttons
+     * @param {Object} category - Category object
+     * @param {number} count - Recipe count
+     * @returns {HTMLElement} Category item element
+     */
+    createCustomCategoryItem(category, count) {
+        const item = document.createElement('div');
+        item.className = 'category-item';
+        item.dataset.categoryId = category.id;
+        
+        // Category info
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'category-info';
+        
+        const emoji = document.createElement('span');
+        emoji.className = 'category-emoji';
+        emoji.textContent = category.emoji;
+        
+        const name = document.createElement('span');
+        name.className = 'category-name';
+        name.textContent = category.name;
+        
+        const badge = document.createElement('span');
+        badge.className = 'category-badge';
+        badge.style.backgroundColor = category.color;
+        
+        const countSpan = document.createElement('span');
+        countSpan.className = 'category-count';
+        countSpan.textContent = `(${count} ${count === 1 ? 'receta' : 'recetas'})`;
+        
+        infoDiv.appendChild(emoji);
+        infoDiv.appendChild(name);
+        infoDiv.appendChild(badge);
+        infoDiv.appendChild(countSpan);
+        
+        item.appendChild(infoDiv);
+        
+        // Actions for custom categories
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'category-actions';
+        
+        const editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.className = 'btn-icon btn-edit-category';
+        editBtn.textContent = '✏️';
+        editBtn.title = 'Editar';
+        editBtn.addEventListener('click', () => {
+            this.handleEditCategory(category.id);
+        });
+        
+        const hideBtn = document.createElement('button');
+        hideBtn.type = 'button';
+        hideBtn.className = 'btn-icon btn-hide-category';
+        hideBtn.textContent = '👁️';
+        hideBtn.title = 'Ocultar';
+        hideBtn.addEventListener('click', () => {
+            this.handleHideCategory(category.id);
+        });
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'btn-icon btn-delete-category';
+        deleteBtn.textContent = '🗑️';
+        deleteBtn.title = 'Eliminar';
+        deleteBtn.addEventListener('click', () => {
+            this.handleDeleteCategory(category.id);
+        });
+        
+        actionsDiv.appendChild(editBtn);
+        actionsDiv.appendChild(hideBtn);
+        actionsDiv.appendChild(deleteBtn);
+        
+        item.appendChild(actionsDiv);
         
         return item;
     }
@@ -1520,7 +1714,10 @@ class RecipeApp {
             
             // Clear form
             document.getElementById('new-category-name').value = '';
-            document.getElementById('new-category-emoji').value = '';
+            const emojiSpan = document.getElementById('new-category-emoji');
+            const emojiHidden = document.getElementById('new-category-emoji-value');
+            if (emojiSpan) emojiSpan.textContent = DEFAULT_EMOJI;
+            if (emojiHidden) emojiHidden.value = DEFAULT_EMOJI;
             document.getElementById('category-error').textContent = '';
         }
     }
@@ -1540,11 +1737,11 @@ class RecipeApp {
      */
     handleCreateCategory() {
         const nameInput = document.getElementById('new-category-name');
-        const emojiInput = document.getElementById('new-category-emoji');
+        const emojiHidden = document.getElementById('new-category-emoji-value');
         const colorInput = document.getElementById('selected-color');
         const errorMessage = document.getElementById('category-error');
         
-        if (!nameInput || !emojiInput || !colorInput || !errorMessage) return;
+        if (!nameInput || !emojiHidden || !colorInput || !errorMessage) return;
         
         // Clear previous error
         errorMessage.textContent = '';
@@ -1553,7 +1750,7 @@ class RecipeApp {
             // Create category
             const category = this.categoryManager.createCategory({
                 name: nameInput.value,
-                emoji: emojiInput.value || DEFAULT_EMOJI,
+                emoji: emojiHidden.value || DEFAULT_EMOJI,
                 color: colorInput.value || CATEGORY_COLORS[0]
             });
             
@@ -1564,7 +1761,9 @@ class RecipeApp {
             
             // Clear form
             nameInput.value = '';
-            emojiInput.value = '';
+            const emojiSpan = document.getElementById('new-category-emoji');
+            if (emojiSpan) emojiSpan.textContent = DEFAULT_EMOJI;
+            emojiHidden.value = DEFAULT_EMOJI;
             
             // Reset color selection
             const colorPalette = document.getElementById('color-palette');
@@ -1615,27 +1814,16 @@ class RecipeApp {
         
         // Populate form with current values
         document.getElementById('edit-category-name').value = category.name;
-        document.getElementById('edit-category-emoji').value = category.emoji || DEFAULT_EMOJI;
+        const emojiSpan = document.getElementById('edit-category-emoji');
+        const emojiHidden = document.getElementById('edit-category-emoji-value');
+        if (emojiSpan) emojiSpan.textContent = category.emoji || DEFAULT_EMOJI;
+        if (emojiHidden) emojiHidden.value = category.emoji || DEFAULT_EMOJI;
         document.getElementById('edit-category-id').value = category.id;
         document.getElementById('edit-selected-color').value = category.color;
         document.getElementById('edit-category-error').textContent = '';
         
         // Render color palette for edit
         this.renderEditColorPalette(category.color);
-        
-        // Render emoji picker for edit
-        this.renderEditEmojiPicker();
-        
-        // Select current emoji in picker
-        setTimeout(() => {
-            const currentEmoji = category.emoji || DEFAULT_EMOJI;
-            const emojiButtons = document.querySelectorAll('#edit-category-modal .emoji-option');
-            emojiButtons.forEach(btn => {
-                if (btn.textContent === currentEmoji) {
-                    btn.classList.add('selected');
-                }
-            });
-        }, 0);
         
         // Show modal
         modal.classList.remove('hidden');
@@ -1649,6 +1837,75 @@ class RecipeApp {
         if (modal) {
             modal.classList.add('hidden');
         }
+    }
+    
+    /**
+     * Open emoji picker modal
+     * @param {string} targetSpanId - ID of the span element to update visually
+     * @param {string} targetHiddenId - ID of the hidden input to store value
+     */
+    openEmojiPickerModal(targetSpanId, targetHiddenId) {
+        const modal = document.getElementById('emoji-picker-modal');
+        if (!modal) return;
+        
+        // Store target IDs
+        this.emojiPickerTargetSpan = targetSpanId;
+        this.emojiPickerTargetHidden = targetHiddenId;
+        
+        // Render emoji grid
+        this.renderEmojiPickerModal();
+        
+        // Show modal
+        modal.classList.remove('hidden');
+    }
+    
+    /**
+     * Close emoji picker modal
+     */
+    closeEmojiPickerModal() {
+        const modal = document.getElementById('emoji-picker-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+    
+    /**
+     * Render emoji picker modal content
+     */
+    renderEmojiPickerModal() {
+        Object.keys(EMOJI_CATEGORIES).forEach(category => {
+            const grid = document.querySelector(`.emoji-grid-modal[data-category="${category}"]`);
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            EMOJI_CATEGORIES[category].forEach(emoji => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'emoji-option';
+                button.textContent = emoji;
+                button.title = emoji;
+                
+                button.addEventListener('click', () => {
+                    // Update visual span
+                    const targetSpan = document.getElementById(this.emojiPickerTargetSpan);
+                    if (targetSpan) {
+                        targetSpan.textContent = emoji;
+                    }
+                    
+                    // Update hidden input value
+                    const targetHidden = document.getElementById(this.emojiPickerTargetHidden);
+                    if (targetHidden) {
+                        targetHidden.value = emoji;
+                    }
+                    
+                    // Close modal
+                    this.closeEmojiPickerModal();
+                });
+                
+                grid.appendChild(button);
+            });
+        });
     }
     
     /**
@@ -1691,12 +1948,12 @@ class RecipeApp {
      */
     async handleSaveEditCategory() {
         const nameInput = document.getElementById('edit-category-name');
-        const emojiInput = document.getElementById('edit-category-emoji');
+        const emojiHidden = document.getElementById('edit-category-emoji-value');
         const colorInput = document.getElementById('edit-selected-color');
         const categoryIdInput = document.getElementById('edit-category-id');
         const errorMessage = document.getElementById('edit-category-error');
         
-        if (!nameInput || !emojiInput || !colorInput || !categoryIdInput || !errorMessage) return;
+        if (!nameInput || !emojiHidden || !colorInput || !categoryIdInput || !errorMessage) return;
         
         const categoryId = categoryIdInput.value;
         
@@ -1708,7 +1965,7 @@ class RecipeApp {
             const oldId = categoryId;
             const result = this.categoryManager.updateCategory(categoryId, {
                 name: nameInput.value.trim(),
-                emoji: emojiInput.value.trim() || DEFAULT_EMOJI,
+                emoji: emojiHidden.value.trim() || DEFAULT_EMOJI,
                 color: colorInput.value || CATEGORY_COLORS[0]
             });
             
@@ -1743,8 +2000,8 @@ class RecipeApp {
     }
     
     /**
-     * Handle delete category
-     * @param {string} categoryId - Category ID to delete
+     * Handle delete/hide category
+     * @param {string} categoryId - Category ID to delete/hide
      */
     async handleDeleteCategory(categoryId) {
         const category = this.categoryManager.getCategoryById(categoryId);
@@ -1753,16 +2010,20 @@ class RecipeApp {
         // Count affected recipes
         const affectedCount = this.recipes.filter(r => r.category === categoryId).length;
         
-        // Confirm deletion
-        let message = `¿Estás seguro de que quieres eliminar la categoría "${category.name}"?`;
+        // Confirm deletion/hiding
+        const action = category.isPredefined ? 'ocultar' : 'eliminar';
+        let message = `¿Estás seguro de que quieres ${action} la categoría "${category.name}"?`;
         if (affectedCount > 0) {
             message += `\n\n${affectedCount} ${affectedCount === 1 ? 'receta' : 'recetas'} ${affectedCount === 1 ? 'usa' : 'usan'} esta categoría y ${affectedCount === 1 ? 'pasará' : 'pasarán'} a "Sin categoría".`;
+        }
+        if (category.isPredefined) {
+            message += '\n\nPodrás restaurarla desde la sección "Categorías ocultas".';
         }
         
         if (!confirm(message)) return;
         
         try {
-            // Delete category
+            // Delete/hide category
             const result = this.categoryManager.deleteCategory(categoryId, this.recipes);
             
             // Update affected recipes
@@ -1783,13 +2044,85 @@ class RecipeApp {
             this.renderFilterChips();
             this.renderCategorySelector();
             this.renderRecipeList();
+            this.renderPredefinedCategoriesList();
             this.renderCustomCategoriesList();
+            this.renderHiddenCategoriesList();
             
             // Show success message
-            this.showSuccess(`Categoría "${category.name}" eliminada correctamente`);
+            const actionText = result.isPredefined ? 'ocultada' : 'eliminada';
+            this.showSuccess(`Categoría "${category.name}" ${actionText} correctamente`);
             
         } catch (error) {
             this.showError('Error al eliminar la categoría: ' + error.message);
+        }
+    }
+    
+    /**
+     * Handle hide category
+     * @param {string} categoryId - Category ID to hide
+     */
+    async handleHideCategory(categoryId) {
+        const category = this.categoryManager.getCategoryById(categoryId);
+        if (!category) return;
+        
+        // Count affected recipes
+        const affectedCount = this.recipes.filter(r => r.category === categoryId).length;
+        
+        // Confirm hiding
+        let message = `¿Estás seguro de que quieres ocultar la categoría "${category.name}"?`;
+        if (affectedCount > 0) {
+            message += `\n\n${affectedCount} ${affectedCount === 1 ? 'receta se ocultará' : 'recetas se ocultarán'} junto con esta categoría.`;
+        }
+        message += '\n\nPodrás restaurarla desde la sección "Categorías ocultas".';
+        
+        if (!confirm(message)) return;
+        
+        try {
+            // Hide category (recipes keep their category, just won't be visible)
+            this.categoryManager.hideCategory(categoryId);
+            
+            // Update UI
+            this.renderFilterChips();
+            this.renderCategorySelector();
+            this.renderRecipeList();
+            this.renderPredefinedCategoriesList();
+            this.renderCustomCategoriesList();
+            this.renderHiddenCategoriesList();
+            
+            // Show success message
+            const recipesText = affectedCount > 0 ? ` (${affectedCount} ${affectedCount === 1 ? 'receta ocultada' : 'recetas ocultadas'})` : '';
+            this.showSuccess(`Categoría "${category.name}" ocultada correctamente${recipesText}`);
+            
+        } catch (error) {
+            this.showError('Error al ocultar la categoría: ' + error.message);
+        }
+    }
+    
+    /**
+     * Handle restore category
+     * @param {string} categoryId - Category ID to restore
+     */
+    async handleRestoreCategory(categoryId) {
+        const category = this.categoryManager.getCategoryById(categoryId);
+        if (!category) return;
+        
+        try {
+            // Unhide category
+            this.categoryManager.unhideCategory(categoryId);
+            
+            // Update UI
+            this.renderFilterChips();
+            this.renderCategorySelector();
+            this.renderRecipeList();
+            this.renderPredefinedCategoriesList();
+            this.renderCustomCategoriesList();
+            this.renderHiddenCategoriesList();
+            
+            // Show success message
+            this.showSuccess(`Categoría "${category.name}" restaurada correctamente`);
+            
+        } catch (error) {
+            this.showError('Error al restaurar la categoría: ' + error.message);
         }
     }
     
@@ -2696,6 +3029,14 @@ class RecipeApp {
     filterRecipes() {
         let filtered = this.recipes;
 
+        // Filter out recipes from hidden categories
+        filtered = filtered.filter(recipe => {
+            // If recipe has no category, it's always visible
+            if (!recipe.category) return true;
+            // Only show recipes from visible categories
+            return !this.categoryManager.isCategoryHidden(recipe.category);
+        });
+
         // Apply category filter
         if (this.activeFilters.size > 0) {
             filtered = filtered.filter(recipe => {
@@ -3206,6 +3547,7 @@ class RecipeApp {
         });
         imageDiv.appendChild(ingredientsBadge);
 
+        /* TEMPORALMENTE OCULTO - Badge de opciones en tarjeta de receta (2025-11-03)
         const optionsBadge = this.createActionBadge({
             className: 'recipe-options-badge',
             title: 'Más opciones',
@@ -3214,6 +3556,7 @@ class RecipeApp {
             stopPropagation: true
         });
         imageDiv.appendChild(optionsBadge);
+        */
 
         // Create content section
         const contentDiv = document.createElement('div');
@@ -3453,9 +3796,7 @@ class RecipeApp {
 
         // Reset multimedia
         this.images = [];
-        this.videos = [];
         this.renderImagesPreview();
-        this.renderVideosPreview();
 
         // Clear multimedia error messages
         const imageError = document.getElementById('image-error');
@@ -3780,6 +4121,82 @@ class RecipeApp {
             console.error('Error in saveRecipe:', error);
             throw error;
         }
+    }
+
+    /**
+     * Auto-save recipe with debounce
+     * Saves the recipe automatically after user stops editing
+     */
+    scheduleAutoSave() {
+        // Only auto-save when editing an existing recipe
+        if (!this.currentRecipeId) {
+            return;
+        }
+
+        // Clear existing timer
+        if (this.autoSaveTimer) {
+            clearTimeout(this.autoSaveTimer);
+        }
+
+        // Schedule new auto-save
+        this.autoSaveTimer = setTimeout(async () => {
+            await this.performAutoSave();
+        }, this.autoSaveDelay);
+    }
+
+    /**
+     * Perform the actual auto-save operation
+     */
+    async performAutoSave() {
+        // Only auto-save when editing
+        if (!this.currentRecipeId || this.isAutoSaving) {
+            return;
+        }
+
+        try {
+            this.isAutoSaving = true;
+
+            // Get form data
+            const formData = this.getFormData();
+
+            // Validate minimum requirements (at least a name)
+            if (!formData.name || formData.name.trim() === '') {
+                return; // Don't auto-save if no name
+            }
+
+            // Save recipe silently
+            await this.saveRecipe(formData);
+
+            // Update the recipe in memory
+            await this.loadRecipes();
+
+            // Show subtle feedback
+            this.showAutoSaveIndicator();
+
+            console.log('[AutoSave] Recipe auto-saved:', this.currentRecipeId);
+        } catch (error) {
+            console.error('[AutoSave] Error auto-saving recipe:', error);
+            // Don't show error to user for auto-save failures
+        } finally {
+            this.isAutoSaving = false;
+        }
+    }
+
+    /**
+     * Show auto-save indicator
+     */
+    showAutoSaveIndicator() {
+        const formTitle = document.getElementById('form-title');
+        if (!formTitle) return;
+
+        const originalText = formTitle.textContent;
+        formTitle.textContent = '✓ Guardado automáticamente';
+        formTitle.style.color = '#10b981';
+
+        setTimeout(() => {
+            formTitle.textContent = originalText;
+            formTitle.style.color = '';
+        }, 2000);
     }
 
     /**
@@ -4246,7 +4663,7 @@ class RecipeApp {
         if (this.ingredients.length === 0) {
             const emptyMessage = document.createElement('div');
             emptyMessage.className = 'sequence-ingredients-chips-empty';
-            emptyMessage.textContent = 'Añade ingredientes primero';
+            emptyMessage.textContent = 'No hay ingredientes (opcional)';
             chipsContainer.appendChild(emptyMessage);
             return;
         }
@@ -4294,10 +4711,8 @@ class RecipeApp {
         // Validate
         errorMessage.textContent = '';
 
-        if (ingredientIds.length === 0) {
-            errorMessage.textContent = 'Debes seleccionar al menos un ingrediente';
-            return;
-        }
+        // Note: Ingredients are now optional for sequences
+        // Users can add sequences without selecting ingredients
 
         // Create new sequence
         const sequence = new Sequence({
@@ -5342,7 +5757,7 @@ class RecipeApp {
         this.renderDetailSequences(recipe.additionSequences, recipe.ingredients);
 
         // Multimedia
-        this.renderDetailMultimedia(recipe.images, recipe.videos, recipe.name, recipe.totalTime, recipe.category, recipe.caravanFriendly);
+        this.renderDetailMultimedia(recipe.images, recipe.name, recipe.totalTime, recipe.category, recipe.caravanFriendly);
 
         // Metadata
         this.renderDetailMetadata(recipe);
@@ -6363,16 +6778,6 @@ class RecipeApp {
                 })
             );
 
-            // Deep copy all videos
-            const copiedVideos = originalRecipe.videos.map(video =>
-                new MediaFile({
-                    name: video.name,
-                    type: video.type,
-                    data: video.data,
-                    size: video.size
-                })
-            );
-
             // Create new recipe with " (Copia)" suffix
             const duplicatedRecipe = new Recipe({
                 name: originalRecipe.name + ' (Copia)',
@@ -6384,7 +6789,6 @@ class RecipeApp {
                 ingredients: copiedIngredients,
                 additionSequences: copiedSequences,
                 images: copiedImages,
-                videos: copiedVideos,
                 createdAt: new Date(),
                 updatedAt: new Date()
             });

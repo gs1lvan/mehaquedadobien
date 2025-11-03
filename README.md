@@ -7,12 +7,12 @@ Una aplicación web moderna para gestionar tus recetas personales con funcionali
 ## 🚀 Características Principales
 
 - ✅ **Gestión completa de recetas** - Crear, editar, duplicar y eliminar
-- ✅ **Categorías personalizables** - 16 categorías predefinidas + categorías personalizadas
+- ✅ **Categorías personalizables** - 16 categorías predefinidas + categorías personalizadas con opción de ocultar/mostrar
 - ✅ **Listas de compra** - Crea y gestiona múltiples listas de compra con elementos marcables
 - ✅ **Aparatos de cocina** - Selección visual de 12 aparatos con emojis grandes en diseño compacto de 2 columnas
 - ✅ **Ingredientes inteligentes** - Gestión con cantidades y unidades opcionales
-- ✅ **Secuencias de adición** - Pasos numerados con ingredientes asociados
-- ✅ **Multimedia** - Múltiples imágenes y videos por receta
+- ✅ **Secuencias de adición** - Pasos numerados con ingredientes asociados (opcionales)
+- ✅ **Multimedia** - Múltiples imágenes por receta con galería y modal ampliado
 - ✅ **Filtrado avanzado** - Por categoría, tiempo y compatibilidad con caravana
 - ✅ **Exportación** - PDF con formato editorial y XML para intercambio
 - ✅ **PWA** - Funciona offline, instalable en móviles y desktop
@@ -41,6 +41,7 @@ El proyecto incluye múltiples archivos de prueba HTML (prefijo `test-*.html`) p
 - **test-chips-simple.html** - Verifica consistencia visual de chips de electrodomésticos en diferentes contextos
 - **test-xml-improvements.html** - Prueba las mejoras de parsing XML (formatos compacto, completo y mixto)
 - **test-xml-parsing.md** - Documentación de casos de prueba para validación de XML
+- **test-sequence-without-ingredients.html** - Verifica que se pueden crear secuencias sin ingredientes asociados
 - Otros archivos de prueba para ingredientes, secuencias, multimedia, filtrado, exportación, etc.
 
 ## 🛒 Listas de Compra
@@ -70,8 +71,68 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 
 ## 🎨 Última Actualización
 
+**Fecha:** 3 de noviembre de 2025  
+**Cambio:** Refactorización de gestión de categorías - Se ha mejorado la arquitectura del sistema de categorías con métodos especializados:
+- ✅ **Métodos separados:** `createPredefinedCategoryItem()` y `createCustomCategoryItem()` para mejor mantenibilidad
+- ✅ **Botón de ocultar unificado:** Todas las categorías (predefinidas y personalizadas) tienen botón de ocultar (👁️)
+- ✅ **Categorías predefinidas:** Solo tienen botón de ocultar (no se pueden editar ni eliminar permanentemente)
+- ✅ **Categorías personalizadas:** Tienen botones de editar (✏️), ocultar (👁️) y eliminar (🗑️)
+- ✅ **Restaurar categorías ocultas:** Nueva sección "Categorías Ocultas" con botón de restauración (↩️)
+- ✅ **Persistencia:** Las categorías ocultas se guardan en localStorage y persisten entre sesiones
+- ✅ **Actualización de recetas:** Las recetas que usan una categoría eliminada/oculta pasan automáticamente a "Sin categoría"
+
+**Fecha:** 3 de noviembre de 2025  
+**Cambio anterior:** Corrección de grid multi-columna en vista de lista - Se ha corregido un conflicto entre el grid multi-columna y la vista de lista:
+- ✅ **Grid multi-columna solo en vista de cuadrícula:** El layout de múltiples columnas ahora solo se aplica cuando NO está activa la vista de lista
+- ✅ **Vista de lista preservada:** La vista de lista mantiene su diseño de columna única como se esperaba
+- ✅ **Selector CSS mejorado:** Uso de `:not(.list-view)` para evitar conflictos entre modos de visualización
+- ✅ **Experiencia consistente:** Cada modo de vista mantiene su diseño específico sin interferencias
+
+**Fecha:** 3 de noviembre de 2025  
+**Cambio anterior:** Ancho completo del grid de recetas - Se ha optimizado el layout del grid de recetas para aprovechar todo el espacio disponible:
+- ✅ **Ancho completo:** El grid ahora utiliza todo el ancho disponible en pantallas grandes
+- ✅ **Grid multi-columna responsive:** Las columnas se ajustan automáticamente con mínimo de 300px por tarjeta
+- ✅ **Mejor aprovechamiento del espacio:** Distribución flexible que se adapta a cualquier tamaño de pantalla
+- ✅ **Experiencia optimizada:** Layout más dinámico y adaptable
+
+**Fecha:** 3 de noviembre de 2025  
+**Cambio anterior:** Mejora de layout en vista de lista - Se ha optimizado el ancho de las tarjetas de recetas en vista de lista:
+- ✅ **Ancho completo:** Las tarjetas en vista de lista ahora ocupan el 100% del ancho disponible
+- ✅ **Mejor aprovechamiento del espacio:** Distribución más uniforme y consistente
+- ✅ **Experiencia mejorada:** Layout más limpio y profesional en modo lista
+
+**Fecha:** 3 de noviembre de 2025  
+**Cambio anterior:** Preparación para auto-guardado - Se ha añadido la infraestructura base para implementar guardado automático:
+- ✅ **Estado de auto-guardado:** Nuevas propiedades para gestionar el guardado automático (autoSaveTimer, autoSaveDelay, isAutoSaving)
+- ✅ **Temporizador configurable:** Retraso de 2 segundos después de que el usuario deja de escribir
+- ✅ **Control de estado:** Bandera para evitar guardados simultáneos
+- 📝 **Próximamente:** Implementación completa del guardado automático en formularios de edición
+- ✅ **Temporizador configurable:** Retraso de 2 segundos después de que el usuario deja de escribir
+- ✅ **Control de estado:** Bandera para evitar guardados simultáneos
+- 📝 **Próximamente:** Implementación completa del guardado automático en formularios de edición 3 de noviembre de 2025  
+**Cambio anterior:** Mejora de grid de recetas en desktop - Se ha optimizado la visualización de recetas en pantallas grandes:
+- ✅ **Grid multi-columna:** Las recetas ahora se muestran en múltiples columnas en desktop (≥769px)
+- ✅ **Auto-fill responsive:** Las columnas se ajustan automáticamente con mínimo de 300px por tarjeta
+- ✅ **Mejor aprovechamiento del espacio:** Distribución uniforme en pantallas anchas
+- ✅ **Espaciado mejorado:** Mayor separación entre tarjetas para mejor legibilidad
+
+**Fecha:** 3 de noviembre de 2025  
+**Cambio anterior:** Botones temporalmente ocultos en vista de detalle - Se han ocultado temporalmente dos botones en la vista de detalle de recetas:
+- ⚠️ **Botón Duplicar:** Temporalmente oculto mediante comentarios HTML
+- ⚠️ **Botón Exportar XML:** Temporalmente oculto mediante comentarios HTML
+- ✅ **Botones activos:** Editar, Eliminar, Compartir, PDF siguen disponibles
+- 📝 **Nota:** Los botones están comentados en el código y pueden ser reactivados fácilmente
+
+**Fecha:** 3 de noviembre de 2025  
+**Cambio anterior:** Eliminación completa de soporte para videos - Se ha simplificado la aplicación eliminando toda la funcionalidad de videos:
+- ✅ **Modelo de datos:** Campo `videos` eliminado del modelo Recipe
+- ✅ **Interfaz:** Botón "🎥 Añadir Videos" y input de carga eliminados
+- ✅ **Lógica:** Método `handleVideoUpload()` y event listeners eliminados
+- ✅ **Optimización:** Reducción de código y mejora de rendimiento
+- ✅ **Enfoque:** La aplicación ahora se centra exclusivamente en imágenes
+
 **Fecha:** 2 de noviembre de 2025  
-**Cambio:** Mejoras en el sistema de parsing XML - Se ha refactorizado y consolidado el código de importación XML:
+**Cambio anterior:** Mejoras en el sistema de parsing XML - Se ha refactorizado y consolidado el código de importación XML:
 - ✅ **Código consolidado:** Eliminación de ~100 líneas de código duplicado entre parsers
 - ✅ **Soporte dual de formatos:** Parsing unificado para formato compacto y completo (exportación)
 - ✅ **Mejor mantenibilidad:** Lógica centralizada en XMLImporter con métodos helper reutilizables
@@ -80,12 +141,12 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 - ✅ **Archivo de pruebas:** Nuevo test-xml-improvements.html para validar parsing en todos los formatos
 - ✅ **Documentación técnica:** test-xml-parsing.md con casos de prueba detallados
 
-**Fecha:** 2 de noviembre de 2025  
-**Cambio anterior:** Simplificación del formulario de secuencias - Se ha simplificado el formulario de adición de secuencias eliminando la selección previa de ingredientes:
-- ✅ **Interfaz más limpia:** El formulario ahora solo requiere la descripción del paso
-- ✅ **Flujo más rápido:** Añade secuencias directamente sin pasos adicionales
-- ✅ **Mayor flexibilidad:** Describe los pasos libremente sin restricciones de ingredientes preseleccionados
-- ✅ **Botones de acciones rápidas:** Mantiene los 16 botones de acciones de cocina para facilitar la descripción
+**Fecha:** 3 de noviembre de 2025  
+**Cambio anterior:** Ingredientes opcionales en secuencias - Se ha eliminado la validación que requería al menos un ingrediente al crear secuencias:
+- ✅ **Mayor flexibilidad:** Ahora puedes crear secuencias sin seleccionar ingredientes
+- ✅ **Pasos generales:** Permite añadir pasos de preparación que no están asociados a ingredientes específicos (ej: "Precalentar el horno a 180°C")
+- ✅ **Validación simplificada:** Se eliminó el mensaje de error "Debes seleccionar al menos un ingrediente"
+- ✅ **Flujo más natural:** Describe los pasos libremente, con o sin ingredientes asociados
 
 **Fecha:** 2 de noviembre de 2025  
 **Cambio anterior:** Botones de conectores añadidos al editor de secuencias - Se han incorporado dos nuevos botones de conectores en el editor de secuencias de adición:
@@ -105,18 +166,17 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 **Fecha:** 2 de noviembre de 2025  
 **Cambio anterior:** Validación mejorada de archivos multimedia en importación - Se ha añadido filtrado automático de archivos multimedia durante la importación de recetas:
 - ✅ Validación de imágenes: solo se importan archivos con propiedades válidas (name, type, data)
-- ✅ Validación de videos: filtrado de archivos corruptos o incompletos
 - ✅ Mayor robustez: previene errores al importar recetas con datos multimedia malformados
 - ✅ Compatibilidad: mantiene retrocompatibilidad con recetas antiguas
 
 **Fecha:** 2 de noviembre de 2025  
 **Cambio anterior:** Exportación mejorada de recetas al compartir - Se ha completado la funcionalidad de compartir recetas para incluir todos los campos principales:
 - ✅ Campos básicos: nombre, categoría, ingredientes, método de preparación, tiempo total
-- ✅ Información adicional: autor, historia
+- ✅ Secuencias de adición con ingredientes asociados (opcionales)
 - ✅ Apto para caravana (caravanFriendly)
 - ✅ Secuencias de adición con ingredientes asociados
 - ✅ Aparatos de cocina seleccionados
-- ⚠️ **Nota:** Las imágenes y videos no se incluyen en enlaces compartidos para mantener URLs manejables (contienen datos base64 muy grandes). Se preservan al exportar/importar mediante archivos XML.
+- ⚠️ **Nota:** Las imágenes no se incluyen en enlaces compartidos para mantener URLs manejables (contienen datos base64 muy grandes). Se preservan al exportar/importar mediante archivos XML.
 
 ## 📝 Actualizaciones Anteriores
 

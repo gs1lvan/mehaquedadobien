@@ -122,7 +122,9 @@
 ### Categorías Personalizadas
 - Los usuarios pueden crear categorías adicionales
 - Almacenadas en localStorage: `recetario_custom_categories`
-- Gestión completa: crear, editar, eliminar
+- Gestión completa: crear, editar, eliminar, ocultar/mostrar
+- Categorías ocultas almacenadas en: `recetario_hidden_categories`
+- Las categorías ocultas no se muestran en filtros ni selectores (pero se preservan en recetas existentes)
 
 ---
 
@@ -171,10 +173,11 @@
 - ✅ Drag & drop para reordenar
 
 ### 3. Secuencias de Adición
-- ✅ Pasos numerados con ingredientes asociados
+- ✅ Pasos numerados con ingredientes asociados (opcionales)
 - ✅ Descripción y duración opcionales
-- ✅ Botones de acciones de cocina (16 acciones: a la plancha, añadir, cocer, cocinar al vapor, desglasar, freír, gratinar, guisar, hornear, lavar, pelar, rebozar, reducir, rehogar, reposar, saltear, sellar)
+- ✅ Botones de acciones de cocina (19 acciones: a la plancha, añadir, cocer, cocinar al vapor, desglasar, escaldar, freír, gratinar, guisar, hornear, lavar, pelar, picar, rallar, rebozar, reducir, rehogar, reposar, retirar, saltear, sellar)
 - ✅ Reordenamiento de secuencias
+- ✅ Flexibilidad total: crea secuencias con o sin ingredientes específicos
 
 ### 4. Multimedia
 - ✅ Múltiples imágenes por receta
@@ -241,6 +244,12 @@
 - **Formato:** JSON array
 - **Persistencia:** localStorage
 
+### Categorías Ocultas
+- **Clave:** `recetario_hidden_categories`
+- **Formato:** JSON array de IDs de categorías
+- **Persistencia:** localStorage
+- **Uso:** Almacena IDs de categorías ocultas (predefinidas o personalizadas)
+
 ### Preferencias
 - **Tema:** `theme` (light/dark)
 
@@ -271,12 +280,13 @@
 - **Mobile First:** Optimizado para móviles
 - **Breakpoints:**
   - Mobile: < 768px
-  - Tablet: 768px - 1024px
-  - Desktop: > 1024px
+  - Tablet/Desktop: ≥ 769px
 - **Adaptaciones:**
   - Menú hamburguesa en móvil
-  - Grid adaptativo de recetas
+  - Grid adaptativo de recetas con múltiples columnas en desktop (auto-fill, mínimo 300px por columna)
+  - Vista de lista con ancho completo (100%) para mejor aprovechamiento del espacio
   - Botones compactos en móvil
+  - Espaciado aumentado entre tarjetas en pantallas grandes
 
 ### Componentes Clave
 - **Recipe Card:** Tarjeta con imagen, nombre, categoría, tiempo
@@ -343,6 +353,7 @@
 - `test-pdf-ingredient-format.html` - Prueba de formato de ingredientes en PDF
 - `test-photo-gallery.html` - Prueba de galería de fotos
 - `test-save-recipe.html` - Prueba de guardado
+- `test-sequence-without-ingredients.html` - Prueba de secuencias sin ingredientes
 - `test-sequences-horizontal.html` - Prueba de secuencias horizontales
 - `test-storage.html` - Prueba de almacenamiento
 - `test-time-inputs-compact.html` - Prueba de inputs de tiempo
@@ -370,6 +381,174 @@
 
 ## 📝 CAMBIOS RECIENTES (Sesión Actual - 3 de noviembre de 2025)
 
+### 🏗️ Refactorización de Gestión de Categorías (3 de noviembre de 2025)
+
+#### Arquitectura Mejorada
+- ✅ **Separación de responsabilidades:** Métodos especializados para cada tipo de categoría
+- ✅ **Mejor mantenibilidad:** Código más limpio y fácil de mantener
+- ✅ **Consistencia visual:** Interfaz unificada con botones específicos por tipo
+
+#### Nuevos Métodos en RecipeApp (script.js)
+- ✅ **createPredefinedCategoryItem(category, count):** Crea elementos visuales para categorías predefinidas
+  - Solo incluye botón de ocultar (👁️)
+  - No permite edición ni eliminación permanente
+  - Diseñado para preservar la integridad del sistema
+  
+- ✅ **createCustomCategoryItem(category, count):** Crea elementos visuales para categorías personalizadas
+  - Incluye botón de editar (✏️)
+  - Incluye botón de ocultar (👁️)
+  - Incluye botón de eliminar (🗑️)
+  - Control total sobre categorías creadas por el usuario
+
+#### Método Eliminado
+- ❌ **createCategoryItem(category, count, showActions):** Reemplazado por los dos métodos especializados
+  - El parámetro `showActions` ya no es necesario
+  - Cada tipo de categoría tiene su propio método con botones específicos
+
+### 🏷️ Sistema de Ocultar/Mostrar Categorías
+
+#### Cambios en CategoryManager (script.js)
+- ✅ **Nueva propiedad:** `hiddenCategories` - Set para almacenar IDs de categorías ocultas
+- ✅ **Nueva clave de almacenamiento:** `recetario_hidden_categories` en localStorage
+- ✅ **Método hideCategory(id):** Oculta una categoría (predefinida o personalizada)
+- ✅ **Método unhideCategory(id):** Restaura la visibilidad de una categoría oculta
+- ✅ **Método isCategoryHidden(id):** Verifica si una categoría está oculta
+- ✅ **Método getHiddenCategories():** Obtiene todas las categorías ocultas
+- ✅ **Métodos de persistencia:** loadHiddenCategories() y saveHiddenCategories()
+- ✅ **Compatibilidad total:** Funciona con categorías predefinidas y personalizadas
+
+#### Cambios en Interfaz de Usuario (index.html)
+- ✅ **Nueva sección:** "Categorías Ocultas" en el modal de gestión de categorías
+- ✅ **Contenedor de lista:** `#hidden-categories-list` para mostrar categorías ocultas
+- ✅ **Estado vacío:** `#hidden-categories-empty` con mensaje cuando no hay categorías ocultas
+- ✅ **Botón de restaurar:** Cada categoría oculta tiene un botón ↩️ para restaurarla
+- ✅ **Contador de recetas:** Muestra cuántas recetas usan cada categoría oculta
+
+#### Cambios en RecipeApp (script.js)
+- ✅ **Método renderHiddenCategoriesList():** Renderiza la lista de categorías ocultas
+- ✅ **Método createHiddenCategoryItem():** Crea elementos visuales para categorías ocultas
+- ✅ **Método handleRestoreCategory():** Maneja la restauración de categorías ocultas
+- ✅ **Actualización automática:** La interfaz se actualiza al ocultar/restaurar categorías
+
+**Motivo:** Permitir a los usuarios personalizar qué categorías ven en los filtros y selectores, ocultando aquellas que no usan frecuentemente sin eliminarlas. Las recetas existentes con categorías ocultas mantienen su categoría asignada. La nueva interfaz visual facilita la gestión y restauración de categorías ocultas.
+
+**Casos de uso:**
+- Ocultar categorías predefinidas que no se usan (ej: "Marisco" si no cocinas pescado)
+- Ocultar categorías personalizadas temporalmente sin eliminarlas
+- Mantener la interfaz limpia mostrando solo las categorías relevantes
+- Las categorías ocultas siguen siendo válidas en recetas existentes
+- Restaurar fácilmente categorías ocultas cuando se necesiten de nuevo
+
+**Implementación técnica:**
+```javascript
+// Ocultar una categoría
+categoryManager.hideCategory('marisco');
+
+// Mostrar una categoría oculta
+categoryManager.unhideCategory('marisco');
+
+// Verificar si está oculta
+if (categoryManager.isCategoryHidden('marisco')) {
+    // No mostrar en filtros
+}
+
+// Obtener todas las categorías ocultas
+const hiddenCategories = categoryManager.getHiddenCategories();
+```
+
+**Flujo de usuario:**
+1. Usuario abre el modal de gestión de categorías (☰ → Gestionar Categorías)
+2. En la sección de categorías predefinidas o personalizadas, hace clic en el botón de ocultar (👁️)
+3. La categoría desaparece de los filtros y selectores
+4. La categoría aparece en la nueva sección "Categorías Ocultas"
+5. Para restaurarla, hace clic en el botón ↩️ en la sección de categorías ocultas
+6. La categoría vuelve a aparecer en los filtros y selectores
+
+### 🎨 Gestión Completa de Categorías Predefinidas
+
+#### Cambios en CategoryManager (script.js)
+- ✅ **Sistema de categorías ocultas:** Nuevo sistema para ocultar/mostrar categorías usando localStorage
+- ✅ **Métodos de gestión:** `hideCategory()`, `unhideCategory()`, `isCategoryHidden()`
+- ✅ **Filtrado automático:** `getAllCategories()` ahora excluye categorías ocultas por defecto
+- ✅ **Eliminación inteligente:** `deleteCategory()` oculta categorías predefinidas en lugar de eliminarlas
+- ✅ **Restauración:** Nuevo método `handleRestoreCategory()` para restaurar categorías ocultas
+- ✅ **Persistencia:** Las categorías ocultas se guardan en `recetario_hidden_categories` en localStorage
+
+#### Cambios en UI (script.js)
+- ✅ **Botones de acción en predefinidas:** Las categorías predefinidas ahora muestran botones de edición y eliminación
+- ✅ **Nueva sección:** "Categorías Ocultas" en el modal de gestión con lista de categorías ocultas
+- ✅ **Botón de restaurar:** Cada categoría oculta tiene un botón ↩️ para restaurarla
+- ✅ **Actualización automática:** Todas las vistas se actualizan al ocultar/restaurar categorías
+
+#### Cambios en HTML (index.html)
+- ✅ **Nueva sección:** Añadida sección "Categorías Ocultas" en el modal de gestión
+- ✅ **Contenedores:** `hidden-categories-list` y `hidden-categories-empty`
+
+#### Cambios en Estilos (styles.css)
+- ✅ **Botón de restaurar:** Estilos para `.btn-restore-category` con hover verde
+
+**Motivo:** Permitir a los usuarios personalizar completamente su experiencia ocultando categorías predefinidas que no usan, manteniendo la posibilidad de restaurarlas cuando las necesiten. Las categorías predefinidas se ocultan en lugar de eliminarse para preservar la integridad del sistema.
+
+### 🎨 Corrección de Grid Multi-Columna en Vista de Lista
+
+#### Cambios en Estilos (styles.css)
+- ✅ **Selector CSS mejorado:** Añadido `:not(.list-view)` al selector del grid multi-columna
+- ✅ **Grid multi-columna solo en vista de cuadrícula:** El layout de múltiples columnas ahora solo se aplica cuando NO está activa la vista de lista (`.list-view`)
+- ✅ **Vista de lista preservada:** La vista de lista mantiene su diseño de columna única sin interferencias del grid multi-columna
+- ✅ **Compatibilidad entre vistas:** Cada modo de visualización mantiene su diseño específico correctamente
+
+**Motivo:** Corregir un conflicto donde el grid multi-columna se aplicaba también en la vista de lista, causando que las tarjetas no ocuparan el ancho completo esperado. Con este cambio, el grid multi-columna solo se activa en la vista de cuadrícula, mientras que la vista de lista mantiene su diseño de columna única.
+
+### 🎨 Ancho Completo del Grid de Recetas
+
+#### Cambios en Estilos (styles.css)
+- ✅ **Ancho completo:** Eliminado `max-width: 1200px` del media query de desktop (≥769px)
+- ✅ **Grid responsive:** El grid ahora utiliza todo el ancho disponible en pantallas grandes
+- ✅ **Auto-fill dinámico:** Las columnas se ajustan automáticamente con mínimo de 300px por tarjeta
+- ✅ **Mejor aprovechamiento del espacio:** Distribución flexible que se adapta a cualquier tamaño de pantalla
+
+**Motivo:** Maximizar el aprovechamiento del espacio disponible en pantallas grandes, permitiendo que el grid se expanda completamente y muestre más recetas simultáneamente sin restricciones de ancho máximo.
+
+### 🎨 Mejora de Layout en Vista de Lista
+
+#### Cambios en Estilos (styles.css)
+- ✅ **Ancho completo en vista de lista:** Añadido `width: 100%` a `.recipe-card.list-item`
+- ✅ **Mejor distribución:** Las tarjetas ahora ocupan todo el ancho disponible del contenedor
+- ✅ **Consistencia visual:** Layout más uniforme y profesional en modo lista
+- ✅ **Responsive mejorado:** Mejor adaptación a diferentes tamaños de pantalla
+
+**Motivo:** Optimización de la experiencia de usuario en vista de lista, asegurando que las tarjetas de recetas aprovechen todo el espacio horizontal disponible para una mejor legibilidad y presentación de la información.
+
+### 🔧 Ingredientes Opcionales en Secuencias
+
+#### Cambios en Validación (script.js)
+- ✅ **Validación eliminada:** Se ha removido la validación que requería al menos un ingrediente al crear secuencias
+- ✅ **Mayor flexibilidad:** Los usuarios ahora pueden crear secuencias sin seleccionar ingredientes específicos
+- ✅ **Pasos generales permitidos:** Útil para pasos de preparación que no están asociados a ingredientes concretos (ej: "Precalentar el horno", "Preparar la bandeja")
+- ✅ **Comentario explicativo:** Se añadió documentación en el código explicando el cambio
+
+**Motivo:** Mejorar la flexibilidad del sistema de secuencias, permitiendo a los usuarios describir pasos de preparación generales que no necesariamente involucran ingredientes específicos de la lista.
+
+### 💾 Preparación para Auto-Guardado
+
+#### Cambios en Estado de Aplicación (script.js)
+- ✅ **Estado de auto-guardado añadido:** Nuevas propiedades en el constructor de RecipeApp
+- ✅ **autoSaveTimer:** Temporizador para gestionar el guardado automático
+- ✅ **autoSaveDelay:** Retraso de 2 segundos después de que el usuario deja de escribir
+- ✅ **isAutoSaving:** Bandera para controlar el estado del proceso de guardado
+
+**Motivo:** Preparación de la infraestructura para implementar guardado automático de recetas mientras el usuario edita, mejorando la experiencia de usuario y evitando pérdida de datos.
+
+### 🎨 Mejora de Grid de Recetas en Desktop
+
+#### Cambios en Estilos (styles.css)
+- ✅ **Grid multi-columna en desktop:** Nuevo media query para pantallas ≥769px
+- ✅ **Auto-fill responsive:** Las columnas se ajustan automáticamente con mínimo de 300px por tarjeta
+- ✅ **Espaciado mejorado:** Gap aumentado en pantallas grandes para mejor legibilidad
+- ✅ **Mejor aprovechamiento del espacio:** Las recetas se distribuyen uniformemente en pantallas anchas
+
+**Motivo:** Optimización de la experiencia en desktop, aprovechando mejor el espacio disponible en pantallas grandes y mejorando la visualización de múltiples recetas simultáneamente.
+
 ### 🗑️ Eliminación de Soporte para Videos
 
 #### Cambios en Modelo de Datos
@@ -377,7 +556,19 @@
 - ✅ Simplificación del modelo de datos multimedia
 - ✅ La aplicación ahora solo soporta imágenes
 
-**Motivo:** Simplificación de la aplicación y reducción del uso de almacenamiento. Los videos en Base64 ocupan mucho espacio en IndexedDB/localStorage.
+#### Cambios en Interfaz de Usuario (index.html)
+- ✅ **Botón "🎥 Añadir Videos" eliminado** del formulario de recetas
+- ✅ **Input de carga de videos eliminado** (`#video-upload`)
+- ✅ Interfaz simplificada solo con carga de imágenes
+
+#### Cambios en Lógica de Aplicación (script.js)
+- ✅ **Método `handleVideoUpload()` eliminado** completamente
+- ✅ **Event listeners de video upload eliminados** de `setupMediaUploadHandlers()`
+- ✅ **Validación de videos eliminada** (`validateVideoFile()` removido)
+- ✅ **Gestión de galería de videos eliminada**
+- ✅ Código simplificado y optimizado
+
+**Motivo:** Simplificación de la aplicación y reducción del uso de almacenamiento. Los videos en Base64 ocupan mucho espacio en IndexedDB/localStorage. La aplicación ahora se enfoca exclusivamente en imágenes para mantener un rendimiento óptimo.
 
 ### 🗑️ Eliminación Completa de Funcionalidad OCR/IA (31 de octubre de 2025)
 
@@ -557,11 +748,11 @@
 ## 📈 ESTADÍSTICAS DEL PROYECTO
 
 ### Líneas de Código
-- **script.js:** ~5,600 líneas
+- **script.js:** ~5,605 líneas
 - **models.js:** ~2,255 líneas
 - **styles.css:** ~3,502 líneas
 - **index.html:** ~810 líneas
-- **Total:** ~12,167 líneas de código
+- **Total:** ~12,172 líneas de código
 
 ### Funciones Principales
 - **RecipeApp:** Clase principal con 100+ métodos
@@ -578,4 +769,4 @@
 
 **Fin del Informe Técnico**  
 *Última actualización: 3 de noviembre de 2025*  
-*Versión: 2.3 - Eliminación de soporte para videos*
+*Versión: 2.12 - Refactorización de gestión de categorías*
