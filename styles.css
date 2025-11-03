@@ -3438,52 +3438,46 @@ html {
     background: rgba(255, 56, 92, 0.1);
 }
 
-/* Form Row Layout */
-.form-row {
+/* Input with Emoji Prefix */
+.input-with-emoji {
+    position: relative;
     display: flex;
-    gap: var(--spacing-md);
-    align-items: flex-end;
-}
-
-.form-group-name {
-    flex: 1;
-}
-
-.form-group-emoji {
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    min-width: 60px;
-    padding-bottom: 2px;
 }
 
-.btn-emoji-picker {
+.emoji-prefix-btn {
+    position: absolute;
+    left: 8px;
+    z-index: 1;
     padding: 0;
-    background: var(--color-background-secondary);
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-md);
-    font-size: 2rem;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
     cursor: pointer;
     transition: all 0.2s ease;
-    width: 50px;
-    height: 50px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: var(--radius-sm);
 }
 
-.btn-emoji-picker span {
-    font-size: 1.75rem;
+.emoji-prefix-btn span {
+    font-size: 1.5rem;
 }
 
-.btn-emoji-picker:hover {
-    border-color: var(--color-primary);
-    transform: scale(1.05);
-    box-shadow: var(--shadow-sm);
+.emoji-prefix-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+    transform: scale(1.1);
 }
 
-.btn-emoji-picker:active {
+.emoji-prefix-btn:active {
     transform: scale(0.95);
+}
+
+.input-with-emoji-field {
+    padding-left: 50px !important;
 }
 
 /* Emoji Picker Modal */
@@ -3532,22 +3526,17 @@ html {
         font-size: 1.5rem;
     }
     
-    .btn-emoji-picker {
-        width: 50px;
-        height: 50px;
+    .emoji-prefix-btn {
+        width: 32px;
+        height: 32px;
     }
     
-    .btn-emoji-picker span {
-        font-size: 1.5rem;
+    .emoji-prefix-btn span {
+        font-size: 1.25rem;
     }
     
-    .form-row {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .form-group-emoji {
-        align-items: flex-start;
+    .input-with-emoji-field {
+        padding-left: 45px !important;
     }
 }
 
@@ -4370,12 +4359,8 @@ body.dark-theme .emoji-picker-container {
     background: var(--color-background);
 }
 
-body.dark-theme .btn-emoji-picker {
-    background: var(--color-primary);
-}
-
-body.dark-theme .btn-emoji-picker:hover {
-    background: var(--color-primary-dark);
+body.dark-theme .emoji-prefix-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 /* Ingredient and sequence items in dark theme */
