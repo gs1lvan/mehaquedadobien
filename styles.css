@@ -4940,16 +4940,15 @@ body.dark-theme .shopping-item-input.existing-item::after {
     .recipe-card.list-item .recipe-name {
         font-size: 1rem;
     }
-    
+
     /* Hide image and date in mobile */
     .recipe-card.list-item .recipe-image,
     .recipe-card.list-item .recipe-date {
         display: none;
     }
-    
-    /* Hide image and date columns in header */
-    .list-header-img,
-    .list-header-date {
+
+    /* Hide image column in header */
+    .list-header-img {
         display: none;
     }
 }
@@ -5005,24 +5004,7 @@ st view header */
 }
 
 .list-header-date {
-    width: 100px;
-    text-align: right;
-    cursor: pointer;
-    user-select: none;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
-    margin-right: var(--spacing-sm);
-    padding: 4px 8px;
-    border-radius: var(--radius-sm);
-}
-
-.list-header-date:hover {
-    color: var(--color-text);
-    background: rgba(255, 56, 92, 0.08);
-    transform: translateY(-1px);
+    display: none;
 }
 
 .list-header-actions {
