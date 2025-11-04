@@ -153,7 +153,7 @@
                     </div>
                 </section>
 
-                <!-- Time filter bar -->
+                <!-- TEMPORALMENTE OCULTO - Filtro de tiempo (2025-11-04)
                 <section id="time-filter-bar" class="filter-bar">
                     <h2 class="filter-title">Filtrar por tiempo:</h2>
                     <div class="filter-chips" id="time-filter-chips">
@@ -180,6 +180,7 @@
                         </button>
                     </div>
                 </section>
+                -->
             </div>
             <!-- End filters container -->
 
@@ -244,6 +245,8 @@
                                 style="display: flex; flex-direction: column; align-items: flex-start; gap: var(--spacing-xs); margin-top: var(--spacing-xs);">
                                 <span id="detail-caravan-badge" class="recipe-caravan-badge" style="display: none;">Apto
                                     para Caravana</span>
+                                <span id="detail-hospital-badge" class="recipe-hospital-badge" style="display: none;">Apto
+                                    para Hospital</span>
                             </div>
                         </div>
                         <div class="detail-actions">
@@ -357,20 +360,12 @@
                         <h3 class="section-title">Información Básica</h3>
 
                         <div class="form-group">
-                            <label for="recipe-category">Categoría</label>
-                            <select id="recipe-category" name="category" class="form-select">
-                                <option value="">Sin categoría</option>
-                                <option value="carne">🥩 Carne</option>
-                                <option value="verdura">🥬 Verdura</option>
-                                <option value="pescado">🐟 Pescado</option>
-                                <option value="fruta">🍎 Fruta</option>
-                                <option value="cereales">🌾 Cereales</option>
-                                <option value="mix">🍲 Mix</option>
-                                <option value="con-huevo">🥚 Con huevo</option>
-                                <option value="pollo">🐔 Pollo</option>
-                                <option value="escabeche">🥒 Escabeche</option>
-                                <option value="hospital">🏥 Hospital</option>
-                            </select>
+                            <label for="recipe-category-btn">Categoría</label>
+                            <button type="button" id="recipe-category-btn" class="category-selector-btn">
+                                <span id="selected-category-display">Sin categoría</span>
+                                <span class="dropdown-arrow">▼</span>
+                            </button>
+                            <input type="hidden" id="recipe-category" name="category" value="">
                         </div>
 
                         <div class="form-group">
@@ -399,6 +394,15 @@
                             </label>
                             <span class="helper-text">Marca esta opción si la receta es adecuada para preparar en
                                 caravana</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="recipe-hospital-friendly" name="hospitalFriendly"
+                                    class="form-checkbox">
+                                <span>🏥 Apto para Hospital</span>
+                            </label>
+                            <span class="helper-text">Marca esta opción si la receta es adecuada para dieta hospitalaria</span>
                         </div>
                     </div>
 
@@ -991,6 +995,23 @@
                         <span class="option-icon">🗑️</span>
                         <span class="option-text">Eliminar</span>
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Selector Modal -->
+    <div id="category-selector-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content category-selector-modal-content">
+            <div class="modal-header">
+                <h2>Seleccionar Categoría</h2>
+                <button id="close-category-selector-modal" class="btn-icon">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <div id="category-selector-chips" class="category-selector-chips">
+                    <!-- Categories will be rendered here dynamically -->
                 </div>
             </div>
         </div>

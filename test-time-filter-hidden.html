@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Filtro de Tiempo Oculto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        h2 { margin-top: 0; }
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>⏱️ Test - Filtro de Tiempo Oculto</h1>
+    
+    <div class="test-section success">
+        <h2>✅ Cambios Implementados</h2>
+        <p><strong>El filtro de tiempo ha sido temporalmente ocultado</strong></p>
+        <ul>
+            <li>✅ HTML comentado: Sección <code>#time-filter-bar</code></li>
+            <li>✅ Event listeners comentados</li>
+            <li>✅ Funciones comentadas: <code>handleTimeFilterClick()</code>, <code>markAvailableCategoriesByTime()</code></li>
+            <li>✅ Lógica de filtrado por tiempo comentada en <code>renderRecipeList()</code></li>
+            <li>✅ Referencias en <code>clearAllFilters()</code> comentadas</li>
+            <li>✅ Referencias en <code>updateClearButtonVisibility()</code> comentadas</li>
+        </ul>
+    </div>
+
+    <div class="test-section info">
+        <h2>📝 Código Comentado</h2>
+        
+        <h3>HTML (index.html)</h3>
+        <pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto;">
+&lt;!-- TEMPORALMENTE OCULTO - Filtro de tiempo (2025-11-04)
+&lt;section id="time-filter-bar" class="filter-bar"&gt;
+    ...
+&lt;/section&gt;
+--&gt;</pre>
+
+        <h3>JavaScript (script.js)</h3>
+        <p><strong>Secciones comentadas:</strong></p>
+        <ul>
+            <li>Event listeners para chips de tiempo (2 ocurrencias)</li>
+            <li>Función <code>handleTimeFilterClick()</code></li>
+            <li>Función <code>markAvailableCategoriesByTime()</code></li>
+            <li>Aplicación del filtro de tiempo en <code>renderRecipeList()</code></li>
+            <li>Reset del filtro de tiempo en <code>clearAllFilters()</code></li>
+            <li>Verificación de filtro activo en <code>updateClearButtonVisibility()</code></li>
+        </ul>
+    </div>
+
+    <div class="test-section info">
+        <h2>🔍 Funcionalidad Actual</h2>
+        <p><strong>Después de ocultar el filtro de tiempo:</strong></p>
+        <ul>
+            <li>✅ Solo se muestran filtros de categoría (Verdura, Carne, Hospital, Caravana, etc.)</li>
+            <li>✅ El campo de tiempo en las recetas sigue funcionando y guardándose</li>
+            <li>✅ El tiempo se muestra en las tarjetas de recetas</li>
+            <li>✅ El tiempo se muestra en la vista de detalle</li>
+            <li>❌ No se puede filtrar por tiempo (funcionalidad oculta)</li>
+        </ul>
+    </div>
+
+    <div class="test-section success">
+        <h2>🔄 Para Reactivar el Filtro</h2>
+        <p>Si en el futuro quieres reactivar el filtro de tiempo:</p>
+        <ol>
+            <li>Busca en <code>index.html</code>: <code>TEMPORALMENTE OCULTO - Filtro de tiempo (2025-11-04)</code></li>
+            <li>Descomenta la sección HTML</li>
+            <li>Busca en <code>script.js</code>: <code>TEMPORALMENTE OCULTO</code> relacionado con tiempo</li>
+            <li>Descomenta todas las secciones marcadas</li>
+            <li>Verifica que no haya errores de sintaxis</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Estado de Filtros</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f9fa;">
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Filtro</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Categorías (Verdura, Carne, etc.)</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">✅ Activo</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Hospital</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">✅ Activo (lógica AND)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Caravana</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">✅ Activo (lógica AND)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Tiempo (15min, 30min, etc.)</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">❌ Oculto</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="test-section info">
+        <h2>💡 Nota Importante</h2>
+        <p>La variable <code>this.activeTimeFilter</code> sigue existiendo en el código y mantiene su valor por defecto <code>'all'</code>. Esto asegura que no haya errores si alguna parte del código hace referencia a ella.</p>
+        <p>La función <code>parseTimeToMinutes()</code> NO ha sido comentada porque puede ser útil para otras funcionalidades en el futuro.</p>
+    </div>
+</body>
+</html>
