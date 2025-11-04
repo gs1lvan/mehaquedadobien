@@ -2340,6 +2340,57 @@ body.dark-theme .recipe-pdf-badge:hover {
     color: var(--color-primary);
 }
 
+/* Edit tooltip for recipe name */
+.edit-tooltip {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--color-primary);
+    color: white;
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: tooltipFadeIn 0.2s ease;
+    white-space: nowrap;
+    pointer-events: auto;
+}
+
+.edit-tooltip:hover {
+    background: #E31C5F;
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+.edit-tooltip.fade-out {
+    animation: tooltipFadeOut 0.3s ease forwards;
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+@keyframes tooltipFadeOut {
+    from {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+}
+
 .detail-actions {
     display: flex;
     gap: var(--spacing-xs);

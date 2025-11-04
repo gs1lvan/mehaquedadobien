@@ -5986,10 +5986,11 @@ class RecipeApp {
             nameElement.textContent = recipe.name;
             // Apply dynamic font sizing based on name length
             this.adjustRecipeNameFontSize(nameElement);
-            // Make it clickable to go back to home
+            // Make it clickable to edit recipe
             nameElement.style.cursor = 'pointer';
+            nameElement.title = 'Editar receta';
             nameElement.onclick = () => {
-                this.goToHome();
+                this.showRecipeForm(recipe.id);
             };
         }
 
