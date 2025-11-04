@@ -75,7 +75,8 @@ const PREDEFINED_CATEGORIES = [
     { id: 'salsas', name: 'Salsas', emoji: '🍅', color: '#E53935', isPredefined: true },
     { id: 'verdura', name: 'Verdura', emoji: '🥬', color: '#008A05', isPredefined: true },
     { id: 'caravana', name: 'Caravana', emoji: '🚐', color: '#6B7280', isPredefined: true, isSpecial: true },
-    { id: 'hospital', name: 'Hospital', emoji: '🏥', color: '#10B981', isPredefined: true, isSpecial: true }
+    { id: 'hospital', name: 'Hospital', emoji: '🏥', color: '#10B981', isPredefined: true, isSpecial: true },
+    { id: 'menu', name: 'Menú', emoji: '🍽️', color: '#8B4513', isPredefined: true, isSpecial: true }
 ];
 
 /**
@@ -1379,15 +1380,15 @@ class RecipeApp {
      * Render category selector in form (now uses modal)
      */
     renderCategorySelector() {
-        // Setup button click to open modal
-        const categoryBtn = document.getElementById('recipe-category-btn');
-        if (!categoryBtn) return;
+        // Setup chip click to open modal
+        const categoryChip = document.getElementById('recipe-category-chip');
+        if (!categoryChip) return;
         
         // Remove old event listener by cloning
-        const newBtn = categoryBtn.cloneNode(true);
-        categoryBtn.parentNode.replaceChild(newBtn, categoryBtn);
+        const newChip = categoryChip.cloneNode(true);
+        categoryChip.parentNode.replaceChild(newChip, categoryChip);
         
-        newBtn.addEventListener('click', () => {
+        newChip.addEventListener('click', () => {
             this.openCategorySelectorModal();
         });
         
@@ -1396,11 +1397,12 @@ class RecipeApp {
     }
     
     /**
-     * Update category display button
+     * Update category display chip
      */
     updateCategoryDisplay() {
         const categoryInput = document.getElementById('recipe-category');
         const displaySpan = document.getElementById('selected-category-display');
+        const categoryChip = document.getElementById('recipe-category-chip');
         
         if (!categoryInput || !displaySpan) return;
         
@@ -1408,14 +1410,23 @@ class RecipeApp {
         
         if (!selectedValue) {
             displaySpan.textContent = 'Sin categoría';
+            if (categoryChip) {
+                categoryChip.dataset.category = '';
+            }
             return;
         }
         
         const category = this.categoryManager.getCategoryById(selectedValue);
         if (category) {
             displaySpan.textContent = `${category.emoji} ${category.name}`;
+            if (categoryChip) {
+                categoryChip.dataset.category = category.id;
+            }
         } else {
             displaySpan.textContent = 'Sin categoría';
+            if (categoryChip) {
+                categoryChip.dataset.category = '';
+            }
         }
     }
     
@@ -3189,7 +3200,7 @@ class RecipeApp {
         if (this.activeFilters.size > 0) {
             filtered = filtered.filter(recipe => {
                 // Separate special filters (AND logic) from regular category filters (OR logic)
-                const specialFilters = ['caravana', 'hospital'];
+                const specialFilters = ['caravana', 'hospital', 'menu'];
                 const activeSpecialFilters = Array.from(this.activeFilters).filter(f => specialFilters.includes(f));
                 const activeCategoryFilters = Array.from(this.activeFilters).filter(f => !specialFilters.includes(f));
                 
@@ -3204,6 +3215,12 @@ class RecipeApp {
                 
                 if (activeSpecialFilters.includes('hospital')) {
                     if (recipe.hospitalFriendly !== true) {
+                        specialFiltersMatch = false;
+                    }
+                }
+                
+                if (activeSpecialFilters.includes('menu')) {
+                    if (recipe.menuFriendly !== true) {
                         specialFiltersMatch = false;
                     }
                 }
@@ -3582,6 +3599,15 @@ class RecipeApp {
             hospitalBadge.title = 'Apto para hospital';
             imageDiv.appendChild(hospitalBadge);
         }
+
+        // Add menu badge if recipe is menu friendly
+        if (recipe.menuFriendly === true) {
+            const menuBadge = document.createElement('div');
+            menuBadge.className = 'recipe-menu-badge-image';
+            menuBadge.textContent = '🍽️';
+            menuBadge.title = 'Para menú';
+            imageDiv.appendChild(menuBadge);
+        }
         
         // Create content section
         const contentDiv = document.createElement('div');
@@ -3746,6 +3772,15 @@ class RecipeApp {
             hospitalBadge.textContent = '🏥';
             hospitalBadge.title = 'Apto para hospital';
             imageDiv.appendChild(hospitalBadge);
+        }
+
+        // Add menu badge if recipe is menu friendly
+        if (recipe.menuFriendly === true) {
+            const menuBadge = document.createElement('div');
+            menuBadge.className = 'recipe-menu-badge-image';
+            menuBadge.textContent = '🍽️';
+            menuBadge.title = 'Para menú';
+            imageDiv.appendChild(menuBadge);
         }
 
         // Action badges removed - copy ingredients badge eliminated
@@ -4283,6 +4318,7 @@ class RecipeApp {
                     totalTime: formData.totalTime,
                     caravanFriendly: formData.caravanFriendly || false,
                     hospitalFriendly: formData.hospitalFriendly || false,
+                    menuFriendly: formData.menuFriendly || false,
                     preparationMethod: formData.preparationMethod,
                     kitchenAppliances: formData.kitchenAppliances || [],
                     author: formData.author,
@@ -4301,6 +4337,7 @@ class RecipeApp {
                     totalTime: formData.totalTime,
                     caravanFriendly: formData.caravanFriendly || false,
                     hospitalFriendly: formData.hospitalFriendly || false,
+                    menuFriendly: formData.menuFriendly || false,
                     preparationMethod: formData.preparationMethod,
                     kitchenAppliances: formData.kitchenAppliances || [],
                     author: formData.author,
@@ -4413,6 +4450,7 @@ class RecipeApp {
             totalTime: this.parseTimeInput('recipe'),
             caravanFriendly: document.getElementById('recipe-caravan-friendly')?.checked || false,
             hospitalFriendly: document.getElementById('recipe-hospital-friendly')?.checked || false,
+            menuFriendly: document.getElementById('recipe-menu-friendly')?.checked || false,
             preparationMethod: document.getElementById('preparation-method')?.value.trim() || '',
             kitchenAppliances: this.selectedAppliances,
             author: document.getElementById('recipe-author')?.value.trim() || '',
@@ -5408,6 +5446,12 @@ class RecipeApp {
                 hospitalCheckbox.checked = recipe.hospitalFriendly || false;
             }
 
+            // Populate menu friendly checkbox
+            const menuCheckbox = document.getElementById('recipe-menu-friendly');
+            if (menuCheckbox) {
+                menuCheckbox.checked = recipe.menuFriendly || false;
+            }
+
             const methodTextarea = document.getElementById('preparation-method');
             if (methodTextarea) {
                 methodTextarea.value = recipe.preparationMethod || '';
@@ -6029,6 +6073,12 @@ class RecipeApp {
             hospitalBadge.style.display = 'none';
         }
 
+        // Menu Friendly Badge - Now shown in image gallery, hide from header
+        const menuBadge = document.getElementById('detail-menu-badge');
+        if (menuBadge) {
+            menuBadge.style.display = 'none';
+        }
+
         // Ingredients
         this.renderDetailIngredients(recipe.ingredients);
         
@@ -6042,7 +6092,7 @@ class RecipeApp {
         this.renderDetailSequences(recipe.additionSequences, recipe.ingredients);
 
         // Multimedia
-        this.renderDetailMultimedia(recipe.images, recipe.videos || [], recipe.name, recipe.totalTime, recipe.category, recipe.caravanFriendly, recipe.hospitalFriendly);
+        this.renderDetailMultimedia(recipe.images, recipe.videos || [], recipe.name, recipe.totalTime, recipe.category, recipe.caravanFriendly, recipe.hospitalFriendly, recipe.menuFriendly);
 
         // Metadata
         this.renderDetailMetadata(recipe);
@@ -6674,7 +6724,7 @@ class RecipeApp {
      * @param {string} category - Category of the recipe
      * @param {boolean} caravanFriendly - Whether recipe is caravan friendly
      */
-    renderDetailMultimedia(images, videos, recipeName = '', totalTime = '', category = '', caravanFriendly = false, hospitalFriendly = false) {
+    renderDetailMultimedia(images, videos, recipeName = '', totalTime = '', category = '', caravanFriendly = false, hospitalFriendly = false, menuFriendly = false) {
         const sectionElement = document.getElementById('detail-multimedia-section');
         const imagesGallery = document.getElementById('detail-images-gallery');
         const videosGallery = document.getElementById('detail-videos-gallery');
@@ -6707,13 +6757,13 @@ class RecipeApp {
         if (hasImages) {
             if (images.length >= 2) {
                 // Use photo gallery for multiple images
-                const gallery = this.renderPhotoGallery(images, recipeName, totalTime, caravanFriendly, hospitalFriendly);
+                const gallery = this.renderPhotoGallery(images, recipeName, totalTime, caravanFriendly, hospitalFriendly, menuFriendly);
                 if (gallery) {
                     imagesGallery.appendChild(gallery);
                 }
             } else {
                 // Use traditional rendering for single image
-                const singleImage = this.renderSingleImage(images[0], recipeName, totalTime, caravanFriendly, hospitalFriendly);
+                const singleImage = this.renderSingleImage(images[0], recipeName, totalTime, caravanFriendly, hospitalFriendly, menuFriendly);
                 imagesGallery.appendChild(singleImage);
             }
         }

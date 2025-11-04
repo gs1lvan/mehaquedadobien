@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Categoría y Tiempo en la Misma Línea</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        h2 { margin-top: 0; }
+        .demo-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .demo-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .demo-label {
+            font-weight: 600;
+            font-size: 14px;
+            color: #222;
+        }
+        .demo-btn {
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .demo-time-inputs {
+            display: flex;
+            gap: 12px;
+        }
+        .demo-time-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .demo-input {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        @media (max-width: 768px) {
+            .demo-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>📋 Test - Categoría y Tiempo en la Misma Línea</h1>
+    
+    <div class="test-section success">
+        <h2>✅ Cambios Implementados</h2>
+        <p><strong>Categoría y Tiempo Total ahora están en la misma línea (grid 2 columnas)</strong></p>
+        <ul>
+            <li>✅ Ambos campos en una fila horizontal en desktop</li>
+            <li>✅ Responsive: En móvil (<768px) se apilan verticalmente</li>
+            <li>✅ Botón de categoría (sin select desplegable)</li>
+            <li>✅ Espaciado consistente entre campos</li>
+        </ul>
+    </div>
+
+    <div class="test-section info">
+        <h2>🎨 Vista Previa del Layout</h2>
+        
+        <h3>Desktop (≥768px):</h3>
+        <div class="demo-row">
+            <div class="demo-field">
+                <label class="demo-label">Categoría</label>
+                <button class="demo-btn">
+                    <span>Sin categoría</span>
+                    <span>▼</span>
+                </button>
+            </div>
+            <div class="demo-field">
+                <label class="demo-label">Tiempo Total (opcional)</label>
+                <div class="demo-time-inputs">
+                    <div class="demo-time-item">
+                        <span>Horas</span>
+                        <input type="number" class="demo-input" placeholder="0">
+                    </div>
+                    <div class="demo-time-item">
+                        <span>Minutos</span>
+                        <input type="number" class="demo-input" placeholder="0">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <h3>Móvil (<768px):</h3>
+        <div style="max-width: 400px;">
+            <div class="demo-field" style="margin-bottom: 16px;">
+                <label class="demo-label">Categoría</label>
+                <button class="demo-btn">
+                    <span>Sin categoría</span>
+                    <span>▼</span>
+                </button>
+            </div>
+            <div class="demo-field">
+                <label class="demo-label">Tiempo Total (opcional)</label>
+                <div class="demo-time-inputs">
+                    <div class="demo-time-item">
+                        <span>Horas</span>
+                        <input type="number" class="demo-input" placeholder="0">
+                    </div>
+                    <div class="demo-time-item">
+                        <span>Minutos</span>
+                        <input type="number" class="demo-input" placeholder="0">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section info">
+        <h2>📐 Estructura HTML</h2>
+        <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;">
+&lt;div class="form-row"&gt;
+    &lt;div class="form-group"&gt;
+        &lt;label for="recipe-category-btn"&gt;Categoría&lt;/label&gt;
+        &lt;button type="button" id="recipe-category-btn" class="category-selector-btn"&gt;
+            &lt;span id="selected-category-display"&gt;Sin categoría&lt;/span&gt;
+            &lt;span class="dropdown-arrow"&gt;▼&lt;/span&gt;
+        &lt;/button&gt;
+        &lt;input type="hidden" id="recipe-category" name="category" value=""&gt;
+    &lt;/div&gt;
+
+    &lt;div class="form-group"&gt;
+        &lt;label&gt;Tiempo Total (opcional)&lt;/label&gt;
+        &lt;div class="time-input-group"&gt;
+            &lt;!-- Inputs de horas y minutos --&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</pre>
+    </div>
+
+    <div class="test-section success">
+        <h2>🔧 Archivos Modificados</h2>
+        
+        <h3>index.html</h3>
+        <ul>
+            <li>Envueltos los campos de Categoría y Tiempo Total en <code>&lt;div class="form-row"&gt;</code></li>
+            <li>Cada campo mantiene su <code>&lt;div class="form-group"&gt;</code></li>
+        </ul>
+        
+        <h3>styles.css</h3>
+        <ul>
+            <li>Agregada clase <code>.form-row</code></li>
+            <li>Grid de 2 columnas con gap de <code>var(--spacing-lg)</code></li>
+            <li>Media query para móvil: 1 columna en pantallas <768px</li>
+        </ul>
+    </div>
+
+    <div class="test-section info">
+        <h2>🎯 Estilos CSS</h2>
+        <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;">
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+}</pre>
+    </div>
+
+    <div class="test-section info">
+        <h2>🧪 Cómo Probar</h2>
+        <ol>
+            <li>Abre la aplicación principal (index.html)</li>
+            <li>Haz clic en "Nueva Receta" o edita una receta existente</li>
+            <li>En la sección "Información Básica", verifica que:
+                <ul>
+                    <li>Categoría y Tiempo Total están en la misma línea (desktop)</li>
+                    <li>Ambos campos tienen el mismo ancho</li>
+                    <li>El espaciado es consistente</li>
+                </ul>
+            </li>
+            <li>Reduce el ancho de la ventana a menos de 768px</li>
+            <li>Verifica que los campos se apilan verticalmente en móvil</li>
+            <li>Haz clic en el botón de Categoría</li>
+            <li>Verifica que se abre el modal de selección de categorías</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>💡 Ventajas del Nuevo Layout</h2>
+        <ul>
+            <li>✅ <strong>Mejor uso del espacio:</strong> Dos campos en una línea en desktop</li>
+            <li>✅ <strong>Más compacto:</strong> Reduce la altura del formulario</li>
+            <li>✅ <strong>Responsive:</strong> Se adapta automáticamente a móvil</li>
+            <li>✅ <strong>Consistente:</strong> Ambos campos tienen el mismo ancho</li>
+            <li>✅ <strong>Visual:</strong> Botón de categoría más atractivo que select</li>
+        </ul>
+    </div>
+
+    <div class="test-section info">
+        <h2>📱 Comportamiento Responsive</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f9fa;">
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Tamaño de Pantalla</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Layout</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Columnas</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">≥768px (Desktop/Tablet)</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Horizontal</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">2 columnas (1fr 1fr)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">&lt;768px (Móvil)</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Vertical</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">1 columna</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="test-section success">
+        <h2>✨ Resultado Final</h2>
+        <p><strong>Sección "Información Básica" ahora contiene:</strong></p>
+        <ol>
+            <li><strong>Fila 1 (form-row):</strong>
+                <ul>
+                    <li>Categoría (botón con modal)</li>
+                    <li>Tiempo Total (inputs de horas y minutos)</li>
+                </ul>
+            </li>
+            <li><strong>Fila 2:</strong> Checkbox "Apto para Caravana"</li>
+            <li><strong>Fila 3:</strong> Checkbox "Apto para Hospital"</li>
+        </ol>
+    </div>
+</body>
+</html>

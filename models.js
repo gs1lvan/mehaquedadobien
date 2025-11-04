@@ -143,6 +143,7 @@ class Recipe {
         this.totalTime = data.totalTime || ''; // Optional total time field
         this.caravanFriendly = data.caravanFriendly || false; // Apto para Caravana
         this.hospitalFriendly = data.hospitalFriendly || false; // Apto para Hospital
+        this.menuFriendly = data.menuFriendly || false; // Para Menú
         this.ingredients = data.ingredients ? data.ingredients.map(i =>
             i instanceof Ingredient ? i : new Ingredient(i)
         ) : [];
@@ -188,6 +189,7 @@ class Recipe {
             totalTime: this.totalTime,
             caravanFriendly: this.caravanFriendly,
             hospitalFriendly: this.hospitalFriendly,
+            menuFriendly: this.menuFriendly,
             ingredients: this.ingredients.map(i => i.toJSON()),
             preparationMethod: this.preparationMethod,
             kitchenAppliances: this.kitchenAppliances,

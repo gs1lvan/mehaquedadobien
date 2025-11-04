@@ -247,6 +247,8 @@
                                     para Caravana</span>
                                 <span id="detail-hospital-badge" class="recipe-hospital-badge" style="display: none;">Apto
                                     para Hospital</span>
+                                <span id="detail-menu-badge" class="recipe-menu-badge" style="display: none;">Para
+                                    Menú</span>
                             </div>
                         </div>
                         <div class="detail-actions">
@@ -359,31 +361,32 @@
                     <div class="form-section">
                         <h3 class="section-title">Información Básica</h3>
 
-                        <div class="form-group">
-                            <label for="recipe-category-btn">Categoría</label>
-                            <button type="button" id="recipe-category-btn" class="category-selector-btn">
-                                <span id="selected-category-display">Sin categoría</span>
-                                <span class="dropdown-arrow">▼</span>
-                            </button>
-                            <input type="hidden" id="recipe-category" name="category" value="">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Tiempo Total (opcional)</label>
-                            <div class="time-input-group">
-                                <div class="time-input-item">
-                                    <span class="time-label">Horas</span>
-                                    <input type="number" id="recipe-hours" class="form-input time-input" placeholder="0"
-                                        min="0" max="24" autocomplete="off">
-                                </div>
-                                <div class="time-input-item">
-                                    <span class="time-label">Minutos</span>
-                                    <input type="number" id="recipe-minutes" class="form-input time-input"
-                                        placeholder="0" min="0" max="59" autocomplete="off">
-                                </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="recipe-category-chip">Categoría</label>
+                                <button type="button" id="recipe-category-chip" class="category-chip" data-category="">
+                                    <span id="selected-category-display">Sin categoría</span>
+                                </button>
+                                <input type="hidden" id="recipe-category" name="category" value="">
                             </div>
-                            <span class="helper-text">Si lo dejas vacío, se establecerá automáticamente en 59
-                                minutos</span>
+
+                            <div class="form-group">
+                                <label>Tiempo Total (opcional)</label>
+                                <div class="time-input-group">
+                                    <div class="time-input-item">
+                                        <span class="time-label">Horas</span>
+                                        <input type="number" id="recipe-hours" class="form-input time-input" placeholder="0"
+                                            min="0" max="24" autocomplete="off">
+                                    </div>
+                                    <div class="time-input-item">
+                                        <span class="time-label">Minutos</span>
+                                        <input type="number" id="recipe-minutes" class="form-input time-input"
+                                            placeholder="0" min="0" max="59" autocomplete="off">
+                                    </div>
+                                </div>
+                                <span class="helper-text">Si lo dejas vacío, se establecerá automáticamente en 59
+                                    minutos</span>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -403,6 +406,15 @@
                                 <span>🏥 Apto para Hospital</span>
                             </label>
                             <span class="helper-text">Marca esta opción si la receta es adecuada para dieta hospitalaria</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="recipe-menu-friendly" name="menuFriendly"
+                                    class="form-checkbox">
+                                <span>🍽️ Para Menú</span>
+                            </label>
+                            <span class="helper-text">Marca esta opción si la receta es adecuada para incluir en menús</span>
                         </div>
                     </div>
 
