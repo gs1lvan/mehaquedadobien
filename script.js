@@ -3902,6 +3902,20 @@ class RecipeApp {
         // Category not found (may have been deleted)
         return '❓ Categoría no encontrada';
     }
+    
+    /**
+     * Get category emoji
+     * @param {string} category - Category ID
+     * @returns {string} Category emoji
+     */
+    getCategoryEmoji(category) {
+        const categoryObj = this.categoryManager.getCategoryById(category);
+        if (categoryObj) {
+            return categoryObj.emoji;
+        }
+        // Category not found
+        return '❓';
+    }
 
     /**
      * Show recipe form for creating or editing a recipe
@@ -6085,66 +6099,7 @@ class RecipeApp {
         window.scrollTo(0, 0);
     }
 
-    /**
-     * Adjust recipe name font size dynamically to fill available width
-     * @param {HTMLElement} nameElement - The h2 element containing the recipe name
-     */
-    adjustRecipeNameFontSize(nameElement) {
-        if (!nameElement) return;
-        
-        const containerWidth = nameElement.parentElement.offsetWidth;
-        const textLength = nameElement.textContent.length;
-        
-        // Detectar si estamos en móvil
-        const isMobile = window.innerWidth <= 768;
-        
-        // Base font sizes (in rem) - diferentes para móvil y desktop
-        const maxFontSize = isMobile ? 2.5 : 3.5;    // Mobile: 2.5rem, Desktop: 3.5rem
-        const minFontSize = isMobile ? 1.5 : 1.8;    // Mobile: 1.5rem, Desktop: 1.8rem
-        
-        // DEBUG: Log para verificar valores
-        console.log('🔍 Recipe Name Font Size Debug:');
-        console.log('  Window width:', window.innerWidth);
-        console.log('  Is Mobile:', isMobile);
-        console.log('  Text length:', textLength);
-        console.log('  Max font size:', maxFontSize);
-        console.log('  Min font size:', minFontSize);
-        
-        // Calculate font size based on text length
-        // Shorter names get larger font, longer names get smaller font
-        let fontSize;
-        
-        if (textLength <= 10) {
-            fontSize = maxFontSize;  // Very short: max size
-        } else if (textLength <= 20) {
-            fontSize = maxFontSize - ((textLength - 10) * 0.05);  // Gradual decrease
-        } else if (textLength <= 30) {
-            fontSize = (isMobile ? 1.25 : 2.5) - ((textLength - 20) * 0.05);
-        } else if (textLength <= 40) {
-            fontSize = (isMobile ? 1.0 : 2.0) - ((textLength - 30) * 0.03);
-        } else {
-            fontSize = minFontSize;  // Very long: min size
-        }
-        
-        // Ensure we don't go below minimum
-        fontSize = Math.max(fontSize, minFontSize);
-        
-        console.log('  Calculated font size:', fontSize + 'rem');
-        
-        // Apply font size
-        nameElement.style.fontSize = `${fontSize}rem`;
-        
-        // Check if text overflows and adjust further if needed
-        setTimeout(() => {
-            if (nameElement.scrollWidth > containerWidth) {
-                // Text still overflows, reduce font size slightly
-                let adjustedSize = fontSize * 0.95;
-                adjustedSize = Math.max(adjustedSize, minFontSize);
-                console.log('  Adjusted for overflow:', adjustedSize + 'rem');
-                nameElement.style.fontSize = `${adjustedSize}rem`;
-            }
-        }, 0);
-    }
+
 
     /**
      * Render recipe detail
@@ -6152,16 +6107,11 @@ class RecipeApp {
      * @param {Recipe} recipe - Recipe to display
      */
     renderRecipeDetail(recipe) {
-        // Recipe name with dynamic font sizing
+        // Recipe name
         const nameElement = document.getElementById('detail-recipe-name');
         if (nameElement) {
             // Clear previous content and add name with edit icon
-            // Si deseas eliminar Font Awesome, cambia la línea de abajo por: nameElement.textContent = recipe.name;
             nameElement.innerHTML = `${recipe.name} <i class="fa-solid fa-pencil recipe-name-edit-icon"></i>`;
-            
-            // Apply dynamic font sizing based on name length
-            this.adjustRecipeNameFontSize(nameElement);
-            // cursor y position ahora están en CSS (.detail-recipe-name)
             
             // Create tooltip that appears on hover
             const tooltip = document.createElement('div');
@@ -6172,23 +6122,6 @@ class RecipeApp {
             nameElement.onclick = () => {
                 this.showRecipeForm(recipe.id);
             };
-            
-            // Agregar listener para recalcular tamaño cuando cambia el tamaño de ventana
-            // Remover listener anterior si existe
-            if (this.resizeListener) {
-                window.removeEventListener('resize', this.resizeListener);
-            }
-            
-            // Crear nuevo listener con debounce
-            let resizeTimeout;
-            this.resizeListener = () => {
-                clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(() => {
-                    this.adjustRecipeNameFontSize(nameElement);
-                }, 150);
-            };
-            
-            window.addEventListener('resize', this.resizeListener);
         }
 
         // Category - Show above recipe name
@@ -8681,11 +8614,13 @@ class RecipeApp {
         const recipeFormView = document.getElementById('recipe-form-view');
         const recipeDetailView = document.getElementById('recipe-detail-view');
         const shoppingListsView = document.getElementById('shopping-lists-view');
+        const menusView = document.getElementById('menus-view');
         
         if (recipesView) recipesView.classList.add('hidden');
         if (recipeFormView) recipeFormView.classList.add('hidden');
         if (recipeDetailView) recipeDetailView.classList.add('hidden');
         if (shoppingListsView) shoppingListsView.classList.remove('hidden');
+        if (menusView) menusView.classList.add('hidden');
         
         // Hide filters and recipe counter
         const filterToggleContainer = document.querySelector('.filter-toggle-container');
@@ -8741,6 +8676,13 @@ class RecipeApp {
         if (filtersContainer) filtersContainer.classList.add('hidden');
         if (recipeCounter) recipeCounter.classList.add('hidden');
         
+        // Clear shopping lists container to prevent any cross-contamination
+        const shoppingListsContainer = document.getElementById('shopping-lists-container');
+        if (shoppingListsContainer) {
+            // Don't clear it, just ensure it's in the hidden view
+            console.log('[Menus] Shopping lists view is hidden');
+        }
+        
         // Update current view
         this.currentView = 'menus';
         
@@ -8759,24 +8701,733 @@ class RecipeApp {
     }
 
     /**
-     * Render all menus (placeholder)
+     * Render all menus
      */
     renderMenus() {
         const container = document.getElementById('menus-container');
         const emptyState = document.getElementById('menus-empty');
         
-        if (!container) return;
-        
-        // Clear container
-        container.innerHTML = '';
-        
-        // TODO: Implement menus rendering
-        // For now, show empty state
-        if (emptyState) {
-            emptyState.classList.remove('hidden');
+        if (!container) {
+            console.error('[Menus] Container not found');
+            return;
         }
         
-        console.log('[Menus] Menus rendered (placeholder)');
+        // Save expanded state before clearing
+        const expandedMenuIds = new Set();
+        container.querySelectorAll('.shopping-list-card.expanded').forEach(card => {
+            const menuId = card.dataset.menuId;
+            if (menuId) {
+                expandedMenuIds.add(menuId);
+            }
+        });
+        
+        // Clear container completely
+        container.innerHTML = '';
+        
+        // Get all menus
+        const menus = this.getMenusFromStorage();
+        
+        // Show empty state if no menus
+        if (menus.length === 0) {
+            if (emptyState) {
+                emptyState.classList.remove('hidden');
+            }
+            console.log('[Menus] No menus to display');
+            return;
+        }
+        
+        // Hide empty state
+        if (emptyState) {
+            emptyState.classList.add('hidden');
+        }
+        
+        // Render each menu
+        menus.forEach(menu => {
+            const card = this.renderMenuCard(menu);
+            container.appendChild(card);
+            
+            // Restore expanded state
+            if (expandedMenuIds.has(String(menu.id))) {
+                const content = card.querySelector('.shopping-list-content');
+                const header = card.querySelector('.shopping-list-header');
+                const expandIcon = card.querySelector('.expand-icon');
+                
+                if (content && header && expandIcon) {
+                    content.classList.remove('collapsed');
+                    card.classList.add('expanded');
+                    header.setAttribute('aria-expanded', 'true');
+                    expandIcon.textContent = '▲';
+                }
+            }
+        });
+        
+        console.log('[Menus] Rendered', menus.length, 'menus');
+    }
+    
+    /**
+     * Render a single menu card
+     */
+    renderMenuCard(menu) {
+        const card = document.createElement('div');
+        card.className = 'shopping-list-card';
+        card.dataset.menuId = menu.id;
+        
+        // Add visual indicator if disabled
+        if (menu.enabled === false) {
+            card.style.opacity = '0.5';
+        }
+        
+        // Create header
+        const header = document.createElement('div');
+        header.className = 'shopping-list-header';
+        header.setAttribute('role', 'button');
+        header.setAttribute('tabindex', '0');
+        header.setAttribute('aria-expanded', 'false');
+        
+        const name = document.createElement('h3');
+        name.className = 'shopping-list-name';
+        name.textContent = menu.name;
+        
+        // Create counter container
+        const counterContainer = document.createElement('span');
+        counterContainer.className = 'shopping-list-counter';
+        
+        // Create badge with same style as date-time-badge
+        const itemCountBadge = document.createElement('span');
+        itemCountBadge.className = 'date-time-badge';
+        itemCountBadge.textContent = `${menu.items.length} elemento${menu.items.length !== 1 ? 's' : ''}`;
+        
+        counterContainer.appendChild(itemCountBadge);
+        
+        const expandIcon = document.createElement('span');
+        expandIcon.className = 'expand-icon';
+        expandIcon.textContent = '▼';
+        
+        header.appendChild(name);
+        header.appendChild(counterContainer);
+        header.appendChild(expandIcon);
+        
+        // Create actions (eye, edit, more options) - DENTRO del card, después del header
+        const actions = document.createElement('div');
+        actions.className = 'shopping-list-actions';
+        
+        // Create toggle enabled button (eye icon)
+        const toggleEnabledBtn = this.createButton({
+            className: 'btn-icon',
+            text: menu.enabled !== false ? '👁️' : '👁️‍🗨️',
+            title: menu.enabled !== false ? 'Deshabilitar menú' : 'Habilitar menú',
+            onClick: (e) => {
+                e.stopPropagation();
+                this.toggleMenuEnabled(menu.id);
+            }
+        });
+        
+        // Create edit button
+        const editBtn = this.createButton({
+            className: 'btn-icon',
+            text: '✏️',
+            title: 'Editar menú',
+            onClick: (e) => {
+                e.stopPropagation();
+                this.showMenuForm(menu.id);
+            }
+        });
+        
+        // Create more options button (three dots)
+        const moreBtn = this.createButton({
+            className: 'btn-icon',
+            text: '⋮',
+            title: 'Más opciones',
+            onClick: (e) => {
+                e.stopPropagation();
+                this.showMenuOptionsModal(menu.id);
+            }
+        });
+        
+        actions.appendChild(toggleEnabledBtn);
+        actions.appendChild(editBtn);
+        actions.appendChild(moreBtn);
+        
+        // Create content (collapsible)
+        const content = document.createElement('div');
+        content.className = 'shopping-list-content collapsed';
+        
+        const itemsContainer = this.renderMenuItems(menu);
+        content.appendChild(itemsContainer);
+        
+        // Add event listeners for expand/collapse
+        header.addEventListener('click', () => {
+            this.toggleMenuExpanded(menu.id);
+        });
+        
+        header.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.toggleMenuExpanded(menu.id);
+            }
+        });
+        
+        // Assemble card
+        card.appendChild(header);
+        card.appendChild(actions);
+        card.appendChild(content);
+        
+        return card;
+    }
+    
+    /**
+     * Render menu items with reorder controls
+     */
+    renderMenuItems(menu) {
+        const container = document.createElement('div');
+        container.className = 'shopping-list-items';
+        
+        if (menu.items.length === 0) {
+            const empty = document.createElement('p');
+            empty.style.color = 'var(--color-text-secondary)';
+            empty.style.fontSize = '0.875rem';
+            empty.textContent = 'No hay elementos en este menú';
+            container.appendChild(empty);
+            return container;
+        }
+        
+        menu.items.forEach((item, index) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'shopping-item';
+            itemDiv.dataset.itemId = item.id;
+            
+            // Bullet point
+            const bullet = document.createElement('span');
+            bullet.className = 'shopping-item-bullet';
+            bullet.textContent = '•';
+            
+            // Item content
+            const itemContent = document.createElement('div');
+            itemContent.className = 'shopping-item-content';
+            
+            const itemName = document.createElement('span');
+            itemName.className = 'shopping-item-name';
+            itemName.textContent = item.name;
+            
+            itemContent.appendChild(itemName);
+            
+            if (item.quantity) {
+                const itemQuantity = document.createElement('span');
+                itemQuantity.className = 'shopping-item-quantity';
+                itemQuantity.textContent = ` (${item.quantity})`;
+                itemContent.appendChild(itemQuantity);
+            }
+            
+            // Reorder buttons - EXACTAMENTE igual que en listas de compra
+            const reorderButtons = document.createElement('div');
+            reorderButtons.className = 'shopping-item-reorder';
+            
+            // Up button
+            const upBtn = document.createElement('button');
+            upBtn.className = 'btn-icon btn-reorder';
+            upBtn.title = 'Mover arriba';
+            upBtn.textContent = '⬆️';
+            upBtn.disabled = index === 0; // Disable if first item
+            upBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.moveMenuItemUp(menu.id, index);
+            });
+            
+            // Down button
+            const downBtn = document.createElement('button');
+            downBtn.className = 'btn-icon btn-reorder';
+            downBtn.title = 'Mover abajo';
+            downBtn.textContent = '⬇️';
+            downBtn.disabled = index === menu.items.length - 1; // Disable if last item
+            downBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.moveMenuItemDown(menu.id, index);
+            });
+            
+            reorderButtons.appendChild(upBtn);
+            reorderButtons.appendChild(downBtn);
+            
+            itemDiv.appendChild(bullet);
+            itemDiv.appendChild(itemContent);
+            itemDiv.appendChild(reorderButtons);
+            
+            container.appendChild(itemDiv);
+        });
+        
+        return container;
+    }
+    
+    /**
+     * Toggle menu expanded/collapsed
+     */
+    toggleMenuExpanded(menuId) {
+        const card = document.querySelector(`[data-menu-id="${menuId}"]`);
+        if (!card) return;
+        
+        const content = card.querySelector('.shopping-list-content');
+        const header = card.querySelector('.shopping-list-header');
+        const expandIcon = card.querySelector('.expand-icon');
+        
+        if (content && header && expandIcon) {
+            const isExpanded = !content.classList.contains('collapsed');
+            
+            if (isExpanded) {
+                // Collapse
+                content.classList.add('collapsed');
+                card.classList.remove('expanded');
+                header.setAttribute('aria-expanded', 'false');
+                expandIcon.textContent = '▼';
+            } else {
+                // Expand
+                content.classList.remove('collapsed');
+                card.classList.add('expanded');
+                header.setAttribute('aria-expanded', 'true');
+                expandIcon.textContent = '▲';
+            }
+        }
+    }
+    
+    /**
+     * Toggle menu enabled/disabled
+     */
+    toggleMenuEnabled(menuId) {
+        const menus = this.getMenusFromStorage();
+        const menu = menus.find(m => m.id === menuId);
+        
+        if (menu) {
+            menu.enabled = menu.enabled === false ? true : false;
+            localStorage.setItem('recetario_menus', JSON.stringify(menus));
+            
+            const status = menu.enabled ? 'habilitado' : 'deshabilitado';
+            this.showToast(`Menú ${status} correctamente`, 'success');
+            this.renderMenus();
+        }
+    }
+    
+    /**
+     * Move menu item up
+     */
+    moveMenuItemUp(menuId, itemIndex) {
+        if (itemIndex === 0) return;
+        
+        const menus = this.getMenusFromStorage();
+        const menu = menus.find(m => m.id === menuId);
+        
+        if (menu && menu.items) {
+            // Swap items
+            [menu.items[itemIndex - 1], menu.items[itemIndex]] = 
+            [menu.items[itemIndex], menu.items[itemIndex - 1]];
+            
+            localStorage.setItem('recetario_menus', JSON.stringify(menus));
+            this.renderMenus();
+        }
+    }
+    
+    /**
+     * Move menu item down
+     */
+    moveMenuItemDown(menuId, itemIndex) {
+        const menus = this.getMenusFromStorage();
+        const menu = menus.find(m => m.id === menuId);
+        
+        if (menu && menu.items && itemIndex < menu.items.length - 1) {
+            // Swap items
+            [menu.items[itemIndex], menu.items[itemIndex + 1]] = 
+            [menu.items[itemIndex + 1], menu.items[itemIndex]];
+            
+            localStorage.setItem('recetario_menus', JSON.stringify(menus));
+            this.renderMenus();
+        }
+    }
+    
+    /**
+     * Show menu options modal
+     */
+    showMenuOptionsModal(menuId) {
+        const modal = document.getElementById('menu-options-modal');
+        if (!modal) return;
+        
+        // Store current menu ID for actions
+        this.currentOptionsMenuId = menuId;
+        
+        // Show modal
+        modal.classList.remove('hidden');
+        
+        // Setup event listeners
+        const closeBtn = document.getElementById('close-menu-options-modal');
+        const overlay = modal.querySelector('.modal-overlay');
+        const exportBtn = document.getElementById('menu-option-export');
+        const copyBtn = document.getElementById('menu-option-copy');
+        const duplicateBtn = document.getElementById('menu-option-duplicate');
+        const deleteBtn = document.getElementById('menu-option-delete');
+        
+        if (closeBtn) {
+            closeBtn.onclick = () => this.closeMenuOptionsModal();
+        }
+        
+        if (overlay) {
+            overlay.onclick = () => this.closeMenuOptionsModal();
+        }
+        
+        if (exportBtn) {
+            exportBtn.onclick = () => {
+                this.exportMenu(menuId);
+                this.closeMenuOptionsModal();
+            };
+        }
+        
+        if (copyBtn) {
+            copyBtn.onclick = () => {
+                this.copyMenuToClipboard(menuId);
+                this.closeMenuOptionsModal();
+            };
+        }
+        
+        if (duplicateBtn) {
+            duplicateBtn.onclick = () => {
+                this.duplicateMenu(menuId);
+                this.closeMenuOptionsModal();
+            };
+        }
+        
+        if (deleteBtn) {
+            deleteBtn.onclick = () => {
+                this.closeMenuOptionsModal();
+                this.deleteMenu(menuId);
+            };
+        }
+    }
+    
+    /**
+     * Close menu options modal
+     */
+    closeMenuOptionsModal() {
+        const modal = document.getElementById('menu-options-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+        this.currentOptionsMenuId = null;
+    }
+    
+    /**
+     * Export menu to text file
+     */
+    exportMenu(menuId) {
+        const menu = this.getMenuById(menuId);
+        if (!menu) return;
+        
+        let text = `${menu.name}\n`;
+        text += `${'='.repeat(menu.name.length)}\n\n`;
+        
+        if (menu.items.length > 0) {
+            menu.items.forEach((item, index) => {
+                text += `${index + 1}. ${item.name}`;
+                if (item.quantity) {
+                    text += ` (${item.quantity})`;
+                }
+                text += '\n';
+            });
+        } else {
+            text += 'Sin elementos\n';
+        }
+        
+        // Create and download file
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `menu-${menu.name.toLowerCase().replace(/\s+/g, '-')}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        this.showToast('Menú exportado correctamente', 'success');
+    }
+    
+    /**
+     * Copy menu to clipboard
+     */
+    copyMenuToClipboard(menuId) {
+        const menu = this.getMenuById(menuId);
+        if (!menu) return;
+        
+        let text = `${menu.name}\n`;
+        text += `${'='.repeat(menu.name.length)}\n\n`;
+        
+        if (menu.items.length > 0) {
+            menu.items.forEach((item, index) => {
+                text += `${index + 1}. ${item.name}`;
+                if (item.quantity) {
+                    text += ` (${item.quantity})`;
+                }
+                text += '\n';
+            });
+        } else {
+            text += 'Sin elementos\n';
+        }
+        
+        navigator.clipboard.writeText(text).then(() => {
+            this.showToast('Menú copiado al portapapeles', 'success');
+        }).catch(err => {
+            console.error('Error copying to clipboard:', err);
+            this.showToast('Error al copiar al portapapeles', 'error');
+        });
+    }
+    
+    /**
+     * Duplicate menu
+     */
+    duplicateMenu(menuId) {
+        const menu = this.getMenuById(menuId);
+        if (!menu) return;
+        
+        const newMenu = {
+            ...menu,
+            id: Date.now(),
+            name: `${menu.name} (copia)`,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+        
+        const menus = this.getMenusFromStorage();
+        menus.push(newMenu);
+        localStorage.setItem('recetario_menus', JSON.stringify(menus));
+        
+        this.showToast('Menú duplicado correctamente', 'success');
+        this.renderMenus();
+    }
+    
+    /**
+     * Open category selector modal
+     */
+    openCategorySelectorModal(inputElement) {
+        const modal = document.getElementById('menu-category-selector-modal');
+        if (!modal) return;
+        
+        // Store reference to the input element
+        this.currentRecipeInput = inputElement;
+        
+        // Get all recipes marked as menu-friendly
+        const menuRecipes = this.recipes.filter(recipe => recipe.menuFriendly === true);
+        
+        // Check if there are any menu recipes
+        const emptyState = document.getElementById('category-selection-empty');
+        const categoryList = document.getElementById('category-selection-list');
+        
+        if (menuRecipes.length === 0) {
+            // Show empty state
+            if (emptyState) emptyState.classList.remove('hidden');
+            if (categoryList) categoryList.classList.add('hidden');
+        } else {
+            // Hide empty state and show categories
+            if (emptyState) emptyState.classList.add('hidden');
+            if (categoryList) categoryList.classList.remove('hidden');
+            
+            // Get categories with menu recipes
+            const categoriesWithMenuRecipes = this.getCategoriesWithMenuRecipes(menuRecipes);
+            
+            // Render category badges
+            this.renderCategorySelectionBadges(categoriesWithMenuRecipes);
+        }
+        
+        // Show modal
+        modal.classList.remove('hidden');
+        
+        // Setup event listeners
+        this.setupCategorySelectorModalListeners();
+    }
+    
+    /**
+     * Get categories that have recipes marked as menu
+     */
+    getCategoriesWithMenuRecipes(menuRecipes) {
+        const categoriesMap = new Map();
+        
+        menuRecipes.forEach(recipe => {
+            const categoryId = recipe.category || 'sin-categoria';
+            if (!categoriesMap.has(categoryId)) {
+                categoriesMap.set(categoryId, {
+                    id: categoryId,
+                    label: this.getCategoryLabel(categoryId),
+                    emoji: this.getCategoryEmoji(categoryId),
+                    count: 0
+                });
+            }
+            categoriesMap.get(categoryId).count++;
+        });
+        
+        return Array.from(categoriesMap.values());
+    }
+    
+    /**
+     * Render category selection badges
+     */
+    renderCategorySelectionBadges(categories) {
+        const container = document.getElementById('category-selection-list');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        categories.forEach(category => {
+            const badge = document.createElement('div');
+            badge.className = 'category-selection-badge';
+            badge.dataset.categoryId = category.id;
+            
+            const emoji = document.createElement('span');
+            emoji.className = 'category-emoji';
+            emoji.textContent = category.emoji;
+            
+            const label = document.createElement('span');
+            // Extract only the name without emoji from the label
+            const categoryObj = this.categoryManager.getCategoryById(category.id);
+            label.textContent = categoryObj ? categoryObj.name : category.id;
+            
+            const count = document.createElement('span');
+            count.className = 'category-count';
+            count.textContent = `(${category.count})`;
+            
+            badge.appendChild(emoji);
+            badge.appendChild(label);
+            badge.appendChild(count);
+            
+            // Click handler to toggle selection
+            badge.addEventListener('click', () => {
+                badge.classList.toggle('selected');
+            });
+            
+            container.appendChild(badge);
+        });
+    }
+    
+    /**
+     * Setup category selector modal listeners
+     */
+    setupCategorySelectorModalListeners() {
+        const modal = document.getElementById('menu-category-selector-modal');
+        const closeBtn = document.getElementById('close-category-selector-modal');
+        const confirmBtn = document.getElementById('confirm-category-selection-btn');
+        const overlay = modal.querySelector('.modal-overlay');
+        
+        // Remove old listeners
+        if (this.categorySelectorListeners) {
+            this.categorySelectorListeners.forEach(({ element, event, handler }) => {
+                element.removeEventListener(event, handler);
+            });
+        }
+        
+        this.categorySelectorListeners = [];
+        
+        // Close button
+        const closeHandler = () => this.closeCategorySelectorModal();
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeHandler);
+            this.categorySelectorListeners.push({ element: closeBtn, event: 'click', handler: closeHandler });
+        }
+        
+        // Overlay
+        if (overlay) {
+            overlay.addEventListener('click', closeHandler);
+            this.categorySelectorListeners.push({ element: overlay, event: 'click', handler: closeHandler });
+        }
+        
+        // Confirm button
+        const confirmHandler = () => this.confirmCategorySelection();
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', confirmHandler);
+            this.categorySelectorListeners.push({ element: confirmBtn, event: 'click', handler: confirmHandler });
+        }
+    }
+    
+    /**
+     * Close category selector modal
+     */
+    closeCategorySelectorModal() {
+        const modal = document.getElementById('menu-category-selector-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+    
+    /**
+     * Confirm category selection and convert input to recipe selector
+     */
+    confirmCategorySelection() {
+        const selectedBadges = document.querySelectorAll('.category-selection-badge.selected');
+        const selectedCategoryIds = Array.from(selectedBadges).map(badge => badge.dataset.categoryId);
+        
+        if (selectedCategoryIds.length === 0) {
+            this.showToast('Por favor, selecciona al menos una categoría', 'warning');
+            return;
+        }
+        
+        // Get recipes from selected categories
+        const menuRecipes = this.recipes.filter(recipe => 
+            recipe.menuFriendly === true && 
+            selectedCategoryIds.includes(recipe.category || 'sin-categoria')
+        );
+        
+        // Convert input to select dropdown
+        this.convertInputToRecipeSelector(this.currentRecipeInput, menuRecipes);
+        
+        // Close modal
+        this.closeCategorySelectorModal();
+    }
+    
+    /**
+     * Convert input to recipe selector dropdown
+     */
+    convertInputToRecipeSelector(inputElement, recipes) {
+        if (!inputElement) return;
+        
+        // Create select element
+        const select = document.createElement('select');
+        select.className = 'form-input';
+        
+        // Add empty option
+        const emptyOption = document.createElement('option');
+        emptyOption.value = '';
+        emptyOption.textContent = '-- Seleccionar receta --';
+        select.appendChild(emptyOption);
+        
+        // Add recipe options
+        recipes.forEach(recipe => {
+            const option = document.createElement('option');
+            option.value = recipe.id;
+            option.textContent = `${recipe.name} (${this.getCategoryLabel(recipe.category)})`;
+            option.dataset.recipeName = recipe.name;
+            select.appendChild(option);
+        });
+        
+        // Set selected value if input had a value
+        if (inputElement.value) {
+            // Try to find matching recipe by name
+            const matchingOption = Array.from(select.options).find(opt => 
+                opt.dataset.recipeName === inputElement.value
+            );
+            if (matchingOption) {
+                select.value = matchingOption.value;
+            }
+        }
+        
+        // Replace input with select
+        inputElement.parentNode.replaceChild(select, inputElement);
+    }
+    
+    /**
+     * Delete menu
+     */
+    deleteMenu(menuId) {
+        if (!confirm('¿Estás seguro de que quieres eliminar este menú?')) {
+            return;
+        }
+        
+        const menus = this.getMenusFromStorage();
+        const filteredMenus = menus.filter(m => m.id !== menuId);
+        localStorage.setItem('recetario_menus', JSON.stringify(filteredMenus));
+        
+        this.showToast('Menú eliminado correctamente', 'success');
+        this.renderMenus();
     }
 
     /**
@@ -8803,7 +9454,22 @@ class RecipeApp {
         if (menuId) {
             // Edit mode
             title.textContent = 'Editar Menú';
-            // TODO: Load menu data when we implement menu storage
+            
+            // Load menu data
+            const menu = this.getMenuById(menuId);
+            if (menu) {
+                nameInput.value = menu.name;
+                
+                // Load existing items
+                if (menu.items && menu.items.length > 0) {
+                    menu.items.forEach(item => {
+                        this.addMenuItemInput(item, true);
+                    });
+                } else {
+                    // Add one empty item if no items exist
+                    this.addMenuItemInput(null, false);
+                }
+            }
         } else {
             // Create mode
             title.textContent = 'Nuevo Menú';
@@ -8839,26 +9505,62 @@ class RecipeApp {
         if (!container) return;
         
         const itemDiv = document.createElement('div');
-        itemDiv.className = 'shopping-item-input';
+        itemDiv.className = 'menu-item-input';
         if (item) itemDiv.dataset.itemId = item.id;
         
         if (isExisting) {
             itemDiv.classList.add('existing-item');
         }
         
-        // Name input
-        const nameInput = document.createElement('input');
-        nameInput.type = 'text';
-        nameInput.className = 'form-input';
-        nameInput.placeholder = 'Nombre del elemento';
-        nameInput.value = item ? item.name : '';
+        // Day selector (dropdown)
+        const daySelect = document.createElement('select');
+        daySelect.className = 'form-input';
         
-        // Quantity input
-        const quantityInput = document.createElement('input');
-        quantityInput.type = 'text';
-        quantityInput.className = 'form-input';
-        quantityInput.placeholder = 'Cantidad (opcional)';
-        quantityInput.value = item ? item.quantity : '';
+        // Add empty option (optional)
+        const emptyOption = document.createElement('option');
+        emptyOption.value = '';
+        emptyOption.textContent = '-- Seleccionar día --';
+        daySelect.appendChild(emptyOption);
+        
+        // Add days of the week
+        const daysOfWeek = [
+            'Lunes',
+            'Martes',
+            'Miércoles',
+            'Jueves',
+            'Viernes',
+            'Sábado',
+            'Domingo'
+        ];
+        
+        daysOfWeek.forEach(day => {
+            const option = document.createElement('option');
+            option.value = day;
+            option.textContent = day;
+            daySelect.appendChild(option);
+        });
+        
+        // Set selected value if editing
+        if (item && item.name) {
+            daySelect.value = item.name;
+        }
+        
+        // Recipe selector input (opens modal to select categories, then shows recipes)
+        const recipeInput = document.createElement('input');
+        recipeInput.type = 'text';
+        recipeInput.className = 'form-input recipe-selector-input';
+        recipeInput.placeholder = 'Seleccionar categoría';
+        recipeInput.readOnly = true;
+        recipeInput.style.cursor = 'pointer';
+        recipeInput.value = item ? item.quantity : '';
+        
+        // Store reference to this input for later conversion to select
+        recipeInput.dataset.itemId = item ? item.id : Date.now();
+        
+        // Click handler to open category selector modal
+        recipeInput.addEventListener('click', () => {
+            this.openCategorySelectorModal(recipeInput);
+        });
         
         // Remove button
         const removeBtn = document.createElement('button');
@@ -8867,15 +9569,15 @@ class RecipeApp {
         removeBtn.title = 'Eliminar elemento';
         removeBtn.onclick = () => itemDiv.remove();
         
-        itemDiv.appendChild(nameInput);
-        itemDiv.appendChild(quantityInput);
+        itemDiv.appendChild(daySelect);
+        itemDiv.appendChild(recipeInput);
         itemDiv.appendChild(removeBtn);
         
         container.appendChild(itemDiv);
         
-        // Focus on name input for new items
+        // Focus on day selector for new items
         if (!item) {
-            nameInput.focus();
+            daySelect.focus();
         }
     }
 
@@ -8897,38 +9599,95 @@ class RecipeApp {
             return;
         }
         
-        // Collect all items (new and existing)
+        // Collect all items (new and existing) - using menu-item-input class
         const allItemDivs = [
-            ...newItemsContainer.querySelectorAll('.shopping-item-input'),
-            ...existingItemsContainer.querySelectorAll('.shopping-item-input')
+            ...newItemsContainer.querySelectorAll('.menu-item-input'),
+            ...existingItemsContainer.querySelectorAll('.menu-item-input')
         ];
         
         const items = [];
         allItemDivs.forEach(itemDiv => {
-            const nameInput = itemDiv.querySelector('input[type="text"]:first-child');
-            const quantityInput = itemDiv.querySelector('input[type="text"]:last-of-type');
+            // Get day select (first select)
+            const daySelect = itemDiv.querySelector('select:first-of-type');
             
-            const itemName = nameInput?.value.trim();
-            if (itemName) {
-                items.push({
-                    id: Date.now() + Math.random(),
-                    name: itemName,
-                    quantity: quantityInput?.value.trim() || '',
-                    completed: false
-                });
+            // Get recipe selector (second select) or input
+            const recipeSelector = itemDiv.querySelector('select:not(:first-of-type)');
+            const recipeInput = itemDiv.querySelector('input.recipe-selector-input');
+            
+            const dayValue = daySelect?.value || '';
+            let recipeName = '';
+            let recipeId = null;
+            
+            // Check if it's a select (recipe selected) or input (not yet selected)
+            if (recipeSelector) {
+                const selectedOption = recipeSelector.options[recipeSelector.selectedIndex];
+                recipeName = selectedOption?.dataset.recipeName || selectedOption?.textContent || '';
+                recipeId = recipeSelector.value || null;
+            } else if (recipeInput) {
+                recipeName = recipeInput.value || '';
             }
+            
+            // Always add the item
+            items.push({
+                id: Date.now() + Math.random(),
+                name: dayValue || 'Sin día específico',
+                quantity: recipeName,
+                recipeId: recipeId,
+                completed: false
+            });
         });
         
-        console.log('[Menus] Menu saved:', { name: menuName, items });
+        // Create menu object
+        const menu = {
+            id: this.currentMenuId || Date.now(),
+            name: menuName,
+            items: items,
+            createdAt: this.currentMenuId ? this.getMenuById(this.currentMenuId)?.createdAt : new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
         
-        // TODO: Implement menu storage
-        alert(`Menú "${menuName}" guardado con ${items.length} elementos`);
+        // Save to localStorage
+        const menus = this.getMenusFromStorage();
+        const existingIndex = menus.findIndex(m => m.id === menu.id);
+        
+        if (existingIndex >= 0) {
+            menus[existingIndex] = menu;
+            console.log('[Menus] Menu updated:', menu);
+        } else {
+            menus.push(menu);
+            console.log('[Menus] Menu created:', menu);
+        }
+        
+        localStorage.setItem('recetario_menus', JSON.stringify(menus));
+        
+        this.showToast(`Menú "${menuName}" guardado correctamente`, 'success');
         
         // Close modal
         this.closeMenuModal();
         
         // Refresh menus view
         this.renderMenus();
+    }
+    
+    /**
+     * Get menus from localStorage
+     */
+    getMenusFromStorage() {
+        try {
+            const menusJson = localStorage.getItem('recetario_menus');
+            return menusJson ? JSON.parse(menusJson) : [];
+        } catch (error) {
+            console.error('[Menus] Error loading menus:', error);
+            return [];
+        }
+    }
+    
+    /**
+     * Get menu by ID
+     */
+    getMenuById(menuId) {
+        const menus = this.getMenusFromStorage();
+        return menus.find(m => m.id === menuId);
     }
 
     /**
