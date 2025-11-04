@@ -672,11 +672,19 @@ main {
     font-size: 0.875rem;
 }
 
+/* Badges container for dynamic stacking */
+.recipe-badges-container {
+    position: absolute;
+    top: 8px;
+    left: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 1;
+}
+
 /* Caravan badge inside image gallery */
 .recipe-caravan-badge-image {
-    position: absolute;
-    top: 48px;
-    left: 5px;
     background: rgba(255, 255, 255, 0.95);
     color: var(--color-text);
     padding: 6px 10px;
@@ -687,16 +695,12 @@ main {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1;
     backdrop-filter: blur(4px);
     line-height: 1;
 }
 
 /* Hospital badge inside image gallery */
 .recipe-hospital-badge-image {
-    position: absolute;
-    top: 88px;
-    left: 5px;
     background: rgba(255, 255, 255, 0.95);
     color: var(--color-text);
     padding: 6px 10px;
@@ -707,16 +711,12 @@ main {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1;
     backdrop-filter: blur(4px);
     line-height: 1;
 }
 
 /* Menu badge inside image gallery */
 .recipe-menu-badge-image {
-    position: absolute;
-    top: 128px;
-    left: 5px;
     background: rgba(255, 255, 255, 0.95);
     color: var(--color-text);
     padding: 6px 10px;
@@ -727,7 +727,6 @@ main {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1;
     backdrop-filter: blur(4px);
     line-height: 1;
 }

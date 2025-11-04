@@ -3582,13 +3582,17 @@ class RecipeApp {
             imageDiv.style.background = 'var(--color-background-secondary)';
         }
         
+        // Create badges container for dynamic stacking
+        const badgesContainer = document.createElement('div');
+        badgesContainer.className = 'recipe-badges-container';
+        
         // Add caravan badge if recipe is caravan friendly
         if (recipe.caravanFriendly === true) {
             const caravanBadge = document.createElement('div');
             caravanBadge.className = 'recipe-caravan-badge-image';
             caravanBadge.textContent = '🚐';
             caravanBadge.title = 'Apto para caravana';
-            imageDiv.appendChild(caravanBadge);
+            badgesContainer.appendChild(caravanBadge);
         }
 
         // Add hospital badge if recipe is hospital friendly
@@ -3597,7 +3601,7 @@ class RecipeApp {
             hospitalBadge.className = 'recipe-hospital-badge-image';
             hospitalBadge.textContent = '🏥';
             hospitalBadge.title = 'Apto para hospital';
-            imageDiv.appendChild(hospitalBadge);
+            badgesContainer.appendChild(hospitalBadge);
         }
 
         // Add menu badge if recipe is menu friendly
@@ -3606,7 +3610,12 @@ class RecipeApp {
             menuBadge.className = 'recipe-menu-badge-image';
             menuBadge.textContent = '🍽️';
             menuBadge.title = 'Para menú';
-            imageDiv.appendChild(menuBadge);
+            badgesContainer.appendChild(menuBadge);
+        }
+        
+        // Only append container if it has badges
+        if (badgesContainer.children.length > 0) {
+            imageDiv.appendChild(badgesContainer);
         }
         
         // Create content section
@@ -3748,12 +3757,16 @@ class RecipeApp {
             imageDiv.appendChild(carouselContainer);
         }
 
+        // Create badges container for dynamic stacking
+        const badgesContainer = document.createElement('div');
+        badgesContainer.className = 'recipe-badges-container';
+        
         // Add time badge if totalTime exists
         if (recipe.totalTime && recipe.totalTime.trim() !== '') {
             const timeBadge = document.createElement('div');
             timeBadge.className = 'recipe-time-badge';
             timeBadge.textContent = recipe.totalTime;
-            imageDiv.appendChild(timeBadge);
+            badgesContainer.appendChild(timeBadge);
         }
         
         // Add caravan badge if recipe is caravan friendly
@@ -3762,7 +3775,7 @@ class RecipeApp {
             caravanBadge.className = 'recipe-caravan-badge-image';
             caravanBadge.textContent = '🚐';
             caravanBadge.title = 'Apto para caravana';
-            imageDiv.appendChild(caravanBadge);
+            badgesContainer.appendChild(caravanBadge);
         }
 
         // Add hospital badge if recipe is hospital friendly
@@ -3771,7 +3784,7 @@ class RecipeApp {
             hospitalBadge.className = 'recipe-hospital-badge-image';
             hospitalBadge.textContent = '🏥';
             hospitalBadge.title = 'Apto para hospital';
-            imageDiv.appendChild(hospitalBadge);
+            badgesContainer.appendChild(hospitalBadge);
         }
 
         // Add menu badge if recipe is menu friendly
@@ -3780,7 +3793,12 @@ class RecipeApp {
             menuBadge.className = 'recipe-menu-badge-image';
             menuBadge.textContent = '🍽️';
             menuBadge.title = 'Para menú';
-            imageDiv.appendChild(menuBadge);
+            badgesContainer.appendChild(menuBadge);
+        }
+        
+        // Only append container if it has badges
+        if (badgesContainer.children.length > 0) {
+            imageDiv.appendChild(badgesContainer);
         }
 
         // Action badges removed - copy ingredients badge eliminated
@@ -6375,7 +6393,7 @@ class RecipeApp {
      * @param {boolean} caravanFriendly - Whether recipe is caravan friendly
      * @returns {HTMLElement|null} Gallery element or null
      */
-    renderPhotoGallery(images, recipeName = '', totalTime = '', caravanFriendly = false, hospitalFriendly = false) {
+    renderPhotoGallery(images, recipeName = '', totalTime = '', caravanFriendly = false, hospitalFriendly = false, menuFriendly = false) {
         // Validation
         if (!images || !Array.isArray(images) || images.length === 0) {
             console.warn('[PhotoGallery] No images provided');
@@ -6384,7 +6402,7 @@ class RecipeApp {
 
         // If only 1 image, use traditional rendering
         if (images.length === 1) {
-            return this.renderSingleImage(images[0], recipeName, totalTime, caravanFriendly, hospitalFriendly);
+            return this.renderSingleImage(images[0], recipeName, totalTime, caravanFriendly, hospitalFriendly, menuFriendly);
         }
 
         // Initialize gallery state for 2+ images
@@ -6402,7 +6420,7 @@ class RecipeApp {
         galleryContainer.setAttribute('aria-label', 'Galería de fotos de la receta');
 
         // Render main area
-        const mainArea = this.renderGalleryMain(images[0], 0, images.length, recipeName, totalTime, caravanFriendly, hospitalFriendly);
+        const mainArea = this.renderGalleryMain(images[0], 0, images.length, recipeName, totalTime, caravanFriendly, hospitalFriendly, menuFriendly);
         galleryContainer.appendChild(mainArea);
 
         // Render thumbnails
@@ -6424,7 +6442,7 @@ class RecipeApp {
      * @param {boolean} caravanFriendly - Whether recipe is caravan friendly
      * @returns {HTMLElement} Image element
      */
-    renderSingleImage(image, recipeName = '', totalTime = '', caravanFriendly = false, hospitalFriendly = false) {
+    renderSingleImage(image, recipeName = '', totalTime = '', caravanFriendly = false, hospitalFriendly = false, menuFriendly = false) {
         const item = document.createElement('div');
         item.className = 'detail-gallery-item';
 
@@ -6462,7 +6480,7 @@ class RecipeApp {
      * @param {boolean} caravanFriendly - Whether recipe is caravan friendly
      * @returns {HTMLElement} Main area element
      */
-    renderGalleryMain(image, index, total, recipeName = '', totalTime = '', caravanFriendly = false, hospitalFriendly = false) {
+    renderGalleryMain(image, index, total, recipeName = '', totalTime = '', caravanFriendly = false, hospitalFriendly = false, menuFriendly = false) {
         const mainArea = document.createElement('div');
         mainArea.className = 'gallery-main';
         mainArea.setAttribute('role', 'img');

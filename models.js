@@ -821,6 +821,19 @@ class XMLExporter {
             totalTimeElement.textContent = recipe.totalTime || '';
             root.appendChild(totalTimeElement);
 
+            // Add special flags
+            const caravanFriendlyElement = xmlDoc.createElement('caravanFriendly');
+            caravanFriendlyElement.textContent = recipe.caravanFriendly ? 'true' : 'false';
+            root.appendChild(caravanFriendlyElement);
+
+            const hospitalFriendlyElement = xmlDoc.createElement('hospitalFriendly');
+            hospitalFriendlyElement.textContent = recipe.hospitalFriendly ? 'true' : 'false';
+            root.appendChild(hospitalFriendlyElement);
+
+            const menuFriendlyElement = xmlDoc.createElement('menuFriendly');
+            menuFriendlyElement.textContent = recipe.menuFriendly ? 'true' : 'false';
+            root.appendChild(menuFriendlyElement);
+
             // Add preparation method
             const methodElement = xmlDoc.createElement('preparationMethod');
             methodElement.textContent = recipe.preparationMethod || '';
@@ -1946,6 +1959,9 @@ class XMLImporter {
             const name = this.getElementText(recipeElement, 'name');
             const category = this.getElementText(recipeElement, 'category');
             const totalTime = this.getElementText(recipeElement, 'totalTime');
+            const caravanFriendly = this.getElementText(recipeElement, 'caravanFriendly') === 'true';
+            const hospitalFriendly = this.getElementText(recipeElement, 'hospitalFriendly') === 'true';
+            const menuFriendly = this.getElementText(recipeElement, 'menuFriendly') === 'true';
             const preparationMethod = this.getElementText(recipeElement, 'preparationMethod');
             const author = this.getElementText(recipeElement, 'author');
             const history = this.getElementText(recipeElement, 'history');
@@ -1979,6 +1995,9 @@ class XMLImporter {
                 name: name.trim(),
                 category: category === 'sin-categoria' ? null : category,
                 totalTime: totalTime || '',
+                caravanFriendly: caravanFriendly,
+                hospitalFriendly: hospitalFriendly,
+                menuFriendly: menuFriendly,
                 preparationMethod: preparationMethod || '',
                 kitchenAppliances: kitchenAppliances,
                 author: author || '',
