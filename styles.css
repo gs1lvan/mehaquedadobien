@@ -1201,10 +1201,11 @@ body.dark-theme .recipe-pdf-badge:hover {
     color: var(--color-text);
     margin: 0;
     letter-spacing: -0.02em;
-    width: 100%;
+    width: max-content;
     word-break: break-word;
     hyphens: none;
     line-height: 1.2;
+    padding-right: 30px;
 }
 
 .editable-title {
@@ -1215,6 +1216,10 @@ body.dark-theme .recipe-pdf-badge:hover {
     transition: all 0.2s ease;
     cursor: text;
     min-width: 200px;
+
+    border-color: var(--color-border);
+    background: var(--color-background-secondary);
+    color: var(--color-primary);
 }
 
 .editable-title:hover {
@@ -1583,6 +1588,65 @@ body.dark-theme .recipe-pdf-badge:hover {
     color: var(--color-text-secondary);
     font-size: 0.75rem;
     margin-top: var(--spacing-xs);
+}
+
+/* ===== Checkbox Badge - Clickeable badge style ===== */
+.checkbox-badge-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+}
+
+.checkbox-badge-container:hover {
+    background: var(--color-background-secondary);
+}
+
+.form-checkbox-hidden {
+    display: none;
+}
+
+.checkbox-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-background-secondary);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-size: 1.5rem;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    opacity: 0.5;
+}
+
+.checkbox-badge-container:hover .checkbox-badge {
+    border-color: var(--color-text-secondary);
+    transform: scale(1.05);
+}
+
+/* Estado activo cuando el checkbox está marcado */
+.checkbox-badge-container.active .checkbox-badge {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    opacity: 1;
+    box-shadow: 0 2px 8px rgba(255, 56, 92, 0.3);
+}
+
+.checkbox-badge-container.active .checkbox-text {
+    color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+}
+
+.checkbox-text {
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+    transition: all 0.2s ease;
 }
 
 /* ===== Time Input Group ===== */
@@ -2418,7 +2482,7 @@ body.dark-theme .recipe-pdf-badge:hover {
     display: flex;
     align-items: flex-start;
     margin-bottom: var(--spacing-xl);
-    padding-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-sm);
     border-bottom: 1px solid var(--color-border-light);
     gap: var(--spacing-md);
 }
@@ -2445,61 +2509,67 @@ body.dark-theme .recipe-pdf-badge:hover {
     color: var(--color-text);
     margin: 0;
     letter-spacing: -0.02em;
-    width: 100%;
+    width: fit-content;
     word-break: break-word;
     hyphens: none;
     line-height: 1.2;
     transition: all 0.3s ease;
-    padding: 8px 12px;
+    padding: 8px 30px 8px 20px;
     border-radius: var(--radius-sm);
-    margin: -8px 0px;
+    margin: 8px 0px;
 }
 
-.detail-header h2:hover {
+.detail-header h2:hover,
+.detail-header h2.editing-mode {
     color: var(--color-primary);
     background: rgba(255, 56, 92, 0.05);
 }
 
-/* Tooltip for recipe name */
+/* Tooltip for recipe name - appears inline next to pencil icon */
 .recipe-name-tooltip {
-    position: absolute;
-    bottom: -8px;
-    left: 12px;
+    display: inline-block;
     background: var(--color-primary);
     color: white;
     padding: 6px 16px;
     border-radius: var(--radius-sm);
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     font-weight: var(--font-weight-medium);
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateX(-10px);
     transition: all 0.3s ease;
     pointer-events: none;
     white-space: nowrap;
     z-index: 10;
-    border: 1px solid white;
+    letter-spacing: 0.5px;
+    margin-left: 0.5em;
+    vertical-align: middle;
 }
 
-.detail-header h2:hover .recipe-name-tooltip {
+.detail-header h2:hover .recipe-name-tooltip,
+.detail-header h2.editing-mode .recipe-name-tooltip {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
 }
 
 /* Edit icon for recipe name - Font Awesome pencil */
 /* Si deseas eliminar Font Awesome, elimina también estas reglas CSS */
 .recipe-name-edit-icon {
-    color: #999 !important;
+    color: #6b6b6b !important;
     font-size: 0.6em !important;
     margin-left: 0.5em !important;
+    margin-right: 0.5em !important;
     display: inline-block !important;
     vertical-align: middle;
     opacity: 0.7;
     transition: opacity 0.2s ease;
 }
 
-#detail-recipe-name:hover .recipe-name-edit-icon {
+#detail-recipe-name:hover .recipe-name-edit-icon,
+#detail-recipe-name.editing-mode .recipe-name-edit-icon {
     opacity: 1;
+    color: #ffffff !important;
 }
+
 
 /* Fin estilos Font Awesome */
 

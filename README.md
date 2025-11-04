@@ -71,8 +71,18 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 
 ## 🎨 Última Actualización
 
+**Fecha:** 4 de noviembre de 2025  
+**Cambio:** Mejoras en UX del formulario y navegación - Se han implementado múltiples mejoras en la experiencia de usuario:
+- ✅ **Icono de edición:** Icono de lápiz (Font Awesome) junto al nombre de receta en vista detalle
+- ✅ **Tooltip inline:** El tooltip "Editar receta" aparece en línea junto al icono de lápiz
+- ✅ **Badges clickeables:** Los checkboxes de Caravana/Hospital/Menú ahora son badges visuales clickeables
+- ✅ **Estado visual activo:** Los badges cambian a color rosa con sombra cuando están activos
+- ✅ **Navegación mejorada:** Al cerrar el formulario de edición, vuelves a la vista detalle de la receta
+- ✅ **Galería sin modal:** Las imágenes en la galería de detalle ya no abren modal al hacer click
+- ✅ **Modo edición visual:** El h2 mantiene el estilo hover cuando estás en modo edición
+
 **Fecha:** 3 de noviembre de 2025  
-**Cambio:** Refactorización de gestión de categorías - Se ha mejorado la arquitectura del sistema de categorías con métodos especializados:
+**Cambio anterior:** Refactorización de gestión de categorías - Se ha mejorado la arquitectura del sistema de categorías con métodos especializados:
 - ✅ **Métodos separados:** `createPredefinedCategoryItem()` y `createCustomCategoryItem()` para mejor mantenibilidad
 - ✅ **Botón de ocultar unificado:** Todas las categorías (predefinidas y personalizadas) tienen botón de ocultar (👁️)
 - ✅ **Categorías predefinidas:** Solo tienen botón de ocultar (no se pueden editar ni eliminar permanentemente)

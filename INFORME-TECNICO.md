@@ -379,7 +379,55 @@
 
 ---
 
-## 📝 CAMBIOS RECIENTES (Sesión Actual - 3 de noviembre de 2025)
+## 📝 CAMBIOS RECIENTES (Sesión Actual - 4 de noviembre de 2025)
+
+### 🎨 Mejoras en UX del Formulario y Navegación (4 de noviembre de 2025)
+
+#### Cambios en index.html
+- ✅ **Font Awesome incluido:** Añadido CDN de Font Awesome 6.5.1 para iconos
+- ✅ **Badges clickeables:** Estructura HTML modificada para checkboxes de Caravana/Hospital/Menú
+  - Checkbox oculto con clase `form-checkbox-hidden`
+  - Contenedor clickeable `.checkbox-badge-container` con data-attribute
+  - Badge visual `.checkbox-badge` con emoji grande (1.5rem)
+  - Texto descriptivo `.checkbox-text` más pequeño (0.875rem)
+
+**Estructura de badges:**
+```html
+<div class="checkbox-badge-container" data-checkbox="recipe-caravan-friendly">
+    <input type="checkbox" id="recipe-caravan-friendly" class="form-checkbox-hidden">
+    <span class="checkbox-badge">🚐</span>
+    <span class="checkbox-text">Apto para Caravana</span>
+</div>
+```
+
+#### Cambios en styles.css
+- ✅ **Icono de edición:** Estilos para `.recipe-name-edit-icon` (icono de lápiz Font Awesome)
+  - Color gris (#999), tamaño 0.6em, opacidad 0.7 normal, 1.0 en hover
+- ✅ **Tooltip inline:** `.recipe-name-tooltip` ahora aparece en línea horizontal
+  - `display: inline-block`, animación horizontal (`translateX`)
+  - Aparece a la derecha del icono de lápiz con `margin-left: 0.5em`
+- ✅ **Badges clickeables:** Sistema completo de estilos
+  - `.checkbox-badge-container`: Contenedor con hover effect
+  - `.checkbox-badge`: Badge con emoji, opacidad 0.5 por defecto
+  - `.checkbox-badge-container.active .checkbox-badge`: Fondo rosa, borde rosa, opacidad 1, sombra
+  - `.checkbox-badge-container.active .checkbox-text`: Texto rosa y negrita
+- ✅ **Modo edición visual:** Clase `.editing-mode` mantiene estilos de hover permanentemente
+- ✅ **Galería sin modal:** `.detail-gallery-item` con `cursor: default` y hover desactivado
+
+#### Cambios en script.js
+- ✅ **Icono de lápiz:** Añadido en `renderRecipeDetail()` usando Font Awesome
+  - `nameElement.innerHTML = ${recipe.name} <i class="fa-solid fa-pencil recipe-name-edit-icon"></i>`
+- ✅ **Clase editing-mode:** Gestionada en `showRecipeForm()` y `closeRecipeForm()`
+- ✅ **setupCheckboxBadges():** Nueva función para manejar badges clickeables
+  - Event listeners en `.checkbox-badge-container`
+  - Toggle de checkbox oculto y clase `active`
+- ✅ **Carga de badges:** Sincronización de estado visual al cargar receta para editar
+- ✅ **Navegación mejorada:** `closeRecipeForm()` modificado
+  - Si editando: `showRecipeDetail(editingRecipeId)` → vuelve a vista detalle
+  - Si nueva receta: vuelve a lista de recetas
+- ✅ **Galería sin modal:** Event listener de click comentado en imágenes de detalle
+
+**Motivo:** Mejorar significativamente la UX con indicadores visuales claros, navegación intuitiva y controles más accesibles y atractivos.
 
 ### 🏗️ Refactorización de Gestión de Categorías (3 de noviembre de 2025)
 
@@ -768,5 +816,5 @@ const hiddenCategories = categoryManager.getHiddenCategories();
 ---
 
 **Fin del Informe Técnico**  
-*Última actualización: 3 de noviembre de 2025*  
-*Versión: 2.12 - Refactorización de gestión de categorías*
+*Última actualización: 4 de noviembre de 2025*  
+*Versión: 3.0 - Mejoras en UX del formulario y navegación*

@@ -2334,6 +2334,9 @@ class RecipeApp {
         
         // Kitchen appliances chips
         this.renderKitchenAppliancesChips();
+        
+        // Checkbox badge toggles
+        this.setupCheckboxBadges();
     }
 
     /**
@@ -2578,6 +2581,33 @@ class RecipeApp {
                 this.toggleCollapsibleSection('additional-info');
             });
         }
+    }
+
+    /**
+     * Setup checkbox badge toggles
+     * Makes badges clickeable to toggle checkbox state
+     */
+    setupCheckboxBadges() {
+        const badgeContainers = document.querySelectorAll('.checkbox-badge-container');
+        
+        badgeContainers.forEach(container => {
+            container.addEventListener('click', () => {
+                const checkboxId = container.dataset.checkbox;
+                const checkbox = document.getElementById(checkboxId);
+                
+                if (checkbox) {
+                    // Toggle checkbox state
+                    checkbox.checked = !checkbox.checked;
+                    
+                    // Toggle active class on container
+                    if (checkbox.checked) {
+                        container.classList.add('active');
+                    } else {
+                        container.classList.remove('active');
+                    }
+                }
+            });
+        });
     }
 
     /**
@@ -3906,6 +3936,8 @@ class RecipeApp {
         const formTitle = document.getElementById('recipe-name');
         if (formTitle) {
             formTitle.textContent = recipeId ? 'Editar Receta' : 'Nueva Receta';
+            // Add editing-mode class to apply hover styles permanently
+            formTitle.classList.add('editing-mode');
         }
 
         // Reset form
@@ -3952,7 +3984,7 @@ class RecipeApp {
     }
 
     /**
-     * Close recipe form and return to list view
+     * Close recipe form and return to detail view (if editing) or list view (if creating)
      * Requirements: 6.4
      */
     closeRecipeForm() {
@@ -3964,13 +3996,38 @@ class RecipeApp {
             }
         }
 
+        // Store the recipe ID before any changes
+        const editingRecipeId = this.currentRecipeId;
+
         // Hide form view
         const formView = document.getElementById('recipe-form-view');
         if (formView) {
             formView.classList.add('hidden');
         }
 
-        // Show list view
+        // Remove editing-mode class from form title
+        const formTitle = document.getElementById('recipe-name');
+        if (formTitle) {
+            formTitle.classList.remove('editing-mode');
+        }
+
+        // If we were editing a recipe, show its detail view
+        if (editingRecipeId) {
+            const recipe = this.recipes.find(r => r.id === editingRecipeId);
+            if (recipe) {
+                // Reset form before showing detail
+                this.resetForm();
+                
+                // Show recipe detail (pass the ID, not the object)
+                this.showRecipeDetail(editingRecipeId);
+                return;
+            }
+        }
+
+        // Reset form for new recipe case
+        this.resetForm();
+
+        // Otherwise, show list view (for new recipes or if recipe not found)
         const listView = document.getElementById('recipe-list-view');
         if (listView) {
             listView.classList.remove('hidden');
@@ -4000,9 +4057,6 @@ class RecipeApp {
         }
 
         // Menu is always visible
-
-        // Reset form
-        this.resetForm();
 
         // Update current view state
         this.currentView = 'list';
@@ -5434,6 +5488,18 @@ class RecipeApp {
             const nameInput = document.getElementById('recipe-name');
             if (nameInput) {
                 nameInput.textContent = recipe.name || 'Editar Receta';
+                
+                // Focus on name input and position cursor at the end
+                setTimeout(() => {
+                    nameInput.focus();
+                    // Move cursor to the end of the text
+                    const range = document.createRange();
+                    const selection = window.getSelection();
+                    range.selectNodeContents(nameInput);
+                    range.collapse(false); // false = collapse to end
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }, 100);
             }
 
             const categoryInput = document.getElementById('recipe-category');
@@ -5447,22 +5513,46 @@ class RecipeApp {
             // Populate time using unified function
             this.populateTimeInput('recipe', recipe.totalTime || '');
 
-            // Populate caravan friendly checkbox
+            // Populate caravan friendly checkbox and badge
             const caravanCheckbox = document.getElementById('recipe-caravan-friendly');
             if (caravanCheckbox) {
                 caravanCheckbox.checked = recipe.caravanFriendly || false;
+                const caravanContainer = document.querySelector('[data-checkbox="recipe-caravan-friendly"]');
+                if (caravanContainer) {
+                    if (caravanCheckbox.checked) {
+                        caravanContainer.classList.add('active');
+                    } else {
+                        caravanContainer.classList.remove('active');
+                    }
+                }
             }
 
-            // Populate hospital friendly checkbox
+            // Populate hospital friendly checkbox and badge
             const hospitalCheckbox = document.getElementById('recipe-hospital-friendly');
             if (hospitalCheckbox) {
                 hospitalCheckbox.checked = recipe.hospitalFriendly || false;
+                const hospitalContainer = document.querySelector('[data-checkbox="recipe-hospital-friendly"]');
+                if (hospitalContainer) {
+                    if (hospitalCheckbox.checked) {
+                        hospitalContainer.classList.add('active');
+                    } else {
+                        hospitalContainer.classList.remove('active');
+                    }
+                }
             }
 
-            // Populate menu friendly checkbox
+            // Populate menu friendly checkbox and badge
             const menuCheckbox = document.getElementById('recipe-menu-friendly');
             if (menuCheckbox) {
                 menuCheckbox.checked = recipe.menuFriendly || false;
+                const menuContainer = document.querySelector('[data-checkbox="recipe-menu-friendly"]');
+                if (menuContainer) {
+                    if (menuCheckbox.checked) {
+                        menuContainer.classList.add('active');
+                    } else {
+                        menuContainer.classList.remove('active');
+                    }
+                }
             }
 
             const methodTextarea = document.getElementById('preparation-method');
