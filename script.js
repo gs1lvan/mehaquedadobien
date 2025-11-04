@@ -3936,6 +3936,16 @@ class RecipeApp {
         this.setCollapsibleSectionState('sequences', isEditing);
         this.setCollapsibleSectionState('additional-info', isEditing);
 
+        // Show/hide action buttons based on edit mode
+        const formActions = document.getElementById('form-actions');
+        if (formActions) {
+            if (isEditing) {
+                formActions.style.display = 'flex';
+            } else {
+                formActions.style.display = 'none';
+            }
+        }
+
         // If editing, load recipe data
         if (recipeId) {
             this.loadRecipeIntoForm(recipeId);

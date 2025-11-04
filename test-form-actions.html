@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Botones de Acción en Formulario</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        h2 { margin-top: 0; }
+        .diagram {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test - Botones de Acción en Formulario</h1>
+    
+    <div class="test-section success">
+        <h2>✅ Cambio Implementado</h2>
+        <p><strong>Los botones de acción se han movido de la vista de detalle al formulario de edición</strong></p>
+        <ul>
+            <li>✅ Botones movidos al formulario de edición</li>
+            <li>✅ Solo se muestran cuando se edita una receta existente</li>
+            <li>✅ Ocultos cuando se crea una receta nueva</li>
+            <li>✅ Posicionados debajo del título, antes del formulario</li>
+        </ul>
+    </div>
+
+    <div class="test-section info">
+        <h2>📐 Estructura Antes y Después</h2>
+        
+        <h3>ANTES (Vista de Detalle):</h3>
+        <div class="diagram">┌─────────────────────────────────────┐
+│ <div class="detail-header">         │
+│   ┌─────────────────────────────┐   │
+│   │ Nombre de la Receta         │   │
+│   └─────────────────────────────┘   │
+│   ┌─────────────────────────────┐   │
+│   │ <div class="detail-actions">│   │ ← AQUÍ ESTABA
+│   │   [Editar] [Eliminar]       │   │
+│   │   [Compartir] [PDF]         │   │
+│   └─────────────────────────────┘   │
+└─────────────────────────────────────┘</div>
+
+        <h3>DESPUÉS (Formulario de Edición):</h3>
+        <div class="diagram">┌─────────────────────────────────────┐
+│ <div class="form-header">           │
+│   ┌─────────────────────────────┐   │
+│   │ h2: Editar Receta           │   │
+│   │ [X] Cerrar                  │   │
+│   └─────────────────────────────┘   │
+└─────────────────────────────────────┘
+│ <div class="detail-actions">        │ ← AHORA AQUÍ
+│   ┌─────────────────────────────┐   │
+│   │ [Editar] [Eliminar]         │   │
+│   │ [Compartir] [PDF]           │   │
+│   └─────────────────────────────┘   │
+└─────────────────────────────────────┘
+│ <form id="recipe-form">             │
+│   ┌─────────────────────────────┐   │
+│   │ Información Básica          │   │
+│   │ ...                         │   │
+│   └─────────────────────────────┘   │
+└─────────────────────────────────────┘</div>
+    </div>
+
+    <div class="test-section success">
+        <h2>🔧 Archivos Modificados</h2>
+        
+        <h3>index.html</h3>
+        <ul>
+            <li>Movido <code>&lt;div class="detail-actions"&gt;</code> al formulario</li>
+            <li>Agregado <code>id="form-actions"</code> para control desde JavaScript</li>
+            <li>Agregado <code>style="display: none;"</code> por defecto</li>
+            <li>Comentados los botones en la vista de detalle</li>
+        </ul>
+        
+        <h3>script.js</h3>
+        <ul>
+            <li>Actualizada función <code>showRecipeForm()</code></li>
+            <li>Lógica para mostrar botones solo al editar</li>
+            <li>Ocultar botones al crear nueva receta</li>
+        </ul>
+    </div>
+
+    <div class="test-section info">
+        <h2>🎯 Comportamiento</h2>
+        
+        <h3>Al crear una receta nueva:</h3>
+        <ul>
+            <li>Título: "Nueva Receta"</li>
+            <li>Botones de acción: <strong>OCULTOS</strong></li>
+            <li>Solo se muestra el formulario</li>
+        </ul>
+        
+        <h3>Al editar una receta existente:</h3>
+        <ul>
+            <li>Título: "Editar Receta" (o nombre de la receta)</li>
+            <li>Botones de acción: <strong>VISIBLES</strong></li>
+            <li>Botones disponibles:
+                <ul>
+                    <li>[Editar] - Actualmente no hace nada (ya estás editando)</li>
+                    <li>[Eliminar] - Elimina la receta</li>
+                    <li>[Compartir] - Comparte la receta</li>
+                    <li>[PDF] - Exporta a PDF</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="test-section info">
+        <h2>🧪 Cómo Probar</h2>
+        
+        <h3>Prueba 1: Crear nueva receta</h3>
+        <ol>
+            <li>Haz clic en "Nueva Receta"</li>
+            <li>Verifica que NO aparecen los botones de acción</li>
+            <li>Solo deberías ver el título y el formulario</li>
+        </ol>
+        
+        <h3>Prueba 2: Editar receta existente</h3>
+        <ol>
+            <li>Abre cualquier receta</li>
+            <li>Haz clic en el nombre de la receta (o botón Editar)</li>
+            <li>Verifica que SÍ aparecen los botones de acción</li>
+            <li>Los botones deben estar entre el título y el formulario</li>
+        </ol>
+        
+        <h3>Prueba 3: Funcionalidad de botones</h3>
+        <ol>
+            <li>En modo edición, prueba cada botón:
+                <ul>
+                    <li>[Eliminar] - Debe eliminar la receta</li>
+                    <li>[Compartir] - Debe abrir modal de compartir</li>
+                    <li>[PDF] - Debe exportar a PDF</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="test-section success">
+        <h2>💡 Ventajas del Cambio</h2>
+        <ul>
+            <li>✅ <strong>Más accesible:</strong> Los botones están disponibles mientras editas</li>
+            <li>✅ <strong>Menos clics:</strong> No necesitas volver a la vista de detalle</li>
+            <li>✅ <strong>Más intuitivo:</strong> Las acciones están donde las necesitas</li>
+            <li>✅ <strong>Mejor flujo:</strong> Puedes eliminar, compartir o exportar sin salir del editor</li>
+            <li>✅ <strong>Limpia la vista de detalle:</strong> Menos botones en la vista de lectura</li>
+        </ul>
+    </div>
+
+    <div class="test-section info">
+        <h2>📝 Nota sobre el Botón "Editar"</h2>
+        <p>El botón "Editar" actualmente no tiene función cuando ya estás en modo edición. Opciones:</p>
+        <ul>
+            <li>Ocultarlo completamente en modo edición</li>
+            <li>Cambiarlo por otro botón útil</li>
+            <li>Dejarlo como está (no hace nada pero no molesta)</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🎨 Posicionamiento CSS</h2>
+        <p>Los botones usan la clase <code>.detail-actions</code> que ya tiene estilos definidos:</p>
+        <ul>
+            <li>Display: flex</li>
+            <li>Gap entre botones</li>
+            <li>Responsive: se adapta a móvil</li>
+            <li>Overflow-x: auto (scroll horizontal si es necesario)</li>
+        </ul>
+        <p>No se necesitaron cambios en CSS, solo mover el HTML.</p>
+    </div>
+</body>
+</html>

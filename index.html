@@ -251,24 +251,22 @@
                                     Menú</span>
                             </div>
                         </div>
+                        <!-- MOVIDO A FORMULARIO - Botones de acción (2025-11-04)
                         <div class="detail-actions">
                             <button id="edit-recipe-btn" class="btn-action btn-action-compact"
                                 title="Editar">Editar</button>
-                            <!-- TEMPORALMENTE OCULTO - Botón Duplicar (2025-11-03)
                             <button id="duplicate-recipe-btn" class="btn-action btn-action-compact"
                                 title="Duplicar">Duplicar</button>
-                            -->
                             <button id="delete-recipe-btn" class="btn-action btn-action-compact btn-danger"
                                 title="Eliminar">Eliminar</button>
                             <button id="share-recipe-btn" class="btn-action btn-action-compact"
                                 title="Compartir receta">Compartir</button>
-                            <!-- TEMPORALMENTE OCULTO - Botón Exportar XML (2025-11-03)
                             <button id="export-xml-btn" class="btn-action btn-action-compact"
                                 title="Exportar esta receta">Exportar</button>
-                            -->
                             <button id="export-pdf-btn" class="btn-action btn-action-compact"
                                 title="Exportar PDF">PDF</button>
                         </div>
+                        -->
                     </div>
                 </div>
 
@@ -354,6 +352,25 @@
                 <div class="form-header">
                     <h2 id="recipe-name" class="editable-title" contenteditable="true" data-placeholder="Nombre de la receta...">Nueva Receta</h2>
                     <button id="close-form-btn" class="btn-icon" title="Cerrar">✕</button>
+                </div>
+
+                <div class="detail-actions" id="form-actions" style="display: none;">
+                    <button id="edit-recipe-btn" class="btn-action btn-action-compact"
+                        title="Editar">Editar</button>
+                    <!-- TEMPORALMENTE OCULTO - Botón Duplicar (2025-11-03)
+                    <button id="duplicate-recipe-btn" class="btn-action btn-action-compact"
+                        title="Duplicar">Duplicar</button>
+                    -->
+                    <button id="delete-recipe-btn" class="btn-action btn-action-compact btn-danger"
+                        title="Eliminar">Eliminar</button>
+                    <button id="share-recipe-btn" class="btn-action btn-action-compact"
+                        title="Compartir receta">Compartir</button>
+                    <!-- TEMPORALMENTE OCULTO - Botón Exportar XML (2025-11-03)
+                    <button id="export-xml-btn" class="btn-action btn-action-compact"
+                        title="Exportar esta receta">Exportar</button>
+                    -->
+                    <button id="export-pdf-btn" class="btn-action btn-action-compact"
+                        title="Exportar PDF">PDF</button>
                 </div>
 
                 <form id="recipe-form" class="recipe-form-content">

@@ -649,10 +649,19 @@ main {
     display: none;
 }
 
-.recipe-time-badge {
+/* Badges container for dynamic stacking */
+.recipe-badges-container {
     position: absolute;
     top: 5px;
     left: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    z-index: 1;
+}
+
+.recipe-time-badge {
     background: rgba(255, 255, 255, 0.95);
     color: var(--color-text);
     padding: 6px 12px;
@@ -660,27 +669,16 @@ main {
     font-size: 0.75rem;
     font-weight: var(--font-weight-semibold);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 4px;
-    z-index: 1;
     backdrop-filter: blur(4px);
+    width: fit-content;
 }
 
 .recipe-time-badge::before {
     content: '⏱️';
     font-size: 0.875rem;
-}
-
-/* Badges container for dynamic stacking */
-.recipe-badges-container {
-    position: absolute;
-    top: 8px;
-    left: 5px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    z-index: 1;
 }
 
 /* Caravan badge inside image gallery */
@@ -692,11 +690,12 @@ main {
     font-size: 1.25rem;
     font-weight: var(--font-weight-semibold);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(4px);
     line-height: 1;
+    width: fit-content;
 }
 
 /* Hospital badge inside image gallery */
@@ -708,11 +707,12 @@ main {
     font-size: 1.25rem;
     font-weight: var(--font-weight-semibold);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(4px);
     line-height: 1;
+    width: fit-content;
 }
 
 /* Menu badge inside image gallery */
@@ -724,11 +724,12 @@ main {
     font-size: 1.25rem;
     font-weight: var(--font-weight-semibold);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(4px);
     line-height: 1;
+    width: fit-content;
 }
 
 /* ===== Recipe Image Carousel ===== */
@@ -2510,6 +2511,7 @@ body.dark-theme .recipe-pdf-badge:hover {
     flex-wrap: nowrap;
     flex-shrink: 0;
     overflow-x: auto;
+    margin: 10px 0;
 }
 
 .btn-action {
