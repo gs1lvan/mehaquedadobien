@@ -2588,12 +2588,31 @@ body.dark-theme .recipe-pdf-badge:hover {
     overflow-wrap: break-word;
 }
 
+/* Detail recipe name ID - Desktop (overrides inline styles) */
+#detail-recipe-name {
+    font-size: 2.65rem !important;
+    cursor: pointer !important;
+    position: relative !important;
+}
+
 /* Detail recipe name - Mobile (más pequeño) */
 @media (max-width: 768px) {
     .detail-recipe-name {
-        font-size: 1.75rem;
+        font-size: 1.25rem;
         padding: 6px 15px 6px 10px;
         line-height: 1.3;
+    }
+
+    /* Detail recipe name ID - Mobile (overrides inline styles) */
+    #detail-recipe-name {
+        font-size: 2rem !important;
+        cursor: pointer !important;
+        position: relative !important;
+    }
+
+    /* Hide tooltip in mobile */
+    .recipe-name-tooltip {
+        display: none !important;
     }
 }
 
