@@ -1031,14 +1031,16 @@ body.dark-theme .recipe-pdf-badge:hover {
 }
 
 .recipe-category {
-    display: inline-block;
-    padding: 4px 10px;
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
     border-radius: var(--radius-sm);
     font-size: 0.75rem;
     font-weight: var(--font-weight-medium);
     margin-bottom: var(--spacing-xs);
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    height: fit-content;
 }
 
 .recipe-category[data-category="carne"] {
@@ -2447,11 +2449,40 @@ body.dark-theme .recipe-pdf-badge:hover {
     word-break: break-word;
     hyphens: none;
     line-height: 1.2;
-    transition: color 0.2s ease;
+    transition: all 0.3s ease;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    margin: -8px -12px;
 }
 
 .detail-header h2:hover {
     color: var(--color-primary);
+    background: rgba(255, 56, 92, 0.05);
+}
+
+/* Tooltip for recipe name */
+.recipe-name-tooltip {
+    position: absolute;
+    bottom: -8px;
+    left: 12px;
+    background: var(--color-primary);
+    color: white;
+    padding: 6px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 10;
+    border: 1px solid white;
+}
+
+.detail-header h2:hover .recipe-name-tooltip {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 /* Edit tooltip for recipe name */
@@ -2640,7 +2671,8 @@ body.dark-theme .recipe-pdf-badge:hover {
 }
 
 .recipe-total-time {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     padding: 6px 12px;
     border-radius: var(--radius-sm);
     font-size: 0.875rem;
@@ -2648,6 +2680,7 @@ body.dark-theme .recipe-pdf-badge:hover {
     background: var(--color-background-secondary);
     color: var(--color-text);
     border: 1px solid var(--color-border-light);
+    height: fit-content;
 }
 
 .recipe-caravan-badge {
@@ -2931,6 +2964,26 @@ body.dark-theme .recipe-pdf-badge:hover {
 
     .editable-title {
         padding: var(--spacing-xs);
+    }
+
+    /* Title with edit icon - mobile only */
+    .title-with-icon {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        width: 100%;
+    }
+
+    .title-with-icon h2 {
+        margin: 0;
+        min-width: 0;
+    }
+
+    .edit-icon-mobile {
+        font-size: 1rem;
+        opacity: 0.5;
+        flex-shrink: 0;
+        line-height: 1;
     }
 
     .filter-title {

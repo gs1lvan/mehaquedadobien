@@ -6060,7 +6060,14 @@ class RecipeApp {
             this.adjustRecipeNameFontSize(nameElement);
             // Make it clickable to edit recipe
             nameElement.style.cursor = 'pointer';
-            nameElement.title = 'Editar receta';
+            nameElement.style.position = 'relative';
+            
+            // Create tooltip that appears on hover
+            const tooltip = document.createElement('div');
+            tooltip.className = 'recipe-name-tooltip';
+            tooltip.textContent = 'Editar receta';
+            nameElement.appendChild(tooltip);
+            
             nameElement.onclick = () => {
                 this.showRecipeForm(recipe.id);
             };
