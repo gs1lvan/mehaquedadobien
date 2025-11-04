@@ -6095,9 +6095,20 @@ class RecipeApp {
         const containerWidth = nameElement.parentElement.offsetWidth;
         const textLength = nameElement.textContent.length;
         
-        // Base font sizes (in rem)
-        const maxFontSize = 3;    // Desktop max: 3rem (48px)
-        const minFontSize = 1.5;  // Minimum: 1.5rem (24px)
+        // Detectar si estamos en móvil
+        const isMobile = window.innerWidth <= 768;
+        
+        // Base font sizes (in rem) - diferentes para móvil y desktop
+        const maxFontSize = isMobile ? 2.5 : 3.5;    // Mobile: 2.5rem, Desktop: 3.5rem
+        const minFontSize = isMobile ? 1.5 : 1.8;    // Mobile: 1.5rem, Desktop: 1.8rem
+        
+        // DEBUG: Log para verificar valores
+        console.log('🔍 Recipe Name Font Size Debug:');
+        console.log('  Window width:', window.innerWidth);
+        console.log('  Is Mobile:', isMobile);
+        console.log('  Text length:', textLength);
+        console.log('  Max font size:', maxFontSize);
+        console.log('  Min font size:', minFontSize);
         
         // Calculate font size based on text length
         // Shorter names get larger font, longer names get smaller font
@@ -6108,15 +6119,17 @@ class RecipeApp {
         } else if (textLength <= 20) {
             fontSize = maxFontSize - ((textLength - 10) * 0.05);  // Gradual decrease
         } else if (textLength <= 30) {
-            fontSize = 2.5 - ((textLength - 20) * 0.05);
+            fontSize = (isMobile ? 1.25 : 2.5) - ((textLength - 20) * 0.05);
         } else if (textLength <= 40) {
-            fontSize = 2 - ((textLength - 30) * 0.03);
+            fontSize = (isMobile ? 1.0 : 2.0) - ((textLength - 30) * 0.03);
         } else {
             fontSize = minFontSize;  // Very long: min size
         }
         
         // Ensure we don't go below minimum
         fontSize = Math.max(fontSize, minFontSize);
+        
+        console.log('  Calculated font size:', fontSize + 'rem');
         
         // Apply font size
         nameElement.style.fontSize = `${fontSize}rem`;
@@ -6127,6 +6140,7 @@ class RecipeApp {
                 // Text still overflows, reduce font size slightly
                 let adjustedSize = fontSize * 0.95;
                 adjustedSize = Math.max(adjustedSize, minFontSize);
+                console.log('  Adjusted for overflow:', adjustedSize + 'rem');
                 nameElement.style.fontSize = `${adjustedSize}rem`;
             }
         }, 0);
@@ -6147,9 +6161,7 @@ class RecipeApp {
             
             // Apply dynamic font sizing based on name length
             this.adjustRecipeNameFontSize(nameElement);
-            // Make it clickable to edit recipe
-            nameElement.style.cursor = 'pointer';
-            nameElement.style.position = 'relative';
+            // cursor y position ahora están en CSS (.detail-recipe-name)
             
             // Create tooltip that appears on hover
             const tooltip = document.createElement('div');
@@ -6160,6 +6172,23 @@ class RecipeApp {
             nameElement.onclick = () => {
                 this.showRecipeForm(recipe.id);
             };
+            
+            // Agregar listener para recalcular tamaño cuando cambia el tamaño de ventana
+            // Remover listener anterior si existe
+            if (this.resizeListener) {
+                window.removeEventListener('resize', this.resizeListener);
+            }
+            
+            // Crear nuevo listener con debounce
+            let resizeTimeout;
+            this.resizeListener = () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    this.adjustRecipeNameFontSize(nameElement);
+                }, 150);
+            };
+            
+            window.addEventListener('resize', this.resizeListener);
         }
 
         // Category - Show above recipe name

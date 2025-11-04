@@ -459,7 +459,7 @@ main {
     color: var(--color-text);
     padding: 5px 8px;
     border-radius: var(--radius-xl);
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: var(--font-weight-medium);
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1240,6 +1240,25 @@ body.dark-theme .recipe-pdf-badge:hover {
     font-style: italic;
 }
 
+/* Editing mode styles - Desktop */
+.editable-title.editing-mode {
+    border-color: var(--color-primary);
+    background: var(--color-background);
+    box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.1);
+    font-size: 2.5rem;
+    padding: var(--spacing-md) var(--spacing-lg);
+}
+
+/* Editing mode styles - Mobile */
+@media (max-width: 768px) {
+    .editable-title.editing-mode {
+        font-size: 2rem;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-width: 1px;
+        box-shadow: 0 0 0 2px rgba(255, 56, 92, 0.08);
+    }
+}
+
 .recipe-form-content {
     max-width: 800px;
     margin: 0 auto;
@@ -1659,6 +1678,28 @@ body.dark-theme .recipe-pdf-badge:hover {
     color: var(--color-text-secondary);
     transition: all 0.2s ease;
     text-align: center;
+}
+
+/* Checkbox badges - Mobile version (más pequeños) */
+@media (max-width: 768px) {
+    .checkbox-badges-grid {
+        gap: var(--spacing-sm);
+        max-width: 250px;
+    }
+
+    .checkbox-badge-container {
+        padding: var(--spacing-xs);
+        gap: 4px;
+    }
+
+    .checkbox-badge {
+        padding: 8px 10px;
+        font-size: 1.5rem;
+    }
+
+    .checkbox-text {
+        font-size: 0.75rem;
+    }
 }
 
 /* ===== Time Input Group ===== */
@@ -2537,6 +2578,21 @@ body.dark-theme .recipe-pdf-badge:hover {
     background: rgba(255, 56, 92, 0.05);
 }
 
+/* Detail recipe name - Desktop */
+.detail-recipe-name {
+    cursor: pointer;
+    position: relative;
+}
+
+/* Detail recipe name - Mobile (más pequeño) */
+@media (max-width: 768px) {
+    .detail-recipe-name {
+        font-size: 1.5rem !important;
+        padding: 6px 15px 6px 10px;
+        line-height: 1.3;
+    }
+}
+
 /* Tooltip for recipe name - appears inline next to pencil icon */
 .recipe-name-tooltip {
     display: inline-block;
@@ -3096,7 +3152,7 @@ body.dark-theme .recipe-pdf-badge:hover {
     }
 
     .filter-chip {
-        font-size: 0.85rem;
+        font-size: 0.80rem;
         padding: 5px 8px;
     }
 
