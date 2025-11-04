@@ -6040,16 +6040,9 @@ class RecipeApp {
         // Recipe name with dynamic font sizing
         const nameElement = document.getElementById('detail-recipe-name');
         if (nameElement) {
-            nameElement.textContent = recipe.name;
-            
-            // Add edit icon after the text (Font Awesome)
-            // Si deseas eliminar Font Awesome, elimina también el link en index.html
-            const editIcon = document.createElement('i');
-            editIcon.className = 'fa-solid fa-pencil recipe-name-edit-icon';
-            editIcon.style.color = '#999';
-            editIcon.style.fontSize = '0.6em';
-            editIcon.style.marginLeft = '0.5em';
-            nameElement.appendChild(editIcon);
+            // Clear previous content and add name with edit icon
+            // Si deseas eliminar Font Awesome, cambia la línea de abajo por: nameElement.textContent = recipe.name;
+            nameElement.innerHTML = `${recipe.name} <i class="fa-solid fa-pencil recipe-name-edit-icon"></i>`;
             
             // Apply dynamic font sizing based on name length
             this.adjustRecipeNameFontSize(nameElement);
