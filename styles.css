@@ -2452,7 +2452,7 @@ body.dark-theme .recipe-pdf-badge:hover {
     transition: all 0.3s ease;
     padding: 8px 12px;
     border-radius: var(--radius-sm);
-    margin: -8px -12px;
+    margin: -8px 0px;
 }
 
 .detail-header h2:hover {
@@ -2519,6 +2519,7 @@ body.dark-theme .recipe-pdf-badge:hover {
         opacity: 0;
         transform: translate(-50%, -50%) scale(0.9);
     }
+
     to {
         opacity: 1;
         transform: translate(-50%, -50%) scale(1);
@@ -2530,6 +2531,7 @@ body.dark-theme .recipe-pdf-badge:hover {
         opacity: 1;
         transform: translate(-50%, -50%) scale(1);
     }
+
     to {
         opacity: 0;
         transform: translate(-50%, -50%) scale(0.9);
@@ -2885,14 +2887,13 @@ body.dark-theme .recipe-pdf-badge:hover {
     position: relative;
     border-radius: var(--radius-md);
     overflow: hidden;
-    cursor: pointer;
+    cursor: default;
     transition: all 0.2s ease;
     width: 100%;
 }
 
 .detail-gallery-item:hover {
-    transform: scale(1.01);
-    box-shadow: var(--shadow-md);
+    /* Hover effect disabled - no modal expansion */
 }
 
 .detail-gallery-image,

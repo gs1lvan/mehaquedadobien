@@ -6041,6 +6041,16 @@ class RecipeApp {
         const nameElement = document.getElementById('detail-recipe-name');
         if (nameElement) {
             nameElement.textContent = recipe.name;
+            
+            // Add edit icon after the text (Font Awesome)
+            // Si deseas eliminar Font Awesome, elimina también el link en index.html
+            const editIcon = document.createElement('i');
+            editIcon.className = 'fa-solid fa-pencil recipe-name-edit-icon';
+            editIcon.style.color = '#999';
+            editIcon.style.fontSize = '0.6em';
+            editIcon.style.marginLeft = '0.5em';
+            nameElement.appendChild(editIcon);
+            
             // Apply dynamic font sizing based on name length
             this.adjustRecipeNameFontSize(nameElement);
             // Make it clickable to edit recipe
@@ -6502,10 +6512,10 @@ class RecipeApp {
             img.style.background = 'var(--color-background-secondary)';
         });
 
-        // Add click to open modal
-        img.addEventListener('click', () => {
-            this.openImageModal(this.galleryState.images, index);
-        });
+        // Click to open modal disabled for detail gallery
+        // img.addEventListener('click', () => {
+        //     this.openImageModal(this.galleryState.images, index);
+        // });
 
         mainArea.appendChild(img);
 
