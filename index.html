@@ -81,6 +81,10 @@
                         title="Gestionar listas de compra">
                         🛒 Listas de Compra
                     </button>
+                    <button id="menus-btn" class="menu-item" role="menuitem"
+                        title="Gestionar menús">
+                        📋 Menús
+                    </button>
                     <button id="import-xml-btn" class="menu-item" role="menuitem" title="Importar recetas desde XML">
                         📥 Importar receta
                     </button>
@@ -739,6 +743,37 @@
                 </div>
             </section>
 
+            <!-- Menus View -->
+            <section id="menus-view" class="view-container hidden">
+                <div class="shopping-lists-header">
+                    <div class="shopping-lists-header-title">
+                        <h2>📋 Menús</h2>
+                        <button id="close-menus-btn" class="btn-icon" title="Cerrar"
+                            aria-label="Cerrar menús">
+                            ✕
+                        </button>
+                    </div>
+                    <div class="shopping-lists-buttons">
+                        <button id="new-menu-btn" class="btn-primary">
+                            ➕ Nuevo Menú
+                        </button>
+                        <button id="import-menu-btn" class="btn-primary">
+                            📥 Importar Menú
+                        </button>
+                        <input type="file" id="import-menu-input" accept=".txt" style="display: none;">
+                    </div>
+                </div>
+
+                <div id="menus-container" class="shopping-lists-container">
+                    <!-- Menu cards will be rendered here -->
+                </div>
+
+                <div id="menus-empty" class="empty-state hidden">
+                    <p>📋 No tienes menús</p>
+                    <p>Crea tu primer menú para empezar</p>
+                </div>
+            </section>
+
         </main>
     </div>
 
@@ -933,6 +968,47 @@
                     </div>
                     <!-- Existing items container (appears at the bottom) -->
                     <div id="shopping-existing-items-container">
+                        <!-- Existing items will be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu Modal -->
+    <div id="menu-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="menu-modal-title">Nuevo Menú</h2>
+                <button id="close-menu-modal" class="btn-icon">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Menu Name -->
+                <div class="form-group">
+                    <label for="menu-name-input">Nombre del menú</label>
+                    <input type="text" id="menu-name-input" class="form-input"
+                        placeholder="Ej: Menú Semanal">
+                </div>
+
+                <!-- Items Section -->
+                <div class="form-group">
+                    <label>Elementos</label>
+                    <div class="shopping-list-buttons">
+                        <button id="add-menu-item-btn" class="btn-secondary">
+                            ➕ Añadir Elemento
+                        </button>
+                        <button id="save-menu-btn" class="btn-primary">
+                            💾 Guardar Menú
+                        </button>
+                    </div>
+                    <!-- New items container (appears right below the buttons) -->
+                    <div id="menu-new-items-container">
+                        <!-- New items will be added here -->
+                    </div>
+                    <!-- Existing items container (appears at the bottom) -->
+                    <div id="menu-existing-items-container">
                         <!-- Existing items will be added here -->
                     </div>
                 </div>

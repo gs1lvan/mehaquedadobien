@@ -841,6 +841,9 @@ class RecipeApp {
             // Initialize shopping lists
             this.initShoppingLists();
 
+            // Initialize menus
+            this.initMenus();
+
             // Initialize theme
             this.initTheme();
 
@@ -1192,6 +1195,14 @@ class RecipeApp {
         if (shoppingListsBtn) {
             shoppingListsBtn.addEventListener('click', () => {
                 this.showShoppingListsView();
+                closeMenu();
+            });
+        }
+
+        const menusBtn = document.getElementById('menus-btn');
+        if (menusBtn) {
+            menusBtn.addEventListener('click', () => {
+                this.showMenusView();
                 closeMenu();
             });
         }
@@ -8545,6 +8556,92 @@ class RecipeApp {
     }
 
     /**
+     * Initialize menus functionality
+     */
+    initMenus() {
+        console.log('[Menus] Initializing menus');
+        
+        // Get DOM elements
+        const newMenuBtn = document.getElementById('new-menu-btn');
+        const importMenuBtn = document.getElementById('import-menu-btn');
+        const importMenuInput = document.getElementById('import-menu-input');
+        const closeMenusBtn = document.getElementById('close-menus-btn');
+        const closeModalBtn = document.getElementById('close-menu-modal');
+        const saveBtn = document.getElementById('save-menu-btn');
+        const addItemBtn = document.getElementById('add-menu-item-btn');
+        
+        // Setup event listeners
+        if (newMenuBtn) {
+            newMenuBtn.addEventListener('click', () => {
+                this.showMenuForm();
+            });
+        }
+        
+        if (importMenuBtn && importMenuInput) {
+            importMenuBtn.addEventListener('click', () => {
+                importMenuInput.click();
+            });
+            
+            importMenuInput.addEventListener('change', (e) => {
+                console.log('[Menus] Import menu file selected');
+                // TODO: Implement handleImportMenu(e)
+            });
+        }
+        
+        if (closeMenusBtn) {
+            closeMenusBtn.addEventListener('click', () => {
+                // Hide menus view
+                this.hideMenusView();
+                
+                // Show recipe list view
+                const recipesView = document.getElementById('recipe-list-view');
+                if (recipesView) recipesView.classList.remove('hidden');
+                
+                // Show filters and recipe counter
+                const filterToggleContainer = document.querySelector('.filter-toggle-container');
+                const filtersContainer = document.getElementById('filters-container');
+                const recipeCounter = document.getElementById('recipe-counter');
+                
+                if (filterToggleContainer) filterToggleContainer.classList.remove('hidden');
+                if (filtersContainer) filtersContainer.classList.remove('hidden');
+                if (recipeCounter) recipeCounter.classList.remove('hidden');
+                
+                // Update current view
+                this.currentView = 'list';
+            });
+        }
+        
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', () => {
+                this.closeMenuModal();
+            });
+        }
+        
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => {
+                this.saveMenu();
+            });
+        }
+        
+        if (addItemBtn) {
+            addItemBtn.addEventListener('click', () => {
+                this.addMenuItemInput();
+            });
+        }
+        
+        // Close modal on overlay click
+        const modal = document.getElementById('menu-modal');
+        if (modal) {
+            const overlay = modal.querySelector('.modal-overlay');
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    this.closeMenuModal();
+                });
+            }
+        }
+    }
+
+    /**
      * Show shopping lists view
      */
     showShoppingListsView() {
@@ -8585,6 +8682,224 @@ class RecipeApp {
         if (shoppingListsView) {
             shoppingListsView.classList.add('hidden');
         }
+    }
+
+    /**
+     * Show menus view
+     */
+    showMenusView() {
+        console.log('[Menus] Showing menus view');
+        
+        // Hide other views
+        const recipesView = document.getElementById('recipe-list-view');
+        const recipeFormView = document.getElementById('recipe-form-view');
+        const recipeDetailView = document.getElementById('recipe-detail-view');
+        const shoppingListsView = document.getElementById('shopping-lists-view');
+        const menusView = document.getElementById('menus-view');
+        
+        if (recipesView) recipesView.classList.add('hidden');
+        if (recipeFormView) recipeFormView.classList.add('hidden');
+        if (recipeDetailView) recipeDetailView.classList.add('hidden');
+        if (shoppingListsView) shoppingListsView.classList.add('hidden');
+        if (menusView) menusView.classList.remove('hidden');
+        
+        // Hide filters and recipe counter
+        const filterToggleContainer = document.querySelector('.filter-toggle-container');
+        const filtersContainer = document.getElementById('filters-container');
+        const recipeCounter = document.getElementById('recipe-counter');
+        
+        if (filterToggleContainer) filterToggleContainer.classList.add('hidden');
+        if (filtersContainer) filtersContainer.classList.add('hidden');
+        if (recipeCounter) recipeCounter.classList.add('hidden');
+        
+        // Update current view
+        this.currentView = 'menus';
+        
+        // Render menus (placeholder for now)
+        this.renderMenus();
+    }
+
+    /**
+     * Hide menus view
+     */
+    hideMenusView() {
+        const menusView = document.getElementById('menus-view');
+        if (menusView) {
+            menusView.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Render all menus (placeholder)
+     */
+    renderMenus() {
+        const container = document.getElementById('menus-container');
+        const emptyState = document.getElementById('menus-empty');
+        
+        if (!container) return;
+        
+        // Clear container
+        container.innerHTML = '';
+        
+        // TODO: Implement menus rendering
+        // For now, show empty state
+        if (emptyState) {
+            emptyState.classList.remove('hidden');
+        }
+        
+        console.log('[Menus] Menus rendered (placeholder)');
+    }
+
+    /**
+     * Show menu form
+     * @param {number|null} menuId - Menu ID for editing, null for creating
+     */
+    showMenuForm(menuId = null) {
+        const modal = document.getElementById('menu-modal');
+        const title = document.getElementById('menu-modal-title');
+        const nameInput = document.getElementById('menu-name-input');
+        const newItemsContainer = document.getElementById('menu-new-items-container');
+        const existingItemsContainer = document.getElementById('menu-existing-items-container');
+        
+        if (!modal || !title || !nameInput || !newItemsContainer || !existingItemsContainer) return;
+        
+        // Clear form
+        nameInput.value = '';
+        newItemsContainer.innerHTML = '';
+        existingItemsContainer.innerHTML = '';
+        
+        // Set mode
+        this.currentMenuId = menuId;
+        
+        if (menuId) {
+            // Edit mode
+            title.textContent = 'Editar Menú';
+            // TODO: Load menu data when we implement menu storage
+        } else {
+            // Create mode
+            title.textContent = 'Nuevo Menú';
+            
+            // Add one empty item input
+            this.addMenuItemInput(null, false);
+        }
+        
+        // Show modal
+        modal.classList.remove('hidden');
+    }
+
+    /**
+     * Close menu modal
+     */
+    closeMenuModal() {
+        const modal = document.getElementById('menu-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Add menu item input to form
+     * @param {Object|null} item - Item data for editing, null for new item
+     * @param {boolean} isExisting - Whether this is an existing item
+     */
+    addMenuItemInput(item = null, isExisting = false) {
+        const newContainer = document.getElementById('menu-new-items-container');
+        const existingContainer = document.getElementById('menu-existing-items-container');
+        
+        const container = isExisting ? existingContainer : newContainer;
+        if (!container) return;
+        
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'shopping-item-input';
+        if (item) itemDiv.dataset.itemId = item.id;
+        
+        if (isExisting) {
+            itemDiv.classList.add('existing-item');
+        }
+        
+        // Name input
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.className = 'form-input';
+        nameInput.placeholder = 'Nombre del elemento';
+        nameInput.value = item ? item.name : '';
+        
+        // Quantity input
+        const quantityInput = document.createElement('input');
+        quantityInput.type = 'text';
+        quantityInput.className = 'form-input';
+        quantityInput.placeholder = 'Cantidad (opcional)';
+        quantityInput.value = item ? item.quantity : '';
+        
+        // Remove button
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'btn-icon';
+        removeBtn.textContent = '🗑️';
+        removeBtn.title = 'Eliminar elemento';
+        removeBtn.onclick = () => itemDiv.remove();
+        
+        itemDiv.appendChild(nameInput);
+        itemDiv.appendChild(quantityInput);
+        itemDiv.appendChild(removeBtn);
+        
+        container.appendChild(itemDiv);
+        
+        // Focus on name input for new items
+        if (!item) {
+            nameInput.focus();
+        }
+    }
+
+    /**
+     * Save menu
+     */
+    saveMenu() {
+        const nameInput = document.getElementById('menu-name-input');
+        const newItemsContainer = document.getElementById('menu-new-items-container');
+        const existingItemsContainer = document.getElementById('menu-existing-items-container');
+        
+        if (!nameInput) return;
+        
+        const menuName = nameInput.value.trim();
+        
+        if (!menuName) {
+            alert('Por favor, introduce un nombre para el menú');
+            nameInput.focus();
+            return;
+        }
+        
+        // Collect all items (new and existing)
+        const allItemDivs = [
+            ...newItemsContainer.querySelectorAll('.shopping-item-input'),
+            ...existingItemsContainer.querySelectorAll('.shopping-item-input')
+        ];
+        
+        const items = [];
+        allItemDivs.forEach(itemDiv => {
+            const nameInput = itemDiv.querySelector('input[type="text"]:first-child');
+            const quantityInput = itemDiv.querySelector('input[type="text"]:last-of-type');
+            
+            const itemName = nameInput?.value.trim();
+            if (itemName) {
+                items.push({
+                    id: Date.now() + Math.random(),
+                    name: itemName,
+                    quantity: quantityInput?.value.trim() || '',
+                    completed: false
+                });
+            }
+        });
+        
+        console.log('[Menus] Menu saved:', { name: menuName, items });
+        
+        // TODO: Implement menu storage
+        alert(`Menú "${menuName}" guardado con ${items.length} elementos`);
+        
+        // Close modal
+        this.closeMenuModal();
+        
+        // Refresh menus view
+        this.renderMenus();
     }
 
     /**
