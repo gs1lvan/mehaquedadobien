@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colores de Botones - Recetario</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f7f7f7;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #222;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .color-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+        }
+
+        .color-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .color-sample {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .color-info {
+            padding: 16px;
+            background: white;
+        }
+
+        .color-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #222;
+            margin-bottom: 8px;
+        }
+
+        .color-code {
+            font-family: 'Courier New', monospace;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
+        .color-usage {
+            color: #888;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .gradient-card {
+            grid-column: 1 / -1;
+        }
+
+        .gradient-sample {
+            height: 100px;
+        }
+
+        h2 {
+            color: #222;
+            margin: 40px 0 20px 0;
+            font-size: 1.8rem;
+            border-bottom: 2px solid #FF385C;
+            padding-bottom: 8px;
+        }
+
+        .button-examples {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, #FF385C, #FF5A5F);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(to right, #E31C5F, #FF385C);
+            transform: scale(1.02);
+        }
+
+        .btn-success {
+            background: #008A05;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #006d04;
+        }
+
+        .btn-danger {
+            background: #C13515;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #a02a11;
+        }
+
+        .btn-secondary {
+            background: #f7f7f7;
+            color: #222;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8e8;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎨 Paleta de Colores - Botones del Recetario</h1>
+
+        <h2>Colores Principales</h2>
+        <div class="color-grid">
+            <div class="color-card">
+                <div class="color-sample" style="background: #FF385C;">
+                    Primario
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Rojo Airbnb</div>
+                    <div class="color-code">--color-primary</div>
+                    <div class="color-code">#FF385C</div>
+                    <div class="color-usage">Botones principales, acciones primarias</div>
+                </div>
+            </div>
+
+            <div class="color-card">
+                <div class="color-sample" style="background: #E31C5F;">
+                    Primario Oscuro
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Rojo Oscuro</div>
+                    <div class="color-code">--color-primary-dark</div>
+                    <div class="color-code">#E31C5F</div>
+                    <div class="color-usage">Estado hover de botones primarios</div>
+                </div>
+            </div>
+
+            <div class="color-card">
+                <div class="color-sample" style="background: #FF5A5F;">
+                    Primario Claro
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Rojo Claro</div>
+                    <div class="color-code">--color-primary-light</div>
+                    <div class="color-code">#FF5A5F</div>
+                    <div class="color-usage">Gradientes, acentos</div>
+                </div>
+            </div>
+        </div>
+
+        <h2>Colores Funcionales</h2>
+        <div class="color-grid">
+            <div class="color-card">
+                <div class="color-sample" style="background: #008A05;">
+                    Éxito
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Verde Éxito</div>
+                    <div class="color-code">--color-success</div>
+                    <div class="color-code">#008A05</div>
+                    <div class="color-usage">Añadir ingredientes, secuencias, guardar</div>
+                </div>
+            </div>
+
+            <div class="color-card">
+                <div class="color-sample" style="background: #C13515;">
+                    Peligro
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Rojo Peligro</div>
+                    <div class="color-code">--color-danger</div>
+                    <div class="color-code">#C13515</div>
+                    <div class="color-usage">Eliminar, acciones destructivas</div>
+                </div>
+            </div>
+
+            <div class="color-card">
+                <div class="color-sample" style="background: #FFC043; color: #222;">
+                    Advertencia
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Amarillo Advertencia</div>
+                    <div class="color-code">--color-warning</div>
+                    <div class="color-code">#FFC043</div>
+                    <div class="color-usage">Alertas, avisos importantes</div>
+                </div>
+            </div>
+        </div>
+
+        <h2>Colores Neutros</h2>
+        <div class="color-grid">
+            <div class="color-card">
+                <div class="color-sample" style="background: #222222;">
+                    Texto
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Gris Oscuro</div>
+                    <div class="color-code">--color-text</div>
+                    <div class="color-code">#222222</div>
+                    <div class="color-usage">Texto principal, hover secundarios</div>
+                </div>
+            </div>
+
+            <div class="color-card">
+                <div class="color-sample" style="background: #F7F7F7; color: #222; border: 1px solid #ddd;">
+                    Secundario
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Gris Claro</div>
+                    <div class="color-code">--color-background-secondary</div>
+                    <div class="color-code">#F7F7F7</div>
+                    <div class="color-usage">Botones secundarios, fondos</div>
+                </div>
+            </div>
+
+            <div class="color-card">
+                <div class="color-sample" style="background: #DDDDDD; color: #222;">
+                    Borde
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Gris Medio</div>
+                    <div class="color-code">--color-border</div>
+                    <div class="color-code">#DDDDDD</div>
+                    <div class="color-usage">Bordes de botones, separadores</div>
+                </div>
+            </div>
+        </div>
+
+        <h2>Gradientes</h2>
+        <div class="color-grid">
+            <div class="color-card gradient-card">
+                <div class="color-sample gradient-sample"
+                    style="background: linear-gradient(to right, #FF385C, #FF5A5F);">
+                    Gradiente Primario
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Gradiente Botón Primario</div>
+                    <div class="color-code">linear-gradient(to right, #FF385C, #FF5A5F)</div>
+                    <div class="color-usage">Botones principales (Nueva Receta, Guardar, etc.)</div>
+                </div>
+            </div>
+
+            <div class="color-card gradient-card">
+                <div class="color-sample gradient-sample"
+                    style="background: linear-gradient(to right, #E31C5F, #FF385C);">
+                    Gradiente Hover
+                </div>
+                <div class="color-info">
+                    <div class="color-name">Gradiente Hover Primario</div>
+                    <div class="color-code">linear-gradient(to right, #E31C5F, #FF385C)</div>
+                    <div class="color-usage">Estado hover de botones primarios</div>
+                </div>
+            </div>
+        </div>
+
+        <h2>Ejemplos de Botones</h2>
+        <div class="button-examples">
+            <button class="btn btn-primary">Botón Primario</button>
+            <button class="btn btn-success">Añadir Ingrediente</button>
+            <button class="btn btn-danger">Eliminar</button>
+            <button class="btn btn-secondary">Cancelar</button>
+        </div>
+    </div>
+</body>
+
+</html>

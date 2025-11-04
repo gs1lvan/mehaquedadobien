@@ -2550,7 +2550,7 @@ body.dark-theme .recipe-pdf-badge:hover {
 .detail-gallery-video {
     width: 100%;
     height: 500px;
-    object-fit: none;
+    object-fit: cover;
     background: var(--color-background-secondary);
 }
 
@@ -3341,8 +3341,11 @@ html {
 
 .categories-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
     gap: var(--spacing-sm);
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .category-item {
@@ -3353,6 +3356,8 @@ html {
     border: 1px solid var(--color-border-light);
     border-radius: var(--radius-md);
     transition: all 0.2s ease;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .category-item:hover {
@@ -3374,7 +3379,11 @@ html {
 .category-name {
     font-weight: var(--font-weight-medium);
     color: var(--color-text);
-    flex: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
 }
 
 .category-badge {
@@ -4016,7 +4025,7 @@ html {
 .gallery-main {
     position: relative;
     width: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 16 / 9;
     background: var(--color-background-secondary);
     border-radius: var(--radius-md);
     overflow: hidden;
@@ -4028,6 +4037,7 @@ html {
     object-fit: cover;
     cursor: pointer;
     transition: opacity 0.3s ease;
+    transform: scale(0.85);
 }
 
 .gallery-main-image:hover {
@@ -4167,11 +4177,11 @@ html {
 }
 
 /* Fallback for browsers without aspect-ratio support */
-@supports not (aspect-ratio: 4 / 3) {
+@supports not (aspect-ratio: 16 / 9) {
     .gallery-main {
         position: relative;
-        padding-bottom: 75%;
-        /* 4:3 ratio */
+        padding-bottom: 56.25%;
+        /* 16:9 ratio */
         height: 0;
     }
 
