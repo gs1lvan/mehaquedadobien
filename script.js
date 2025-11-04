@@ -1472,21 +1472,6 @@ class RecipeApp {
         const categoryInput = document.getElementById('recipe-category');
         const currentValue = categoryInput ? categoryInput.value : '';
         
-        // Add "Sin categoría" option
-        const noCategoryChip = document.createElement('button');
-        noCategoryChip.className = 'category-selector-chip';
-        if (!currentValue) {
-            noCategoryChip.classList.add('selected');
-        }
-        noCategoryChip.innerHTML = `
-            <span class="emoji">❌</span>
-            <span class="name">Sin categoría</span>
-        `;
-        noCategoryChip.onclick = () => {
-            this.selectCategory('');
-        };
-        container.appendChild(noCategoryChip);
-        
         // Add all categories (excluding special ones like caravana and hospital)
         const categories = this.categoryManager.getAllCategories()
             .filter(cat => !cat.isSpecial);
