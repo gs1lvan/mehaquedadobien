@@ -2631,7 +2631,7 @@ body.dark-theme .recipe-pdf-badge:hover {
     pointer-events: none;
     white-space: nowrap;
     z-index: 10;
-    letter-spacing: 0.5px;
+    letter-spacing: 0px;
     margin-left: 0.5em;
     vertical-align: middle;
 }
