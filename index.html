@@ -59,11 +59,6 @@
                 <div class="header-left">
                     <h1><a href="#" id="home-link" style="text-decoration: none; color: inherit;">🍳 mehaquedadobien</a>
                     </h1>
-                    <!-- Theme toggle button (square format) -->
-                    <button id="theme-toggle-btn" class="btn-icon theme-toggle-square" title="Cambiar a tema oscuro"
-                        aria-label="Cambiar a tema oscuro">
-                        🌙
-                    </button>
                 </div>
 
                 <!-- Menu button (always visible) -->
@@ -84,17 +79,10 @@
                     <button id="menus-btn" class="menu-item" role="menuitem" title="Gestionar menús">
                         📋 Menús
                     </button>
-                    <button id="import-xml-btn" class="menu-item" role="menuitem" title="Importar recetas desde XML">
-                        📥 Importar receta
-                    </button>
-                    <button id="export-all-btn" class="menu-item" role="menuitem" title="Exportar todas las recetas">
-                        📤 Exportar todas las recetas
-                    </button>
                     <button id="new-recipe-btn" class="menu-item menu-item-primary" role="menuitem"
                         title="Crear nueva receta">
                         ➕ Nueva Receta
                     </button>
-                    <div class="menu-divider"></div>
                     <button id="settings-btn" class="menu-item" role="menuitem" title="Configuración">
                         ⚙️ Configuración
                     </button>
@@ -262,16 +250,6 @@
                                     class="fa-solid fa-pencil recipe-name-edit-icon"></i>
                                 <div class="recipe-name-tooltip">Editar receta</div>
                             </h2>
-                            <div class="detail-meta"
-                                style="display: flex; flex-direction: column; align-items: flex-start; gap: var(--spacing-xs); margin-top: var(--spacing-xs);">
-                                <span id="detail-caravan-badge" class="recipe-caravan-badge" style="display: none;">Apto
-                                    para Caravana</span>
-                                <span id="detail-hospital-badge" class="recipe-hospital-badge"
-                                    style="display: none;">Apto
-                                    para Hospital</span>
-                                <span id="detail-menu-badge" class="recipe-menu-badge" style="display: none;">Para
-                                    Menú</span>
-                            </div>
                         </div>
                         <!-- MOVIDO A FORMULARIO - Botones de acción (2025-11-04)
                         <div class="detail-actions">
@@ -393,7 +371,8 @@
                     <button id="export-xml-btn" class="btn-action btn-action-compact"
                         title="Exportar esta receta">Exportar</button>
                     <button id="export-pdf-btn" class="btn-action btn-action-compact" title="Exportar PDF">PDF</button>
-                    <button id="save-recipe-btn-top" class="btn-action btn-action-compact btn-save-top" title="Guardar receta">💾 Guardar</button>
+                    <button id="save-recipe-btn-top" class="btn-action btn-action-compact btn-save-top"
+                        title="Guardar receta">💾 Guardar</button>
                 </div>
 
                 <form id="recipe-form" class="recipe-form-content">
@@ -1071,20 +1050,28 @@
 
             <div class="modal-body">
                 <div class="options-menu">
+                    <button id="option-edit" class="option-btn">
+                        <span class="option-icon"><i class="fa-regular fa-pen-to-square"></i></span>
+                        <span class="option-text">Editar</span>
+                    </button>
+                    <button id="option-toggle" class="option-btn">
+                        <span class="option-icon"><i class="fa-regular fa-eye"></i></span>
+                        <span class="option-text" id="option-toggle-text">Ocultar</span>
+                    </button>
                     <button id="option-export" class="option-btn">
-                        <span class="option-icon">💾</span>
+                        <span class="option-icon"><i class="fa-regular fa-floppy-disk"></i></span>
                         <span class="option-text">Exportar</span>
                     </button>
                     <button id="option-copy" class="option-btn">
-                        <span class="option-icon">📋</span>
+                        <span class="option-icon"><i class="fa-regular fa-clipboard"></i></span>
                         <span class="option-text">Copiar</span>
                     </button>
                     <button id="option-duplicate" class="option-btn">
-                        <span class="option-icon">📑</span>
+                        <span class="option-icon"><i class="fa-regular fa-copy"></i></span>
                         <span class="option-text">Duplicar</span>
                     </button>
                     <button id="option-delete" class="option-btn option-btn-danger">
-                        <span class="option-icon">🗑️</span>
+                        <span class="option-icon"><i class="fa-regular fa-trash-can"></i></span>
                         <span class="option-text">Eliminar</span>
                     </button>
                 </div>
@@ -1104,27 +1091,27 @@
             <div class="modal-body">
                 <div class="options-menu">
                     <button id="menu-option-edit" class="option-btn">
-                        <span class="option-icon">✏️</span>
+                        <span class="option-icon"><i class="fa-regular fa-pen-to-square"></i></span>
                         <span class="option-text">Editar</span>
                     </button>
                     <button id="menu-option-toggle" class="option-btn">
-                        <span class="option-icon">👁️</span>
+                        <span class="option-icon"><i class="fa-regular fa-eye"></i></span>
                         <span class="option-text" id="menu-option-toggle-text">Ocultar</span>
                     </button>
                     <button id="menu-option-export" class="option-btn">
-                        <span class="option-icon">💾</span>
+                        <span class="option-icon"><i class="fa-regular fa-floppy-disk"></i></span>
                         <span class="option-text">Exportar</span>
                     </button>
                     <button id="menu-option-copy" class="option-btn">
-                        <span class="option-icon">📋</span>
+                        <span class="option-icon"><i class="fa-regular fa-clipboard"></i></span>
                         <span class="option-text">Copiar</span>
                     </button>
                     <button id="menu-option-duplicate" class="option-btn">
-                        <span class="option-icon">📑</span>
+                        <span class="option-icon"><i class="fa-regular fa-copy"></i></span>
                         <span class="option-text">Duplicar</span>
                     </button>
                     <button id="menu-option-delete" class="option-btn option-btn-danger">
-                        <span class="option-icon">🗑️</span>
+                        <span class="option-icon"><i class="fa-regular fa-trash-can"></i></span>
                         <span class="option-text">Eliminar</span>
                     </button>
                 </div>
@@ -1208,26 +1195,40 @@
             </div>
 
             <div class="modal-body">
+                <!-- Recipe Book Owner Section -->
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Libro de receta de:</h3>
+                    <div class="settings-section-content">
+                        <input type="text" id="recipe-book-owner" class="form-input" placeholder="Escribe tu nombre..."
+                            style="flex: 1; max-width: 300px;">
+                    </div>
+                </div>
+
                 <!-- Theme Section -->
                 <div class="settings-section">
                     <h3 class="settings-section-title">Tema</h3>
                     <div class="settings-section-content">
-                        <button id="theme-toggle-btn" class="btn-icon theme-toggle-square" title="Cambiar a tema claro" aria-label="Cambiar a tema oscuro">
+                        <button id="theme-toggle-btn-modal" class="btn-icon theme-toggle-square"
+                            title="Cambiar a tema claro" aria-label="Cambiar a tema oscuro">
                             ☀️
                         </button>
                         <span class="settings-description">Cambia entre tema claro y oscuro</span>
                     </div>
                 </div>
 
-                <!-- Future sections can be added here -->
-                <!-- Example:
+                <!-- Import/Export Section -->
                 <div class="settings-section">
-                    <h3 class="settings-section-title">Idioma</h3>
-                    <div class="settings-section-content">
-                        ...
+                    <h3 class="settings-section-title">Importar y Exportar</h3>
+                    <div class="settings-section-content"
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm); width: 100%;">
+                        <button id="import-xml-btn" class="btn-secondary" title="Importar recetas desde XML">
+                            📥 Importar recetas
+                        </button>
+                        <button id="export-all-btn" class="btn-secondary" title="Exportar todas las recetas">
+                            📤 Exportar recetas
+                        </button>
                     </div>
                 </div>
-                -->
             </div>
         </div>
     </div>

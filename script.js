@@ -1174,12 +1174,13 @@ class RecipeApp {
             });
         }
 
-        // Menu items
-        const themeToggleBtn = document.getElementById('theme-toggle-btn');
-        if (themeToggleBtn) {
-            themeToggleBtn.addEventListener('click', () => {
+        // Theme toggle button (in settings modal)
+        const themeToggleBtnModal = document.getElementById('theme-toggle-btn-modal');
+        if (themeToggleBtnModal) {
+            themeToggleBtnModal.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 this.toggleTheme();
-                closeMenu();
             });
         }
 
@@ -1864,6 +1865,18 @@ class RecipeApp {
         // Show modal
         modal.classList.remove('hidden');
 
+        // Load recipe book owner name
+        const ownerInput = document.getElementById('recipe-book-owner');
+        if (ownerInput) {
+            const savedOwner = localStorage.getItem('recipe_book_owner') || '';
+            ownerInput.value = savedOwner;
+
+            // Save on input change
+            ownerInput.addEventListener('input', (e) => {
+                localStorage.setItem('recipe_book_owner', e.target.value.trim());
+            });
+        }
+
         // Setup event listeners
         const closeBtn = document.getElementById('close-settings-modal');
         const overlay = modal.querySelector('.modal-overlay');
@@ -1885,6 +1898,42 @@ class RecipeApp {
         if (modal) {
             modal.classList.add('hidden');
         }
+
+        // Close menu dropdown if it's open
+        const menuDropdown = document.getElementById('menu-dropdown');
+        const menuBtn = document.getElementById('menu-btn');
+        if (menuDropdown && menuDropdown.classList.contains('active')) {
+            menuDropdown.classList.remove('active');
+            if (menuBtn) {
+                menuBtn.setAttribute('aria-expanded', 'false');
+            }
+        }
+    }
+
+    /**
+     * Collapse all expandable content in modals
+     * This ensures all collapsible sections are closed when opening a modal
+     */
+    collapseAllExpandableContent() {
+        // Collapse all shopping-list-content elements
+        const allContents = document.querySelectorAll('.shopping-list-content');
+        allContents.forEach(content => {
+            content.classList.add('collapsed');
+        });
+
+        // Reset all expand icons
+        const allExpandIcons = document.querySelectorAll('.expand-icon');
+        allExpandIcons.forEach(icon => {
+            icon.textContent = '▼';
+        });
+
+        // Collapse all menu-content elements (if any)
+        const allMenuContents = document.querySelectorAll('.menu-content');
+        allMenuContents.forEach(content => {
+            content.classList.add('collapsed');
+        });
+
+        console.log('[UI] Collapsed all expandable content');
     }
 
     /**
@@ -3659,42 +3708,6 @@ class RecipeApp {
             imageDiv.style.background = 'var(--color-background-secondary)';
         }
 
-        // Create badges container for dynamic stacking
-        const badgesContainer = document.createElement('div');
-        badgesContainer.className = 'recipe-badges-container';
-
-        // Add caravan badge if recipe is caravan friendly
-        if (recipe.caravanFriendly === true) {
-            const caravanBadge = document.createElement('div');
-            caravanBadge.className = 'recipe-caravan-badge-image';
-            caravanBadge.textContent = '🚐';
-            caravanBadge.title = 'Apto para caravana';
-            badgesContainer.appendChild(caravanBadge);
-        }
-
-        // Add hospital badge if recipe is hospital friendly
-        if (recipe.hospitalFriendly === true) {
-            const hospitalBadge = document.createElement('div');
-            hospitalBadge.className = 'recipe-hospital-badge-image';
-            hospitalBadge.textContent = '🏥';
-            hospitalBadge.title = 'Apto para hospital';
-            badgesContainer.appendChild(hospitalBadge);
-        }
-
-        // Add menu badge if recipe is menu friendly
-        if (recipe.menuFriendly === true) {
-            const menuBadge = document.createElement('div');
-            menuBadge.className = 'recipe-menu-badge-image';
-            menuBadge.textContent = '🍽️';
-            menuBadge.title = 'Para menú';
-            badgesContainer.appendChild(menuBadge);
-        }
-
-        // Only append container if it has badges
-        if (badgesContainer.children.length > 0) {
-            imageDiv.appendChild(badgesContainer);
-        }
-
         // Create content section
         const contentDiv = document.createElement('div');
         contentDiv.className = 'recipe-content';
@@ -3703,6 +3716,39 @@ class RecipeApp {
         const nameH3 = document.createElement('h3');
         nameH3.className = 'recipe-name';
         nameH3.textContent = recipe.name;
+
+        // Create inline badges container (after name)
+        const inlineBadgesContainer = document.createElement('div');
+        inlineBadgesContainer.style.display = 'flex';
+        inlineBadgesContainer.style.gap = 'var(--spacing-xs)';
+        inlineBadgesContainer.style.marginTop = 'var(--spacing-xs)';
+
+        // Add caravan badge if recipe is caravan friendly
+        if (recipe.caravanFriendly === true) {
+            const caravanBadge = document.createElement('span');
+            caravanBadge.className = 'recipe-total-time';
+            caravanBadge.textContent = '🚐';
+            caravanBadge.title = 'Apto para caravana';
+            inlineBadgesContainer.appendChild(caravanBadge);
+        }
+
+        // Add hospital badge if recipe is hospital friendly
+        if (recipe.hospitalFriendly === true) {
+            const hospitalBadge = document.createElement('span');
+            hospitalBadge.className = 'recipe-total-time';
+            hospitalBadge.textContent = '🏥';
+            hospitalBadge.title = 'Apto para hospital';
+            inlineBadgesContainer.appendChild(hospitalBadge);
+        }
+
+        // Add menu badge if recipe is menu friendly
+        if (recipe.menuFriendly === true) {
+            const menuBadge = document.createElement('span');
+            menuBadge.className = 'recipe-total-time';
+            menuBadge.textContent = '🍽️';
+            menuBadge.title = 'Para menú';
+            inlineBadgesContainer.appendChild(menuBadge);
+        }
 
         // Recipe date (MM/YYYY format)
         const dateSpan = document.createElement('span');
@@ -3723,6 +3769,9 @@ class RecipeApp {
         });
 
         contentDiv.appendChild(nameH3);
+        if (inlineBadgesContainer.children.length > 0) {
+            contentDiv.appendChild(inlineBadgesContainer);
+        }
         contentDiv.appendChild(dateSpan);
         contentDiv.appendChild(shareBtn);
 
@@ -6198,22 +6247,37 @@ class RecipeApp {
             }
         }
 
-        // Caravan Friendly Badge - Now shown in image gallery, hide from header
+        // Caravan Friendly Badge - Show inline with time
         const caravanBadge = document.getElementById('detail-caravan-badge');
         if (caravanBadge) {
-            caravanBadge.style.display = 'none';
+            if (recipe.caravanFriendly) {
+                caravanBadge.style.display = 'inline-block';
+                caravanBadge.textContent = '🚐';
+            } else {
+                caravanBadge.style.display = 'none';
+            }
         }
 
-        // Hospital Friendly Badge - Now shown in image gallery, hide from header
+        // Hospital Friendly Badge - Show inline with time
         const hospitalBadge = document.getElementById('detail-hospital-badge');
         if (hospitalBadge) {
-            hospitalBadge.style.display = 'none';
+            if (recipe.hospitalFriendly) {
+                hospitalBadge.style.display = 'inline-block';
+                hospitalBadge.textContent = '🏥';
+            } else {
+                hospitalBadge.style.display = 'none';
+            }
         }
 
-        // Menu Friendly Badge - Now shown in image gallery, hide from header
+        // Menu Friendly Badge - Show inline with time
         const menuBadge = document.getElementById('detail-menu-badge');
         if (menuBadge) {
-            menuBadge.style.display = 'none';
+            if (recipe.menuFriendly) {
+                menuBadge.style.display = 'inline-block';
+                menuBadge.textContent = '🍽️';
+            } else {
+                menuBadge.style.display = 'none';
+            }
         }
 
         // Ingredients
@@ -6578,7 +6642,41 @@ class RecipeApp {
 
         item.appendChild(img);
 
-        // Badges removed from detail gallery view
+        // Add badges container (same as home page cards)
+        const badgesContainer = document.createElement('div');
+        badgesContainer.className = 'recipe-badges-container';
+
+        // Add caravan badge if applicable
+        if (caravanFriendly === true) {
+            const caravanBadge = document.createElement('div');
+            caravanBadge.className = 'recipe-caravan-badge-image';
+            caravanBadge.textContent = '🚐';
+            caravanBadge.title = 'Apto para caravana';
+            badgesContainer.appendChild(caravanBadge);
+        }
+
+        // Add hospital badge if applicable
+        if (hospitalFriendly === true) {
+            const hospitalBadge = document.createElement('div');
+            hospitalBadge.className = 'recipe-hospital-badge-image';
+            hospitalBadge.textContent = '🏥';
+            hospitalBadge.title = 'Apto para hospital';
+            badgesContainer.appendChild(hospitalBadge);
+        }
+
+        // Add menu badge if applicable
+        if (menuFriendly === true) {
+            const menuBadge = document.createElement('div');
+            menuBadge.className = 'recipe-menu-badge-image';
+            menuBadge.textContent = '🍽️';
+            menuBadge.title = 'Para menú';
+            badgesContainer.appendChild(menuBadge);
+        }
+
+        // Only append if has badges
+        if (badgesContainer.children.length > 0) {
+            item.appendChild(badgesContainer);
+        }
 
         // Add click to open modal
         item.addEventListener('click', () => {
@@ -6626,7 +6724,41 @@ class RecipeApp {
 
         mainArea.appendChild(img);
 
-        // Badges removed from detail gallery view
+        // Add badges container (same as home page cards)
+        const badgesContainer = document.createElement('div');
+        badgesContainer.className = 'recipe-badges-container';
+
+        // Add caravan badge if applicable
+        if (caravanFriendly === true) {
+            const caravanBadge = document.createElement('div');
+            caravanBadge.className = 'recipe-caravan-badge-image';
+            caravanBadge.textContent = '🚐';
+            caravanBadge.title = 'Apto para caravana';
+            badgesContainer.appendChild(caravanBadge);
+        }
+
+        // Add hospital badge if applicable
+        if (hospitalFriendly === true) {
+            const hospitalBadge = document.createElement('div');
+            hospitalBadge.className = 'recipe-hospital-badge-image';
+            hospitalBadge.textContent = '🏥';
+            hospitalBadge.title = 'Apto para hospital';
+            badgesContainer.appendChild(hospitalBadge);
+        }
+
+        // Add menu badge if applicable
+        if (menuFriendly === true) {
+            const menuBadge = document.createElement('div');
+            menuBadge.className = 'recipe-menu-badge-image';
+            menuBadge.textContent = '🍽️';
+            menuBadge.title = 'Para menú';
+            badgesContainer.appendChild(menuBadge);
+        }
+
+        // Only append if has badges
+        if (badgesContainer.children.length > 0) {
+            mainArea.appendChild(badgesContainer);
+        }
 
         // Previous button
         const prevBtn = document.createElement('button');
@@ -7658,10 +7790,12 @@ class RecipeApp {
      * Toggle between light and dark theme
      */
     toggleTheme() {
+        console.log('[Theme] Toggle theme called');
         const isDark = document.body.classList.toggle('dark-theme');
         document.documentElement.classList.toggle('dark-theme', isDark);
         localStorage.setItem('recetario_theme', isDark ? 'dark' : 'light');
         this.updateThemeButton(isDark);
+        console.log('[Theme] Theme changed to:', isDark ? 'dark' : 'light');
 
         // Show feedback
         this.showSuccess(isDark ? '🌙 Tema oscuro activado' : '☀️ Tema claro activado', 2000);
@@ -7672,7 +7806,7 @@ class RecipeApp {
      * @param {boolean} isDark - Whether dark theme is active
      */
     updateThemeButton(isDark) {
-        const themeBtn = document.getElementById('theme-toggle-btn');
+        const themeBtn = document.getElementById('theme-toggle-btn-modal');
         if (themeBtn) {
             themeBtn.innerHTML = isDark ? '☀️' : '🌙';
             themeBtn.title = isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro';
@@ -8308,9 +8442,12 @@ class RecipeApp {
             let xmlString = serializer.serializeToString(xmlDoc);
             xmlString = '<?xml version="1.0" encoding="UTF-8"?>\n' + xmlString;
 
-            // Create filename
-            const date = new Date().toISOString().split('T')[0];
-            const filename = `recetas_${recipes.length}_${date}.xml`;
+            // Create filename with format: Recetas_[Nombre]_mes-año
+            const now = new Date();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = String(now.getFullYear()).slice(-2);
+            const ownerName = localStorage.getItem('recipe_book_owner') || 'Usuario';
+            const filename = `Recetas_${ownerName}_${month}-${year}.xml`;
 
             // Download file
             XMLExporter.downloadXML(xmlString, filename);
@@ -8660,6 +8797,9 @@ class RecipeApp {
     showShoppingListsView() {
         console.log('[ShoppingLists] Showing shopping lists view');
 
+        // Set flag to prevent restoring expanded state
+        this._skipExpandedStateRestore = true;
+
         // Hide other views
         const recipesView = document.getElementById('recipe-list-view');
         const recipeFormView = document.getElementById('recipe-form-view');
@@ -8704,6 +8844,9 @@ class RecipeApp {
      */
     showMenusView() {
         console.log('[Menus] Showing menus view');
+
+        // Set flag to prevent restoring expanded state
+        this._skipExpandedStateRestore = true;
 
         // Hide other views
         const recipesView = document.getElementById('recipe-list-view');
@@ -8797,8 +8940,8 @@ class RecipeApp {
             const card = this.renderMenuCard(menu);
             container.appendChild(card);
 
-            // Restore expanded state
-            if (expandedMenuIds.has(String(menu.id))) {
+            // Restore expanded state only if not skipping
+            if (!this._skipExpandedStateRestore && expandedMenuIds.has(String(menu.id))) {
                 const content = card.querySelector('.shopping-list-content');
                 const header = card.querySelector('.shopping-list-header');
                 const expandIcon = card.querySelector('.expand-icon');
@@ -8811,6 +8954,9 @@ class RecipeApp {
                 }
             }
         });
+
+        // Reset the flag
+        this._skipExpandedStateRestore = false;
 
         console.log('[Menus] Rendered', menus.length, 'menus');
     }
@@ -9133,10 +9279,10 @@ class RecipeApp {
         if (toggleText && toggleIcon && menu) {
             if (menu.enabled !== false) {
                 toggleText.textContent = 'Ocultar';
-                toggleIcon.textContent = '👁️';
+                toggleIcon.innerHTML = '<i class="fa-regular fa-eye"></i>';
             } else {
                 toggleText.textContent = 'Mostrar';
-                toggleIcon.textContent = '👁️‍🗨️';
+                toggleIcon.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
             }
         }
 
@@ -9704,7 +9850,7 @@ class RecipeApp {
 
         const items = [];
         let itemIdCounter = Date.now();
-        
+
         allItemDivs.forEach(itemDiv => {
             // Get day select (first select)
             const daySelect = itemDiv.querySelector('select:first-of-type');
@@ -9898,32 +10044,10 @@ class RecipeApp {
         const actions = document.createElement('div');
         actions.className = 'shopping-list-actions';
 
-        // Create toggle enabled button (eye icon)
-        const toggleEnabledBtn = this.createButton({
-            className: 'btn-icon',
-            text: list.enabled !== false ? '👁️' : '👁️‍🗨️',
-            title: list.enabled !== false ? 'Deshabilitar lista' : 'Habilitar lista',
-            onClick: (e) => {
-                e.stopPropagation();
-                this.toggleShoppingListEnabled(list.id);
-            }
-        });
-
         // Add visual indicator if disabled
         if (list.enabled === false) {
             card.style.opacity = '0.5';
         }
-
-        // Create edit button
-        const editBtn = this.createButton({
-            className: 'btn-icon',
-            text: '✏️',
-            title: 'Editar lista',
-            onClick: (e) => {
-                e.stopPropagation();
-                this.showShoppingListForm(list.id);
-            }
-        });
 
         // Create more options button (three dots)
         const moreBtn = this.createButton({
@@ -9936,8 +10060,6 @@ class RecipeApp {
             }
         });
 
-        actions.appendChild(toggleEnabledBtn);
-        actions.appendChild(editBtn);
         actions.appendChild(moreBtn);
 
         // Create content (collapsible)
@@ -10858,16 +10980,34 @@ class RecipeApp {
         // Store current list ID for actions
         this.currentOptionsListId = listId;
 
+        // Get list to check enabled state
+        const list = this.shoppingListManager.getList(listId);
+
         // Show modal
         modal.classList.remove('hidden');
 
         // Setup event listeners
         const closeBtn = document.getElementById('close-options-modal');
         const overlay = modal.querySelector('.modal-overlay');
+        const editBtn = document.getElementById('option-edit');
+        const toggleBtn = document.getElementById('option-toggle');
+        const toggleText = document.getElementById('option-toggle-text');
+        const toggleIcon = toggleBtn?.querySelector('.option-icon');
         const exportBtn = document.getElementById('option-export');
         const copyBtn = document.getElementById('option-copy');
         const duplicateBtn = document.getElementById('option-duplicate');
         const deleteBtn = document.getElementById('option-delete');
+
+        // Update toggle button text and icon based on list state
+        if (toggleText && toggleIcon && list) {
+            if (list.enabled !== false) {
+                toggleText.textContent = 'Ocultar';
+                toggleIcon.innerHTML = '<i class="fa-regular fa-eye"></i>';
+            } else {
+                toggleText.textContent = 'Mostrar';
+                toggleIcon.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
+            }
+        }
 
         if (closeBtn) {
             closeBtn.onclick = () => this.closeShoppingListOptionsModal();
@@ -10875,6 +11015,20 @@ class RecipeApp {
 
         if (overlay) {
             overlay.onclick = () => this.closeShoppingListOptionsModal();
+        }
+
+        if (editBtn) {
+            editBtn.onclick = () => {
+                this.showShoppingListForm(listId);
+                this.closeShoppingListOptionsModal();
+            };
+        }
+
+        if (toggleBtn) {
+            toggleBtn.onclick = () => {
+                this.toggleShoppingListEnabled(listId);
+                this.closeShoppingListOptionsModal();
+            };
         }
 
         if (exportBtn) {
