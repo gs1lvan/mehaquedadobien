@@ -17,34 +17,34 @@ const DebugLogger = {
         INFO: 3,
         VERBOSE: 4
     },
-    
+
     get level() {
         const stored = localStorage.getItem('DEBUG_LEVEL');
         return stored !== null ? parseInt(stored) : this.LEVELS.INFO;
     },
-    
+
     set level(value) {
         localStorage.setItem('DEBUG_LEVEL', value.toString());
     },
-    
+
     error(prefix, ...args) {
         if (this.level >= this.LEVELS.ERROR) {
             console.error(`[${prefix}]`, ...args);
         }
     },
-    
+
     warn(prefix, ...args) {
         if (this.level >= this.LEVELS.WARN) {
             console.warn(`[${prefix}]`, ...args);
         }
     },
-    
+
     info(prefix, ...args) {
         if (this.level >= this.LEVELS.INFO) {
             console.log(`[${prefix}]`, ...args);
         }
     },
-    
+
     verbose(prefix, ...args) {
         if (this.level >= this.LEVELS.VERBOSE) {
             console.log(`[${prefix}]`, ...args);
@@ -125,13 +125,13 @@ const PREDEFINED_INGREDIENTS = [
     // Pollo
     'pollo', 'pechuga', 'muslo', 'contramuslo', 'alita', 'carcasa', 'piel', 'molleja', 'hígado', 'cuello', 'patas',
     // Verduras
-    'zanahoria', 'cebolla', 'ajo', 'pimiento', 'tomate', 'calabacín', 'berenjena', 'patata', 'apio', 'puerro', 
+    'zanahoria', 'cebolla', 'ajo', 'pimiento', 'tomate', 'calabacín', 'berenjena', 'patata', 'apio', 'puerro',
     'espinaca', 'col', 'lechuga', 'pepino', 'brócoli',
     // Frutas
-    'manzana', 'plátano', 'naranja', 'pera', 'limón', 'uva', 'fresa', 'melón', 'sandía', 'mango', 'piña', 
+    'manzana', 'plátano', 'naranja', 'pera', 'limón', 'uva', 'fresa', 'melón', 'sandía', 'mango', 'piña',
     'cereza', 'kiwi', 'melocotón', 'arándano',
     // Especias
-    'pimienta', 'comino', 'pimentón', 'canela', 'nuez moscada', 'clavo', 'cúrcuma', 'jengibre', 'orégano', 
+    'pimienta', 'comino', 'pimentón', 'canela', 'nuez moscada', 'clavo', 'cúrcuma', 'jengibre', 'orégano',
     'tomillo', 'romero', 'laurel', 'perejil', 'albahaca', 'cilantro'
 ];
 
@@ -148,7 +148,7 @@ class CategoryManager {
         this.loadCustomCategories();
         this.loadHiddenCategories();
     }
-    
+
     /**
      * Load custom categories from localStorage
      */
@@ -163,7 +163,7 @@ class CategoryManager {
             this.customCategories = [];
         }
     }
-    
+
     /**
      * Save custom categories to localStorage
      */
@@ -175,7 +175,7 @@ class CategoryManager {
             throw new Error('No se pudieron guardar las categorías');
         }
     }
-    
+
     /**
      * Load hidden categories from localStorage
      */
@@ -190,7 +190,7 @@ class CategoryManager {
             this.hiddenCategories = new Set();
         }
     }
-    
+
     /**
      * Save hidden categories to localStorage
      */
@@ -202,7 +202,7 @@ class CategoryManager {
             throw new Error('No se pudieron guardar las categorías ocultas');
         }
     }
-    
+
     /**
      * Hide a category (predefined or custom)
      * @param {string} id - Category ID
@@ -212,7 +212,7 @@ class CategoryManager {
         this.saveHiddenCategories();
         console.log('[CategoryManager] Hidden category:', id);
     }
-    
+
     /**
      * Unhide a category
      * @param {string} id - Category ID
@@ -222,7 +222,7 @@ class CategoryManager {
         this.saveHiddenCategories();
         console.log('[CategoryManager] Unhidden category:', id);
     }
-    
+
     /**
      * Check if a category is hidden
      * @param {string} id - Category ID
@@ -231,7 +231,7 @@ class CategoryManager {
     isCategoryHidden(id) {
         return this.hiddenCategories.has(id);
     }
-    
+
     /**
      * Get all categories (predefined + custom), excluding hidden ones
      * @param {boolean} includeHidden - Include hidden categories (default: false)
@@ -244,7 +244,7 @@ class CategoryManager {
         }
         return all.filter(cat => !this.isCategoryHidden(cat.id));
     }
-    
+
     /**
      * Get only visible predefined categories
      * @returns {Array} Visible predefined categories
@@ -252,7 +252,7 @@ class CategoryManager {
     getVisiblePredefinedCategories() {
         return this.predefinedCategories.filter(cat => !this.isCategoryHidden(cat.id));
     }
-    
+
     /**
      * Get only hidden categories
      * @returns {Array} Hidden categories
@@ -261,7 +261,7 @@ class CategoryManager {
         const all = [...this.predefinedCategories, ...this.customCategories];
         return all.filter(cat => this.isCategoryHidden(cat.id));
     }
-    
+
     /**
      * Get category by ID (includes hidden categories)
      * @param {string} id - Category ID
@@ -271,7 +271,7 @@ class CategoryManager {
         const all = this.getAllCategories(true); // Include hidden categories
         return all.find(cat => cat.id === id) || null;
     }
-    
+
     /**
      * Get recipe count for each category
      * @param {Array} recipes - All recipes
@@ -279,17 +279,17 @@ class CategoryManager {
      */
     getCategoryCounts(recipes) {
         const counts = {};
-        
+
         this.getAllCategories().forEach(cat => {
             counts[cat.id] = recipes.filter(r => r.category === cat.id).length;
         });
-        
+
         // Count recipes without category
         counts['sin-categoria'] = recipes.filter(r => !r.category).length;
-        
+
         return counts;
     }
-    
+
     /**
      * Generate category ID from name (slug)
      * @param {string} name - Category name
@@ -304,7 +304,7 @@ class CategoryManager {
             .replace(/[^a-z0-9]+/g, '-')      // Replace non-alphanumeric with dash
             .replace(/^-+|-+$/g, '');         // Remove leading/trailing dashes
     }
-    
+
     /**
      * Create new custom category
      * @param {Object} categoryData - Category data (name, emoji, color)
@@ -315,19 +315,19 @@ class CategoryManager {
         if (!categoryData.name || categoryData.name.trim().length < 2) {
             throw new Error('El nombre debe tener al menos 2 caracteres');
         }
-        
+
         if (categoryData.name.length > 30) {
             throw new Error('El nombre no puede tener más de 30 caracteres');
         }
-        
+
         // Generate ID from name (slug)
         const id = this.generateCategoryId(categoryData.name);
-        
+
         // Check if category already exists
         if (this.getCategoryById(id)) {
             throw new Error('Ya existe una categoría con ese nombre');
         }
-        
+
         // Create category object
         const category = {
             id: id,
@@ -336,15 +336,15 @@ class CategoryManager {
             color: categoryData.color || CATEGORY_COLORS[0],
             isPredefined: false
         };
-        
+
         // Add to custom categories
         this.customCategories.push(category);
         this.saveCustomCategories();
-        
+
         console.log('[CategoryManager] Created category:', category);
         return category;
     }
-    
+
     /**
      * Update existing custom category
      * @param {string} id - Category ID
@@ -353,48 +353,48 @@ class CategoryManager {
      */
     updateCategory(id, updates) {
         const categoryIndex = this.customCategories.findIndex(cat => cat.id === id);
-        
+
         if (categoryIndex === -1) {
             throw new Error('Categoría no encontrada');
         }
-        
+
         const category = this.customCategories[categoryIndex];
-        
+
         if (category.isPredefined) {
             throw new Error('No se pueden editar categorías predefinidas');
         }
-        
+
         const oldId = category.id;
-        
+
         // Validate new name if provided
         if (updates.name) {
             if (updates.name.trim().length < 2 || updates.name.length > 30) {
                 throw new Error('El nombre debe tener entre 2 y 30 caracteres');
             }
-            
+
             const newId = this.generateCategoryId(updates.name);
             if (newId !== id && this.getCategoryById(newId)) {
                 throw new Error('Ya existe una categoría con ese nombre');
             }
-            
+
             category.name = updates.name.trim();
             category.id = newId;
         }
-        
+
         if (updates.emoji) {
             category.emoji = updates.emoji;
         }
-        
+
         if (updates.color) {
             category.color = updates.color;
         }
-        
+
         this.saveCustomCategories();
-        
+
         console.log('[CategoryManager] Updated category:', category);
         return { category, oldId };
     }
-    
+
     /**
      * Delete category (custom or predefined - predefined ones are hidden instead)
      * @param {string} id - Category ID
@@ -403,14 +403,14 @@ class CategoryManager {
      */
     deleteCategory(id, recipes) {
         const category = this.getCategoryById(id);
-        
+
         if (!category) {
             throw new Error('Categoría no encontrada');
         }
-        
+
         // Find recipes using this category
         const affectedRecipes = recipes.filter(recipe => recipe.category === id);
-        
+
         // If it's a predefined category, hide it instead of deleting
         if (category.isPredefined) {
             this.hideCategory(id);
@@ -424,7 +424,7 @@ class CategoryManager {
                 console.log('[CategoryManager] Deleted custom category:', id, 'Affected recipes:', affectedRecipes.length);
             }
         }
-        
+
         return {
             deleted: true,
             isPredefined: category.isPredefined,
@@ -457,14 +457,14 @@ class ShoppingListManager {
             const stored = localStorage.getItem(this.storageKey);
             if (stored) {
                 this.lists = JSON.parse(stored);
-                
+
                 // Migrate old lists without enabled property
                 this.lists.forEach(list => {
                     if (list.enabled === undefined) {
                         list.enabled = true;
                     }
                 });
-                
+
                 console.log('[ShoppingListManager] Loaded lists:', this.lists.length);
             }
         } catch (error) {
@@ -500,10 +500,10 @@ class ShoppingListManager {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };
-        
+
         this.lists.push(list);
         this.saveLists();
-        
+
         console.log('[ShoppingListManager] Created list:', list.id, list.name);
         return list;
     }
@@ -533,7 +533,7 @@ class ShoppingListManager {
         Object.assign(list, updates);
         list.updatedAt = new Date().toISOString();
         this.saveLists();
-        
+
         console.log('[ShoppingListManager] Updated list:', id);
         return list;
     }
@@ -552,7 +552,7 @@ class ShoppingListManager {
 
         this.lists.splice(index, 1);
         this.saveLists();
-        
+
         console.log('[ShoppingListManager] Deleted list:', id);
         return true;
     }
@@ -572,7 +572,7 @@ class ShoppingListManager {
         list.enabled = !list.enabled;
         list.updatedAt = new Date().toISOString();
         this.saveLists();
-        
+
         console.log('[ShoppingListManager] Toggled list enabled:', id, list.enabled);
         return true;
     }
@@ -600,7 +600,7 @@ class ShoppingListManager {
         list.items.push(newItem);
         list.updatedAt = new Date().toISOString();
         this.saveLists();
-        
+
         console.log('[ShoppingListManager] Added item to list:', listId, newItem.name);
         return newItem;
     }
@@ -628,7 +628,7 @@ class ShoppingListManager {
         Object.assign(item, updates);
         list.updatedAt = new Date().toISOString();
         this.saveLists();
-        
+
         console.log('[ShoppingListManager] Updated item:', itemId);
         return item;
     }
@@ -655,7 +655,7 @@ class ShoppingListManager {
         list.items.splice(index, 1);
         list.updatedAt = new Date().toISOString();
         this.saveLists();
-        
+
         console.log('[ShoppingListManager] Deleted item:', itemId);
         return true;
     }
@@ -682,7 +682,7 @@ class ShoppingListManager {
         item.completed = !item.completed;
         list.updatedAt = new Date().toISOString();
         this.saveLists();
-        
+
         console.log('[ShoppingListManager] Toggled item completed:', itemId, item.completed);
         return item.completed;
     }
@@ -734,19 +734,19 @@ class ShoppingListManager {
         }
 
         const lines = [];
-        
+
         // Add list name as header
         lines.push(list.name);
         lines.push('-----------------------------------'); // Fixed separator line
-        
+
         // Filter items based on completed status
-        const items = includeCompleted 
-            ? list.items 
+        const items = includeCompleted
+            ? list.items
             : list.items.filter(item => !item.completed);
 
         // Handle empty list
         if (items.length === 0) {
-            const message = includeCompleted 
+            const message = includeCompleted
                 ? 'No hay elementos en esta lista'
                 : 'No hay elementos pendientes';
             lines.push(message);
@@ -760,7 +760,7 @@ class ShoppingListManager {
             const completedMark = item.completed ? '✓ ' : '';
             const itemLine = `${completedMark}${item.name}${quantity}`;
             lines.push(itemLine);
-            
+
             // Add blank line after each item except the last one
             // BUT only if the quantity is 30 characters or more
             if (index < items.length - 1) {
@@ -910,7 +910,7 @@ class RecipeApp {
             minutesInput.value = '';
         }
     }
-    
+
     /**
      * Capitalize first letter of a string
      * @param {string} str - String to capitalize
@@ -1104,35 +1104,35 @@ class RecipeApp {
         // View toggle buttons
         const viewGridBtn = document.getElementById('view-grid-btn');
         const viewListBtn = document.getElementById('view-list-btn');
-        
+
         if (viewGridBtn) {
             viewGridBtn.addEventListener('click', () => {
                 this.setViewMode('grid');
             });
         }
-        
+
         if (viewListBtn) {
             viewListBtn.addEventListener('click', () => {
                 this.setViewMode('list');
             });
         }
-        
+
         // Sort buttons in list view header
         const sortByNameBtn = document.getElementById('sort-by-name');
         const sortByDateBtn = document.getElementById('sort-by-date');
-        
+
         if (sortByNameBtn) {
             sortByNameBtn.addEventListener('click', () => {
                 this.toggleSort('name');
             });
         }
-        
+
         if (sortByDateBtn) {
             sortByDateBtn.addEventListener('click', () => {
                 this.toggleSort('date');
             });
         }
-        
+
         // Initialize view mode
         this.setViewMode(this.viewMode);
 
@@ -1147,7 +1147,7 @@ class RecipeApp {
         // Menu button and dropdown
         const menuBtn = document.getElementById('menu-btn');
         const menuDropdown = document.getElementById('menu-dropdown');
-        
+
         // Helper function to close menu
         const closeMenu = () => {
             if (menuDropdown) {
@@ -1157,7 +1157,7 @@ class RecipeApp {
                 }
             }
         };
-        
+
         if (menuBtn && menuDropdown) {
             // Toggle menu on button click
             menuBtn.addEventListener('click', (e) => {
@@ -1326,16 +1326,16 @@ class RecipeApp {
     }
 
     // ===== Category Management Functions =====
-    
+
     /**
      * Render filter chips dynamically from categories
      */
     renderFilterChips() {
         const filterChipsContainer = document.querySelector('.filter-chips');
         if (!filterChipsContainer) return;
-        
+
         filterChipsContainer.innerHTML = '';
-        
+
         // "Todas" chip
         const allChip = document.createElement('button');
         allChip.className = 'filter-chip';
@@ -1345,7 +1345,7 @@ class RecipeApp {
         allChip.dataset.category = 'all';
         allChip.textContent = 'Todas';
         filterChipsContainer.appendChild(allChip);
-        
+
         // Category chips
         const categories = this.categoryManager.getAllCategories();
         categories.forEach(category => {
@@ -1359,11 +1359,11 @@ class RecipeApp {
             chip.style.setProperty('--category-color', category.color);
             filterChipsContainer.appendChild(chip);
         });
-        
+
         // Re-attach event listeners
         this.attachFilterChipListeners();
     }
-    
+
     /**
      * Attach event listeners to filter chips
      */
@@ -1386,7 +1386,7 @@ class RecipeApp {
         });
         */
     }
-    
+
     /**
      * Render category selector in form (now uses modal)
      */
@@ -1394,19 +1394,19 @@ class RecipeApp {
         // Setup chip click to open modal
         const categoryChip = document.getElementById('recipe-category-chip');
         if (!categoryChip) return;
-        
+
         // Remove old event listener by cloning
         const newChip = categoryChip.cloneNode(true);
         categoryChip.parentNode.replaceChild(newChip, categoryChip);
-        
+
         newChip.addEventListener('click', () => {
             this.openCategorySelectorModal();
         });
-        
+
         // Update display with current selection
         this.updateCategoryDisplay();
     }
-    
+
     /**
      * Update category display chip
      */
@@ -1414,11 +1414,11 @@ class RecipeApp {
         const categoryInput = document.getElementById('recipe-category');
         const displaySpan = document.getElementById('selected-category-display');
         const categoryChip = document.getElementById('recipe-category-chip');
-        
+
         if (!categoryInput || !displaySpan) return;
-        
+
         const selectedValue = categoryInput.value;
-        
+
         if (!selectedValue) {
             displaySpan.textContent = 'Sin categoría';
             if (categoryChip) {
@@ -1426,7 +1426,7 @@ class RecipeApp {
             }
             return;
         }
-        
+
         const category = this.categoryManager.getCategoryById(selectedValue);
         if (category) {
             displaySpan.textContent = `${category.emoji} ${category.name}`;
@@ -1440,53 +1440,53 @@ class RecipeApp {
             }
         }
     }
-    
+
     /**
      * Open category selector modal
      */
     openCategorySelectorModal() {
         const modal = document.getElementById('category-selector-modal');
         if (!modal) return;
-        
+
         // Render categories in modal
         this.renderCategorySelectorChips();
-        
+
         // Show modal
         modal.classList.remove('hidden');
-        
+
         // Setup close handlers
         const closeBtn = document.getElementById('close-category-selector-modal');
         const overlay = modal.querySelector('.modal-overlay');
-        
+
         const closeModal = () => {
             modal.classList.add('hidden');
         };
-        
+
         if (closeBtn) {
             closeBtn.onclick = closeModal;
         }
-        
+
         if (overlay) {
             overlay.onclick = closeModal;
         }
     }
-    
+
     /**
      * Render category chips in selector modal
      */
     renderCategorySelectorChips() {
         const container = document.getElementById('category-selector-chips');
         if (!container) return;
-        
+
         container.innerHTML = '';
-        
+
         const categoryInput = document.getElementById('recipe-category');
         const currentValue = categoryInput ? categoryInput.value : '';
-        
+
         // Add all categories (excluding special ones like caravana and hospital)
         const categories = this.categoryManager.getAllCategories()
             .filter(cat => !cat.isSpecial);
-        
+
         categories.forEach(category => {
             const chip = document.createElement('button');
             chip.className = 'category-selector-chip';
@@ -1503,7 +1503,7 @@ class RecipeApp {
             container.appendChild(chip);
         });
     }
-    
+
     /**
      * Select a category from modal
      */
@@ -1512,17 +1512,17 @@ class RecipeApp {
         if (categoryInput) {
             categoryInput.value = categoryId;
         }
-        
+
         // Update display
         this.updateCategoryDisplay();
-        
+
         // Close modal
         const modal = document.getElementById('category-selector-modal');
         if (modal) {
             modal.classList.add('hidden');
         }
     }
-    
+
     /**
      * Render category modal content
      */
@@ -1536,7 +1536,7 @@ class RecipeApp {
         if (emojiHidden) {
             emojiHidden.value = DEFAULT_EMOJI;
         }
-        
+
         // Set default color
         const colorPreview = document.getElementById('new-category-color-preview');
         const colorHidden = document.getElementById('selected-color');
@@ -1547,33 +1547,33 @@ class RecipeApp {
         if (colorHidden) {
             colorHidden.value = defaultColor;
         }
-        
+
         // Render category lists
         this.renderPredefinedCategoriesList();
         this.renderCustomCategoriesList();
         this.renderHiddenCategoriesList();
     }
-    
+
     /**
      * Render predefined categories list
      */
     renderPredefinedCategoriesList() {
         const listContainer = document.getElementById('predefined-categories-list');
         if (!listContainer) return;
-        
+
         listContainer.innerHTML = '';
-        
+
         const counts = this.categoryManager.getCategoryCounts(this.recipes);
-        
+
         // Only show visible predefined categories
         const visibleCategories = this.categoryManager.getVisiblePredefinedCategories();
-        
+
         visibleCategories.forEach(category => {
             const item = this.createPredefinedCategoryItem(category, counts[category.id] || 0);
             listContainer.appendChild(item);
         });
     }
-    
+
     /**
      * Render custom categories list
      */
@@ -1581,30 +1581,30 @@ class RecipeApp {
         const listContainer = document.getElementById('custom-categories-list');
         const emptyState = document.getElementById('custom-categories-empty');
         if (!listContainer || !emptyState) return;
-        
+
         listContainer.innerHTML = '';
-        
+
         // Only show visible custom categories
         const customCategories = this.categoryManager.customCategories.filter(
             cat => !this.categoryManager.isCategoryHidden(cat.id)
         );
-        
+
         if (customCategories.length === 0) {
             emptyState.style.display = 'block';
             listContainer.style.display = 'none';
         } else {
             emptyState.style.display = 'none';
             listContainer.style.display = 'flex';
-            
+
             const counts = this.categoryManager.getCategoryCounts(this.recipes);
-            
+
             customCategories.forEach(category => {
                 const item = this.createCustomCategoryItem(category, counts[category.id] || 0);
                 listContainer.appendChild(item);
             });
         }
     }
-    
+
     /**
      * Render hidden categories list
      */
@@ -1612,27 +1612,27 @@ class RecipeApp {
         const listContainer = document.getElementById('hidden-categories-list');
         const emptyState = document.getElementById('hidden-categories-empty');
         if (!listContainer || !emptyState) return;
-        
+
         listContainer.innerHTML = '';
-        
+
         const hiddenCategories = this.categoryManager.getHiddenCategories();
-        
+
         if (hiddenCategories.length === 0) {
             emptyState.style.display = 'block';
             listContainer.style.display = 'none';
         } else {
             emptyState.style.display = 'none';
             listContainer.style.display = 'flex';
-            
+
             const counts = this.categoryManager.getCategoryCounts(this.recipes);
-            
+
             hiddenCategories.forEach(category => {
                 const item = this.createHiddenCategoryItem(category, counts[category.id] || 0);
                 listContainer.appendChild(item);
             });
         }
     }
-    
+
     /**
      * Create hidden category item element with restore button
      * @param {Object} category - Category object
@@ -1643,38 +1643,38 @@ class RecipeApp {
         const item = document.createElement('div');
         item.className = 'category-item';
         item.dataset.categoryId = category.id;
-        
+
         // Category info
         const infoDiv = document.createElement('div');
         infoDiv.className = 'category-info';
-        
+
         const emoji = document.createElement('span');
         emoji.className = 'category-emoji';
         emoji.textContent = category.emoji;
-        
+
         const name = document.createElement('span');
         name.className = 'category-name';
         name.textContent = category.name;
-        
+
         const badge = document.createElement('span');
         badge.className = 'category-badge';
         badge.style.backgroundColor = category.color;
-        
+
         const countSpan = document.createElement('span');
         countSpan.className = 'category-count';
         countSpan.textContent = `(${count} ${count === 1 ? 'receta' : 'recetas'})`;
-        
+
         infoDiv.appendChild(emoji);
         infoDiv.appendChild(name);
         infoDiv.appendChild(badge);
         infoDiv.appendChild(countSpan);
-        
+
         item.appendChild(infoDiv);
-        
+
         // Restore button
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'category-actions';
-        
+
         const restoreBtn = document.createElement('button');
         restoreBtn.type = 'button';
         restoreBtn.className = 'btn-icon btn-restore-category';
@@ -1683,13 +1683,13 @@ class RecipeApp {
         restoreBtn.addEventListener('click', () => {
             this.handleRestoreCategory(category.id);
         });
-        
+
         actionsDiv.appendChild(restoreBtn);
         item.appendChild(actionsDiv);
-        
+
         return item;
     }
-    
+
     /**
      * Create predefined category item element with hide button
      * @param {Object} category - Category object
@@ -1700,27 +1700,27 @@ class RecipeApp {
         const item = document.createElement('div');
         item.className = 'category-item';
         item.dataset.categoryId = category.id;
-        
+
         // Category info
         const infoDiv = document.createElement('div');
         infoDiv.className = 'category-info';
-        
+
         const emoji = document.createElement('span');
         emoji.className = 'category-emoji';
         emoji.textContent = category.emoji;
-        
+
         const name = document.createElement('span');
         name.className = 'category-name';
         name.textContent = category.name;
-        
+
         const badge = document.createElement('span');
         badge.className = 'category-badge';
         badge.style.backgroundColor = category.color;
-        
+
         const countSpan = document.createElement('span');
         countSpan.className = 'category-count';
         countSpan.textContent = `(${count} ${count === 1 ? 'receta' : 'recetas'})`;
-        
+
         const hideBtn = document.createElement('button');
         hideBtn.type = 'button';
         hideBtn.className = 'btn-icon btn-hide-category';
@@ -1729,18 +1729,18 @@ class RecipeApp {
         hideBtn.addEventListener('click', () => {
             this.handleHideCategory(category.id);
         });
-        
+
         infoDiv.appendChild(emoji);
         infoDiv.appendChild(name);
         infoDiv.appendChild(badge);
         infoDiv.appendChild(countSpan);
         infoDiv.appendChild(hideBtn);
-        
+
         item.appendChild(infoDiv);
-        
+
         return item;
     }
-    
+
     /**
      * Create custom category item element with edit/delete/hide buttons
      * @param {Object} category - Category object
@@ -1751,27 +1751,27 @@ class RecipeApp {
         const item = document.createElement('div');
         item.className = 'category-item';
         item.dataset.categoryId = category.id;
-        
+
         // Category info
         const infoDiv = document.createElement('div');
         infoDiv.className = 'category-info';
-        
+
         const emoji = document.createElement('span');
         emoji.className = 'category-emoji';
         emoji.textContent = category.emoji;
-        
+
         const name = document.createElement('span');
         name.className = 'category-name';
         name.textContent = category.name;
-        
+
         const badge = document.createElement('span');
         badge.className = 'category-badge';
         badge.style.backgroundColor = category.color;
-        
+
         const countSpan = document.createElement('span');
         countSpan.className = 'category-count';
         countSpan.textContent = `(${count} ${count === 1 ? 'receta' : 'recetas'})`;
-        
+
         const editBtn = document.createElement('button');
         editBtn.type = 'button';
         editBtn.className = 'btn-icon btn-edit-category';
@@ -1780,7 +1780,7 @@ class RecipeApp {
         editBtn.addEventListener('click', () => {
             this.handleEditCategory(category.id);
         });
-        
+
         const hideBtn = document.createElement('button');
         hideBtn.type = 'button';
         hideBtn.className = 'btn-icon btn-hide-category';
@@ -1789,7 +1789,7 @@ class RecipeApp {
         hideBtn.addEventListener('click', () => {
             this.handleHideCategory(category.id);
         });
-        
+
         const deleteBtn = document.createElement('button');
         deleteBtn.type = 'button';
         deleteBtn.className = 'btn-icon btn-delete-category';
@@ -1798,7 +1798,7 @@ class RecipeApp {
         deleteBtn.addEventListener('click', () => {
             this.handleDeleteCategory(category.id);
         });
-        
+
         infoDiv.appendChild(emoji);
         infoDiv.appendChild(name);
         infoDiv.appendChild(badge);
@@ -1806,12 +1806,12 @@ class RecipeApp {
         infoDiv.appendChild(editBtn);
         infoDiv.appendChild(hideBtn);
         infoDiv.appendChild(deleteBtn);
-        
+
         item.appendChild(infoDiv);
-        
+
         return item;
     }
-    
+
     /**
      * Show category management modal
      */
@@ -1820,7 +1820,7 @@ class RecipeApp {
         if (modal) {
             modal.classList.remove('hidden');
             this.renderCategoryModal();
-            
+
             // Clear form
             document.getElementById('new-category-name').value = '';
             const emojiSpan = document.getElementById('new-category-emoji');
@@ -1834,7 +1834,7 @@ class RecipeApp {
             document.getElementById('category-error').textContent = '';
         }
     }
-    
+
     /**
      * Close category management modal
      */
@@ -1844,7 +1844,7 @@ class RecipeApp {
             modal.classList.add('hidden');
         }
     }
-    
+
     /**
      * Handle create category
      */
@@ -1853,12 +1853,12 @@ class RecipeApp {
         const emojiHidden = document.getElementById('new-category-emoji-value');
         const colorInput = document.getElementById('selected-color');
         const errorMessage = document.getElementById('category-error');
-        
+
         if (!nameInput || !emojiHidden || !colorInput || !errorMessage) return;
-        
+
         // Clear previous error
         errorMessage.textContent = '';
-        
+
         try {
             // Create category
             const category = this.categoryManager.createCategory({
@@ -1866,31 +1866,31 @@ class RecipeApp {
                 emoji: emojiHidden.value || DEFAULT_EMOJI,
                 color: colorInput.value || CATEGORY_COLORS[0]
             });
-            
+
             // Update UI
             this.renderFilterChips();
             this.renderCategorySelector();
             this.renderCustomCategoriesList();
-            
+
             // Clear form
             nameInput.value = '';
             const emojiSpan = document.getElementById('new-category-emoji');
             if (emojiSpan) emojiSpan.textContent = DEFAULT_EMOJI;
             emojiHidden.value = DEFAULT_EMOJI;
-            
+
             // Reset color
             const colorPreview = document.getElementById('new-category-color-preview');
             if (colorPreview) colorPreview.style.backgroundColor = CATEGORY_COLORS[0];
             colorInput.value = CATEGORY_COLORS[0];
-            
+
             // Show success message
             this.showSuccess(`Categoría "${category.name}" creada correctamente`);
-            
+
         } catch (error) {
             errorMessage.textContent = error.message;
         }
     }
-    
+
     /**
      * Handle edit category - show edit modal
      * @param {string} categoryId - Category ID to edit
@@ -1898,17 +1898,17 @@ class RecipeApp {
     handleEditCategory(categoryId) {
         const category = this.categoryManager.getCategoryById(categoryId);
         if (!category) return;
-        
+
         // Check if it's a predefined category
         if (category.isPredefined) {
             this.showError('No se pueden editar categorías predefinidas');
             return;
         }
-        
+
         // Show edit modal
         this.showEditCategoryModal(category);
     }
-    
+
     /**
      * Show edit category modal
      * @param {Object} category - Category to edit
@@ -1916,7 +1916,7 @@ class RecipeApp {
     showEditCategoryModal(category) {
         const modal = document.getElementById('edit-category-modal');
         if (!modal) return;
-        
+
         // Populate form with current values
         document.getElementById('edit-category-name').value = category.name;
         const emojiSpan = document.getElementById('edit-category-emoji');
@@ -1928,11 +1928,11 @@ class RecipeApp {
         document.getElementById('edit-category-id').value = category.id;
         document.getElementById('edit-selected-color').value = category.color;
         document.getElementById('edit-category-error').textContent = '';
-        
+
         // Show modal
         modal.classList.remove('hidden');
     }
-    
+
     /**
      * Close edit category modal
      */
@@ -1942,7 +1942,7 @@ class RecipeApp {
             modal.classList.add('hidden');
         }
     }
-    
+
     /**
      * Open emoji picker modal
      * @param {string} targetSpanId - ID of the span element to update visually
@@ -1951,18 +1951,18 @@ class RecipeApp {
     openEmojiPickerModal(targetSpanId, targetHiddenId) {
         const modal = document.getElementById('emoji-picker-modal');
         if (!modal) return;
-        
+
         // Store target IDs
         this.emojiPickerTargetSpan = targetSpanId;
         this.emojiPickerTargetHidden = targetHiddenId;
-        
+
         // Render emoji grid
         this.renderEmojiPickerModal();
-        
+
         // Show modal
         modal.classList.remove('hidden');
     }
-    
+
     /**
      * Close emoji picker modal
      */
@@ -1972,7 +1972,7 @@ class RecipeApp {
             modal.classList.add('hidden');
         }
     }
-    
+
     /**
      * Render emoji picker modal content
      */
@@ -1980,38 +1980,38 @@ class RecipeApp {
         Object.keys(EMOJI_CATEGORIES).forEach(category => {
             const grid = document.querySelector(`.emoji-grid-modal[data-category="${category}"]`);
             if (!grid) return;
-            
+
             grid.innerHTML = '';
-            
+
             EMOJI_CATEGORIES[category].forEach(emoji => {
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'emoji-option';
                 button.textContent = emoji;
                 button.title = emoji;
-                
+
                 button.addEventListener('click', () => {
                     // Update visual span
                     const targetSpan = document.getElementById(this.emojiPickerTargetSpan);
                     if (targetSpan) {
                         targetSpan.textContent = emoji;
                     }
-                    
+
                     // Update hidden input value
                     const targetHidden = document.getElementById(this.emojiPickerTargetHidden);
                     if (targetHidden) {
                         targetHidden.value = emoji;
                     }
-                    
+
                     // Close modal
                     this.closeEmojiPickerModal();
                 });
-                
+
                 grid.appendChild(button);
             });
         });
     }
-    
+
     /**
      * Open color picker modal
      * @param {string} targetPreviewId - ID of the preview element to update
@@ -2020,18 +2020,18 @@ class RecipeApp {
     openColorPickerModal(targetPreviewId, targetHiddenId) {
         const modal = document.getElementById('color-picker-modal');
         if (!modal) return;
-        
+
         // Store target IDs
         this.colorPickerTargetPreview = targetPreviewId;
         this.colorPickerTargetHidden = targetHiddenId;
-        
+
         // Render color palette
         this.renderColorPickerModal();
-        
+
         // Show modal
         modal.classList.remove('hidden');
     }
-    
+
     /**
      * Close color picker modal
      */
@@ -2041,52 +2041,52 @@ class RecipeApp {
             modal.classList.add('hidden');
         }
     }
-    
+
     /**
      * Render color picker modal content
      */
     renderColorPickerModal() {
         const colorPalette = document.getElementById('color-palette-modal');
         if (!colorPalette) return;
-        
+
         colorPalette.innerHTML = '';
-        
+
         // Get current selected color
         const currentColor = document.getElementById(this.colorPickerTargetHidden)?.value;
-        
+
         CATEGORY_COLORS.forEach((color) => {
             const chip = document.createElement('button');
             chip.type = 'button';
             chip.className = 'color-chip';
             chip.style.backgroundColor = color;
             chip.dataset.color = color;
-            
+
             // Select current color
             if (color === currentColor) {
                 chip.classList.add('selected');
             }
-            
+
             chip.addEventListener('click', () => {
                 // Update preview
                 const targetPreview = document.getElementById(this.colorPickerTargetPreview);
                 if (targetPreview) {
                     targetPreview.style.backgroundColor = color;
                 }
-                
+
                 // Update hidden input value
                 const targetHidden = document.getElementById(this.colorPickerTargetHidden);
                 if (targetHidden) {
                     targetHidden.value = color;
                 }
-                
+
                 // Close modal
                 this.closeColorPickerModal();
             });
-            
+
             colorPalette.appendChild(chip);
         });
     }
-    
+
     /**
      * Handle save edited category
      */
@@ -2096,14 +2096,14 @@ class RecipeApp {
         const colorInput = document.getElementById('edit-selected-color');
         const categoryIdInput = document.getElementById('edit-category-id');
         const errorMessage = document.getElementById('edit-category-error');
-        
+
         if (!nameInput || !emojiHidden || !colorInput || !categoryIdInput || !errorMessage) return;
-        
+
         const categoryId = categoryIdInput.value;
-        
+
         // Clear previous error
         errorMessage.textContent = '';
-        
+
         try {
             // Update category
             const oldId = categoryId;
@@ -2112,7 +2112,7 @@ class RecipeApp {
                 emoji: emojiHidden.value.trim() || DEFAULT_EMOJI,
                 color: colorInput.value || CATEGORY_COLORS[0]
             });
-            
+
             // If ID changed (name changed), update all recipes
             if (result.oldId !== result.category.id) {
                 for (const recipe of this.recipes) {
@@ -2121,28 +2121,28 @@ class RecipeApp {
                         await this.storageManager.saveRecipe(recipe);
                     }
                 }
-                
+
                 // Reload recipes
                 await this.loadRecipes();
             }
-            
+
             // Update UI
             this.renderFilterChips();
             this.renderCategorySelector();
             this.renderRecipeList();
             this.renderCustomCategoriesList();
-            
+
             // Close modal
             this.closeEditCategoryModal();
-            
+
             // Show success message
             this.showSuccess(`Categoría actualizada correctamente`);
-            
+
         } catch (error) {
             errorMessage.textContent = error.message;
         }
     }
-    
+
     /**
      * Handle delete/hide category
      * @param {string} categoryId - Category ID to delete/hide
@@ -2150,10 +2150,10 @@ class RecipeApp {
     async handleDeleteCategory(categoryId) {
         const category = this.categoryManager.getCategoryById(categoryId);
         if (!category) return;
-        
+
         // Count affected recipes
         const affectedCount = this.recipes.filter(r => r.category === categoryId).length;
-        
+
         // Confirm deletion/hiding
         const action = category.isPredefined ? 'ocultar' : 'eliminar';
         let message = `¿Estás seguro de que quieres ${action} la categoría "${category.name}"?`;
@@ -2163,13 +2163,13 @@ class RecipeApp {
         if (category.isPredefined) {
             message += '\n\nPodrás restaurarla desde la sección "Categorías ocultas".';
         }
-        
+
         if (!confirm(message)) return;
-        
+
         try {
             // Delete/hide category
             const result = this.categoryManager.deleteCategory(categoryId, this.recipes);
-            
+
             // Update affected recipes
             if (result.affectedRecipes > 0) {
                 for (const recipeId of result.affectedRecipeIds) {
@@ -2179,11 +2179,11 @@ class RecipeApp {
                         await this.storageManager.saveRecipe(recipe);
                     }
                 }
-                
+
                 // Reload recipes
                 await this.loadRecipes();
             }
-            
+
             // Update UI
             this.renderFilterChips();
             this.renderCategorySelector();
@@ -2191,16 +2191,16 @@ class RecipeApp {
             this.renderPredefinedCategoriesList();
             this.renderCustomCategoriesList();
             this.renderHiddenCategoriesList();
-            
+
             // Show success message
             const actionText = result.isPredefined ? 'ocultada' : 'eliminada';
             this.showSuccess(`Categoría "${category.name}" ${actionText} correctamente`);
-            
+
         } catch (error) {
             this.showError('Error al eliminar la categoría: ' + error.message);
         }
     }
-    
+
     /**
      * Handle hide category
      * @param {string} categoryId - Category ID to hide
@@ -2208,23 +2208,23 @@ class RecipeApp {
     async handleHideCategory(categoryId) {
         const category = this.categoryManager.getCategoryById(categoryId);
         if (!category) return;
-        
+
         // Count affected recipes
         const affectedCount = this.recipes.filter(r => r.category === categoryId).length;
-        
+
         // Confirm hiding
         let message = `¿Estás seguro de que quieres ocultar la categoría "${category.name}"?`;
         if (affectedCount > 0) {
             message += `\n\n${affectedCount} ${affectedCount === 1 ? 'receta se ocultará' : 'recetas se ocultarán'} junto con esta categoría.`;
         }
         message += '\n\nPodrás restaurarla desde la sección "Categorías ocultas".';
-        
+
         if (!confirm(message)) return;
-        
+
         try {
             // Hide category (recipes keep their category, just won't be visible)
             this.categoryManager.hideCategory(categoryId);
-            
+
             // Update UI
             this.renderFilterChips();
             this.renderCategorySelector();
@@ -2232,16 +2232,16 @@ class RecipeApp {
             this.renderPredefinedCategoriesList();
             this.renderCustomCategoriesList();
             this.renderHiddenCategoriesList();
-            
+
             // Show success message
             const recipesText = affectedCount > 0 ? ` (${affectedCount} ${affectedCount === 1 ? 'receta ocultada' : 'recetas ocultadas'})` : '';
             this.showSuccess(`Categoría "${category.name}" ocultada correctamente${recipesText}`);
-            
+
         } catch (error) {
             this.showError('Error al ocultar la categoría: ' + error.message);
         }
     }
-    
+
     /**
      * Handle restore category
      * @param {string} categoryId - Category ID to restore
@@ -2249,11 +2249,11 @@ class RecipeApp {
     async handleRestoreCategory(categoryId) {
         const category = this.categoryManager.getCategoryById(categoryId);
         if (!category) return;
-        
+
         try {
             // Unhide category
             this.categoryManager.unhideCategory(categoryId);
-            
+
             // Update UI
             this.renderFilterChips();
             this.renderCategorySelector();
@@ -2261,15 +2261,15 @@ class RecipeApp {
             this.renderPredefinedCategoriesList();
             this.renderCustomCategoriesList();
             this.renderHiddenCategoriesList();
-            
+
             // Show success message
             this.showSuccess(`Categoría "${category.name}" restaurada correctamente`);
-            
+
         } catch (error) {
             this.showError('Error al restaurar la categoría: ' + error.message);
         }
     }
-    
+
     // ===== End Category Management Functions =====
 
     /**
@@ -2312,7 +2312,7 @@ class RecipeApp {
             nameInput.addEventListener('blur', () => {
                 this.validateNameField();
             });
-            
+
             // Prevent line breaks in contenteditable
             nameInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
@@ -2342,10 +2342,10 @@ class RecipeApp {
 
         // Collapsible sections event listeners
         this.setupCollapsibleSections();
-        
+
         // Kitchen appliances chips
         this.renderKitchenAppliancesChips();
-        
+
         // Checkbox badge toggles
         this.setupCheckboxBadges();
     }
@@ -2357,33 +2357,33 @@ class RecipeApp {
         const cookingButtonsContainer = document.getElementById('cooking-actions-buttons');
         const ingredientButtonsContainer = document.getElementById('ingredient-action-buttons');
         let descriptionTextarea = document.getElementById('sequence-description');
-        
+
         if (!descriptionTextarea || !cookingButtonsContainer) return;
-        
+
         // Clone textarea to remove all previous event listeners
         const newTextarea = descriptionTextarea.cloneNode(true);
         descriptionTextarea.parentNode.replaceChild(newTextarea, descriptionTextarea);
         descriptionTextarea = newTextarea;
-        
+
         // Render ingredient buttons dynamically
         this.renderIngredientButtons();
-        
+
         // Get all buttons from both containers
         const getAllButtons = () => {
             const cookingButtons = Array.from(cookingButtonsContainer.querySelectorAll('.cooking-action-btn'));
-            const ingredientButtons = ingredientButtonsContainer ? 
+            const ingredientButtons = ingredientButtonsContainer ?
                 Array.from(ingredientButtonsContainer.querySelectorAll('.cooking-action-btn')) : [];
             return [...ingredientButtons, ...cookingButtons];
         };
-        
+
         let allButtons = getAllButtons();
         let currentSuggestedButton = null;
-        
+
         // Clone and replace cooking buttons to remove old listeners
         cookingButtonsContainer.querySelectorAll('.cooking-action-btn').forEach(button => {
             const newButton = button.cloneNode(true);
             button.parentNode.replaceChild(newButton, button);
-            
+
             newButton.addEventListener('click', () => {
                 this.insertActionIntoTextarea(newButton.dataset.action, descriptionTextarea);
                 if (currentSuggestedButton) {
@@ -2392,28 +2392,28 @@ class RecipeApp {
                 }
             });
         });
-        
+
         // New autocomplete: highlight matching button as user types
         descriptionTextarea.addEventListener('input', () => {
             // Update used actions (green marking)
             this.updateUsedCookingActions();
-            
+
             // Clear previous suggestion
             if (currentSuggestedButton) {
                 currentSuggestedButton.classList.remove('suggested');
                 currentSuggestedButton = null;
             }
-            
+
             // Refresh button list in case ingredients changed
             allButtons = getAllButtons();
-            
+
             // Find and highlight suggested button
             currentSuggestedButton = this.findSuggestedButton(descriptionTextarea, allButtons);
             if (currentSuggestedButton) {
                 currentSuggestedButton.classList.add('suggested');
             }
         });
-        
+
         // Handle Enter/Tab to accept suggestion
         descriptionTextarea.addEventListener('keydown', (e) => {
             if ((e.key === 'Enter' || e.key === 'Tab') && currentSuggestedButton) {
@@ -2424,10 +2424,10 @@ class RecipeApp {
                 currentSuggestedButton = null;
             }
         });
-        
+
         console.log('[CookingActions] Cooking action buttons initialized');
     }
-    
+
     /**
      * Render ingredient buttons dynamically
      */
@@ -2435,10 +2435,10 @@ class RecipeApp {
         const ingredientButtonsContainer = document.getElementById('ingredient-action-buttons');
         const descriptionTextarea = document.getElementById('sequence-description');
         if (!ingredientButtonsContainer) return;
-        
+
         // Clear existing ingredient buttons
         ingredientButtonsContainer.innerHTML = '';
-        
+
         // Add ingredient buttons
         this.ingredients.forEach(ingredient => {
             const button = document.createElement('button');
@@ -2446,33 +2446,33 @@ class RecipeApp {
             button.className = 'cooking-action-btn ingredient-btn';
             button.dataset.action = ingredient.name;
             button.textContent = ingredient.name;
-            
+
             // Add click handler
             if (descriptionTextarea) {
                 button.addEventListener('click', () => {
                     this.insertActionIntoTextarea(ingredient.name, descriptionTextarea);
                 });
             }
-            
+
             ingredientButtonsContainer.appendChild(button);
         });
     }
-    
+
     /**
      * Find suggested button based on current text
      */
     findSuggestedButton(textarea, buttons) {
         const cursorPos = textarea.selectionStart;
         const textBeforeCursor = textarea.value.substring(0, cursorPos);
-        
+
         // Get the current word being typed
         const words = textBeforeCursor.split(/[\s,]+/);
         const currentWord = words[words.length - 1].toLowerCase();
-        
+
         if (currentWord.length < 2) {
             return null;
         }
-        
+
         // Find first button that matches
         for (const button of buttons) {
             const action = button.dataset.action.toLowerCase();
@@ -2480,10 +2480,10 @@ class RecipeApp {
                 return button;
             }
         }
-        
+
         return null;
     }
-    
+
     /**
      * Insert action into textarea at cursor position
      * If there's a partial word, it will be replaced
@@ -2493,7 +2493,7 @@ class RecipeApp {
         const cursorPos = textarea.selectionStart;
         let textBefore = currentValue.substring(0, cursorPos);
         const textAfter = currentValue.substring(cursorPos);
-        
+
         // If replacing partial word, remove the current word being typed
         if (replacePartialWord) {
             // Find the start of the current word
@@ -2504,50 +2504,50 @@ class RecipeApp {
             // Remove the partial word
             textBefore = currentValue.substring(0, wordStart);
         }
-        
+
         // Check if we need to capitalize (start of text or after period)
-        const shouldCapitalize = textBefore.length === 0 || 
-                               textBefore.trimEnd().endsWith('.') ||
-                               textBefore.trimEnd().endsWith('!') ||
-                               textBefore.trimEnd().endsWith('?');
-        
+        const shouldCapitalize = textBefore.length === 0 ||
+            textBefore.trimEnd().endsWith('.') ||
+            textBefore.trimEnd().endsWith('!') ||
+            textBefore.trimEnd().endsWith('?');
+
         // Capitalize first letter if needed
         if (shouldCapitalize && action.length > 0) {
             action = action.charAt(0).toUpperCase() + action.slice(1);
         }
-        
+
         // Add space before if needed (only if not replacing partial word)
         const needsSpaceBefore = !replacePartialWord && textBefore.length > 0 && !textBefore.endsWith(' ') && !textBefore.endsWith('\n');
         const prefix = needsSpaceBefore ? ' ' : '';
-        
+
         // Update textarea value
         textarea.value = textBefore + prefix + action + textAfter;
-        
+
         // Set cursor position after inserted text
         const newCursorPos = textBefore.length + prefix.length + action.length;
         textarea.setSelectionRange(newCursorPos, newCursorPos);
-        
+
         // Focus textarea
         textarea.focus();
-        
+
         // Update used buttons
         this.updateUsedCookingActions();
     }
-    
+
     /**
      * Update cooking action buttons to show which ones are used
      */
     updateUsedCookingActions() {
         const descriptionTextarea = document.getElementById('sequence-description');
         const actionButtons = document.querySelectorAll('.cooking-action-btn');
-        
+
         if (!descriptionTextarea) return;
-        
+
         const description = descriptionTextarea.value.toLowerCase();
-        
+
         actionButtons.forEach(button => {
             const action = button.dataset.action.toLowerCase();
-            
+
             // Check if the action is in the description
             if (description.includes(action)) {
                 button.classList.add('used');
@@ -2600,16 +2600,16 @@ class RecipeApp {
      */
     setupCheckboxBadges() {
         const badgeContainers = document.querySelectorAll('.checkbox-badge-container');
-        
+
         badgeContainers.forEach(container => {
             container.addEventListener('click', () => {
                 const checkboxId = container.dataset.checkbox;
                 const checkbox = document.getElementById(checkboxId);
-                
+
                 if (checkbox) {
                     // Toggle checkbox state
                     checkbox.checked = !checkbox.checked;
-                    
+
                     // Toggle active class on container
                     if (checkbox.checked) {
                         container.classList.add('active');
@@ -2628,11 +2628,11 @@ class RecipeApp {
     toggleCollapsibleSection(sectionName) {
         const title = document.getElementById(`${sectionName}-section-title`);
         const content = document.getElementById(`${sectionName}-collapsible-content`);
-        
+
         if (!title || !content) return;
-        
+
         const isCollapsed = title.classList.contains('collapsed');
-        
+
         if (isCollapsed) {
             // Close all other sections first
             const allSections = ['appliances', 'ingredients', 'sequences', 'additional-info'];
@@ -2641,7 +2641,7 @@ class RecipeApp {
                     this.setCollapsibleSectionState(section, true);
                 }
             });
-            
+
             // Expand this section
             title.classList.remove('collapsed');
             content.classList.remove('collapsed');
@@ -2660,9 +2660,9 @@ class RecipeApp {
     setCollapsibleSectionState(sectionName, collapsed) {
         const title = document.getElementById(`${sectionName}-section-title`);
         const content = document.getElementById(`${sectionName}-collapsible-content`);
-        
+
         if (!title || !content) return;
-        
+
         if (collapsed) {
             title.classList.add('collapsed');
             content.classList.add('collapsed');
@@ -2690,7 +2690,7 @@ class RecipeApp {
         ingredientInputs.forEach(input => {
             // Skip ingredient-name input as it has special autocomplete handling
             if (input.id === 'ingredient-name') return;
-            
+
             input.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -2709,7 +2709,7 @@ class RecipeApp {
     setupIngredientAutocomplete() {
         const nameInput = document.getElementById('ingredient-name');
         const autocompleteDiv = document.getElementById('ingredient-autocomplete');
-        
+
         if (!nameInput || !autocompleteDiv) {
             console.warn('[Autocomplete] Ingredient name input or autocomplete div not found');
             return;
@@ -2725,7 +2725,7 @@ class RecipeApp {
         // Show autocomplete on input
         nameInputRef.addEventListener('input', () => {
             const value = nameInputRef.value.trim().toLowerCase();
-            
+
             // Hide if less than 2 characters
             if (value.length < 2) {
                 autocompleteDiv.style.display = 'none';
@@ -2733,7 +2733,7 @@ class RecipeApp {
             }
 
             // Filter predefined ingredients (only match from the start)
-            const matches = PREDEFINED_INGREDIENTS.filter(ingredient => 
+            const matches = PREDEFINED_INGREDIENTS.filter(ingredient =>
                 ingredient.toLowerCase().startsWith(value)
             );
 
@@ -2750,7 +2750,7 @@ class RecipeApp {
         nameInputRef.addEventListener('keydown', (e) => {
             const isAutocompleteVisible = autocompleteDiv && autocompleteDiv.style.display !== 'none';
             const suggestions = autocompleteDiv.querySelectorAll('.autocomplete-item');
-            
+
             if (e.key === 'Enter') {
                 // If autocomplete is visible and a suggestion is selected
                 if (isAutocompleteVisible && currentSuggestionIndex >= 0) {
@@ -2765,10 +2765,10 @@ class RecipeApp {
                     return;
                 }
             }
-            
+
             // Only handle arrow keys if autocomplete is visible
             if (!isAutocompleteVisible) return;
-            
+
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
                 currentSuggestionIndex = (currentSuggestionIndex + 1) % suggestions.length;
@@ -2790,13 +2790,13 @@ class RecipeApp {
                 currentSuggestionIndex = -1;
             }
         };
-        
+
         // Store reference to remove later if needed
         if (!this._ingredientAutocompleteClickHandler) {
             this._ingredientAutocompleteClickHandler = closeAutocomplete;
             document.addEventListener('click', closeAutocomplete);
         }
-        
+
         console.log('[Autocomplete] Ingredient autocomplete initialized successfully');
     }
 
@@ -2808,21 +2808,21 @@ class RecipeApp {
      */
     showIngredientAutocomplete(input, container, suggestions) {
         container.innerHTML = '';
-        
+
         suggestions.forEach(suggestion => {
             const item = document.createElement('div');
             item.className = 'autocomplete-item';
             item.textContent = this.capitalizeFirstLetter(suggestion);
-            
+
             item.addEventListener('click', () => {
                 input.value = this.capitalizeFirstLetter(suggestion);
                 container.style.display = 'none';
                 input.focus();
             });
-            
+
             container.appendChild(item);
         });
-        
+
         container.style.display = 'block';
     }
 
@@ -2958,11 +2958,11 @@ class RecipeApp {
         const filtersContainer = document.getElementById('filters-container');
         const toggleBtn = document.getElementById('toggle-filters-btn');
         const clearBtn = document.getElementById('clear-all-filters-btn');
-        
+
         if (!filtersContainer || !toggleBtn) return;
-        
+
         const isHidden = filtersContainer.classList.contains('hidden');
-        
+
         if (isHidden) {
             // Opening filters
             filtersContainer.classList.remove('hidden');
@@ -2976,7 +2976,7 @@ class RecipeApp {
             // Closing filters - just hide, don't clear
             filtersContainer.classList.add('hidden');
             toggleBtn.textContent = '🔍 Filtros';
-            
+
             // Hide clear button
             if (clearBtn) {
                 clearBtn.classList.add('hidden');
@@ -2990,14 +2990,14 @@ class RecipeApp {
     updateClearButtonVisibility() {
         const clearBtn = document.getElementById('clear-all-filters-btn');
         const filtersContainer = document.getElementById('filters-container');
-        
+
         if (!clearBtn) return;
-        
+
         // Show button only if filters are visible and there are active filters
         // TEMPORALMENTE OCULTO - Referencia a activeTimeFilter (2025-11-04)
         const hasActiveFilters = this.activeFilters.size > 0 /* || this.activeTimeFilter !== 'all' */;
         const filtersVisible = filtersContainer && !filtersContainer.classList.contains('hidden');
-        
+
         if (hasActiveFilters && filtersVisible) {
             clearBtn.classList.remove('hidden');
         } else {
@@ -3011,12 +3011,12 @@ class RecipeApp {
     clearAllFilters() {
         // Clear category filters
         this.activeFilters.clear();
-        
+
         // TEMPORALMENTE OCULTO - Clear time filter (2025-11-04)
         /*
         this.activeTimeFilter = 'all';
         */
-        
+
         // Update UI - category chips
         const categoryChips = document.querySelectorAll('#filter-bar .filter-chip');
         categoryChips.forEach(chip => {
@@ -3026,7 +3026,7 @@ class RecipeApp {
                 chip.classList.remove('active');
             }
         });
-        
+
         // TEMPORALMENTE OCULTO - Update UI - time chips (2025-11-04)
         /*
         const timeChips = document.querySelectorAll('#time-filter-chips .filter-chip');
@@ -3038,19 +3038,19 @@ class RecipeApp {
             }
         });
         */
-        
+
         // Hide clear button
         const clearBtn = document.getElementById('clear-all-filters-btn');
         if (clearBtn) {
             clearBtn.classList.add('hidden');
         }
-        
+
         // Clear category marks (remove red borders)
         this.markAvailableCategoriesByTime();
-        
+
         // Update clear button visibility
         this.updateClearButtonVisibility();
-        
+
         // Render all recipes
         this.renderRecipeList();
     }
@@ -3229,51 +3229,51 @@ class RecipeApp {
                 const specialFilters = ['caravana', 'hospital', 'menu'];
                 const activeSpecialFilters = Array.from(this.activeFilters).filter(f => specialFilters.includes(f));
                 const activeCategoryFilters = Array.from(this.activeFilters).filter(f => !specialFilters.includes(f));
-                
+
                 // Check special filters (must match ALL - AND logic)
                 let specialFiltersMatch = true;
-                
+
                 if (activeSpecialFilters.includes('caravana')) {
                     if (recipe.caravanFriendly !== true) {
                         specialFiltersMatch = false;
                     }
                 }
-                
+
                 if (activeSpecialFilters.includes('hospital')) {
                     if (recipe.hospitalFriendly !== true) {
                         specialFiltersMatch = false;
                     }
                 }
-                
+
                 if (activeSpecialFilters.includes('menu')) {
                     if (recipe.menuFriendly !== true) {
                         specialFiltersMatch = false;
                     }
                 }
-                
+
                 // If special filters don't match, exclude recipe
                 if (!specialFiltersMatch) {
                     return false;
                 }
-                
+
                 // If only special filters are active (no category filters), include recipe
                 if (activeCategoryFilters.length === 0) {
                     return true;
                 }
-                
+
                 // Check category filters (must match ANY - OR logic)
                 let categoryMatch = false;
-                
+
                 // Check "sin-categoria" filter
                 if (activeCategoryFilters.includes('sin-categoria') && (recipe.category === null || recipe.category === undefined)) {
                     categoryMatch = true;
                 }
-                
+
                 // Check if recipe category matches any active category filter
                 if (recipe.category && activeCategoryFilters.includes(recipe.category)) {
                     categoryMatch = true;
                 }
-                
+
                 return categoryMatch;
             });
         }
@@ -3338,7 +3338,7 @@ class RecipeApp {
             filtered.sort((a, b) => {
                 const nameA = a.name.toLowerCase();
                 const nameB = b.name.toLowerCase();
-                
+
                 if (this.sortOrder === 'asc') {
                     return nameA.localeCompare(nameB);
                 } else {
@@ -3349,7 +3349,7 @@ class RecipeApp {
             filtered.sort((a, b) => {
                 const aDate = new Date(a.updatedAt);
                 const bDate = new Date(b.updatedAt);
-                
+
                 if (this.sortOrder === 'asc') {
                     return aDate - bDate; // Oldest first
                 } else {
@@ -3368,13 +3368,13 @@ class RecipeApp {
     setViewMode(mode) {
         this.viewMode = mode;
         localStorage.setItem('viewMode', mode);
-        
+
         // Update button states
         const viewGridBtn = document.getElementById('view-grid-btn');
         const viewListBtn = document.getElementById('view-list-btn');
         const recipesGrid = document.getElementById('recipes-grid');
         const listHeader = document.getElementById('list-view-header');
-        
+
         if (viewGridBtn && viewListBtn) {
             if (mode === 'grid') {
                 viewGridBtn.classList.add('active');
@@ -3384,7 +3384,7 @@ class RecipeApp {
                 viewListBtn.classList.add('active');
             }
         }
-        
+
         // Update grid class and header visibility
         if (recipesGrid) {
             if (mode === 'list') {
@@ -3395,7 +3395,7 @@ class RecipeApp {
                 if (listHeader) listHeader.classList.add('hidden');
             }
         }
-        
+
         // Re-render recipes
         this.renderRecipeList();
     }
@@ -3419,10 +3419,10 @@ class RecipeApp {
             this.sortBy = column;
             this.sortOrder = column === 'name' ? 'asc' : 'desc';
         }
-        
+
         // Update sort indicators
         this.updateSortIndicators();
-        
+
         // Re-render recipes
         this.renderRecipeList();
     }
@@ -3433,7 +3433,7 @@ class RecipeApp {
     updateSortIndicators() {
         const nameIndicator = document.querySelector('#sort-by-name .sort-indicator');
         const dateIndicator = document.querySelector('#sort-by-date .sort-indicator');
-        
+
         if (nameIndicator) {
             if (this.sortBy === 'name') {
                 nameIndicator.textContent = this.sortOrder === 'asc' ? '▲' : '▼';
@@ -3441,7 +3441,7 @@ class RecipeApp {
                 nameIndicator.textContent = '';
             }
         }
-        
+
         if (dateIndicator) {
             if (this.sortBy === 'date') {
                 dateIndicator.textContent = this.sortOrder === 'asc' ? '▲' : '▼';
@@ -3580,7 +3580,7 @@ class RecipeApp {
         const card = document.createElement('div');
         card.className = 'recipe-card list-item';
         card.dataset.recipeId = recipe.id;
-        
+
         // Add highlight class if this is the recently saved recipe
         if (this.lastSavedRecipeId && recipe.id === this.lastSavedRecipeId) {
             card.classList.add('recipe-card-highlight');
@@ -3589,11 +3589,11 @@ class RecipeApp {
                 this.lastSavedRecipeId = null;
             }, 2000);
         }
-        
+
         // Create thumbnail image
         const imageDiv = document.createElement('div');
         imageDiv.className = 'recipe-image';
-        
+
         if (recipe.images && recipe.images.length > 0) {
             const img = document.createElement('img');
             img.src = recipe.images[0].data;
@@ -3607,11 +3607,11 @@ class RecipeApp {
             imageDiv.style.fontSize = '2rem';
             imageDiv.style.background = 'var(--color-background-secondary)';
         }
-        
+
         // Create badges container for dynamic stacking
         const badgesContainer = document.createElement('div');
         badgesContainer.className = 'recipe-badges-container';
-        
+
         // Add caravan badge if recipe is caravan friendly
         if (recipe.caravanFriendly === true) {
             const caravanBadge = document.createElement('div');
@@ -3630,7 +3630,8 @@ class RecipeApp {
             badgesContainer.appendChild(hospitalBadge);
         }
 
-        // Add menu badge if recipe is menu friendly
+        // OCULTO - Add menu badge if recipe is menu friendly (2025-11-05)
+        /*
         if (recipe.menuFriendly === true) {
             const menuBadge = document.createElement('div');
             menuBadge.className = 'recipe-menu-badge-image';
@@ -3638,21 +3639,22 @@ class RecipeApp {
             menuBadge.title = 'Para menú';
             badgesContainer.appendChild(menuBadge);
         }
-        
+        */
+
         // Only append container if it has badges
         if (badgesContainer.children.length > 0) {
             imageDiv.appendChild(badgesContainer);
         }
-        
+
         // Create content section
         const contentDiv = document.createElement('div');
         contentDiv.className = 'recipe-content';
-        
+
         // Recipe name
         const nameH3 = document.createElement('h3');
         nameH3.className = 'recipe-name';
         nameH3.textContent = recipe.name;
-        
+
         // Recipe date (MM/YYYY format)
         const dateSpan = document.createElement('span');
         dateSpan.className = 'recipe-date';
@@ -3660,7 +3662,7 @@ class RecipeApp {
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
         dateSpan.textContent = `${month}/${year}`;
-        
+
         // Share button
         const shareBtn = document.createElement('button');
         shareBtn.className = 'recipe-share-btn';
@@ -3670,19 +3672,19 @@ class RecipeApp {
             e.stopPropagation();
             this.shareRecipe(recipe.id);
         });
-        
+
         contentDiv.appendChild(nameH3);
         contentDiv.appendChild(dateSpan);
         contentDiv.appendChild(shareBtn);
-        
+
         card.appendChild(imageDiv);
         card.appendChild(contentDiv);
-        
+
         // Click handler for the whole row (except share button)
         card.addEventListener('click', () => {
             this.showRecipeDetail(recipe.id);
         });
-        
+
         return card;
     }
 
@@ -3696,11 +3698,11 @@ class RecipeApp {
         if (this.viewMode === 'list') {
             return this.createRecipeListItem(recipe);
         }
-        
+
         const card = document.createElement('div');
         card.className = 'recipe-card';
         card.dataset.recipeId = recipe.id;
-        
+
         // Add highlight class if this is the recently saved recipe
         if (this.lastSavedRecipeId && recipe.id === this.lastSavedRecipeId) {
             card.classList.add('recipe-card-highlight');
@@ -3786,7 +3788,7 @@ class RecipeApp {
         // Create badges container for dynamic stacking
         const badgesContainer = document.createElement('div');
         badgesContainer.className = 'recipe-badges-container';
-        
+
         // Add time badge if totalTime exists
         if (recipe.totalTime && recipe.totalTime.trim() !== '') {
             const timeBadge = document.createElement('div');
@@ -3794,7 +3796,7 @@ class RecipeApp {
             timeBadge.textContent = recipe.totalTime;
             badgesContainer.appendChild(timeBadge);
         }
-        
+
         // Add caravan badge if recipe is caravan friendly
         if (recipe.caravanFriendly === true) {
             const caravanBadge = document.createElement('div');
@@ -3813,7 +3815,8 @@ class RecipeApp {
             badgesContainer.appendChild(hospitalBadge);
         }
 
-        // Add menu badge if recipe is menu friendly
+        // OCULTO - Add menu badge if recipe is menu friendly (2025-11-05)
+        /*
         if (recipe.menuFriendly === true) {
             const menuBadge = document.createElement('div');
             menuBadge.className = 'recipe-menu-badge-image';
@@ -3821,7 +3824,8 @@ class RecipeApp {
             menuBadge.title = 'Para menú';
             badgesContainer.appendChild(menuBadge);
         }
-        
+        */
+
         // Only append container if it has badges
         if (badgesContainer.children.length > 0) {
             imageDiv.appendChild(badgesContainer);
@@ -3902,7 +3906,7 @@ class RecipeApp {
         // Category not found (may have been deleted)
         return '❓ Categoría no encontrada';
     }
-    
+
     /**
      * Get category emoji
      * @param {string} category - Category ID
@@ -4042,7 +4046,7 @@ class RecipeApp {
             if (recipe) {
                 // Reset form before showing detail
                 this.resetForm();
-                
+
                 // Show recipe detail (pass the ID, not the object)
                 this.showRecipeDetail(editingRecipeId);
                 return;
@@ -4133,7 +4137,7 @@ class RecipeApp {
         if (imageError) {
             imageError.textContent = '';
         }
-        
+
         // Reset kitchen appliances
         this.selectedAppliances = [];
         this.renderKitchenAppliancesChips();
@@ -4168,44 +4172,44 @@ class RecipeApp {
     }
 
     // ===== Kitchen Appliances Management =====
-    
+
     /**
      * Render kitchen appliances chips
      */
     renderKitchenAppliancesChips() {
         const container = document.getElementById('kitchen-appliances-chips');
         if (!container) return;
-        
+
         container.innerHTML = '';
-        
+
         KITCHEN_APPLIANCES.forEach(appliance => {
             const chip = document.createElement('button');
             chip.type = 'button';
             chip.className = 'appliance-chip';
             chip.dataset.applianceId = appliance.id;
             chip.innerHTML = `<span class="chip-emoji">${appliance.emoji}</span> ${appliance.name}`;
-            
+
             // Mark as selected if in selectedAppliances array
             if (this.selectedAppliances.includes(appliance.id)) {
                 chip.classList.add('selected');
             }
-            
+
             // Add click handler
             chip.addEventListener('click', () => {
                 this.toggleAppliance(appliance.id);
             });
-            
+
             container.appendChild(chip);
         });
     }
-    
+
     /**
      * Toggle appliance selection
      * @param {string} applianceId - Appliance ID to toggle
      */
     toggleAppliance(applianceId) {
         const index = this.selectedAppliances.indexOf(applianceId);
-        
+
         if (index > -1) {
             // Remove from selection
             this.selectedAppliances.splice(index, 1);
@@ -4213,11 +4217,11 @@ class RecipeApp {
             // Add to selection
             this.selectedAppliances.push(applianceId);
         }
-        
+
         // Re-render chips to update visual state
         this.renderKitchenAppliancesChips();
     }
-    
+
     // ===== End Kitchen Appliances Management =====
 
     /**
@@ -4271,22 +4275,22 @@ class RecipeApp {
      */
     generateAutoRecipeName() {
         // Find existing GonsoReceta names
-        const gonsoRecipes = this.recipes.filter(recipe => 
+        const gonsoRecipes = this.recipes.filter(recipe =>
             recipe.name.startsWith('GonsoReceta ')
         );
-        
+
         // Extract numbers from existing names
         const numbers = gonsoRecipes.map(recipe => {
             const match = recipe.name.match(/GonsoReceta (\d+)/);
             return match ? parseInt(match[1]) : 0;
         });
-        
+
         // Find the next available number
         let nextNumber = 1;
         if (numbers.length > 0) {
             nextNumber = Math.max(...numbers) + 1;
         }
-        
+
         return `GonsoReceta ${nextNumber}`;
     }
 
@@ -4303,7 +4307,7 @@ class RecipeApp {
             nameInput.textContent = autoName;
             console.log(`Auto-generated recipe name: ${autoName}`);
         }
-        
+
         // Validate name field (should pass now with auto-generated name)
         if (!this.validateNameField()) {
             // Scroll to name field
@@ -4314,10 +4318,10 @@ class RecipeApp {
         // Validate time fields - if empty, set default to 59 minutes
         const hoursInput = document.getElementById('recipe-hours');
         const minutesInput = document.getElementById('recipe-minutes');
-        
+
         const hoursValue = hoursInput?.value?.trim();
         const minutesValue = minutesInput?.value?.trim();
-        
+
         // Parse values (empty = 0)
         let hours = hoursValue ? parseInt(hoursValue) : 0;
         let minutes = minutesValue ? parseInt(minutesValue) : 0;
@@ -4612,7 +4616,7 @@ class RecipeApp {
 
         // Update sequence ingredient selector
         this.updateSequenceIngredientSelector();
-        
+
         // Update ingredient buttons for autocomplete
         this.renderIngredientButtons();
     }
@@ -4821,7 +4825,7 @@ class RecipeApp {
 
             const quantityDiv = document.createElement('div');
             quantityDiv.className = 'ingredient-quantity';
-            
+
             // Format quantity display: don't show 0, use dash for empty required fields
             let quantityText = '';
             if (ingredient.quantity && ingredient.quantity > 0) {
@@ -4836,7 +4840,7 @@ class RecipeApp {
                 // No quantity and no unit - show dash
                 quantityText = '-';
             }
-            
+
             quantityDiv.textContent = quantityText;
 
             // Create separator
@@ -4898,10 +4902,10 @@ class RecipeApp {
         // Exit edit mode
         this.editingIngredientId = null;
         this.renderIngredientsList();
-        
+
         // Update sequence ingredient selector (for adding new sequences)
         this.updateSequenceIngredientSelector();
-        
+
         // Update sequences that reference this ingredient
         // This ensures the ingredient name is updated in sequence chips immediately
         this.renderSequencesList();
@@ -4942,7 +4946,7 @@ class RecipeApp {
         // Re-render lists
         this.renderIngredientsList();
         this.renderSequencesList();
-        
+
         // Update ingredient buttons for autocomplete
         this.renderIngredientButtons();
     }
@@ -4974,7 +4978,7 @@ class RecipeApp {
 
         // Update sequence ingredient selector
         this.updateSequenceIngredientSelector();
-        
+
         // Re-render sequences to show updated ingredient numbers
         this.renderSequencesList();
     }
@@ -5062,7 +5066,7 @@ class RecipeApp {
         selectedChips.forEach(chip => chip.classList.remove('selected'));
         this.populateTimeInput('sequence', '');
         descriptionTextarea.value = '';
-        
+
         // Clear used cooking actions
         this.updateUsedCookingActions();
 
@@ -5339,7 +5343,7 @@ class RecipeApp {
                 downBtn.addEventListener('click', () => {
                     this.handleMoveSequence(index, 'down');
                 });
-                
+
                 actionsDiv.appendChild(upBtn);
                 actionsDiv.appendChild(downBtn);
             }
@@ -5513,7 +5517,7 @@ class RecipeApp {
             const nameInput = document.getElementById('recipe-name');
             if (nameInput) {
                 nameInput.textContent = recipe.name || 'Editar Receta';
-                
+
                 // Focus on name input and position cursor at the end
                 setTimeout(() => {
                     nameInput.focus();
@@ -5531,7 +5535,7 @@ class RecipeApp {
             if (categoryInput) {
                 categoryInput.value = recipe.category || '';
             }
-            
+
             // Update category display
             this.updateCategoryDisplay();
 
@@ -5607,7 +5611,7 @@ class RecipeApp {
             // Load multimedia
             this.images = recipe.images ? [...recipe.images] : [];
             this.renderImagesPreview();
-            
+
             // Load kitchen appliances
             this.selectedAppliances = recipe.kitchenAppliances ? [...recipe.kitchenAppliances] : [];
             this.renderKitchenAppliancesChips();
@@ -5918,10 +5922,10 @@ class RecipeApp {
         // Action buttons overlay
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'media-actions';
-        
+
         // Only show move buttons if there are multiple images
         const hasMultipleImages = this.images.length > 1;
-        
+
         if (hasMultipleImages) {
             const moveUpBtn = document.createElement('button');
             moveUpBtn.type = 'button';
@@ -5931,7 +5935,7 @@ class RecipeApp {
             moveUpBtn.addEventListener('click', () => {
                 this.handleMoveMedia(mediaFile.id, type, 'up');
             });
-            
+
             const moveDownBtn = document.createElement('button');
             moveDownBtn.type = 'button';
             moveDownBtn.className = 'media-move-btn media-move-down';
@@ -5940,11 +5944,11 @@ class RecipeApp {
             moveDownBtn.addEventListener('click', () => {
                 this.handleMoveMedia(mediaFile.id, type, 'down');
             });
-            
+
             actionsDiv.appendChild(moveUpBtn);
             actionsDiv.appendChild(moveDownBtn);
         }
-        
+
         const deleteBtn = document.createElement('button');
         deleteBtn.type = 'button';
         deleteBtn.className = 'media-delete-btn';
@@ -5953,7 +5957,7 @@ class RecipeApp {
         deleteBtn.addEventListener('click', () => {
             this.handleDeleteMedia(mediaFile.id, type);
         });
-        
+
         actionsDiv.appendChild(deleteBtn);
 
         // File info
@@ -5993,7 +5997,7 @@ class RecipeApp {
         this.images = this.images.filter(img => img.id !== mediaId);
         this.renderImagesPreview();
     }
-    
+
     /**
      * Handle moving a media file up or down
      * @param {string} mediaId - Media file ID to move
@@ -6002,20 +6006,20 @@ class RecipeApp {
      */
     handleMoveMedia(mediaId, type, direction) {
         const currentIndex = this.images.findIndex(img => img.id === mediaId);
-        
+
         if (currentIndex === -1) return;
-        
+
         // Calculate new index
         const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-        
+
         // Check bounds
         if (newIndex < 0 || newIndex >= this.images.length) return;
-        
+
         // Swap elements
         const temp = this.images[currentIndex];
         this.images[currentIndex] = this.images[newIndex];
         this.images[newIndex] = temp;
-        
+
         // Re-render
         this.renderImagesPreview();
     }
@@ -6112,13 +6116,13 @@ class RecipeApp {
         if (nameElement) {
             // Clear previous content and add name with edit icon
             nameElement.innerHTML = `${recipe.name} <i class="fa-solid fa-pencil recipe-name-edit-icon"></i>`;
-            
+
             // Create tooltip that appears on hover
             const tooltip = document.createElement('div');
             tooltip.className = 'recipe-name-tooltip';
             tooltip.textContent = 'Editar receta';
             nameElement.appendChild(tooltip);
-            
+
             nameElement.onclick = () => {
                 this.showRecipeForm(recipe.id);
             };
@@ -6167,7 +6171,7 @@ class RecipeApp {
 
         // Ingredients
         this.renderDetailIngredients(recipe.ingredients);
-        
+
         // Kitchen appliances (Método de Preparación)
         this.renderDetailKitchenAppliances(recipe.kitchenAppliances);
 
@@ -6226,7 +6230,7 @@ class RecipeApp {
 
             const quantitySpan = document.createElement('span');
             quantitySpan.className = 'ingredient-detail-quantity';
-            
+
             // Format quantity display: don't show 0, use dash for empty required fields
             let quantityText = '';
             if (ingredient.quantity && ingredient.quantity > 0) {
@@ -6241,7 +6245,7 @@ class RecipeApp {
                 // No quantity and no unit - show dash
                 quantityText = '-';
             }
-            
+
             quantitySpan.textContent = quantityText;
 
             const basketBtn = document.createElement('button');
@@ -6725,8 +6729,8 @@ class RecipeApp {
         if (mainImage) {
             const image = this.galleryState.images[index];
             mainImage.src = image.data;
-            mainImage.alt = this.galleryState.recipeName 
-                ? `${this.galleryState.recipeName} - Foto ${index + 1}` 
+            mainImage.alt = this.galleryState.recipeName
+                ? `${this.galleryState.recipeName} - Foto ${index + 1}`
                 : `Foto ${index + 1}`;
         }
 
@@ -6793,7 +6797,7 @@ class RecipeApp {
         if (!str || typeof str !== 'string' || str.length === 0) {
             return str || '';
         }
-        
+
         // Capitalize first character (works for letters, returns unchanged for numbers/special chars)
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
@@ -7085,7 +7089,7 @@ class RecipeApp {
             // Reset button state
             deleteBtn.disabled = false;
             deleteBtn.textContent = 'Eliminar';
-            
+
             deleteBtn.onclick = async () => {
                 await this.deleteRecipe(recipe.id);
             };
@@ -7280,13 +7284,13 @@ class RecipeApp {
     showRecipeOptionsModal(recipeId) {
         const modal = document.getElementById('recipe-options-modal');
         if (!modal) return;
-        
+
         // Store current recipe ID for actions
         this.currentOptionsRecipeId = recipeId;
-        
+
         // Show modal
         modal.classList.remove('hidden');
-        
+
         // Setup event listeners
         const closeBtn = document.getElementById('close-recipe-options-modal');
         const overlay = modal.querySelector('.modal-overlay');
@@ -7295,29 +7299,29 @@ class RecipeApp {
         const shareBtn = document.getElementById('recipe-option-share');
         const pdfBtn = document.getElementById('recipe-option-pdf');
         const deleteBtn = document.getElementById('recipe-option-delete');
-        
+
         if (closeBtn) {
             closeBtn.onclick = () => this.closeRecipeOptionsModal();
         }
-        
+
         if (overlay) {
             overlay.onclick = () => this.closeRecipeOptionsModal();
         }
-        
+
         if (editBtn) {
             editBtn.onclick = () => {
                 this.closeRecipeOptionsModal();
                 this.showRecipeForm(recipeId);
             };
         }
-        
+
         if (duplicateBtn) {
             duplicateBtn.onclick = () => {
                 this.closeRecipeOptionsModal();
                 this.duplicateRecipe(recipeId);
             };
         }
-        
+
         if (shareBtn) {
             shareBtn.onclick = () => {
                 this.closeRecipeOptionsModal();
@@ -7327,14 +7331,14 @@ class RecipeApp {
                 }
             };
         }
-        
+
         if (pdfBtn) {
             pdfBtn.onclick = () => {
                 this.closeRecipeOptionsModal();
                 this.exportRecipeToPDF(recipeId);
             };
         }
-        
+
         if (deleteBtn) {
             deleteBtn.onclick = () => {
                 this.closeRecipeOptionsModal();
@@ -7495,19 +7499,19 @@ class RecipeApp {
         if (recipeCounter) {
             recipeCounter.classList.remove('hidden');
         }
-        
+
         // Hide filters container (like initial state)
         const filtersContainer = document.getElementById('filters-container');
         if (filtersContainer) {
             filtersContainer.classList.add('hidden');
         }
-        
+
         // Show toggle filters button
         const filterToggleContainer = document.querySelector('.filter-toggle-container');
         if (filterToggleContainer) {
             filterToggleContainer.classList.remove('hidden');
         }
-        
+
         // Update toggle button text to show filters are closed
         const toggleBtn = document.getElementById('toggle-filters-btn');
         if (toggleBtn) {
@@ -7586,7 +7590,7 @@ class RecipeApp {
      */
     initTheme() {
         const savedTheme = localStorage.getItem('recetario_theme');
-        
+
         // Default to dark theme if no preference is saved
         if (savedTheme === null || savedTheme === 'dark') {
             document.documentElement.classList.add('dark-theme');
@@ -7611,7 +7615,7 @@ class RecipeApp {
         document.documentElement.classList.toggle('dark-theme', isDark);
         localStorage.setItem('recetario_theme', isDark ? 'dark' : 'light');
         this.updateThemeButton(isDark);
-        
+
         // Show feedback
         this.showSuccess(isDark ? '🌙 Tema oscuro activado' : '☀️ Tema claro activado', 2000);
     }
@@ -7782,31 +7786,31 @@ class RecipeApp {
         // Start with recipe name
         let text = recipe.name + '\n';
         text += '-------------------------------\n';
-        
+
         // Check if recipe has ingredients
         if (!recipe.ingredients || recipe.ingredients.length === 0) {
             text += 'No hay ingredientes definidos';
             return text;
         }
-        
+
         // Format each ingredient
         recipe.ingredients.forEach(ingredient => {
             let line = ingredient.name;
-            
+
             // Add quantity and unit if available
             if (ingredient.quantity && ingredient.quantity > 0) {
                 line += ` - ${ingredient.quantity}`;
-                
+
                 if (ingredient.unit && ingredient.unit.trim() !== '') {
                     line += ` ${ingredient.unit}`;
                 }
             } else if (ingredient.unit && ingredient.unit.trim() !== '') {
                 line += ` - ${ingredient.unit}`;
             }
-            
+
             text += line + '\n';
         });
-        
+
         return text.trim();
     }
 
@@ -7820,23 +7824,23 @@ class RecipeApp {
         // Prevent card click event
         event.stopPropagation();
         event.preventDefault();
-        
+
         // Get the recipe card element
         const recipeCard = event.target.closest('.recipe-card');
-        
+
         try {
             // Format ingredients text
             const ingredientsText = this.formatIngredientsForClipboard(recipe);
-            
+
             // Copy to clipboard using Clipboard API
             await navigator.clipboard.writeText(ingredientsText);
-            
+
             // Show success toast over the recipe card
             this.showToastOnCard(recipeCard, 'Ingredientes copiados', 'success');
-            
+
         } catch (error) {
             console.error('Error copying ingredients:', error);
-            
+
             // Fallback to legacy method
             try {
                 const ingredientsText = this.formatIngredientsForClipboard(recipe);
@@ -7855,25 +7859,25 @@ class RecipeApp {
      */
     async copyIngredientsFromDetail(recipe, event) {
         event.preventDefault();
-        
+
         // Get the multimedia gallery section (prefer images gallery)
-        const galleryContainer = document.getElementById('detail-images-gallery') || 
-                                document.getElementById('detail-multimedia-section') ||
-                                document.getElementById('recipe-detail');
-        
+        const galleryContainer = document.getElementById('detail-images-gallery') ||
+            document.getElementById('detail-multimedia-section') ||
+            document.getElementById('recipe-detail');
+
         try {
             // Format ingredients text
             const ingredientsText = this.formatIngredientsForClipboard(recipe);
-            
+
             // Copy to clipboard using Clipboard API
             await navigator.clipboard.writeText(ingredientsText);
-            
+
             // Show success toast over the gallery
             this.showToastOnCard(galleryContainer, 'Ingredientes copiados', 'success');
-            
+
         } catch (error) {
             console.error('Error copying ingredients:', error);
-            
+
             // Fallback to legacy method
             try {
                 const ingredientsText = this.formatIngredientsForClipboard(recipe);
@@ -7895,26 +7899,26 @@ class RecipeApp {
         // Create temporary textarea element
         const textArea = document.createElement('textarea');
         textArea.value = text;
-        
+
         // Position off-screen
         textArea.style.position = 'fixed';
         textArea.style.left = '-999999px';
         textArea.style.top = '-999999px';
-        
+
         // Add to DOM
         document.body.appendChild(textArea);
-        
+
         // Select and copy
         textArea.focus();
         textArea.select();
-        
+
         try {
             // Execute copy command
             const successful = document.execCommand('copy');
-            
+
             // Clean up
             document.body.removeChild(textArea);
-            
+
             if (!successful) {
                 throw new Error('execCommand returned false');
             }
@@ -7934,7 +7938,7 @@ class RecipeApp {
      */
     showToastOnCard(recipeCard, message, type = 'success') {
         if (!recipeCard) return;
-        
+
         // Create toast element
         const toast = document.createElement('div');
         toast.className = `toast-notification-card ${type}`;
@@ -7942,15 +7946,15 @@ class RecipeApp {
             <span class="toast-icon">${type === 'success' ? '✓' : '✕'}</span>
             <span class="toast-message">${message}</span>
         `;
-        
+
         // Add toast to recipe card
         recipeCard.appendChild(toast);
-        
+
         // Show toast with animation
         setTimeout(() => {
             toast.classList.add('show');
         }, 10);
-        
+
         // Hide and remove toast after 2 seconds
         setTimeout(() => {
             toast.classList.remove('show');
@@ -7971,7 +7975,7 @@ class RecipeApp {
     showToast(message, type = 'success') {
         // Get or create toast element
         let toast = document.getElementById('ingredients-toast');
-        
+
         if (!toast) {
             toast = document.createElement('div');
             toast.id = 'ingredients-toast';
@@ -7982,22 +7986,22 @@ class RecipeApp {
             `;
             document.body.appendChild(toast);
         }
-        
+
         // Update message and type
         const messageSpan = toast.querySelector('.toast-message');
         const iconSpan = toast.querySelector('.toast-icon');
-        
+
         messageSpan.textContent = message;
         toast.className = `toast-notification ${type}`;
-        
+
         // Update icon based on type
         iconSpan.textContent = type === 'success' ? '✓' : '✕';
-        
+
         // Show toast
         setTimeout(() => {
             toast.classList.add('show');
         }, 10);
-        
+
         // Hide toast after 3 seconds
         setTimeout(() => {
             toast.classList.remove('show');
@@ -8045,10 +8049,10 @@ class RecipeApp {
             const existingRecipeNames = new Set(
                 this.recipes.map(r => r.name.toLowerCase().trim())
             );
-            
+
             const newRecipes = [];
             const duplicateRecipes = [];
-            
+
             for (const recipe of result.successful) {
                 const recipeName = recipe.name.toLowerCase().trim();
                 if (existingRecipeNames.has(recipeName)) {
@@ -8058,7 +8062,7 @@ class RecipeApp {
                     newRecipes.push(recipe);
                 }
             }
-            
+
             // Check for unknown categories and create them automatically
             const unknownCategories = new Set();
             for (const recipe of newRecipes) {
@@ -8066,7 +8070,7 @@ class RecipeApp {
                     unknownCategories.add(recipe.category);
                 }
             }
-            
+
             // Create unknown categories automatically
             for (const categoryId of unknownCategories) {
                 try {
@@ -8080,12 +8084,12 @@ class RecipeApp {
                     console.warn('[Import] Could not create category:', categoryId, error);
                 }
             }
-            
+
             // Save only new recipes to storage
             for (const recipe of newRecipes) {
                 await this.storageManager.saveRecipe(recipe);
             }
-            
+
             // Update result summary with duplicate info
             result.summary.imported = newRecipes.length;
             result.summary.duplicates = duplicateRecipes.length;
@@ -8146,7 +8150,7 @@ class RecipeApp {
                 const message = `${summary.imported} receta${summary.imported > 1 ? 's' : ''} importada${summary.imported > 1 ? 's' : ''}, ${duplicates.length} ya exist${duplicates.length > 1 ? 'ían' : 'ía'}`;
                 this.showSuccess(message);
             }
-            
+
             // Log duplicate names
             console.log('[Import] Recetas duplicadas omitidas:', duplicates.map(r => r.name));
         } else if (summary.imported > 0) {
@@ -8375,10 +8379,10 @@ class RecipeApp {
             createdAt: recipe.createdAt,
             updatedAt: recipe.updatedAt
         });
-        
+
         // Generate XML using XMLExporter
         const xmlString = XMLExporter.generateXML(recipeForShare);
-        
+
         // Debug: Log what we're exporting
         console.log('[Share] Exporting recipe:', {
             name: recipe.name,
@@ -8391,7 +8395,7 @@ class RecipeApp {
         console.log('[Share] Ingredients:', recipe.ingredients);
         console.log('[Share] XML generated length:', xmlString.length);
         console.log('[Share] XML preview:', xmlString.substring(0, 200));
-        
+
         // Encode XML to Base64 safely (handle Unicode characters)
         // First encode to UTF-8, then to Base64
         const utf8Bytes = new TextEncoder().encode(xmlString);
@@ -8400,15 +8404,15 @@ class RecipeApp {
             binaryString += String.fromCharCode(utf8Bytes[i]);
         }
         const base64Data = btoa(binaryString);
-        
+
         console.log('[Share] XML length:', xmlString.length);
         console.log('[Share] UTF-8 bytes length:', utf8Bytes.length);
         console.log('[Share] Base64 length:', base64Data.length);
-        
+
         // URL-encode the Base64 to ensure it's safe in URLs
         const urlSafeBase64 = encodeURIComponent(base64Data);
         console.log('[Share] URL-safe Base64 length:', urlSafeBase64.length);
-        
+
         const recipeName = encodeURIComponent(recipe.name);
         return `https://gs1lvan.github.io/mehaquedadobien/?r=${recipeName}&import=${urlSafeBase64}`;
     }
@@ -8419,7 +8423,7 @@ class RecipeApp {
      */
     async showShareRecipe(recipe) {
         const shareLink = this.generateShareLink(recipe);
-        
+
         // Copy to clipboard
         try {
             await navigator.clipboard.writeText(shareLink);
@@ -8436,7 +8440,7 @@ class RecipeApp {
      */
     initShoppingLists() {
         console.log('[ShoppingLists] Initializing shopping lists');
-        
+
         // Get DOM elements
         const newListBtn = document.getElementById('new-shopping-list-btn');
         const importListBtn = document.getElementById('import-shopping-list-btn');
@@ -8445,66 +8449,66 @@ class RecipeApp {
         const closeModalBtn = document.getElementById('close-shopping-list-modal');
         const saveBtn = document.getElementById('save-shopping-list-btn');
         const addItemBtn = document.getElementById('add-shopping-item-btn');
-        
+
         // Setup event listeners
         if (newListBtn) {
             newListBtn.addEventListener('click', () => {
                 this.showShoppingListForm();
             });
         }
-        
+
         if (importListBtn && importListInput) {
             importListBtn.addEventListener('click', () => {
                 importListInput.click();
             });
-            
+
             importListInput.addEventListener('change', (e) => {
                 this.handleImportShoppingList(e);
             });
         }
-        
+
         if (closeShoppingListsBtn) {
             closeShoppingListsBtn.addEventListener('click', () => {
                 // Hide shopping lists view
                 this.hideShoppingListsView();
-                
+
                 // Show recipe list view
                 const recipesView = document.getElementById('recipe-list-view');
                 if (recipesView) recipesView.classList.remove('hidden');
-                
+
                 // Show filters and recipe counter
                 const filterToggleContainer = document.querySelector('.filter-toggle-container');
                 const recipeCounter = document.getElementById('recipe-counter');
-                
+
                 if (filterToggleContainer) filterToggleContainer.classList.remove('hidden');
                 if (recipeCounter) recipeCounter.classList.remove('hidden');
-                
+
                 // Update current view
                 this.currentView = 'list';
-                
+
                 // Render recipes to ensure they're displayed
                 this.renderRecipes();
             });
         }
-        
+
         if (closeModalBtn) {
             closeModalBtn.addEventListener('click', () => {
                 this.closeShoppingListModal();
             });
         }
-        
+
         if (saveBtn) {
             saveBtn.addEventListener('click', () => {
                 this.saveShoppingList();
             });
         }
-        
+
         if (addItemBtn) {
             addItemBtn.addEventListener('click', () => {
                 this.addShoppingItemInput();
             });
         }
-        
+
         // Close modal on overlay click
         const modal = document.getElementById('shopping-list-modal');
         if (modal) {
@@ -8522,7 +8526,7 @@ class RecipeApp {
      */
     initMenus() {
         console.log('[Menus] Initializing menus');
-        
+
         // Get DOM elements
         const newMenuBtn = document.getElementById('new-menu-btn');
         const importMenuBtn = document.getElementById('import-menu-btn');
@@ -8531,66 +8535,66 @@ class RecipeApp {
         const closeModalBtn = document.getElementById('close-menu-modal');
         const saveBtn = document.getElementById('save-menu-btn');
         const addItemBtn = document.getElementById('add-menu-item-btn');
-        
+
         // Setup event listeners
         if (newMenuBtn) {
             newMenuBtn.addEventListener('click', () => {
                 this.showMenuForm();
             });
         }
-        
+
         if (importMenuBtn && importMenuInput) {
             importMenuBtn.addEventListener('click', () => {
                 importMenuInput.click();
             });
-            
+
             importMenuInput.addEventListener('change', (e) => {
                 console.log('[Menus] Import menu file selected');
                 // TODO: Implement handleImportMenu(e)
             });
         }
-        
+
         if (closeMenusBtn) {
             closeMenusBtn.addEventListener('click', () => {
                 // Hide menus view
                 this.hideMenusView();
-                
+
                 // Show recipe list view
                 const recipesView = document.getElementById('recipe-list-view');
                 if (recipesView) recipesView.classList.remove('hidden');
-                
+
                 // Show filters and recipe counter
                 const filterToggleContainer = document.querySelector('.filter-toggle-container');
                 const filtersContainer = document.getElementById('filters-container');
                 const recipeCounter = document.getElementById('recipe-counter');
-                
+
                 if (filterToggleContainer) filterToggleContainer.classList.remove('hidden');
                 if (filtersContainer) filtersContainer.classList.remove('hidden');
                 if (recipeCounter) recipeCounter.classList.remove('hidden');
-                
+
                 // Update current view
                 this.currentView = 'list';
             });
         }
-        
+
         if (closeModalBtn) {
             closeModalBtn.addEventListener('click', () => {
                 this.closeMenuModal();
             });
         }
-        
+
         if (saveBtn) {
             saveBtn.addEventListener('click', () => {
                 this.saveMenu();
             });
         }
-        
+
         if (addItemBtn) {
             addItemBtn.addEventListener('click', () => {
                 this.addMenuItemInput();
             });
         }
-        
+
         // Close modal on overlay click
         const modal = document.getElementById('menu-modal');
         if (modal) {
@@ -8608,32 +8612,32 @@ class RecipeApp {
      */
     showShoppingListsView() {
         console.log('[ShoppingLists] Showing shopping lists view');
-        
+
         // Hide other views
         const recipesView = document.getElementById('recipe-list-view');
         const recipeFormView = document.getElementById('recipe-form-view');
         const recipeDetailView = document.getElementById('recipe-detail-view');
         const shoppingListsView = document.getElementById('shopping-lists-view');
         const menusView = document.getElementById('menus-view');
-        
+
         if (recipesView) recipesView.classList.add('hidden');
         if (recipeFormView) recipeFormView.classList.add('hidden');
         if (recipeDetailView) recipeDetailView.classList.add('hidden');
         if (shoppingListsView) shoppingListsView.classList.remove('hidden');
         if (menusView) menusView.classList.add('hidden');
-        
+
         // Hide filters and recipe counter
         const filterToggleContainer = document.querySelector('.filter-toggle-container');
         const filtersContainer = document.getElementById('filters-container');
         const recipeCounter = document.getElementById('recipe-counter');
-        
+
         if (filterToggleContainer) filterToggleContainer.classList.add('hidden');
         if (filtersContainer) filtersContainer.classList.add('hidden');
         if (recipeCounter) recipeCounter.classList.add('hidden');
-        
+
         // Update current view
         this.currentView = 'shopping-lists';
-        
+
         // Render lists
         this.renderShoppingLists();
     }
@@ -8653,39 +8657,39 @@ class RecipeApp {
      */
     showMenusView() {
         console.log('[Menus] Showing menus view');
-        
+
         // Hide other views
         const recipesView = document.getElementById('recipe-list-view');
         const recipeFormView = document.getElementById('recipe-form-view');
         const recipeDetailView = document.getElementById('recipe-detail-view');
         const shoppingListsView = document.getElementById('shopping-lists-view');
         const menusView = document.getElementById('menus-view');
-        
+
         if (recipesView) recipesView.classList.add('hidden');
         if (recipeFormView) recipeFormView.classList.add('hidden');
         if (recipeDetailView) recipeDetailView.classList.add('hidden');
         if (shoppingListsView) shoppingListsView.classList.add('hidden');
         if (menusView) menusView.classList.remove('hidden');
-        
+
         // Hide filters and recipe counter
         const filterToggleContainer = document.querySelector('.filter-toggle-container');
         const filtersContainer = document.getElementById('filters-container');
         const recipeCounter = document.getElementById('recipe-counter');
-        
+
         if (filterToggleContainer) filterToggleContainer.classList.add('hidden');
         if (filtersContainer) filtersContainer.classList.add('hidden');
         if (recipeCounter) recipeCounter.classList.add('hidden');
-        
+
         // Clear shopping lists container to prevent any cross-contamination
         const shoppingListsContainer = document.getElementById('shopping-lists-container');
         if (shoppingListsContainer) {
             // Don't clear it, just ensure it's in the hidden view
             console.log('[Menus] Shopping lists view is hidden');
         }
-        
+
         // Update current view
         this.currentView = 'menus';
-        
+
         // Render menus (placeholder for now)
         this.renderMenus();
     }
@@ -8706,12 +8710,12 @@ class RecipeApp {
     renderMenus() {
         const container = document.getElementById('menus-container');
         const emptyState = document.getElementById('menus-empty');
-        
+
         if (!container) {
             console.error('[Menus] Container not found');
             return;
         }
-        
+
         // Save expanded state before clearing
         const expandedMenuIds = new Set();
         container.querySelectorAll('.shopping-list-card.expanded').forEach(card => {
@@ -8720,13 +8724,13 @@ class RecipeApp {
                 expandedMenuIds.add(menuId);
             }
         });
-        
+
         // Clear container completely
         container.innerHTML = '';
-        
+
         // Get all menus
         const menus = this.getMenusFromStorage();
-        
+
         // Show empty state if no menus
         if (menus.length === 0) {
             if (emptyState) {
@@ -8735,23 +8739,23 @@ class RecipeApp {
             console.log('[Menus] No menus to display');
             return;
         }
-        
+
         // Hide empty state
         if (emptyState) {
             emptyState.classList.add('hidden');
         }
-        
+
         // Render each menu
         menus.forEach(menu => {
             const card = this.renderMenuCard(menu);
             container.appendChild(card);
-            
+
             // Restore expanded state
             if (expandedMenuIds.has(String(menu.id))) {
                 const content = card.querySelector('.shopping-list-content');
                 const header = card.querySelector('.shopping-list-header');
                 const expandIcon = card.querySelector('.expand-icon');
-                
+
                 if (content && header && expandIcon) {
                     content.classList.remove('collapsed');
                     card.classList.add('expanded');
@@ -8760,10 +8764,10 @@ class RecipeApp {
                 }
             }
         });
-        
+
         console.log('[Menus] Rendered', menus.length, 'menus');
     }
-    
+
     /**
      * Render a single menu card
      */
@@ -8771,46 +8775,46 @@ class RecipeApp {
         const card = document.createElement('div');
         card.className = 'shopping-list-card';
         card.dataset.menuId = menu.id;
-        
+
         // Add visual indicator if disabled
         if (menu.enabled === false) {
             card.style.opacity = '0.5';
         }
-        
+
         // Create header
         const header = document.createElement('div');
         header.className = 'shopping-list-header';
         header.setAttribute('role', 'button');
         header.setAttribute('tabindex', '0');
         header.setAttribute('aria-expanded', 'false');
-        
+
         const name = document.createElement('h3');
         name.className = 'shopping-list-name';
         name.textContent = menu.name;
-        
+
         // Create counter container
         const counterContainer = document.createElement('span');
         counterContainer.className = 'shopping-list-counter';
-        
+
         // Create badge with same style as date-time-badge
         const itemCountBadge = document.createElement('span');
         itemCountBadge.className = 'date-time-badge';
         itemCountBadge.textContent = `${menu.items.length} elemento${menu.items.length !== 1 ? 's' : ''}`;
-        
+
         counterContainer.appendChild(itemCountBadge);
-        
+
         const expandIcon = document.createElement('span');
         expandIcon.className = 'expand-icon';
         expandIcon.textContent = '▼';
-        
+
         header.appendChild(name);
         header.appendChild(counterContainer);
         header.appendChild(expandIcon);
-        
+
         // Create actions (eye, edit, more options) - DENTRO del card, después del header
         const actions = document.createElement('div');
         actions.className = 'shopping-list-actions';
-        
+
         // Create toggle enabled button (eye icon)
         const toggleEnabledBtn = this.createButton({
             className: 'btn-icon',
@@ -8821,7 +8825,7 @@ class RecipeApp {
                 this.toggleMenuEnabled(menu.id);
             }
         });
-        
+
         // Create edit button
         const editBtn = this.createButton({
             className: 'btn-icon',
@@ -8832,7 +8836,7 @@ class RecipeApp {
                 this.showMenuForm(menu.id);
             }
         });
-        
+
         // Create more options button (three dots)
         const moreBtn = this.createButton({
             className: 'btn-icon',
@@ -8843,45 +8847,45 @@ class RecipeApp {
                 this.showMenuOptionsModal(menu.id);
             }
         });
-        
+
         actions.appendChild(toggleEnabledBtn);
         actions.appendChild(editBtn);
         actions.appendChild(moreBtn);
-        
+
         // Create content (collapsible)
         const content = document.createElement('div');
         content.className = 'shopping-list-content collapsed';
-        
+
         const itemsContainer = this.renderMenuItems(menu);
         content.appendChild(itemsContainer);
-        
+
         // Add event listeners for expand/collapse
         header.addEventListener('click', () => {
             this.toggleMenuExpanded(menu.id);
         });
-        
+
         header.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 this.toggleMenuExpanded(menu.id);
             }
         });
-        
+
         // Assemble card
         card.appendChild(header);
         card.appendChild(actions);
         card.appendChild(content);
-        
+
         return card;
     }
-    
+
     /**
      * Render menu items with reorder controls
      */
     renderMenuItems(menu) {
         const container = document.createElement('div');
         container.className = 'shopping-list-items';
-        
+
         if (menu.items.length === 0) {
             const empty = document.createElement('p');
             empty.style.color = 'var(--color-text-secondary)';
@@ -8890,38 +8894,38 @@ class RecipeApp {
             container.appendChild(empty);
             return container;
         }
-        
+
         menu.items.forEach((item, index) => {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'shopping-item';
             itemDiv.dataset.itemId = item.id;
-            
+
             // Bullet point
             const bullet = document.createElement('span');
             bullet.className = 'shopping-item-bullet';
             bullet.textContent = '•';
-            
+
             // Item content
             const itemContent = document.createElement('div');
             itemContent.className = 'shopping-item-content';
-            
+
             const itemName = document.createElement('span');
             itemName.className = 'shopping-item-name';
             itemName.textContent = item.name;
-            
+
             itemContent.appendChild(itemName);
-            
+
             if (item.quantity) {
                 const itemQuantity = document.createElement('span');
                 itemQuantity.className = 'shopping-item-quantity';
                 itemQuantity.textContent = ` (${item.quantity})`;
                 itemContent.appendChild(itemQuantity);
             }
-            
+
             // Reorder buttons - EXACTAMENTE igual que en listas de compra
             const reorderButtons = document.createElement('div');
             reorderButtons.className = 'shopping-item-reorder';
-            
+
             // Up button
             const upBtn = document.createElement('button');
             upBtn.className = 'btn-icon btn-reorder';
@@ -8932,7 +8936,7 @@ class RecipeApp {
                 e.stopPropagation();
                 this.moveMenuItemUp(menu.id, index);
             });
-            
+
             // Down button
             const downBtn = document.createElement('button');
             downBtn.className = 'btn-icon btn-reorder';
@@ -8943,34 +8947,34 @@ class RecipeApp {
                 e.stopPropagation();
                 this.moveMenuItemDown(menu.id, index);
             });
-            
+
             reorderButtons.appendChild(upBtn);
             reorderButtons.appendChild(downBtn);
-            
+
             itemDiv.appendChild(bullet);
             itemDiv.appendChild(itemContent);
             itemDiv.appendChild(reorderButtons);
-            
+
             container.appendChild(itemDiv);
         });
-        
+
         return container;
     }
-    
+
     /**
      * Toggle menu expanded/collapsed
      */
     toggleMenuExpanded(menuId) {
         const card = document.querySelector(`[data-menu-id="${menuId}"]`);
         if (!card) return;
-        
+
         const content = card.querySelector('.shopping-list-content');
         const header = card.querySelector('.shopping-list-header');
         const expandIcon = card.querySelector('.expand-icon');
-        
+
         if (content && header && expandIcon) {
             const isExpanded = !content.classList.contains('collapsed');
-            
+
             if (isExpanded) {
                 // Collapse
                 content.classList.add('collapsed');
@@ -8986,73 +8990,73 @@ class RecipeApp {
             }
         }
     }
-    
+
     /**
      * Toggle menu enabled/disabled
      */
     toggleMenuEnabled(menuId) {
         const menus = this.getMenusFromStorage();
         const menu = menus.find(m => m.id === menuId);
-        
+
         if (menu) {
             menu.enabled = menu.enabled === false ? true : false;
             localStorage.setItem('recetario_menus', JSON.stringify(menus));
-            
+
             const status = menu.enabled ? 'habilitado' : 'deshabilitado';
             this.showToast(`Menú ${status} correctamente`, 'success');
             this.renderMenus();
         }
     }
-    
+
     /**
      * Move menu item up
      */
     moveMenuItemUp(menuId, itemIndex) {
         if (itemIndex === 0) return;
-        
+
         const menus = this.getMenusFromStorage();
         const menu = menus.find(m => m.id === menuId);
-        
+
         if (menu && menu.items) {
             // Swap items
-            [menu.items[itemIndex - 1], menu.items[itemIndex]] = 
-            [menu.items[itemIndex], menu.items[itemIndex - 1]];
-            
+            [menu.items[itemIndex - 1], menu.items[itemIndex]] =
+                [menu.items[itemIndex], menu.items[itemIndex - 1]];
+
             localStorage.setItem('recetario_menus', JSON.stringify(menus));
             this.renderMenus();
         }
     }
-    
+
     /**
      * Move menu item down
      */
     moveMenuItemDown(menuId, itemIndex) {
         const menus = this.getMenusFromStorage();
         const menu = menus.find(m => m.id === menuId);
-        
+
         if (menu && menu.items && itemIndex < menu.items.length - 1) {
             // Swap items
-            [menu.items[itemIndex], menu.items[itemIndex + 1]] = 
-            [menu.items[itemIndex + 1], menu.items[itemIndex]];
-            
+            [menu.items[itemIndex], menu.items[itemIndex + 1]] =
+                [menu.items[itemIndex + 1], menu.items[itemIndex]];
+
             localStorage.setItem('recetario_menus', JSON.stringify(menus));
             this.renderMenus();
         }
     }
-    
+
     /**
      * Show menu options modal
      */
     showMenuOptionsModal(menuId) {
         const modal = document.getElementById('menu-options-modal');
         if (!modal) return;
-        
+
         // Store current menu ID for actions
         this.currentOptionsMenuId = menuId;
-        
+
         // Show modal
         modal.classList.remove('hidden');
-        
+
         // Setup event listeners
         const closeBtn = document.getElementById('close-menu-options-modal');
         const overlay = modal.querySelector('.modal-overlay');
@@ -9060,36 +9064,36 @@ class RecipeApp {
         const copyBtn = document.getElementById('menu-option-copy');
         const duplicateBtn = document.getElementById('menu-option-duplicate');
         const deleteBtn = document.getElementById('menu-option-delete');
-        
+
         if (closeBtn) {
             closeBtn.onclick = () => this.closeMenuOptionsModal();
         }
-        
+
         if (overlay) {
             overlay.onclick = () => this.closeMenuOptionsModal();
         }
-        
+
         if (exportBtn) {
             exportBtn.onclick = () => {
                 this.exportMenu(menuId);
                 this.closeMenuOptionsModal();
             };
         }
-        
+
         if (copyBtn) {
             copyBtn.onclick = () => {
                 this.copyMenuToClipboard(menuId);
                 this.closeMenuOptionsModal();
             };
         }
-        
+
         if (duplicateBtn) {
             duplicateBtn.onclick = () => {
                 this.duplicateMenu(menuId);
                 this.closeMenuOptionsModal();
             };
         }
-        
+
         if (deleteBtn) {
             deleteBtn.onclick = () => {
                 this.closeMenuOptionsModal();
@@ -9097,7 +9101,7 @@ class RecipeApp {
             };
         }
     }
-    
+
     /**
      * Close menu options modal
      */
@@ -9108,17 +9112,17 @@ class RecipeApp {
         }
         this.currentOptionsMenuId = null;
     }
-    
+
     /**
      * Export menu to text file
      */
     exportMenu(menuId) {
         const menu = this.getMenuById(menuId);
         if (!menu) return;
-        
+
         let text = `${menu.name}\n`;
         text += `${'='.repeat(menu.name.length)}\n\n`;
-        
+
         if (menu.items.length > 0) {
             menu.items.forEach((item, index) => {
                 text += `${index + 1}. ${item.name}`;
@@ -9130,7 +9134,7 @@ class RecipeApp {
         } else {
             text += 'Sin elementos\n';
         }
-        
+
         // Create and download file
         const blob = new Blob([text], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
@@ -9141,20 +9145,20 @@ class RecipeApp {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        
+
         this.showToast('Menú exportado correctamente', 'success');
     }
-    
+
     /**
      * Copy menu to clipboard
      */
     copyMenuToClipboard(menuId) {
         const menu = this.getMenuById(menuId);
         if (!menu) return;
-        
+
         let text = `${menu.name}\n`;
         text += `${'='.repeat(menu.name.length)}\n\n`;
-        
+
         if (menu.items.length > 0) {
             menu.items.forEach((item, index) => {
                 text += `${index + 1}. ${item.name}`;
@@ -9166,7 +9170,7 @@ class RecipeApp {
         } else {
             text += 'Sin elementos\n';
         }
-        
+
         navigator.clipboard.writeText(text).then(() => {
             this.showToast('Menú copiado al portapapeles', 'success');
         }).catch(err => {
@@ -9174,14 +9178,14 @@ class RecipeApp {
             this.showToast('Error al copiar al portapapeles', 'error');
         });
     }
-    
+
     /**
      * Duplicate menu
      */
     duplicateMenu(menuId) {
         const menu = this.getMenuById(menuId);
         if (!menu) return;
-        
+
         const newMenu = {
             ...menu,
             id: Date.now(),
@@ -9189,32 +9193,32 @@ class RecipeApp {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };
-        
+
         const menus = this.getMenusFromStorage();
         menus.push(newMenu);
         localStorage.setItem('recetario_menus', JSON.stringify(menus));
-        
+
         this.showToast('Menú duplicado correctamente', 'success');
         this.renderMenus();
     }
-    
+
     /**
      * Open category selector modal
      */
     openCategorySelectorModal(inputElement) {
         const modal = document.getElementById('menu-category-selector-modal');
         if (!modal) return;
-        
+
         // Store reference to the input element
         this.currentRecipeInput = inputElement;
-        
+
         // Get all recipes marked as menu-friendly
         const menuRecipes = this.recipes.filter(recipe => recipe.menuFriendly === true);
-        
+
         // Check if there are any menu recipes
         const emptyState = document.getElementById('category-selection-empty');
         const categoryList = document.getElementById('category-selection-list');
-        
+
         if (menuRecipes.length === 0) {
             // Show empty state
             if (emptyState) emptyState.classList.remove('hidden');
@@ -9223,27 +9227,27 @@ class RecipeApp {
             // Hide empty state and show categories
             if (emptyState) emptyState.classList.add('hidden');
             if (categoryList) categoryList.classList.remove('hidden');
-            
+
             // Get categories with menu recipes
             const categoriesWithMenuRecipes = this.getCategoriesWithMenuRecipes(menuRecipes);
-            
+
             // Render category badges
             this.renderCategorySelectionBadges(categoriesWithMenuRecipes);
         }
-        
+
         // Show modal
         modal.classList.remove('hidden');
-        
+
         // Setup event listeners
         this.setupCategorySelectorModalListeners();
     }
-    
+
     /**
      * Get categories that have recipes marked as menu
      */
     getCategoriesWithMenuRecipes(menuRecipes) {
         const categoriesMap = new Map();
-        
+
         menuRecipes.forEach(recipe => {
             const categoryId = recipe.category || 'sin-categoria';
             if (!categoriesMap.has(categoryId)) {
@@ -9256,50 +9260,50 @@ class RecipeApp {
             }
             categoriesMap.get(categoryId).count++;
         });
-        
+
         return Array.from(categoriesMap.values());
     }
-    
+
     /**
      * Render category selection badges
      */
     renderCategorySelectionBadges(categories) {
         const container = document.getElementById('category-selection-list');
         if (!container) return;
-        
+
         container.innerHTML = '';
-        
+
         categories.forEach(category => {
             const badge = document.createElement('div');
             badge.className = 'category-selection-badge';
             badge.dataset.categoryId = category.id;
-            
+
             const emoji = document.createElement('span');
             emoji.className = 'category-emoji';
             emoji.textContent = category.emoji;
-            
+
             const label = document.createElement('span');
             // Extract only the name without emoji from the label
             const categoryObj = this.categoryManager.getCategoryById(category.id);
             label.textContent = categoryObj ? categoryObj.name : category.id;
-            
+
             const count = document.createElement('span');
             count.className = 'category-count';
             count.textContent = `(${category.count})`;
-            
+
             badge.appendChild(emoji);
             badge.appendChild(label);
             badge.appendChild(count);
-            
+
             // Click handler to toggle selection
             badge.addEventListener('click', () => {
                 badge.classList.toggle('selected');
             });
-            
+
             container.appendChild(badge);
         });
     }
-    
+
     /**
      * Setup category selector modal listeners
      */
@@ -9308,29 +9312,29 @@ class RecipeApp {
         const closeBtn = document.getElementById('close-category-selector-modal');
         const confirmBtn = document.getElementById('confirm-category-selection-btn');
         const overlay = modal.querySelector('.modal-overlay');
-        
+
         // Remove old listeners
         if (this.categorySelectorListeners) {
             this.categorySelectorListeners.forEach(({ element, event, handler }) => {
                 element.removeEventListener(event, handler);
             });
         }
-        
+
         this.categorySelectorListeners = [];
-        
+
         // Close button
         const closeHandler = () => this.closeCategorySelectorModal();
         if (closeBtn) {
             closeBtn.addEventListener('click', closeHandler);
             this.categorySelectorListeners.push({ element: closeBtn, event: 'click', handler: closeHandler });
         }
-        
+
         // Overlay
         if (overlay) {
             overlay.addEventListener('click', closeHandler);
             this.categorySelectorListeners.push({ element: overlay, event: 'click', handler: closeHandler });
         }
-        
+
         // Confirm button
         const confirmHandler = () => this.confirmCategorySelection();
         if (confirmBtn) {
@@ -9338,7 +9342,7 @@ class RecipeApp {
             this.categorySelectorListeners.push({ element: confirmBtn, event: 'click', handler: confirmHandler });
         }
     }
-    
+
     /**
      * Close category selector modal
      */
@@ -9348,48 +9352,48 @@ class RecipeApp {
             modal.classList.add('hidden');
         }
     }
-    
+
     /**
      * Confirm category selection and convert input to recipe selector
      */
     confirmCategorySelection() {
         const selectedBadges = document.querySelectorAll('.category-selection-badge.selected');
         const selectedCategoryIds = Array.from(selectedBadges).map(badge => badge.dataset.categoryId);
-        
+
         if (selectedCategoryIds.length === 0) {
             this.showToast('Por favor, selecciona al menos una categoría', 'warning');
             return;
         }
-        
+
         // Get recipes from selected categories
-        const menuRecipes = this.recipes.filter(recipe => 
-            recipe.menuFriendly === true && 
+        const menuRecipes = this.recipes.filter(recipe =>
+            recipe.menuFriendly === true &&
             selectedCategoryIds.includes(recipe.category || 'sin-categoria')
         );
-        
+
         // Convert input to select dropdown
         this.convertInputToRecipeSelector(this.currentRecipeInput, menuRecipes);
-        
+
         // Close modal
         this.closeCategorySelectorModal();
     }
-    
+
     /**
      * Convert input to recipe selector dropdown
      */
     convertInputToRecipeSelector(inputElement, recipes) {
         if (!inputElement) return;
-        
+
         // Create select element
         const select = document.createElement('select');
         select.className = 'form-input';
-        
+
         // Add empty option
         const emptyOption = document.createElement('option');
         emptyOption.value = '';
         emptyOption.textContent = '-- Seleccionar receta --';
         select.appendChild(emptyOption);
-        
+
         // Add recipe options
         recipes.forEach(recipe => {
             const option = document.createElement('option');
@@ -9398,22 +9402,22 @@ class RecipeApp {
             option.dataset.recipeName = recipe.name;
             select.appendChild(option);
         });
-        
+
         // Set selected value if input had a value
         if (inputElement.value) {
             // Try to find matching recipe by name
-            const matchingOption = Array.from(select.options).find(opt => 
+            const matchingOption = Array.from(select.options).find(opt =>
                 opt.dataset.recipeName === inputElement.value
             );
             if (matchingOption) {
                 select.value = matchingOption.value;
             }
         }
-        
+
         // Replace input with select
         inputElement.parentNode.replaceChild(select, inputElement);
     }
-    
+
     /**
      * Delete menu
      */
@@ -9421,11 +9425,11 @@ class RecipeApp {
         if (!confirm('¿Estás seguro de que quieres eliminar este menú?')) {
             return;
         }
-        
+
         const menus = this.getMenusFromStorage();
         const filteredMenus = menus.filter(m => m.id !== menuId);
         localStorage.setItem('recetario_menus', JSON.stringify(filteredMenus));
-        
+
         this.showToast('Menú eliminado correctamente', 'success');
         this.renderMenus();
     }
@@ -9440,26 +9444,26 @@ class RecipeApp {
         const nameInput = document.getElementById('menu-name-input');
         const newItemsContainer = document.getElementById('menu-new-items-container');
         const existingItemsContainer = document.getElementById('menu-existing-items-container');
-        
+
         if (!modal || !title || !nameInput || !newItemsContainer || !existingItemsContainer) return;
-        
+
         // Clear form
         nameInput.value = '';
         newItemsContainer.innerHTML = '';
         existingItemsContainer.innerHTML = '';
-        
+
         // Set mode
         this.currentMenuId = menuId;
-        
+
         if (menuId) {
             // Edit mode
             title.textContent = 'Editar Menú';
-            
+
             // Load menu data
             const menu = this.getMenuById(menuId);
             if (menu) {
                 nameInput.value = menu.name;
-                
+
                 // Load existing items
                 if (menu.items && menu.items.length > 0) {
                     menu.items.forEach(item => {
@@ -9473,11 +9477,11 @@ class RecipeApp {
         } else {
             // Create mode
             title.textContent = 'Nuevo Menú';
-            
+
             // Add one empty item input
             this.addMenuItemInput(null, false);
         }
-        
+
         // Show modal
         modal.classList.remove('hidden');
     }
@@ -9500,28 +9504,28 @@ class RecipeApp {
     addMenuItemInput(item = null, isExisting = false) {
         const newContainer = document.getElementById('menu-new-items-container');
         const existingContainer = document.getElementById('menu-existing-items-container');
-        
+
         const container = isExisting ? existingContainer : newContainer;
         if (!container) return;
-        
+
         const itemDiv = document.createElement('div');
         itemDiv.className = 'menu-item-input';
         if (item) itemDiv.dataset.itemId = item.id;
-        
+
         if (isExisting) {
             itemDiv.classList.add('existing-item');
         }
-        
+
         // Day selector (dropdown)
         const daySelect = document.createElement('select');
         daySelect.className = 'form-input';
-        
+
         // Add empty option (optional)
         const emptyOption = document.createElement('option');
         emptyOption.value = '';
         emptyOption.textContent = '-- Seleccionar día --';
         daySelect.appendChild(emptyOption);
-        
+
         // Add days of the week
         const daysOfWeek = [
             'Lunes',
@@ -9532,19 +9536,19 @@ class RecipeApp {
             'Sábado',
             'Domingo'
         ];
-        
+
         daysOfWeek.forEach(day => {
             const option = document.createElement('option');
             option.value = day;
             option.textContent = day;
             daySelect.appendChild(option);
         });
-        
+
         // Set selected value if editing
         if (item && item.name) {
             daySelect.value = item.name;
         }
-        
+
         // Recipe selector input (opens modal to select categories, then shows recipes)
         const recipeInput = document.createElement('input');
         recipeInput.type = 'text';
@@ -9553,28 +9557,28 @@ class RecipeApp {
         recipeInput.readOnly = true;
         recipeInput.style.cursor = 'pointer';
         recipeInput.value = item ? item.quantity : '';
-        
+
         // Store reference to this input for later conversion to select
         recipeInput.dataset.itemId = item ? item.id : Date.now();
-        
+
         // Click handler to open category selector modal
         recipeInput.addEventListener('click', () => {
             this.openCategorySelectorModal(recipeInput);
         });
-        
+
         // Remove button
         const removeBtn = document.createElement('button');
         removeBtn.className = 'btn-icon';
         removeBtn.textContent = '🗑️';
         removeBtn.title = 'Eliminar elemento';
         removeBtn.onclick = () => itemDiv.remove();
-        
+
         itemDiv.appendChild(daySelect);
         itemDiv.appendChild(recipeInput);
         itemDiv.appendChild(removeBtn);
-        
+
         container.appendChild(itemDiv);
-        
+
         // Focus on day selector for new items
         if (!item) {
             daySelect.focus();
@@ -9588,36 +9592,36 @@ class RecipeApp {
         const nameInput = document.getElementById('menu-name-input');
         const newItemsContainer = document.getElementById('menu-new-items-container');
         const existingItemsContainer = document.getElementById('menu-existing-items-container');
-        
+
         if (!nameInput) return;
-        
+
         const menuName = nameInput.value.trim();
-        
+
         if (!menuName) {
             alert('Por favor, introduce un nombre para el menú');
             nameInput.focus();
             return;
         }
-        
+
         // Collect all items (new and existing) - using menu-item-input class
         const allItemDivs = [
             ...newItemsContainer.querySelectorAll('.menu-item-input'),
             ...existingItemsContainer.querySelectorAll('.menu-item-input')
         ];
-        
+
         const items = [];
         allItemDivs.forEach(itemDiv => {
             // Get day select (first select)
             const daySelect = itemDiv.querySelector('select:first-of-type');
-            
+
             // Get recipe selector (second select) or input
             const recipeSelector = itemDiv.querySelector('select:not(:first-of-type)');
             const recipeInput = itemDiv.querySelector('input.recipe-selector-input');
-            
+
             const dayValue = daySelect?.value || '';
             let recipeName = '';
             let recipeId = null;
-            
+
             // Check if it's a select (recipe selected) or input (not yet selected)
             if (recipeSelector) {
                 const selectedOption = recipeSelector.options[recipeSelector.selectedIndex];
@@ -9626,7 +9630,7 @@ class RecipeApp {
             } else if (recipeInput) {
                 recipeName = recipeInput.value || '';
             }
-            
+
             // Always add the item
             items.push({
                 id: Date.now() + Math.random(),
@@ -9636,7 +9640,7 @@ class RecipeApp {
                 completed: false
             });
         });
-        
+
         // Create menu object
         const menu = {
             id: this.currentMenuId || Date.now(),
@@ -9645,11 +9649,11 @@ class RecipeApp {
             createdAt: this.currentMenuId ? this.getMenuById(this.currentMenuId)?.createdAt : new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };
-        
+
         // Save to localStorage
         const menus = this.getMenusFromStorage();
         const existingIndex = menus.findIndex(m => m.id === menu.id);
-        
+
         if (existingIndex >= 0) {
             menus[existingIndex] = menu;
             console.log('[Menus] Menu updated:', menu);
@@ -9657,18 +9661,18 @@ class RecipeApp {
             menus.push(menu);
             console.log('[Menus] Menu created:', menu);
         }
-        
+
         localStorage.setItem('recetario_menus', JSON.stringify(menus));
-        
+
         this.showToast(`Menú "${menuName}" guardado correctamente`, 'success');
-        
+
         // Close modal
         this.closeMenuModal();
-        
+
         // Refresh menus view
         this.renderMenus();
     }
-    
+
     /**
      * Get menus from localStorage
      */
@@ -9681,7 +9685,7 @@ class RecipeApp {
             return [];
         }
     }
-    
+
     /**
      * Get menu by ID
      */
@@ -9696,24 +9700,24 @@ class RecipeApp {
     renderShoppingLists() {
         const container = document.getElementById('shopping-lists-container');
         const emptyState = document.getElementById('shopping-lists-empty');
-        
+
         if (!container) return;
-        
+
         // Clear container
         container.innerHTML = '';
-        
+
         // Get all lists
         const lists = this.shoppingListManager.lists;
-        
+
         // Show empty state if no lists
         if (lists.length === 0) {
             if (emptyState) emptyState.classList.remove('hidden');
             return;
         }
-        
+
         // Hide empty state
         if (emptyState) emptyState.classList.add('hidden');
-        
+
         // Render each list
         lists.forEach(list => {
             const card = this.renderShoppingListCard(list);
@@ -9730,34 +9734,34 @@ class RecipeApp {
         const card = document.createElement('div');
         card.className = 'shopping-list-card';
         card.dataset.listId = list.id;
-        
+
         // Make card draggable
         card.draggable = true;
         card.addEventListener('dragstart', (e) => this.handleListDragStart(e));
         card.addEventListener('dragend', (e) => this.handleListDragEnd(e));
         card.addEventListener('dragover', (e) => this.handleListDragOver(e));
         card.addEventListener('drop', (e) => this.handleListDrop(e));
-        
+
         // Get total count
         const totalCount = this.shoppingListManager.getTotalCount(list.id);
-        
+
         // Create header
         const header = document.createElement('div');
         header.className = 'shopping-list-header';
         header.setAttribute('role', 'button');
         header.setAttribute('tabindex', '0');
         header.setAttribute('aria-expanded', 'false');
-        
+
         const name = document.createElement('h3');
         name.className = 'shopping-list-name';
         name.textContent = list.name;
-        
+
         const dateInfo = document.createElement('span');
         dateInfo.className = 'shopping-list-counter';
-        
+
         // Show modified date if exists, otherwise created date
         const dateToShow = list.updatedAt || list.createdAt;
-        
+
         if (dateToShow) {
             const date = new Date(dateToShow);
             const formattedDate = date.toLocaleDateString('es-ES', {
@@ -9769,34 +9773,34 @@ class RecipeApp {
                 hour: '2-digit',
                 minute: '2-digit'
             });
-            
+
             // Check if modified in the last 5 minutes
             const now = new Date();
             const diffInMinutes = (now - date) / (1000 * 60);
             const isRecentlyModified = diffInMinutes <= 5;
-            
+
             // Create single badge with date and time
             const dateTimeBadge = document.createElement('span');
             dateTimeBadge.className = isRecentlyModified ? 'date-time-badge recent-modification' : 'date-time-badge';
             dateTimeBadge.innerHTML = `${formattedDate} <span class="badge-separator">|</span> ${formattedTime}`;
-            
+
             dateInfo.appendChild(dateTimeBadge);
         } else {
             dateInfo.textContent = `${totalCount} ${totalCount === 1 ? 'cosa que comprar' : 'cosas que comprar'}`;
         }
-        
+
         const expandIcon = document.createElement('span');
         expandIcon.className = 'expand-icon';
         expandIcon.textContent = '▼';
-        
+
         header.appendChild(name);
         header.appendChild(dateInfo);
         header.appendChild(expandIcon);
-        
+
         // Create actions
         const actions = document.createElement('div');
         actions.className = 'shopping-list-actions';
-        
+
         // Create toggle enabled button (eye icon)
         const toggleEnabledBtn = this.createButton({
             className: 'btn-icon',
@@ -9807,12 +9811,12 @@ class RecipeApp {
                 this.toggleShoppingListEnabled(list.id);
             }
         });
-        
+
         // Add visual indicator if disabled
         if (list.enabled === false) {
             card.style.opacity = '0.5';
         }
-        
+
         // Create edit button
         const editBtn = this.createButton({
             className: 'btn-icon',
@@ -9823,7 +9827,7 @@ class RecipeApp {
                 this.showShoppingListForm(list.id);
             }
         });
-        
+
         // Create more options button (three dots)
         const moreBtn = this.createButton({
             className: 'btn-icon',
@@ -9834,35 +9838,35 @@ class RecipeApp {
                 this.showShoppingListOptionsModal(list.id);
             }
         });
-        
+
         actions.appendChild(toggleEnabledBtn);
         actions.appendChild(editBtn);
         actions.appendChild(moreBtn);
-        
+
         // Create content (collapsible)
         const content = document.createElement('div');
         content.className = 'shopping-list-content collapsed';
-        
+
         const itemsContainer = this.renderShoppingItems(list);
         content.appendChild(itemsContainer);
-        
+
         // Add event listeners for expand/collapse
         header.addEventListener('click', () => {
             this.toggleListExpanded(list.id);
         });
-        
+
         header.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 this.toggleListExpanded(list.id);
             }
         });
-        
+
         // Assemble card
         card.appendChild(header);
         card.appendChild(actions);
         card.appendChild(content);
-        
+
         return card;
     }
 
@@ -9874,7 +9878,7 @@ class RecipeApp {
     renderShoppingItems(list) {
         const container = document.createElement('div');
         container.className = 'shopping-list-items';
-        
+
         if (list.items.length === 0) {
             const empty = document.createElement('p');
             empty.style.color = 'var(--color-text-secondary)';
@@ -9883,38 +9887,38 @@ class RecipeApp {
             container.appendChild(empty);
             return container;
         }
-        
+
         list.items.forEach((item, index) => {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'shopping-item';
             itemDiv.dataset.itemId = item.id;
-            
+
             // Bullet point
             const bullet = document.createElement('span');
             bullet.className = 'shopping-item-bullet';
             bullet.textContent = '•';
-            
+
             // Item content
             const itemContent = document.createElement('div');
             itemContent.className = 'shopping-item-content';
-            
+
             const itemName = document.createElement('span');
             itemName.className = 'shopping-item-name';
             itemName.textContent = item.name;
-            
+
             itemContent.appendChild(itemName);
-            
+
             if (item.quantity) {
                 const itemQuantity = document.createElement('span');
                 itemQuantity.className = 'shopping-item-quantity';
                 itemQuantity.textContent = ` (${item.quantity})`;
                 itemContent.appendChild(itemQuantity);
             }
-            
+
             // Reorder buttons
             const reorderButtons = document.createElement('div');
             reorderButtons.className = 'shopping-item-reorder';
-            
+
             // Up button
             const upBtn = document.createElement('button');
             upBtn.className = 'btn-icon btn-reorder';
@@ -9925,7 +9929,7 @@ class RecipeApp {
                 e.stopPropagation();
                 this.moveItemUp(list.id, index);
             });
-            
+
             // Down button
             const downBtn = document.createElement('button');
             downBtn.className = 'btn-icon btn-reorder';
@@ -9936,17 +9940,17 @@ class RecipeApp {
                 e.stopPropagation();
                 this.moveItemDown(list.id, index);
             });
-            
+
             reorderButtons.appendChild(upBtn);
             reorderButtons.appendChild(downBtn);
-            
+
             itemDiv.appendChild(bullet);
             itemDiv.appendChild(itemContent);
             itemDiv.appendChild(reorderButtons);
-            
+
             container.appendChild(itemDiv);
         });
-        
+
         return container;
     }
 
@@ -9957,20 +9961,20 @@ class RecipeApp {
      */
     moveItemUp(listId, index) {
         if (index === 0) return; // Already at top
-        
+
         const list = this.shoppingListManager.getList(listId);
         if (!list) return;
-        
+
         // Save expanded state before re-rendering
         const wasExpanded = this.isListExpanded(listId);
-        
+
         // Swap items
         [list.items[index - 1], list.items[index]] = [list.items[index], list.items[index - 1]];
-        
+
         // Save and re-render
         this.shoppingListManager.saveLists();
         this.renderShoppingLists();
-        
+
         // Restore expanded state
         if (wasExpanded) {
             this.expandList(listId);
@@ -9985,17 +9989,17 @@ class RecipeApp {
     moveItemDown(listId, index) {
         const list = this.shoppingListManager.getList(listId);
         if (!list || index === list.items.length - 1) return; // Already at bottom
-        
+
         // Save expanded state before re-rendering
         const wasExpanded = this.isListExpanded(listId);
-        
+
         // Swap items
         [list.items[index], list.items[index + 1]] = [list.items[index + 1], list.items[index]];
-        
+
         // Save and re-render
         this.shoppingListManager.saveLists();
         this.renderShoppingLists();
-        
+
         // Restore expanded state
         if (wasExpanded) {
             this.expandList(listId);
@@ -10009,15 +10013,15 @@ class RecipeApp {
     toggleListExpanded(listId) {
         const card = document.querySelector(`.shopping-list-card[data-list-id="${listId}"]`);
         if (!card) return;
-        
+
         const header = card.querySelector('.shopping-list-header');
         const content = card.querySelector('.shopping-list-content');
-        
+
         if (!header || !content) return;
-        
+
         // Check if this list is currently collapsed
         const isCollapsed = content.classList.contains('collapsed');
-        
+
         // If we're about to expand this list, first collapse all other lists
         if (isCollapsed) {
             const allCards = document.querySelectorAll('.shopping-list-card');
@@ -10025,7 +10029,7 @@ class RecipeApp {
                 if (otherCard !== card) {
                     const otherHeader = otherCard.querySelector('.shopping-list-header');
                     const otherContent = otherCard.querySelector('.shopping-list-content');
-                    
+
                     if (otherHeader && otherContent) {
                         otherContent.classList.add('collapsed');
                         otherHeader.classList.remove('expanded');
@@ -10035,12 +10039,12 @@ class RecipeApp {
                 }
             });
         }
-        
+
         // Toggle collapsed class for the clicked list
         content.classList.toggle('collapsed');
         header.classList.toggle('expanded', isCollapsed);
         card.classList.toggle('expanded', isCollapsed);
-        
+
         // Update aria-expanded
         header.setAttribute('aria-expanded', isCollapsed ? 'true' : 'false');
     }
@@ -10053,10 +10057,10 @@ class RecipeApp {
     isListExpanded(listId) {
         const card = document.querySelector(`.shopping-list-card[data-list-id="${listId}"]`);
         if (!card) return false;
-        
+
         const content = card.querySelector('.shopping-list-content');
         if (!content) return false;
-        
+
         return !content.classList.contains('collapsed');
     }
 
@@ -10067,17 +10071,17 @@ class RecipeApp {
     expandList(listId) {
         const card = document.querySelector(`.shopping-list-card[data-list-id="${listId}"]`);
         if (!card) return;
-        
+
         const header = card.querySelector('.shopping-list-header');
         const content = card.querySelector('.shopping-list-content');
-        
+
         if (!header || !content) return;
-        
+
         // Remove collapsed class
         content.classList.remove('collapsed');
         header.classList.add('expanded');
         card.classList.add('expanded');
-        
+
         // Update aria-expanded
         header.setAttribute('aria-expanded', 'true');
     }
@@ -10089,12 +10093,12 @@ class RecipeApp {
      */
     toggleItemCompleted(listId, itemId) {
         const newState = this.shoppingListManager.toggleItemCompleted(listId, itemId);
-        
+
         if (newState === null) {
             console.error('[ShoppingLists] Failed to toggle item completed');
             return;
         }
-        
+
         // Re-render the list to update UI
         this.renderShoppingLists();
     }
@@ -10109,25 +10113,25 @@ class RecipeApp {
         const nameInput = document.getElementById('shopping-list-name-input');
         const newItemsContainer = document.getElementById('shopping-new-items-container');
         const existingItemsContainer = document.getElementById('shopping-existing-items-container');
-        
+
         if (!modal || !title || !nameInput || !newItemsContainer || !existingItemsContainer) return;
-        
+
         // Clear form
         nameInput.value = '';
         newItemsContainer.innerHTML = '';
         existingItemsContainer.innerHTML = '';
-        
+
         // Set mode
         this.shoppingListManager.currentListId = listId;
-        
+
         if (listId) {
             // Edit mode
             title.textContent = 'Editar Lista de Compra';
             const list = this.shoppingListManager.getList(listId);
-            
+
             if (list) {
                 nameInput.value = list.name;
-                
+
                 // Add existing items (marked as existing so they appear at the bottom)
                 list.items.forEach(item => {
                     this.addShoppingItemInput(item, true);
@@ -10136,11 +10140,11 @@ class RecipeApp {
         } else {
             // Create mode
             title.textContent = 'Nueva Lista de Compra';
-            
+
             // Add one empty item input (new item, appears at top)
             this.addShoppingItemInput(null, false);
         }
-        
+
         // Show modal
         modal.classList.remove('hidden');
     }
@@ -10154,45 +10158,45 @@ class RecipeApp {
         // Use different containers for new and existing items
         const newContainer = document.getElementById('shopping-new-items-container');
         const existingContainer = document.getElementById('shopping-existing-items-container');
-        
+
         const container = isExisting ? existingContainer : newContainer;
         if (!container) return;
-        
+
         const itemDiv = document.createElement('div');
         itemDiv.className = 'shopping-item-input';
         if (item) itemDiv.dataset.itemId = item.id;
-        
+
         // Mark existing items with a class for visual distinction
         if (isExisting) {
             itemDiv.classList.add('existing-item');
-            
+
             // Check if this is the first existing item
             const existingItems = existingContainer.querySelectorAll('.existing-item');
             if (existingItems.length === 0) {
                 itemDiv.classList.add('first-existing');
             }
         }
-        
+
         // Name input (full width, first row)
         const nameInput = document.createElement('input');
         nameInput.type = 'text';
         nameInput.className = 'form-input shopping-item-name-input';
         nameInput.placeholder = 'Nombre del elemento';
         nameInput.value = item ? item.name : '';
-        
+
         // Quantity row container (second row)
         const quantityRow = document.createElement('div');
         quantityRow.className = 'shopping-item-quantity-row';
-        
+
         const quantityInput = document.createElement('input');
         quantityInput.type = 'text';
         quantityInput.className = 'form-input shopping-item-quantity-input';
         quantityInput.placeholder = 'Cantidad, alternativas o posibilidades';
         quantityInput.value = item ? item.quantity : '';
-        
+
         // Reorder buttons container
         const reorderButtons = this.createReorderButtons(itemDiv, container);
-        
+
         const removeBtn = document.createElement('button');
         removeBtn.className = 'btn-icon remove-shopping-item-btn';
         removeBtn.title = 'Eliminar';
@@ -10200,16 +10204,16 @@ class RecipeApp {
         removeBtn.addEventListener('click', () => {
             itemDiv.remove();
         });
-        
+
         // Assemble quantity row
         quantityRow.appendChild(quantityInput);
         quantityRow.appendChild(reorderButtons);
         quantityRow.appendChild(removeBtn);
-        
+
         // Assemble item div
         itemDiv.appendChild(nameInput);
         itemDiv.appendChild(quantityRow);
-        
+
         // Add to the appropriate container
         // For new items: prepend (add at the top, right after the button)
         // For existing items: append (add at the bottom)
@@ -10218,7 +10222,7 @@ class RecipeApp {
         } else {
             container.prepend(itemDiv);
         }
-        
+
         // Focus on the name input for new items
         if (!isExisting) {
             nameInput.focus();
@@ -10233,10 +10237,10 @@ class RecipeApp {
      */
     createReorderButtons(itemDiv, container) {
         const ITEM_CLASS = 'shopping-item-input';
-        
+
         const reorderButtons = document.createElement('div');
         reorderButtons.className = 'shopping-item-reorder-buttons';
-        
+
         /**
          * Helper to create a reorder button
          * @param {string} direction - 'up' or 'down'
@@ -10250,38 +10254,38 @@ class RecipeApp {
             btn.title = isUp ? 'Mover arriba' : 'Mover abajo';
             btn.textContent = isUp ? '⬆️' : '⬇️';
             btn.setAttribute('aria-label', btn.title);
-            
+
             // Use event delegation pattern for better performance
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                
-                const sibling = isUp 
-                    ? itemDiv.previousElementSibling 
+
+                const sibling = isUp
+                    ? itemDiv.previousElementSibling
                     : itemDiv.nextElementSibling;
-                
+
                 if (sibling && sibling.classList.contains(ITEM_CLASS)) {
                     if (isUp) {
                         container.insertBefore(itemDiv, sibling);
                     } else {
                         container.insertBefore(sibling, itemDiv);
                     }
-                    
+
                     // Update visual feedback
                     itemDiv.classList.add('reordered');
                     setTimeout(() => itemDiv.classList.remove('reordered'), 300);
-                    
+
                     // Announce to screen readers
                     this.announceToScreenReader(`Elemento movido ${isUp ? 'arriba' : 'abajo'}`);
                 }
             });
-            
+
             return btn;
         };
-        
+
         reorderButtons.appendChild(createButton('up'));
         reorderButtons.appendChild(createButton('down'));
-        
+
         return reorderButtons;
     }
 
@@ -10296,7 +10300,7 @@ class RecipeApp {
         announcement.className = 'sr-only';
         announcement.textContent = message;
         document.body.appendChild(announcement);
-        
+
         // Remove after announcement
         setTimeout(() => announcement.remove(), 1000);
     }
@@ -10329,11 +10333,11 @@ class RecipeApp {
         btn.title = title;
         btn.textContent = text;
         btn.setAttribute('aria-label', ariaLabel);
-        
+
         if (onClick) {
             btn.addEventListener('click', onClick);
         }
-        
+
         return btn;
     }
 
@@ -10344,28 +10348,28 @@ class RecipeApp {
         const nameInput = document.getElementById('shopping-list-name-input');
         const newItemsContainer = document.getElementById('shopping-new-items-container');
         const existingItemsContainer = document.getElementById('shopping-existing-items-container');
-        
+
         if (!nameInput || !newItemsContainer || !existingItemsContainer) return;
-        
+
         // Validate name
         const name = nameInput.value.trim();
         if (!name) {
             this.showToast('Por favor ingresa un nombre para la lista', 'error');
             return;
         }
-        
+
         // Get items from both containers (new items first, then existing)
         const allItemInputs = [
             ...newItemsContainer.querySelectorAll('.shopping-item-input'),
             ...existingItemsContainer.querySelectorAll('.shopping-item-input')
         ];
-        
+
         const items = [];
-        
+
         allItemInputs.forEach(itemDiv => {
             const nameInput = itemDiv.querySelector('.shopping-item-name-input');
             const quantityInput = itemDiv.querySelector('.shopping-item-quantity-input');
-            
+
             const itemName = nameInput.value.trim();
             if (itemName) {
                 items.push({
@@ -10374,10 +10378,10 @@ class RecipeApp {
                 });
             }
         });
-        
+
         // Save list
         const listId = this.shoppingListManager.currentListId;
-        
+
         if (listId) {
             // Update existing list
             const list = this.shoppingListManager.getList(listId);
@@ -10401,7 +10405,7 @@ class RecipeApp {
             });
             this.showToast('Lista creada correctamente', 'success');
         }
-        
+
         // Close modal and refresh view
         this.closeShoppingListModal();
         this.renderShoppingLists();
@@ -10414,9 +10418,9 @@ class RecipeApp {
     toggleShoppingListEnabled(listId) {
         const list = this.shoppingListManager.getList(listId);
         if (!list) return;
-        
+
         const success = this.shoppingListManager.toggleListEnabled(listId);
-        
+
         if (success) {
             const status = list.enabled ? 'habilitada' : 'deshabilitada';
             this.showToast(`Lista ${status} correctamente`, 'success');
@@ -10431,9 +10435,9 @@ class RecipeApp {
     deleteShoppingList(listId) {
         const list = this.shoppingListManager.getList(listId);
         if (!list) return;
-        
+
         const confirmed = confirm(`¿Estás seguro de que quieres eliminar la lista "${list.name}"?`);
-        
+
         if (confirmed) {
             this.shoppingListManager.deleteList(listId);
             this.showToast('Lista eliminada correctamente', 'success');
@@ -10448,11 +10452,11 @@ class RecipeApp {
     duplicateShoppingList(listId) {
         const originalList = this.shoppingListManager.getList(listId);
         if (!originalList) return;
-        
+
         // Create new list with copied data
         const newListName = `${originalList.name} (copia)`;
         const newList = this.shoppingListManager.createList(newListName);
-        
+
         // Copy all items from original list
         originalList.items.forEach(item => {
             this.shoppingListManager.addItem(newList.id, {
@@ -10460,7 +10464,7 @@ class RecipeApp {
                 quantity: item.quantity
             });
         });
-        
+
         this.showToast('Lista duplicada correctamente', 'success');
         this.renderShoppingLists();
     }
@@ -10475,31 +10479,31 @@ class RecipeApp {
             this.showToast('Error: Lista no encontrada', 'error');
             return;
         }
-        
+
         // Format list content
         const text = this.shoppingListManager.formatListForClipboard(listId, true);
-        
+
         if (!text) {
             this.showToast('Error al exportar la lista', 'error');
             return;
         }
-        
+
         // Create blob and download
         const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
-        
+
         // Generate filename with sanitized list name
         const sanitizedName = list.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
         const timestamp = new Date().toISOString().split('T')[0];
         link.download = `lista_compra_${sanitizedName}_${timestamp}.txt`;
-        
+
         link.href = url;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        
+
         this.showToast('Lista exportada correctamente', 'success');
     }
 
@@ -10510,43 +10514,43 @@ class RecipeApp {
     handleImportShoppingList(e) {
         const file = e.target.files[0];
         if (!file) return;
-        
+
         const reader = new FileReader();
         reader.onload = (event) => {
             try {
                 const text = event.target.result;
                 const lines = text.split('\n').map(line => line.trim()).filter(line => line);
-                
+
                 if (lines.length < 2) {
                     this.showToast('Archivo vacío o formato incorrecto', 'error');
                     return;
                 }
-                
+
                 // First line is the list name
                 const listName = lines[0];
-                
+
                 // Skip separator line if present
                 let startIndex = 1;
                 if (lines[1].startsWith('---')) {
                     startIndex = 2;
                 }
-                
+
                 // Create new list
                 const newList = this.shoppingListManager.createList(listName);
-                
+
                 // Parse items
                 for (let i = startIndex; i < lines.length; i++) {
                     const line = lines[i];
                     if (!line) continue;
-                    
+
                     // Remove completed mark if present
                     const cleanLine = line.replace(/^✓\s*/, '');
-                    
+
                     // Split by " - " to separate name and quantity
                     const parts = cleanLine.split(' - ');
                     const name = parts[0].trim();
                     const quantity = parts.length > 1 ? parts.slice(1).join(' - ').trim() : '';
-                    
+
                     if (name) {
                         this.shoppingListManager.addItem(newList.id, {
                             name: name,
@@ -10554,22 +10558,22 @@ class RecipeApp {
                         });
                     }
                 }
-                
+
                 this.showToast('Lista importada correctamente', 'success');
                 this.renderShoppingLists();
-                
+
             } catch (error) {
                 console.error('Error importing shopping list:', error);
                 this.showToast('Error al importar la lista', 'error');
             }
         };
-        
+
         reader.onerror = () => {
             this.showToast('Error al leer el archivo', 'error');
         };
-        
+
         reader.readAsText(file);
-        
+
         // Reset input so the same file can be imported again
         e.target.value = '';
     }
@@ -10581,12 +10585,12 @@ class RecipeApp {
      */
     copyShoppingListToClipboard(listId, includeCompleted = false) {
         const text = this.shoppingListManager.formatListForClipboard(listId, includeCompleted);
-        
+
         if (!text) {
             this.showToast('Error al copiar la lista', 'error');
             return;
         }
-        
+
         // Try to copy using Clipboard API
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text)
@@ -10614,7 +10618,7 @@ class RecipeApp {
         textarea.style.opacity = '0';
         document.body.appendChild(textarea);
         textarea.select();
-        
+
         try {
             const successful = document.execCommand('copy');
             if (successful) {
@@ -10626,7 +10630,7 @@ class RecipeApp {
             console.error('[ShoppingLists] Fallback copy failed:', err);
             this.showToast('Error al copiar la lista', 'error');
         }
-        
+
         document.body.removeChild(textarea);
     }
 
@@ -10638,7 +10642,7 @@ class RecipeApp {
         if (modal) {
             modal.classList.add('hidden');
         }
-        
+
         // Reset current list ID
         this.shoppingListManager.currentListId = null;
     }
@@ -10652,18 +10656,18 @@ class RecipeApp {
         const modal = document.getElementById('select-shopping-list-modal');
         const ingredientDisplay = document.getElementById('ingredient-to-add-display');
         const listsContainer = document.getElementById('shopping-lists-selection');
-        
+
         if (!modal || !ingredientDisplay || !listsContainer) return;
-        
+
         // Display ingredient info
         ingredientDisplay.textContent = `${ingredientName} - ${ingredientQuantity}`;
-        
+
         // Clear previous lists
         listsContainer.innerHTML = '';
-        
+
         // Get all shopping lists (only enabled ones)
         const lists = this.shoppingListManager.lists.filter(list => list.enabled !== false);
-        
+
         if (lists.length === 0) {
             listsContainer.innerHTML = '<p class="modal-description">No tienes listas de compra habilitadas. Crea una nueva lista o habilita una existente para añadir este ingrediente.</p>';
         } else {
@@ -10671,42 +10675,42 @@ class RecipeApp {
             lists.forEach(list => {
                 const option = document.createElement('div');
                 option.className = 'shopping-list-option';
-                
+
                 const nameSpan = document.createElement('span');
                 nameSpan.className = 'shopping-list-option-name';
                 nameSpan.textContent = list.name;
-                
+
                 const countSpan = document.createElement('span');
                 countSpan.className = 'shopping-list-option-count';
                 countSpan.textContent = `${list.items.length} elementos`;
-                
+
                 option.appendChild(nameSpan);
                 option.appendChild(countSpan);
-                
+
                 option.addEventListener('click', () => {
                     this.addIngredientToShoppingList(list.id, ingredientName, ingredientQuantity);
                 });
-                
+
                 listsContainer.appendChild(option);
             });
         }
-        
+
         // Show modal
         modal.classList.remove('hidden');
-        
+
         // Setup close button and overlay
         const closeBtn = document.getElementById('close-select-list-modal');
         const overlay = modal.querySelector('.modal-overlay');
         const createNewBtn = document.getElementById('create-new-list-from-ingredient');
-        
+
         if (closeBtn) {
             closeBtn.onclick = () => this.closeSelectShoppingListModal();
         }
-        
+
         if (overlay) {
             overlay.onclick = () => this.closeSelectShoppingListModal();
         }
-        
+
         if (createNewBtn) {
             createNewBtn.onclick = () => {
                 this.closeSelectShoppingListModal();
@@ -10733,15 +10737,15 @@ class RecipeApp {
      */
     addIngredientToShoppingList(listId, ingredientName, ingredientQuantity) {
         // Add "para receta" to quantity to indicate it comes from a recipe
-        const quantityWithSource = ingredientQuantity && ingredientQuantity !== '-' 
-            ? `${ingredientQuantity} para receta` 
+        const quantityWithSource = ingredientQuantity && ingredientQuantity !== '-'
+            ? `${ingredientQuantity} para receta`
             : 'para receta';
-        
+
         this.shoppingListManager.addItem(listId, {
             name: ingredientName,
             quantity: quantityWithSource
         });
-        
+
         this.closeSelectShoppingListModal();
         this.showToast(`"${ingredientName}" añadido a la lista`, 'success');
     }
@@ -10753,13 +10757,13 @@ class RecipeApp {
     showShoppingListOptionsModal(listId) {
         const modal = document.getElementById('shopping-list-options-modal');
         if (!modal) return;
-        
+
         // Store current list ID for actions
         this.currentOptionsListId = listId;
-        
+
         // Show modal
         modal.classList.remove('hidden');
-        
+
         // Setup event listeners
         const closeBtn = document.getElementById('close-options-modal');
         const overlay = modal.querySelector('.modal-overlay');
@@ -10767,36 +10771,36 @@ class RecipeApp {
         const copyBtn = document.getElementById('option-copy');
         const duplicateBtn = document.getElementById('option-duplicate');
         const deleteBtn = document.getElementById('option-delete');
-        
+
         if (closeBtn) {
             closeBtn.onclick = () => this.closeShoppingListOptionsModal();
         }
-        
+
         if (overlay) {
             overlay.onclick = () => this.closeShoppingListOptionsModal();
         }
-        
+
         if (exportBtn) {
             exportBtn.onclick = () => {
                 this.exportShoppingList(listId);
                 this.closeShoppingListOptionsModal();
             };
         }
-        
+
         if (copyBtn) {
             copyBtn.onclick = () => {
                 this.copyShoppingListToClipboard(listId, false);
                 this.closeShoppingListOptionsModal();
             };
         }
-        
+
         if (duplicateBtn) {
             duplicateBtn.onclick = () => {
                 this.duplicateShoppingList(listId);
                 this.closeShoppingListOptionsModal();
             };
         }
-        
+
         if (deleteBtn) {
             deleteBtn.onclick = () => {
                 this.closeShoppingListOptionsModal();
@@ -10825,7 +10829,7 @@ class RecipeApp {
         e.stopPropagation();
         const card = e.target.closest('.shopping-list-card');
         if (!card) return;
-        
+
         card.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', card.dataset.listId);
@@ -10837,9 +10841,9 @@ class RecipeApp {
     handleListDragEnd(e) {
         const card = e.target.closest('.shopping-list-card');
         if (!card) return;
-        
+
         card.classList.remove('dragging');
-        
+
         // Remove all drag-over classes
         document.querySelectorAll('.shopping-list-card.drag-over').forEach(el => {
             el.classList.remove('drag-over');
@@ -10853,10 +10857,10 @@ class RecipeApp {
         e.preventDefault();
         e.stopPropagation();
         e.dataTransfer.dropEffect = 'move';
-        
+
         const card = e.target.closest('.shopping-list-card');
         if (!card || card.classList.contains('dragging')) return;
-        
+
         card.classList.add('drag-over');
     }
 
@@ -10866,28 +10870,28 @@ class RecipeApp {
     handleListDrop(e) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const targetCard = e.target.closest('.shopping-list-card');
         if (!targetCard || targetCard.classList.contains('dragging')) return;
-        
+
         targetCard.classList.remove('drag-over');
-        
+
         const draggedListId = parseInt(e.dataTransfer.getData('text/plain'));
         const targetListId = parseInt(targetCard.dataset.listId);
-        
+
         if (draggedListId === targetListId) return;
-        
+
         // Reorder lists
         const lists = this.shoppingListManager.lists;
         const draggedIndex = lists.findIndex(l => l.id === draggedListId);
         const targetIndex = lists.findIndex(l => l.id === targetListId);
-        
+
         if (draggedIndex === -1 || targetIndex === -1) return;
-        
+
         // Remove dragged list and insert at target position
         const [draggedList] = lists.splice(draggedIndex, 1);
         lists.splice(targetIndex, 0, draggedList);
-        
+
         // Save and re-render
         this.shoppingListManager.saveLists();
         this.renderShoppingLists();
@@ -10935,9 +10939,9 @@ function showNotification(message, type = 'info') {
         max-width: 400px;
     `;
     notification.textContent = message;
-    
+
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => notification.remove(), 300);

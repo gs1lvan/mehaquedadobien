@@ -71,8 +71,14 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 
 ## 🎨 Última Actualización
 
+**Fecha:** 5 de noviembre de 2025  
+**Cambio:** Botón de Menús temporalmente oculto - Se ha ocultado temporalmente el botón de Menús del menú principal:
+- ⚠️ **Botón Menús:** Temporalmente oculto mediante comentarios HTML
+- ✅ **Funcionalidad preservada:** El código permanece en el archivo y puede ser reactivado fácilmente
+- ✅ **Otros botones activos:** Listas de Compra, Importar receta y demás opciones siguen disponibles
+
 **Fecha:** 4 de noviembre de 2025  
-**Cambio:** Mejoras en UX del formulario y navegación - Se han implementado múltiples mejoras en la experiencia de usuario:
+**Cambio anterior:** Mejoras en UX del formulario y navegación - Se han implementado múltiples mejoras en la experiencia de usuario:
 - ✅ **Icono de edición:** Icono de lápiz (Font Awesome) junto al nombre de receta en vista detalle
 - ✅ **Tooltip inline:** El tooltip "Editar receta" aparece en línea junto al icono de lápiz
 - ✅ **Badges clickeables:** Los checkboxes de Caravana/Hospital/Menú ahora son badges visuales clickeables
