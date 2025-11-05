@@ -5796,6 +5796,15 @@ select {
         flex-direction: column;
         align-items: flex-start;
     }
+
+    /* Hide counter and expand icon on mobile */
+    .shopping-list-counter {
+        display: none !important;
+    }
+
+    .shopping-list-header .expand-icon {
+        display: none !important;
+    }
 }
 
 /* Dark Theme Support */
