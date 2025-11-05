@@ -1379,9 +1379,35 @@ class RecipeApp {
         allChip.textContent = 'Todas';
         filterChipsContainer.appendChild(allChip);
 
-        // Category chips
-        const categories = this.categoryManager.getAllCategories();
-        categories.forEach(category => {
+        // Get custom and predefined categories separately (only visible ones)
+        const customCategories = this.categoryManager.customCategories.filter(
+            cat => !this.categoryManager.isCategoryHidden(cat.id)
+        );
+        const predefinedCategories = this.categoryManager.getVisiblePredefinedCategories();
+
+        // Custom category chips (first)
+        customCategories.forEach(category => {
+            const chip = document.createElement('button');
+            chip.className = 'filter-chip';
+            if (this.activeFilters.has(category.id)) {
+                chip.classList.add('active');
+            }
+            chip.dataset.category = category.id;
+            chip.innerHTML = `${category.emoji} ${category.name}`;
+            chip.style.setProperty('--category-color', category.color);
+            filterChipsContainer.appendChild(chip);
+        });
+
+        // Separator (only if there are custom categories)
+        if (customCategories.length > 0) {
+            const separator = document.createElement('span');
+            separator.className = 'filter-separator';
+            separator.textContent = '|';
+            filterChipsContainer.appendChild(separator);
+        }
+
+        // Predefined category chips (after separator)
+        predefinedCategories.forEach(category => {
             const chip = document.createElement('button');
             chip.className = 'filter-chip';
             if (this.activeFilters.has(category.id)) {
@@ -1424,18 +1450,9 @@ class RecipeApp {
      * Render category selector in form (now uses modal)
      */
     renderCategorySelector() {
-        // Setup chip click to open modal
-        const categoryChip = document.getElementById('recipe-category-chip');
-        if (!categoryChip) return;
-
-        // Remove old event listener by cloning
-        const newChip = categoryChip.cloneNode(true);
-        categoryChip.parentNode.replaceChild(newChip, categoryChip);
-
-        newChip.addEventListener('click', () => {
-            this.openCategorySelectorModal();
-        });
-
+        // Category chip is now a non-clickable span for display only
+        // No event listener needed
+        
         // Update display with current selection
         this.updateCategoryDisplay();
     }
@@ -1583,7 +1600,6 @@ class RecipeApp {
 
         // Render category lists
         this.renderCustomCategoriesList();
-        this.renderHiddenCategoriesList();
     }
 
     /**
@@ -1592,26 +1608,44 @@ class RecipeApp {
     renderCustomCategoriesList() {
         const listContainer = document.getElementById('custom-categories-list');
         const emptyState = document.getElementById('custom-categories-empty');
+        const titleElement = document.getElementById('custom-categories-title');
         if (!listContainer || !emptyState) return;
 
         listContainer.innerHTML = '';
 
-        // Only show visible custom categories
-        const customCategories = this.categoryManager.customCategories.filter(
-            cat => !this.categoryManager.isCategoryHidden(cat.id)
-        );
+        // Get all custom categories
+        const allCustomCategories = this.categoryManager.customCategories;
 
-        if (customCategories.length === 0) {
-            emptyState.style.display = 'block';
+        if (allCustomCategories.length === 0) {
+            // Hide entire section when empty
+            if (titleElement) titleElement.style.display = 'none';
+            emptyState.style.display = 'none';
             listContainer.style.display = 'none';
         } else {
+            // Show section when has categories
+            if (titleElement) titleElement.style.display = 'block';
             emptyState.style.display = 'none';
             listContainer.style.display = 'grid';
 
             const counts = this.categoryManager.getCategoryCounts(this.recipes);
 
-            customCategories.forEach(category => {
-                const item = this.createCustomCategoryItem(category, counts[category.id] || 0);
+            // Separate visible and hidden categories
+            const visibleCategories = allCustomCategories.filter(
+                cat => !this.categoryManager.isCategoryHidden(cat.id)
+            );
+            const hiddenCategories = allCustomCategories.filter(
+                cat => this.categoryManager.isCategoryHidden(cat.id)
+            );
+
+            // Render visible categories first
+            visibleCategories.forEach(category => {
+                const item = this.createCustomCategoryItem(category, counts[category.id] || 0, false);
+                listContainer.appendChild(item);
+            });
+
+            // Render hidden categories at the end (with hidden style)
+            hiddenCategories.forEach(category => {
+                const item = this.createCustomCategoryItem(category, counts[category.id] || 0, true);
                 listContainer.appendChild(item);
             });
         }
@@ -1623,6 +1657,7 @@ class RecipeApp {
     renderHiddenCategoriesList() {
         const listContainer = document.getElementById('hidden-categories-list');
         const emptyState = document.getElementById('hidden-categories-empty');
+        const titleElement = document.getElementById('hidden-categories-title');
         if (!listContainer || !emptyState) return;
 
         listContainer.innerHTML = '';
@@ -1630,9 +1665,13 @@ class RecipeApp {
         const hiddenCategories = this.categoryManager.getHiddenCategories();
 
         if (hiddenCategories.length === 0) {
-            emptyState.style.display = 'block';
+            // Hide entire section when empty
+            if (titleElement) titleElement.style.display = 'none';
+            emptyState.style.display = 'none';
             listContainer.style.display = 'none';
         } else {
+            // Show section when has categories
+            if (titleElement) titleElement.style.display = 'block';
             emptyState.style.display = 'none';
             listContainer.style.display = 'grid';
 
@@ -1701,11 +1740,15 @@ class RecipeApp {
      * Create custom category item element with edit/delete/hide buttons
      * @param {Object} category - Category object
      * @param {number} count - Recipe count
+     * @param {boolean} isHidden - Whether the category is hidden
      * @returns {HTMLElement} Category item element
      */
-    createCustomCategoryItem(category, count) {
+    createCustomCategoryItem(category, count, isHidden = false) {
         const item = document.createElement('div');
         item.className = 'category-item';
+        if (isHidden) {
+            item.classList.add('category-item-hidden');
+        }
         item.dataset.categoryId = category.id;
 
         // Category info
@@ -1735,7 +1778,7 @@ class RecipeApp {
         menuBtn.title = 'Más opciones';
         menuBtn.setAttribute('aria-label', 'Más opciones');
         menuBtn.addEventListener('click', () => {
-            this.openCategoryOptionsModal(category.id, false);
+            this.openCategoryOptionsModal(category.id, isHidden);
         });
 
         infoDiv.appendChild(emoji);
@@ -1760,16 +1803,16 @@ class RecipeApp {
         if (modal) {
             // Store the currently focused element to restore later
             modal.dataset.previousFocus = document.activeElement?.id || '';
-            
+
             modal.classList.remove('hidden');
             this.renderCategoryModal();
 
             // Track modal opening context
             modal.dataset.openedFrom = fromSettings ? 'settings' : 'menu';
-            
+
             // Add to modal stack
             this.pushModal('category-modal');
-            
+
             // Add stacked class when opened from settings for proper z-index
             if (fromSettings) {
                 modal.classList.add('stacked');
@@ -1786,7 +1829,7 @@ class RecipeApp {
             if (colorPreview) colorPreview.style.backgroundColor = CATEGORY_COLORS[0];
             if (colorHidden) colorHidden.value = CATEGORY_COLORS[0];
             document.getElementById('category-error').textContent = '';
-            
+
             // Set focus to the first focusable element in the modal
             this.setModalFocus(modal);
         }
@@ -1804,25 +1847,25 @@ class RecipeApp {
 
         const modal = document.getElementById('category-modal');
         if (!modal) return;
-        
+
         // Set closing flag
         this.isClosingModal = true;
-        
+
         // Get opening context to determine cascading behavior
         const openedFrom = modal.dataset.openedFrom || 'menu';
-        
+
         // Restore focus to the element that opened the modal
         const previousFocusId = modal.dataset.previousFocus;
-        
+
         // Close category modal
         modal.classList.add('hidden');
-        
+
         // Remove stacked class if present
         modal.classList.remove('stacked');
-        
+
         // Remove from modal stack
         this.popModal();
-        
+
         // If opened from settings, close settings modal too (cascading close)
         if (openedFrom === 'settings') {
             this.closeSettingsModal();
@@ -1830,7 +1873,7 @@ class RecipeApp {
             // Restore focus only if not cascading close
             this.restoreFocus(previousFocusId);
         }
-        
+
         // Always navigate to home view
         this.goToHome();
 
@@ -1882,7 +1925,7 @@ class RecipeApp {
         if (overlay) {
             overlay.onclick = () => this.closeSettingsModal();
         }
-        
+
         // Set focus to the first focusable element in the modal
         this.setModalFocus(modal);
     }
@@ -1901,9 +1944,9 @@ class RecipeApp {
         if (modal) {
             // Restore focus to the element that opened the modal
             const previousFocusId = modal.dataset.previousFocus;
-            
+
             modal.classList.add('hidden');
-            
+
             // Restore focus after modal is closed
             if (previousFocusId) {
                 this.restoreFocus(previousFocusId);
@@ -1963,7 +2006,7 @@ class RecipeApp {
     syncModalStack() {
         console.log('[ModalStack] Syncing stack. Previous stack:', this.modalStack);
         this.modalStack = [];
-        
+
         // Find all modals that are currently visible (not hidden)
         const visibleModals = document.querySelectorAll('.modal:not(.hidden)');
         visibleModals.forEach(modal => {
@@ -1971,7 +2014,7 @@ class RecipeApp {
                 this.modalStack.push(modal.id);
             }
         });
-        
+
         console.log('[ModalStack] Synced stack:', this.modalStack);
     }
 
@@ -1981,12 +2024,12 @@ class RecipeApp {
      */
     setModalFocus(modal) {
         if (!modal) return;
-        
+
         // Find all focusable elements in the modal
         const focusableElements = modal.querySelectorAll(
             'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
         );
-        
+
         if (focusableElements.length > 0) {
             // Focus the first focusable element (usually the close button or first input)
             setTimeout(() => {
@@ -2001,7 +2044,7 @@ class RecipeApp {
      */
     restoreFocus(elementId) {
         if (!elementId) return;
-        
+
         const element = document.getElementById(elementId);
         if (element) {
             setTimeout(() => {
@@ -2214,10 +2257,10 @@ class RecipeApp {
 
         // Show modal
         modal.classList.remove('hidden');
-        
+
         // Add stacked class to appear above category modal
         modal.classList.add('stacked');
-        
+
         // Add to modal stack
         this.pushModal('emoji-picker-modal');
     }
@@ -2231,7 +2274,7 @@ class RecipeApp {
             modal.classList.add('hidden');
             modal.classList.remove('stacked');
         }
-        
+
         // Remove from modal stack
         this.popModal();
     }
@@ -2293,10 +2336,10 @@ class RecipeApp {
 
         // Show modal
         modal.classList.remove('hidden');
-        
+
         // Add stacked class to appear above category modal
         modal.classList.add('stacked');
-        
+
         // Add to modal stack
         this.pushModal('color-picker-modal');
     }
@@ -2310,7 +2353,7 @@ class RecipeApp {
             modal.classList.add('hidden');
             modal.classList.remove('stacked');
         }
-        
+
         // Remove from modal stack
         this.popModal();
     }
@@ -2387,7 +2430,7 @@ class RecipeApp {
         // Edit button is commented out in HTML
         // const editBtn = document.getElementById('category-option-edit');
         const deleteBtn = document.getElementById('category-option-delete');
-        
+
         // if (editBtn) {
         //     editBtn.style.display = isPredefined ? 'none' : 'flex';
         // }
@@ -2398,10 +2441,10 @@ class RecipeApp {
         // Show modal
         modal.classList.remove('hidden');
         modal.classList.add('stacked');
-        
+
         // Add to modal stack
         this.pushModal('category-options-modal');
-        
+
         // Set focus
         this.setModalFocus(modal);
 
@@ -2418,7 +2461,7 @@ class RecipeApp {
             modal.classList.add('hidden');
             modal.classList.remove('stacked');
         }
-        
+
         // Remove from modal stack
         this.popModal();
     }
@@ -2467,7 +2510,7 @@ class RecipeApp {
                 const categoryId = modal.dataset.categoryId;
                 const isHidden = modal.dataset.isHidden === 'true';
                 this.closeCategoryOptionsModal();
-                
+
                 if (isHidden) {
                     this.handleRestoreCategory(categoryId);
                 } else {
@@ -2589,7 +2632,6 @@ class RecipeApp {
             this.renderCategorySelector();
             this.renderRecipeList();
             this.renderCustomCategoriesList();
-            this.renderHiddenCategoriesList();
 
             // Show success message
             const actionText = result.isPredefined ? 'ocultada' : 'eliminada';
@@ -2629,7 +2671,6 @@ class RecipeApp {
             this.renderCategorySelector();
             this.renderRecipeList();
             this.renderCustomCategoriesList();
-            this.renderHiddenCategoriesList();
 
             // Show success message
             const recipesText = affectedCount > 0 ? ` (${affectedCount} ${affectedCount === 1 ? 'receta ocultada' : 'recetas ocultadas'})` : '';
@@ -2657,7 +2698,6 @@ class RecipeApp {
             this.renderCategorySelector();
             this.renderRecipeList();
             this.renderCustomCategoriesList();
-            this.renderHiddenCategoriesList();
 
             // Show success message
             this.showSuccess(`Categoría "${category.name}" restaurada correctamente`);
@@ -8602,6 +8642,12 @@ class RecipeApp {
                 xmlFileInput.value = '';
             }
 
+            // Close settings modal and go to home after 2 seconds
+            setTimeout(() => {
+                this.closeSettingsModal();
+                this.goToHome();
+            }, 2000);
+
         } catch (error) {
             console.error('[Import] Error importing XML:', error);
             this.showError('Error al importar XML: ' + error.message);
@@ -11176,7 +11222,7 @@ class RecipeApp {
         if (!modal || !ingredientDisplay || !listsContainer) return;
 
         // Display ingredient info (ingredientQuantity is now recipeName)
-        const displayText = ingredientQuantity 
+        const displayText = ingredientQuantity
             ? `${ingredientName} - para ${ingredientQuantity}`
             : ingredientName;
         ingredientDisplay.textContent = displayText;

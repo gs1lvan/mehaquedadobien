@@ -69,19 +69,19 @@
 
                 <!-- Dropdown menu -->
                 <div id="menu-dropdown" class="menu-dropdown" role="menu" aria-label="Opciones de la aplicación">
-                    <button id="shopping-lists-btn" class="menu-item" role="menuitem"
-                        title="Gestionar listas de compra">
-                        🛒 Listas de Compra
-                    </button>
-                    <button id="menus-btn" class="menu-item" role="menuitem" title="Gestionar menús">
-                        📋 Menús
-                    </button>
                     <button id="recipes-btn" class="menu-item" role="menuitem" title="Ver recetas">
                         📖 Recetas
                     </button>
                     <button id="new-recipe-btn" class="menu-item menu-item-primary" role="menuitem"
                         title="Crear nueva receta">
                         ➕ Nueva Receta
+                    </button>
+                    <button id="menus-btn" class="menu-item" role="menuitem" title="Gestionar menús">
+                        📋 Menús
+                    </button>
+                    <button id="shopping-lists-btn" class="menu-item" role="menuitem"
+                        title="Gestionar listas de compra">
+                        🛒 Listas de Compra
                     </button>
                     <button id="settings-btn" class="menu-item" role="menuitem" title="Configuración">
                         ⚙️ Configuración
@@ -383,9 +383,9 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="recipe-category-chip">Categoría</label>
-                                <button type="button" id="recipe-category-chip" class="category-chip" data-category="">
+                                <span id="recipe-category-chip" class="recipe-category" style="display: inline-block;" data-category="">
                                     <span id="selected-category-display">Sin categoría</span>
-                                </button>
+                                </span>
                                 <input type="hidden" id="recipe-category" name="category" value="">
                             </div>
 
@@ -811,20 +811,12 @@
 
                 <!-- Categories list -->
                 <div class="categories-list-section">
-                    <h3>Categorías Personalizadas</h3>
+                    <h3 id="custom-categories-title">Categorías Personalizadas</h3>
                     <div id="custom-categories-list" class="categories-list">
-                        <!-- Custom categories -->
+                        <!-- Custom categories (visible and hidden) -->
                     </div>
                     <div id="custom-categories-empty" class="categories-empty">
                         <p>No hay categorías personalizadas. Crea una arriba para empezar.</p>
-                    </div>
-
-                    <h3>Categorías Ocultas</h3>
-                    <div id="hidden-categories-list" class="categories-list">
-                        <!-- Hidden categories -->
-                    </div>
-                    <div id="hidden-categories-empty" class="categories-empty">
-                        <p>No hay categorías ocultas.</p>
                     </div>
                 </div>
             </div>
@@ -1292,12 +1284,11 @@
         const footerDate = document.getElementById('footer-date');
         if (footerDate) {
             const now = new Date();
-            const day = now.getDate();
             const monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
                 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
             const month = monthNames[now.getMonth()];
             const year = now.getFullYear();
-            footerDate.textContent = `${day} - ${month} - ${year}`;
+            footerDate.textContent = `| ${month} - ${year}`;
         }
     </script>
 </body>
