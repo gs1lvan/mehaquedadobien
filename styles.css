@@ -2781,13 +2781,15 @@ body.dark-theme .recipe-pdf-badge:hover {
 }
 
 .btn-action-compact.btn-save-top {
-    background: #ff5a5f;
-    color: white;
+    background: #ff5a5f !important;
+    color: white !important;
+    border: none !important;
 }
 
 .btn-action-compact.btn-save-top:hover {
-    background: #e04e53;
-    color: white;
+    background: #e04e53 !important;
+    color: white !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
 
 .detail-content {
