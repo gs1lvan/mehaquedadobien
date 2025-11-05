@@ -2302,6 +2302,15 @@ class RecipeApp {
             });
         }
 
+        // Save button at top (form-actions)
+        const saveRecipeBtnTop = document.getElementById('save-recipe-btn-top');
+        if (saveRecipeBtnTop) {
+            saveRecipeBtnTop.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.handleFormSubmit();
+            });
+        }
+
         // Name field validation (real-time) - now using contenteditable h2
         const nameInput = document.getElementById('recipe-name');
         if (nameInput) {

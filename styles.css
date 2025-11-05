@@ -22,7 +22,7 @@
     --color-fruta: #FF8C00;
     --color-cereales: #C4A053;
     --color-postres: #FFB6C1;
-    --color-mix: #8B5CF6; 
+    --color-mix: #8B5CF6;
     --color-con-huevo: #FFD700;
     --color-pollo: #FFA500;
     --color-cerdo: #FFB6C1;
@@ -2778,6 +2778,16 @@ body.dark-theme .recipe-pdf-badge:hover {
 .btn-action-compact.btn-danger:hover {
     background: rgba(220, 38, 38, 0.1);
     color: var(--color-danger);
+}
+
+.btn-action-compact.btn-save-top {
+    background: #ff5a5f;
+    color: white;
+}
+
+.btn-action-compact.btn-save-top:hover {
+    background: #e04e53;
+    color: white;
 }
 
 .detail-content {
