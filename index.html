@@ -771,12 +771,12 @@
     </div>
 
     <!-- Category Management Modal -->
-    <div id="category-modal" class="modal hidden">
+    <div id="category-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="category-modal-title">
         <div class="modal-overlay"></div>
         <div class="modal-content category-modal-content">
             <div class="modal-header">
-                <h2>Gestionar Categorías</h2>
-                <button id="close-category-modal" class="btn-icon">✕</button>
+                <h2 id="category-modal-title">Gestionar Categorías</h2>
+                <button id="close-category-modal" class="btn-icon" aria-label="Cerrar modal de categorías">✕</button>
             </div>
 
             <div class="modal-body">
@@ -811,11 +811,6 @@
 
                 <!-- Categories list -->
                 <div class="categories-list-section">
-                    <h3>Categorías Predefinidas</h3>
-                    <div id="predefined-categories-list" class="categories-list">
-                        <!-- Predefined categories -->
-                    </div>
-
                     <h3>Categorías Personalizadas</h3>
                     <div id="custom-categories-list" class="categories-list">
                         <!-- Custom categories -->
@@ -875,6 +870,34 @@
                         </button>
                     </div>
                     <span class="error-message" id="edit-category-error"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Options Modal -->
+    <div id="category-options-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="category-options-modal-title">
+        <div class="modal-overlay"></div>
+        <div class="modal-content shopping-list-options-content">
+            <div class="modal-header">
+                <h2 id="category-options-modal-title">Opciones de Categoría</h2>
+                <button id="close-category-options-modal" class="btn-icon" aria-label="Cerrar opciones">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="options-menu">
+                    <!-- <button id="category-option-edit" class="option-btn">
+                        <span class="option-icon"><i class="fa-regular fa-pen-to-square"></i></span>
+                        <span class="option-text">Editar</span>
+                    </button> -->
+                    <button id="category-option-toggle" class="option-btn">
+                        <span class="option-icon"><i class="fa-regular fa-eye"></i></span>
+                        <span class="option-text" id="category-option-toggle-text">Ocultar</span>
+                    </button>
+                    <button id="category-option-delete" class="option-btn option-btn-danger">
+                        <span class="option-icon"><i class="fa-regular fa-trash-can"></i></span>
+                        <span class="option-text">Eliminar</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1180,12 +1203,12 @@
     </div>
 
     <!-- Settings Modal -->
-    <div id="settings-modal" class="modal hidden">
+    <div id="settings-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
         <div class="modal-overlay"></div>
         <div class="modal-content">
             <div class="modal-header">
-                <h2>⚙️ Configuración</h2>
-                <button id="close-settings-modal" class="btn-icon">✕</button>
+                <h2 id="settings-modal-title">⚙️ Configuración</h2>
+                <button id="close-settings-modal" class="btn-icon" aria-label="Cerrar modal de configuración">✕</button>
             </div>
 
             <div class="modal-body">

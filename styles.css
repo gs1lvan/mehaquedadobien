@@ -3402,7 +3402,7 @@ body.dark-theme .recipe-pdf-badge:hover {
     }
 
     .categories-list {
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
@@ -3696,6 +3696,10 @@ html {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.modal.stacked {
+    z-index: 1100;
 }
 
 .modal.hidden {
@@ -4011,11 +4015,25 @@ html {
 
 .categories-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    grid-template-columns: 1fr;
     gap: var(--spacing-sm);
     width: 100%;
     max-width: 100%;
     overflow: hidden;
+}
+
+/* Minimum 2 columns on larger screens */
+@media (min-width: 600px) {
+    .categories-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* 3 columns on very large screens */
+@media (min-width: 1200px) {
+    .categories-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
 .category-item {
@@ -4408,7 +4426,7 @@ html {
     }
 
     .categories-list {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
         gap: var(--spacing-xs);
     }
 

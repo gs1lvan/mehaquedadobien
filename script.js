@@ -816,6 +816,13 @@ class RecipeApp {
         this.autoSaveDelay = 2000; // 2 seconds after user stops typing
         this.isAutoSaving = false;
 
+        // Modal stack management
+        this.modalStack = []; // Track opened modals for cascade closing
+
+        // Edge case handling: debounce modal close operations
+        this.isClosingModal = false;
+        this.modalCloseDebounceTime = 300; // 300ms debounce
+
         this.init();
     }
 
@@ -1187,7 +1194,7 @@ class RecipeApp {
         const manageCategoriesBtn = document.getElementById('manage-categories-btn');
         if (manageCategoriesBtn) {
             manageCategoriesBtn.addEventListener('click', () => {
-                this.showCategoryModal();
+                this.showCategoryModal(true); // true = opened from settings
                 closeMenu();
             });
         }
@@ -1342,6 +1349,13 @@ class RecipeApp {
 
         // Form event listeners
         this.setupFormEventListeners();
+
+        // Global ESC key handler for closing modals
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.handleEscapeKey();
+            }
+        });
     }
 
     // ===== Category Management Functions =====
@@ -1568,29 +1582,8 @@ class RecipeApp {
         }
 
         // Render category lists
-        this.renderPredefinedCategoriesList();
         this.renderCustomCategoriesList();
         this.renderHiddenCategoriesList();
-    }
-
-    /**
-     * Render predefined categories list
-     */
-    renderPredefinedCategoriesList() {
-        const listContainer = document.getElementById('predefined-categories-list');
-        if (!listContainer) return;
-
-        listContainer.innerHTML = '';
-
-        const counts = this.categoryManager.getCategoryCounts(this.recipes);
-
-        // Only show visible predefined categories
-        const visibleCategories = this.categoryManager.getVisiblePredefinedCategories();
-
-        visibleCategories.forEach(category => {
-            const item = this.createPredefinedCategoryItem(category, counts[category.id] || 0);
-            listContainer.appendChild(item);
-        });
     }
 
     /**
@@ -1613,7 +1606,7 @@ class RecipeApp {
             listContainer.style.display = 'none';
         } else {
             emptyState.style.display = 'none';
-            listContainer.style.display = 'flex';
+            listContainer.style.display = 'grid';
 
             const counts = this.categoryManager.getCategoryCounts(this.recipes);
 
@@ -1641,7 +1634,7 @@ class RecipeApp {
             listContainer.style.display = 'none';
         } else {
             emptyState.style.display = 'none';
-            listContainer.style.display = 'flex';
+            listContainer.style.display = 'grid';
 
             const counts = this.categoryManager.getCategoryCounts(this.recipes);
 
@@ -1683,77 +1676,21 @@ class RecipeApp {
         countSpan.className = 'category-count';
         countSpan.textContent = `(${count} ${count === 1 ? 'receta' : 'recetas'})`;
 
-        infoDiv.appendChild(emoji);
-        infoDiv.appendChild(name);
-        infoDiv.appendChild(badge);
-        infoDiv.appendChild(countSpan);
-
-        item.appendChild(infoDiv);
-
-        // Restore button
-        const actionsDiv = document.createElement('div');
-        actionsDiv.className = 'category-actions';
-
-        const restoreBtn = document.createElement('button');
-        restoreBtn.type = 'button';
-        restoreBtn.className = 'btn-icon btn-restore-category';
-        restoreBtn.textContent = '↩️';
-        restoreBtn.title = 'Restaurar';
-        restoreBtn.addEventListener('click', () => {
-            this.handleRestoreCategory(category.id);
-        });
-
-        actionsDiv.appendChild(restoreBtn);
-        item.appendChild(actionsDiv);
-
-        return item;
-    }
-
-    /**
-     * Create predefined category item element with hide button
-     * @param {Object} category - Category object
-     * @param {number} count - Recipe count
-     * @returns {HTMLElement} Category item element
-     */
-    createPredefinedCategoryItem(category, count) {
-        const item = document.createElement('div');
-        item.className = 'category-item';
-        item.dataset.categoryId = category.id;
-
-        // Category info
-        const infoDiv = document.createElement('div');
-        infoDiv.className = 'category-info';
-
-        const emoji = document.createElement('span');
-        emoji.className = 'category-emoji';
-        emoji.textContent = category.emoji;
-
-        const name = document.createElement('span');
-        name.className = 'category-name';
-        name.textContent = category.name;
-
-        const badge = document.createElement('span');
-        badge.className = 'category-badge';
-        badge.style.backgroundColor = category.color;
-
-        const countSpan = document.createElement('span');
-        countSpan.className = 'category-count';
-        countSpan.textContent = `(${count} ${count === 1 ? 'receta' : 'recetas'})`;
-
-        const hideBtn = document.createElement('button');
-        hideBtn.type = 'button';
-        hideBtn.className = 'btn-icon btn-hide-category';
-        hideBtn.textContent = '👁️';
-        hideBtn.title = 'Ocultar';
-        hideBtn.addEventListener('click', () => {
-            this.handleHideCategory(category.id);
+        const menuBtn = document.createElement('button');
+        menuBtn.type = 'button';
+        menuBtn.className = 'btn-icon btn-category-menu';
+        menuBtn.textContent = '⋮';
+        menuBtn.title = 'Más opciones';
+        menuBtn.setAttribute('aria-label', 'Más opciones');
+        menuBtn.addEventListener('click', () => {
+            this.openCategoryOptionsModal(category.id, true);
         });
 
         infoDiv.appendChild(emoji);
         infoDiv.appendChild(name);
         infoDiv.appendChild(badge);
         infoDiv.appendChild(countSpan);
-        infoDiv.appendChild(hideBtn);
+        infoDiv.appendChild(menuBtn);
 
         item.appendChild(infoDiv);
 
@@ -1791,40 +1728,21 @@ class RecipeApp {
         countSpan.className = 'category-count';
         countSpan.textContent = `(${count} ${count === 1 ? 'receta' : 'recetas'})`;
 
-        const editBtn = document.createElement('button');
-        editBtn.type = 'button';
-        editBtn.className = 'btn-icon btn-edit-category';
-        editBtn.textContent = '✏️';
-        editBtn.title = 'Editar';
-        editBtn.addEventListener('click', () => {
-            this.handleEditCategory(category.id);
-        });
-
-        const hideBtn = document.createElement('button');
-        hideBtn.type = 'button';
-        hideBtn.className = 'btn-icon btn-hide-category';
-        hideBtn.textContent = '👁️';
-        hideBtn.title = 'Ocultar';
-        hideBtn.addEventListener('click', () => {
-            this.handleHideCategory(category.id);
-        });
-
-        const deleteBtn = document.createElement('button');
-        deleteBtn.type = 'button';
-        deleteBtn.className = 'btn-icon btn-delete-category';
-        deleteBtn.textContent = '🗑️';
-        deleteBtn.title = 'Eliminar';
-        deleteBtn.addEventListener('click', () => {
-            this.handleDeleteCategory(category.id);
+        const menuBtn = document.createElement('button');
+        menuBtn.type = 'button';
+        menuBtn.className = 'btn-icon btn-category-menu';
+        menuBtn.textContent = '⋮';
+        menuBtn.title = 'Más opciones';
+        menuBtn.setAttribute('aria-label', 'Más opciones');
+        menuBtn.addEventListener('click', () => {
+            this.openCategoryOptionsModal(category.id, false);
         });
 
         infoDiv.appendChild(emoji);
         infoDiv.appendChild(name);
         infoDiv.appendChild(badge);
         infoDiv.appendChild(countSpan);
-        infoDiv.appendChild(editBtn);
-        infoDiv.appendChild(hideBtn);
-        infoDiv.appendChild(deleteBtn);
+        infoDiv.appendChild(menuBtn);
 
         item.appendChild(infoDiv);
 
@@ -1834,11 +1752,28 @@ class RecipeApp {
     /**
      * Show category management modal
      */
-    showCategoryModal() {
+    showCategoryModal(fromSettings = false) {
+        // Edge case: Sync modal stack before opening to ensure consistency
+        this.syncModalStack();
+
         const modal = document.getElementById('category-modal');
         if (modal) {
+            // Store the currently focused element to restore later
+            modal.dataset.previousFocus = document.activeElement?.id || '';
+            
             modal.classList.remove('hidden');
             this.renderCategoryModal();
+
+            // Track modal opening context
+            modal.dataset.openedFrom = fromSettings ? 'settings' : 'menu';
+            
+            // Add to modal stack
+            this.pushModal('category-modal');
+            
+            // Add stacked class when opened from settings for proper z-index
+            if (fromSettings) {
+                modal.classList.add('stacked');
+            }
 
             // Clear form
             document.getElementById('new-category-name').value = '';
@@ -1851,6 +1786,9 @@ class RecipeApp {
             if (colorPreview) colorPreview.style.backgroundColor = CATEGORY_COLORS[0];
             if (colorHidden) colorHidden.value = CATEGORY_COLORS[0];
             document.getElementById('category-error').textContent = '';
+            
+            // Set focus to the first focusable element in the modal
+            this.setModalFocus(modal);
         }
     }
 
@@ -1858,21 +1796,68 @@ class RecipeApp {
      * Close category management modal
      */
     closeCategoryModal() {
-        const modal = document.getElementById('category-modal');
-        if (modal) {
-            modal.classList.add('hidden');
+        // Edge case: Prevent multiple rapid clicks
+        if (this.isClosingModal) {
+            console.log('[ModalStack] Close operation already in progress, ignoring');
+            return;
         }
+
+        const modal = document.getElementById('category-modal');
+        if (!modal) return;
+        
+        // Set closing flag
+        this.isClosingModal = true;
+        
+        // Get opening context to determine cascading behavior
+        const openedFrom = modal.dataset.openedFrom || 'menu';
+        
+        // Restore focus to the element that opened the modal
+        const previousFocusId = modal.dataset.previousFocus;
+        
+        // Close category modal
+        modal.classList.add('hidden');
+        
+        // Remove stacked class if present
+        modal.classList.remove('stacked');
+        
+        // Remove from modal stack
+        this.popModal();
+        
+        // If opened from settings, close settings modal too (cascading close)
+        if (openedFrom === 'settings') {
+            this.closeSettingsModal();
+        } else if (previousFocusId) {
+            // Restore focus only if not cascading close
+            this.restoreFocus(previousFocusId);
+        }
+        
+        // Always navigate to home view
+        this.goToHome();
+
+        // Reset closing flag after debounce time
+        setTimeout(() => {
+            this.isClosingModal = false;
+        }, this.modalCloseDebounceTime);
     }
 
     /**
      * Open settings modal
      */
     openSettingsModal() {
+        // Edge case: Sync modal stack before opening to ensure consistency
+        this.syncModalStack();
+
         const modal = document.getElementById('settings-modal');
         if (!modal) return;
 
+        // Store the currently focused element to restore later
+        modal.dataset.previousFocus = document.activeElement?.id || '';
+
         // Show modal
         modal.classList.remove('hidden');
+
+        // Add to modal stack
+        this.pushModal('settings-modal');
 
         // Load recipe book owner name
         const ownerInput = document.getElementById('recipe-book-owner');
@@ -1897,16 +1882,36 @@ class RecipeApp {
         if (overlay) {
             overlay.onclick = () => this.closeSettingsModal();
         }
+        
+        // Set focus to the first focusable element in the modal
+        this.setModalFocus(modal);
     }
 
     /**
      * Close settings modal
      */
     closeSettingsModal() {
+        // Edge case: Prevent multiple rapid clicks (but allow cascading close from category modal)
+        if (this.isClosingModal && this.modalStack.includes('category-modal')) {
+            console.log('[ModalStack] Close operation already in progress, ignoring');
+            return;
+        }
+
         const modal = document.getElementById('settings-modal');
         if (modal) {
+            // Restore focus to the element that opened the modal
+            const previousFocusId = modal.dataset.previousFocus;
+            
             modal.classList.add('hidden');
+            
+            // Restore focus after modal is closed
+            if (previousFocusId) {
+                this.restoreFocus(previousFocusId);
+            }
         }
+
+        // Remove from modal stack
+        this.popModal();
 
         // Close menu dropdown if it's open
         const menuDropdown = document.getElementById('menu-dropdown');
@@ -1918,6 +1923,154 @@ class RecipeApp {
             }
         }
     }
+
+    // ===== Modal Stack Management =====
+
+    /**
+     * Add a modal to the stack when it opens
+     * @param {string} modalId - The ID of the modal being opened
+     */
+    pushModal(modalId) {
+        if (!this.modalStack.includes(modalId)) {
+            this.modalStack.push(modalId);
+            console.log('[ModalStack] Pushed modal:', modalId, 'Stack:', this.modalStack);
+        }
+    }
+
+    /**
+     * Remove the last modal from the stack when it closes
+     * @returns {string|null} The ID of the removed modal, or null if stack was empty
+     */
+    popModal() {
+        const modalId = this.modalStack.pop();
+        console.log('[ModalStack] Popped modal:', modalId, 'Stack:', this.modalStack);
+        return modalId || null;
+    }
+
+    /**
+     * Clear all modals from the stack
+     * Useful for resetting the modal state
+     */
+    clearModalStack() {
+        console.log('[ModalStack] Clearing stack. Previous stack:', this.modalStack);
+        this.modalStack = [];
+    }
+
+    /**
+     * Synchronize the modal stack with the actual DOM state
+     * This ensures the stack matches which modals are actually visible
+     */
+    syncModalStack() {
+        console.log('[ModalStack] Syncing stack. Previous stack:', this.modalStack);
+        this.modalStack = [];
+        
+        // Find all modals that are currently visible (not hidden)
+        const visibleModals = document.querySelectorAll('.modal:not(.hidden)');
+        visibleModals.forEach(modal => {
+            if (modal.id) {
+                this.modalStack.push(modal.id);
+            }
+        });
+        
+        console.log('[ModalStack] Synced stack:', this.modalStack);
+    }
+
+    /**
+     * Set focus to the first focusable element in a modal
+     * Accessibility: Ensures keyboard users can immediately interact with the modal
+     */
+    setModalFocus(modal) {
+        if (!modal) return;
+        
+        // Find all focusable elements in the modal
+        const focusableElements = modal.querySelectorAll(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        
+        if (focusableElements.length > 0) {
+            // Focus the first focusable element (usually the close button or first input)
+            setTimeout(() => {
+                focusableElements[0].focus();
+            }, 100); // Small delay to ensure modal is fully rendered
+        }
+    }
+
+    /**
+     * Restore focus to a previously focused element
+     * Accessibility: Returns focus to the element that triggered the modal
+     */
+    restoreFocus(elementId) {
+        if (!elementId) return;
+        
+        const element = document.getElementById(elementId);
+        if (element) {
+            setTimeout(() => {
+                element.focus();
+            }, 100); // Small delay to ensure modal is fully closed
+        }
+    }
+
+    /**
+     * Handle ESC key press to close the topmost modal
+     * Edge case: Provides keyboard accessibility for modal closing
+     */
+    handleEscapeKey() {
+        // Prevent closing if already in progress
+        if (this.isClosingModal) {
+            console.log('[ModalStack] Close operation already in progress, ignoring ESC');
+            return;
+        }
+
+        // Sync stack to ensure consistency
+        this.syncModalStack();
+
+        // Get the topmost modal from the stack
+        if (this.modalStack.length === 0) {
+            console.log('[ModalStack] No modals open, ESC ignored');
+            return;
+        }
+
+        const topModalId = this.modalStack[this.modalStack.length - 1];
+        console.log('[ModalStack] ESC pressed, closing topmost modal:', topModalId);
+
+        // Close the appropriate modal based on ID
+        switch (topModalId) {
+            case 'category-modal':
+                this.closeCategoryModal();
+                break;
+            case 'settings-modal':
+                this.closeSettingsModal();
+                break;
+            case 'edit-category-modal':
+                this.closeEditCategoryModal();
+                break;
+            case 'emoji-picker-modal':
+                this.closeEmojiPickerModal();
+                break;
+            case 'color-picker-modal':
+                this.closeColorPickerModal();
+                break;
+            case 'category-options-modal':
+                this.closeCategoryOptionsModal();
+                break;
+            case 'image-modal':
+                this.closeImageModal();
+                break;
+            case 'category-selector-modal':
+                this.closeCategorySelectorModal();
+                break;
+            default:
+                console.warn('[ModalStack] Unknown modal ID:', topModalId);
+                // Try to close it anyway by hiding it
+                const modal = document.getElementById(topModalId);
+                if (modal) {
+                    modal.classList.add('hidden');
+                    this.popModal();
+                }
+        }
+    }
+
+    // ===== End Modal Stack Management =====
 
     /**
      * Collapse all expandable content in modals
@@ -2061,6 +2214,12 @@ class RecipeApp {
 
         // Show modal
         modal.classList.remove('hidden');
+        
+        // Add stacked class to appear above category modal
+        modal.classList.add('stacked');
+        
+        // Add to modal stack
+        this.pushModal('emoji-picker-modal');
     }
 
     /**
@@ -2070,7 +2229,11 @@ class RecipeApp {
         const modal = document.getElementById('emoji-picker-modal');
         if (modal) {
             modal.classList.add('hidden');
+            modal.classList.remove('stacked');
         }
+        
+        // Remove from modal stack
+        this.popModal();
     }
 
     /**
@@ -2130,6 +2293,12 @@ class RecipeApp {
 
         // Show modal
         modal.classList.remove('hidden');
+        
+        // Add stacked class to appear above category modal
+        modal.classList.add('stacked');
+        
+        // Add to modal stack
+        this.pushModal('color-picker-modal');
     }
 
     /**
@@ -2139,7 +2308,11 @@ class RecipeApp {
         const modal = document.getElementById('color-picker-modal');
         if (modal) {
             modal.classList.add('hidden');
+            modal.classList.remove('stacked');
         }
+        
+        // Remove from modal stack
+        this.popModal();
     }
 
     /**
@@ -2185,6 +2358,133 @@ class RecipeApp {
 
             colorPalette.appendChild(chip);
         });
+    }
+
+    /**
+     * Open category options modal
+     * @param {string} categoryId - Category ID
+     * @param {boolean} isHidden - Whether the category is currently hidden
+     */
+    openCategoryOptionsModal(categoryId, isHidden) {
+        const modal = document.getElementById('category-options-modal');
+        if (!modal) return;
+
+        // Store category ID and hidden state
+        modal.dataset.categoryId = categoryId;
+        modal.dataset.isHidden = isHidden;
+
+        // Get category to determine if it's predefined
+        const category = this.categoryManager.getCategoryById(categoryId);
+        const isPredefined = category?.isPredefined || false;
+
+        // Update toggle button text
+        const toggleText = document.getElementById('category-option-toggle-text');
+        if (toggleText) {
+            toggleText.textContent = isHidden ? 'Mostrar' : 'Ocultar';
+        }
+
+        // Show/hide delete button for predefined categories
+        // Edit button is commented out in HTML
+        // const editBtn = document.getElementById('category-option-edit');
+        const deleteBtn = document.getElementById('category-option-delete');
+        
+        // if (editBtn) {
+        //     editBtn.style.display = isPredefined ? 'none' : 'flex';
+        // }
+        if (deleteBtn) {
+            deleteBtn.style.display = isPredefined ? 'none' : 'flex';
+        }
+
+        // Show modal
+        modal.classList.remove('hidden');
+        modal.classList.add('stacked');
+        
+        // Add to modal stack
+        this.pushModal('category-options-modal');
+        
+        // Set focus
+        this.setModalFocus(modal);
+
+        // Setup event listeners
+        this.setupCategoryOptionsListeners();
+    }
+
+    /**
+     * Close category options modal
+     */
+    closeCategoryOptionsModal() {
+        const modal = document.getElementById('category-options-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('stacked');
+        }
+        
+        // Remove from modal stack
+        this.popModal();
+    }
+
+    /**
+     * Setup event listeners for category options modal
+     */
+    setupCategoryOptionsListeners() {
+        const modal = document.getElementById('category-options-modal');
+        if (!modal) return;
+
+        const closeBtn = document.getElementById('close-category-options-modal');
+        const overlay = modal.querySelector('.modal-overlay');
+        const editBtn = document.getElementById('category-option-edit');
+        const toggleBtn = document.getElementById('category-option-toggle');
+        const deleteBtn = document.getElementById('category-option-delete');
+
+        // Remove old listeners by cloning
+        if (closeBtn) {
+            const newCloseBtn = closeBtn.cloneNode(true);
+            closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+            newCloseBtn.addEventListener('click', () => this.closeCategoryOptionsModal());
+        }
+
+        if (overlay) {
+            const newOverlay = overlay.cloneNode(true);
+            overlay.parentNode.replaceChild(newOverlay, overlay);
+            newOverlay.addEventListener('click', () => this.closeCategoryOptionsModal());
+        }
+
+        // Edit button commented out in HTML
+        // if (editBtn) {
+        //     const newEditBtn = editBtn.cloneNode(true);
+        //     editBtn.parentNode.replaceChild(newEditBtn, editBtn);
+        //     newEditBtn.addEventListener('click', () => {
+        //         const categoryId = modal.dataset.categoryId;
+        //         this.closeCategoryOptionsModal();
+        //         this.handleEditCategory(categoryId);
+        //     });
+        // }
+
+        if (toggleBtn) {
+            const newToggleBtn = toggleBtn.cloneNode(true);
+            toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
+            newToggleBtn.addEventListener('click', () => {
+                const categoryId = modal.dataset.categoryId;
+                const isHidden = modal.dataset.isHidden === 'true';
+                this.closeCategoryOptionsModal();
+                
+                if (isHidden) {
+                    this.handleRestoreCategory(categoryId);
+                } else {
+                    this.handleHideCategory(categoryId);
+                }
+            });
+        }
+
+        if (deleteBtn) {
+            const newDeleteBtn = deleteBtn.cloneNode(true);
+            deleteBtn.parentNode.replaceChild(newDeleteBtn, deleteBtn);
+            newDeleteBtn.addEventListener('click', () => {
+                const categoryId = modal.dataset.categoryId;
+                this.closeCategoryOptionsModal();
+                this.handleDeleteCategory(categoryId);
+            });
+        }
     }
 
     /**
@@ -2288,7 +2588,6 @@ class RecipeApp {
             this.renderFilterChips();
             this.renderCategorySelector();
             this.renderRecipeList();
-            this.renderPredefinedCategoriesList();
             this.renderCustomCategoriesList();
             this.renderHiddenCategoriesList();
 
@@ -2329,7 +2628,6 @@ class RecipeApp {
             this.renderFilterChips();
             this.renderCategorySelector();
             this.renderRecipeList();
-            this.renderPredefinedCategoriesList();
             this.renderCustomCategoriesList();
             this.renderHiddenCategoriesList();
 
@@ -2358,7 +2656,6 @@ class RecipeApp {
             this.renderFilterChips();
             this.renderCategorySelector();
             this.renderRecipeList();
-            this.renderPredefinedCategoriesList();
             this.renderCustomCategoriesList();
             this.renderHiddenCategoriesList();
 
