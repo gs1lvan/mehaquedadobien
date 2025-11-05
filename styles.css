@@ -1794,8 +1794,8 @@ body.dark-theme .recipe-pdf-badge:hover {
     color: var(--color-text);
     padding: 8px 12px;
     border-radius: var(--radius-xl);
-    font-size: 0.7rem;
-    font-weight: var(--font-weight-medium);
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-semibold);
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     user-select: none;
@@ -1808,7 +1808,7 @@ body.dark-theme .recipe-pdf-badge:hover {
 }
 
 .appliance-chip .chip-emoji {
-    font-size: 1.8em;
+    font-size: 3em;
     line-height: 1;
 }
 
@@ -2985,6 +2985,12 @@ body.dark-theme .recipe-pdf-badge:hover {
     padding: var(--spacing-sm) var(--spacing-md);
     background: var(--color-background-secondary);
     border-radius: var(--radius-sm);
+     font-size: 0.875rem;
+     font-weight: var(--font-weight-semibold);
+}
+.chip-emoji {
+    font-size: 2em;
+    line-height: 1;
 }
 
 .ingredient-detail-name {

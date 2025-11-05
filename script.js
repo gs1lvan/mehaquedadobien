@@ -1224,6 +1224,15 @@ class RecipeApp {
             });
         }
 
+        // Recipes button (go to home)
+        const recipesBtn = document.getElementById('recipes-btn');
+        if (recipesBtn) {
+            recipesBtn.addEventListener('click', () => {
+                this.goToHome();
+                closeMenu();
+            });
+        }
+
         const newRecipeBtn = document.getElementById('new-recipe-btn');
         if (newRecipeBtn) {
             newRecipeBtn.addEventListener('click', () => {
@@ -6423,19 +6432,21 @@ class RecipeApp {
 
         section.style.display = 'block';
 
-        // Render each appliance as a chip with appliance-chip style
+        // Create ul element with same style as ingredients list
+        const ul = document.createElement('ul');
+        ul.className = 'detail-ingredients-list';
+
+        // Render each appliance as a list item
         appliances.forEach(applianceId => {
             const appliance = KITCHEN_APPLIANCES.find(a => a.id === applianceId);
             if (appliance) {
-                const chip = document.createElement('button');
-                chip.type = 'button';
-                chip.className = 'appliance-chip';
-                chip.innerHTML = `<span class="chip-emoji">${appliance.emoji}</span> ${appliance.name}`;
-                chip.disabled = true; // Read-only in detail view
-                chip.style.cursor = 'default';
-                chipsContainer.appendChild(chip);
+                const li = document.createElement('li');
+                li.innerHTML = `<span class="chip-emoji">${appliance.emoji}</span>${appliance.name}`;
+                ul.appendChild(li);
             }
         });
+
+        chipsContainer.appendChild(ul);
     }
 
     /**
@@ -9022,13 +9033,6 @@ class RecipeApp {
         actions.style.alignItems = 'center';
         actions.style.gap = '0.25rem';
 
-        // Add "Opciones" text
-        const optionsText = document.createElement('span');
-        optionsText.textContent = 'Opciones';
-        optionsText.style.fontSize = '0.75rem';
-        optionsText.style.color = 'var(--color-text-secondary)';
-        optionsText.style.marginRight = '0.25rem';
-
         // Create more options button (three dots)
         const moreBtn = this.createButton({
             className: 'btn-icon',
@@ -9040,7 +9044,6 @@ class RecipeApp {
             }
         });
 
-        actions.appendChild(optionsText);
         actions.appendChild(moreBtn);
 
         // Assemble right side
