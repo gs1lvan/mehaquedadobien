@@ -3823,6 +3823,7 @@ html {
 /* Shopping List Options Modal */
 .shopping-list-options-content {
     max-width: 400px;
+    min-width: 400px;
 }
 
 .options-menu {
