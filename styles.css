@@ -5435,20 +5435,12 @@ select {
 
 /* Shopping List Actions */
 .shopping-list-actions {
-    display: none;
+    display: flex;
     justify-content: flex-end;
     gap: var(--spacing-xs);
-    margin-top: var(--spacing-sm);
-    opacity: 0;
-    max-height: 0;
-    overflow: hidden;
-    transition: opacity 0.3s ease, max-height 0.3s ease;
-}
-
-.shopping-list-card.expanded .shopping-list-actions {
-    display: flex;
     opacity: 1;
-    max-height: 100px;
+    /* Removed: display: none, margin-top, max-height, overflow, transition */
+    /* Actions are now always visible in the header */
 }
 
 /* Shopping List Content (Collapsible) */

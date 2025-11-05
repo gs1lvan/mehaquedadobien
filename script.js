@@ -8784,9 +8784,24 @@ class RecipeApp {
         header.setAttribute('tabindex', '0');
         header.setAttribute('aria-expanded', 'false');
 
+        // Make header a flex container for single line layout
+        header.style.display = 'flex';
+        header.style.justifyContent = 'space-between';
+        header.style.alignItems = 'center';
+        header.style.gap = '1rem';
+
         const name = document.createElement('h3');
         name.className = 'shopping-list-name';
         name.textContent = menu.name;
+        name.style.margin = '0';
+        name.style.flex = '0 1 auto';
+
+        // Create right side container (counter + expand icon + actions)
+        const rightSide = document.createElement('div');
+        rightSide.style.display = 'flex';
+        rightSide.style.alignItems = 'center';
+        rightSide.style.gap = '0.75rem';
+        rightSide.style.flex = '0 0 auto';
 
         // Create counter container
         const counterContainer = document.createElement('span');
@@ -8803,13 +8818,19 @@ class RecipeApp {
         expandIcon.className = 'expand-icon';
         expandIcon.textContent = '▼';
 
-        header.appendChild(name);
-        header.appendChild(counterContainer);
-        header.appendChild(expandIcon);
-
-        // Create actions (only more options button) - DENTRO del card, después del header
+        // Create actions container
         const actions = document.createElement('div');
         actions.className = 'shopping-list-actions';
+        actions.style.display = 'flex';
+        actions.style.alignItems = 'center';
+        actions.style.gap = '0.25rem';
+
+        // Add "Opciones" text
+        const optionsText = document.createElement('span');
+        optionsText.textContent = 'Opciones';
+        optionsText.style.fontSize = '0.75rem';
+        optionsText.style.color = 'var(--color-text-secondary)';
+        optionsText.style.marginRight = '0.25rem';
 
         // Create more options button (three dots)
         const moreBtn = this.createButton({
@@ -8822,7 +8843,17 @@ class RecipeApp {
             }
         });
 
+        actions.appendChild(optionsText);
         actions.appendChild(moreBtn);
+
+        // Assemble right side
+        rightSide.appendChild(counterContainer);
+        rightSide.appendChild(expandIcon);
+        rightSide.appendChild(actions);
+
+        // Assemble header
+        header.appendChild(name);
+        header.appendChild(rightSide);
 
         // Create content (collapsible)
         const content = document.createElement('div');
@@ -8832,7 +8863,11 @@ class RecipeApp {
         content.appendChild(itemsContainer);
 
         // Add event listeners for expand/collapse
-        header.addEventListener('click', () => {
+        header.addEventListener('click', (e) => {
+            // Don't toggle if clicking on actions
+            if (e.target.closest('.shopping-list-actions')) {
+                return;
+            }
             this.toggleMenuExpanded(menu.id);
         });
 
@@ -8843,9 +8878,8 @@ class RecipeApp {
             }
         });
 
-        // Assemble card
+        // Assemble card (actions are now inside header)
         card.appendChild(header);
-        card.appendChild(actions);
         card.appendChild(content);
 
         return card;
