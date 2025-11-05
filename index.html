@@ -349,10 +349,10 @@
 
             <!-- Recipe Form (Create/Edit) -->
             <section id="recipe-form-view" class="recipe-form hidden">
-                <div class="form-header">
+                <div class="form-header" style="position: relative;">
                     <h2 id="recipe-name" class="editable-title" contenteditable="true"
                         data-placeholder="Nombre de la receta...">Nueva Receta</h2>
-                    <button id="close-form-btn" class="btn-icon" title="Cerrar">✕</button>
+                    <button id="close-form-btn" class="btn-icon" title="Cerrar" style="position: absolute; right: 0; top: 50%; transform: translateY(-50%);">✕</button>
                 </div>
 
                 <div class="detail-actions" id="form-actions" style="display: none;">
@@ -525,6 +525,13 @@
                                 <div class="sequence-add-form">
                                     <div class="sequence-form-content">
                                         <div class="sequence-input-group">
+                                            <label>Ingredientes</label>
+                                            <div id="sequence-ingredients-chips" class="sequence-ingredients-chips">
+                                                <!-- Ingredient chips will be populated dynamically -->
+                                            </div>
+                                            <span class="helper-text">Selecciona uno o más ingredientes</span>
+                                        </div>
+                                        <div class="sequence-input-group">
                                             <label for="sequence-description">Descripción</label>
                                             <textarea id="sequence-description" class="form-textarea sequence-input"
                                                 placeholder="Ej: Añadir al sofrito y cocinar" rows="4"
@@ -597,13 +604,6 @@
                                             </div>
                                         </div>
                                         <div class="sequence-input-group">
-                                            <label>Ingredientes</label>
-                                            <div id="sequence-ingredients-chips" class="sequence-ingredients-chips">
-                                                <!-- Ingredient chips will be populated dynamically -->
-                                            </div>
-                                            <span class="helper-text">Selecciona uno o más ingredientes</span>
-                                        </div>
-                                        <div class="sequence-input-group">
                                             <label>Duración (opcional)</label>
                                             <div class="time-input-group">
                                                 <div class="time-input-item">
@@ -667,28 +667,32 @@
 
                     <!-- Multimedia Section -->
                     <div class="form-section">
-                        <h3 class="section-title">Multimedia</h3>
-                        <div id="multimedia-container">
-                            <!-- Images Section -->
-                            <div class="media-subsection">
-                                <h4 class="subsection-title">Imágenes</h4>
-                                <div class="media-upload-area">
-                                    <input type="file" id="image-upload" accept="image/*" multiple
-                                        style="display: none;">
-                                    <button type="button" id="upload-image-btn" class="btn-upload-media">
-                                        📷 Añadir Imágenes
-                                    </button>
-                                    <span class="helper-text">Formatos: JPEG, PNG, WebP. Máximo 10MB por imagen</span>
-                                    <span class="error-message" id="image-error"></span>
-                                </div>
+                        <h3 class="section-title collapsible-title" id="multimedia-section-title">
+                            <span class="collapse-icon">▼</span> Multimedia
+                        </h3>
+                        <div id="multimedia-collapsible-content" class="collapsible-content">
+                            <div id="multimedia-container">
+                                <!-- Images Section -->
+                                <div class="media-subsection">
+                                    <h4 class="subsection-title">Imágenes</h4>
+                                    <div class="media-upload-area">
+                                        <input type="file" id="image-upload" accept="image/*" multiple
+                                            style="display: none;">
+                                        <button type="button" id="upload-image-btn" class="btn-upload-media">
+                                            📷 Añadir Imágenes
+                                        </button>
+                                        <span class="helper-text">Formatos: JPEG, PNG, WebP. Máximo 10MB por imagen</span>
+                                        <span class="error-message" id="image-error"></span>
+                                    </div>
 
-                                <!-- Images preview grid -->
-                                <div id="images-preview" class="media-preview-grid">
-                                    <!-- Image previews will be dynamically added here -->
-                                </div>
+                                    <!-- Images preview grid -->
+                                    <div id="images-preview" class="media-preview-grid">
+                                        <!-- Image previews will be dynamically added here -->
+                                    </div>
 
-                                <div id="images-empty" class="media-empty">
-                                    <p>No hay imágenes añadidas</p>
+                                    <div id="images-empty" class="media-empty">
+                                        <p>No hay imágenes añadidas</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -3038,6 +3038,14 @@ class RecipeApp {
                 this.toggleCollapsibleSection('additional-info');
             });
         }
+
+        // Multimedia section
+        const multimediaSectionTitle = document.getElementById('multimedia-section-title');
+        if (multimediaSectionTitle) {
+            multimediaSectionTitle.addEventListener('click', () => {
+                this.toggleCollapsibleSection('multimedia');
+            });
+        }
     }
 
     /**
@@ -3081,7 +3089,7 @@ class RecipeApp {
 
         if (isCollapsed) {
             // Close all other sections first
-            const allSections = ['appliances', 'ingredients', 'sequences', 'additional-info'];
+            const allSections = ['appliances', 'ingredients', 'sequences', 'additional-info', 'multimedia'];
             allSections.forEach(section => {
                 if (section !== sectionName) {
                     this.setCollapsibleSectionState(section, true);
@@ -4423,6 +4431,7 @@ class RecipeApp {
         this.setCollapsibleSectionState('ingredients', isEditing);
         this.setCollapsibleSectionState('sequences', isEditing);
         this.setCollapsibleSectionState('additional-info', isEditing);
+        this.setCollapsibleSectionState('multimedia', isEditing);
 
         // Show/hide action buttons based on edit mode
         const formActions = document.getElementById('form-actions');
