@@ -3606,7 +3606,7 @@ body.dark-theme .recipe-pdf-badge:hover {
 .footer-text {
     font-size: 0.875rem;
     color: var(--color-text-secondary);
-    text-align: left;
+    text-align: center;
     margin: 0;
     padding: var(--spacing-xs) 0;
 }
