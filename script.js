@@ -6216,6 +6216,9 @@ class RecipeApp {
      * @param {Recipe} recipe - Recipe to display
      */
     renderRecipeDetail(recipe) {
+        // Store current recipe name for shopping list
+        this.currentRecipeName = recipe.name;
+
         // Recipe name
         const nameElement = document.getElementById('detail-recipe-name');
         if (nameElement) {
@@ -6377,8 +6380,8 @@ class RecipeApp {
             basketBtn.dataset.ingredientQuantity = quantityText;
             basketBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                // Show modal to select shopping list
-                this.showSelectShoppingListModal(ingredient.name, quantityText);
+                // Show modal to select shopping list (pass recipe name instead of quantity)
+                this.showSelectShoppingListModal(ingredient.name, this.currentRecipeName || '');
             });
 
             quantityContainer.appendChild(quantitySpan);
@@ -10875,8 +10878,11 @@ class RecipeApp {
 
         if (!modal || !ingredientDisplay || !listsContainer) return;
 
-        // Display ingredient info
-        ingredientDisplay.textContent = `${ingredientName} - ${ingredientQuantity}`;
+        // Display ingredient info (ingredientQuantity is now recipeName)
+        const displayText = ingredientQuantity 
+            ? `${ingredientName} - para ${ingredientQuantity}`
+            : ingredientName;
+        ingredientDisplay.textContent = displayText;
 
         // Clear previous lists
         listsContainer.innerHTML = '';
@@ -10904,7 +10910,7 @@ class RecipeApp {
                 option.appendChild(countSpan);
 
                 option.addEventListener('click', () => {
-                    this.addIngredientToShoppingList(list.id, ingredientName, ingredientQuantity);
+                    this.addIngredientToShoppingList(list.id, ingredientName, ingredientQuantity); // ingredientQuantity is now recipeName
                 });
 
                 listsContainer.appendChild(option);
@@ -10951,10 +10957,10 @@ class RecipeApp {
      * @param {string} ingredientName - Ingredient name
      * @param {string} ingredientQuantity - Ingredient quantity
      */
-    addIngredientToShoppingList(listId, ingredientName, ingredientQuantity) {
-        // Add "para receta" to quantity to indicate it comes from a recipe
-        const quantityWithSource = ingredientQuantity && ingredientQuantity !== '-'
-            ? `${ingredientQuantity} para receta`
+    addIngredientToShoppingList(listId, ingredientName, recipeName) {
+        // Use "para [recipe name]" instead of quantity
+        const quantityWithSource = recipeName
+            ? `para ${recipeName}`
             : 'para receta';
 
         this.shoppingListManager.addItem(listId, {

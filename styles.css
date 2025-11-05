@@ -2985,9 +2985,10 @@ body.dark-theme .recipe-pdf-badge:hover {
     padding: var(--spacing-sm) var(--spacing-md);
     background: var(--color-background-secondary);
     border-radius: var(--radius-sm);
-     font-size: 0.875rem;
-     font-weight: var(--font-weight-semibold);
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-semibold);
 }
+
 .chip-emoji {
     font-size: 2em;
     line-height: 1;
@@ -3364,7 +3365,7 @@ body.dark-theme .recipe-pdf-badge:hover {
     }
 
     .detail-ingredients-list {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .detail-gallery-image,
@@ -3870,8 +3871,9 @@ html {
 }
 
 .option-btn-danger:hover {
-    background: #fee;
-    border-color: #f44;
+    background: var(--color-background-secondary);
+    border-color: var(--color-primary);
+    transform: translateX(4px);
 }
 
 .option-btn-danger .option-text {
