@@ -3349,17 +3349,19 @@ body.dark-theme .recipe-pdf-badge:hover {
         /* Hide step number on mobile */
     }
 
-    .sequence-ingredients {
+    .sequence-description {
         order: 2;
-        /* Second: ingredients on same line as step */
-        flex: 1;
-        margin-bottom: 0;
-        /* Remove bottom margin */
+        /* Second: description on first line */
+        flex-basis: 100%;
+        /* Full width */
+        width: 100%;
+        margin-top: 0;
+        margin-bottom: var(--spacing-sm);
     }
 
-    .sequence-description {
+    .sequence-ingredients {
         order: 3;
-        /* Third: description on second line */
+        /* Third: ingredients on second line */
         flex-basis: 100%;
         /* Full width */
         width: 100%;
@@ -3389,6 +3391,12 @@ body.dark-theme .recipe-pdf-badge:hover {
     /* Stack menu buttons vertically on mobile */
     .menu-buttons {
         grid-template-columns: 1fr;
+    }
+
+    /* Options modals width on mobile */
+    .shopping-list-options-content {
+        width: 80%;
+        max-width: 80%;
     }
 
     .detail-header {
@@ -3965,6 +3973,12 @@ html {
 
 .option-btn-danger .option-text {
     color: #d32f2f;
+}
+
+/* Hide export buttons in options modals */
+#menu-option-export,
+#option-export {
+    display: none;
 }
 
 .modal-footer {
@@ -5634,6 +5648,8 @@ select {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
+    list-style: none;
+    padding-left: 0;
 }
 
 /* Shopping Item */
@@ -5646,10 +5662,7 @@ select {
 }
 
 .shopping-item-bullet {
-    color: var(--color-text-secondary);
-    font-size: 1.2rem;
-    line-height: 1.4;
-    flex-shrink: 0;
+    display: none;
 }
 
 .shopping-item-content {

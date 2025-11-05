@@ -9483,38 +9483,8 @@ class RecipeApp {
                 itemContent.appendChild(itemQuantity);
             }
 
-            // Reorder buttons - EXACTAMENTE igual que en listas de compra
-            const reorderButtons = document.createElement('div');
-            reorderButtons.className = 'shopping-item-reorder';
-
-            // Up button
-            const upBtn = document.createElement('button');
-            upBtn.className = 'btn-icon btn-reorder';
-            upBtn.title = 'Mover arriba';
-            upBtn.textContent = '⬆️';
-            upBtn.disabled = index === 0; // Disable if first item
-            upBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.moveMenuItemUp(menu.id, index);
-            });
-
-            // Down button
-            const downBtn = document.createElement('button');
-            downBtn.className = 'btn-icon btn-reorder';
-            downBtn.title = 'Mover abajo';
-            downBtn.textContent = '⬇️';
-            downBtn.disabled = index === menu.items.length - 1; // Disable if last item
-            downBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.moveMenuItemDown(menu.id, index);
-            });
-
-            reorderButtons.appendChild(upBtn);
-            reorderButtons.appendChild(downBtn);
-
             itemDiv.appendChild(bullet);
             itemDiv.appendChild(itemContent);
-            itemDiv.appendChild(reorderButtons);
 
             container.appendChild(itemDiv);
         });
@@ -10486,38 +10456,8 @@ class RecipeApp {
                 itemContent.appendChild(itemQuantity);
             }
 
-            // Reorder buttons
-            const reorderButtons = document.createElement('div');
-            reorderButtons.className = 'shopping-item-reorder';
-
-            // Up button
-            const upBtn = document.createElement('button');
-            upBtn.className = 'btn-icon btn-reorder';
-            upBtn.title = 'Mover arriba';
-            upBtn.textContent = '⬆️';
-            upBtn.disabled = index === 0; // Disable if first item
-            upBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.moveItemUp(list.id, index);
-            });
-
-            // Down button
-            const downBtn = document.createElement('button');
-            downBtn.className = 'btn-icon btn-reorder';
-            downBtn.title = 'Mover abajo';
-            downBtn.textContent = '⬇️';
-            downBtn.disabled = index === list.items.length - 1; // Disable if last item
-            downBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.moveItemDown(list.id, index);
-            });
-
-            reorderButtons.appendChild(upBtn);
-            reorderButtons.appendChild(downBtn);
-
             itemDiv.appendChild(bullet);
             itemDiv.appendChild(itemContent);
-            itemDiv.appendChild(reorderButtons);
 
             container.appendChild(itemDiv);
         });
