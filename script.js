@@ -10036,19 +10036,6 @@ class RecipeApp {
         expandIcon.className = 'expand-icon';
         expandIcon.textContent = '▼';
 
-        header.appendChild(name);
-        header.appendChild(dateInfo);
-        header.appendChild(expandIcon);
-
-        // Create actions
-        const actions = document.createElement('div');
-        actions.className = 'shopping-list-actions';
-
-        // Add visual indicator if disabled
-        if (list.enabled === false) {
-            card.style.opacity = '0.5';
-        }
-
         // Create more options button (three dots)
         const moreBtn = this.createButton({
             className: 'btn-icon',
@@ -10060,7 +10047,15 @@ class RecipeApp {
             }
         });
 
-        actions.appendChild(moreBtn);
+        header.appendChild(name);
+        header.appendChild(dateInfo);
+        header.appendChild(expandIcon);
+        header.appendChild(moreBtn);
+
+        // Add visual indicator if disabled
+        if (list.enabled === false) {
+            card.style.opacity = '0.5';
+        }
 
         // Create content (collapsible)
         const content = document.createElement('div');
@@ -10083,7 +10078,6 @@ class RecipeApp {
 
         // Assemble card
         card.appendChild(header);
-        card.appendChild(actions);
         card.appendChild(content);
 
         return card;
