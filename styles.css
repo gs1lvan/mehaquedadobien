@@ -214,6 +214,42 @@ body {
     background: linear-gradient(to right, var(--color-primary-light), var(--color-primary));
 }
 
+/* Menu divider */
+.menu-divider {
+    height: 1px;
+    background: var(--color-border);
+    margin: var(--spacing-xs) 0;
+}
+
+/* Settings Modal Sections */
+.settings-section {
+    margin-bottom: var(--spacing-xl);
+}
+
+.settings-section:last-child {
+    margin-bottom: 0;
+}
+
+.settings-section-title {
+    font-size: 1rem;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.settings-section-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.settings-description {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+}
+
 /* Hide desktop header-actions permanently */
 .header-actions {
     display: none !important;

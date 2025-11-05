@@ -1231,6 +1231,15 @@ class RecipeApp {
             });
         }
 
+        // Settings button
+        const settingsBtn = document.getElementById('settings-btn');
+        if (settingsBtn) {
+            settingsBtn.addEventListener('click', () => {
+                this.openSettingsModal();
+                closeMenu();
+            });
+        }
+
         // New recipe button on home page
         const newRecipeBtnHome = document.getElementById('new-recipe-btn-home');
         if (newRecipeBtnHome) {
@@ -1840,6 +1849,39 @@ class RecipeApp {
      */
     closeCategoryModal() {
         const modal = document.getElementById('category-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Open settings modal
+     */
+    openSettingsModal() {
+        const modal = document.getElementById('settings-modal');
+        if (!modal) return;
+
+        // Show modal
+        modal.classList.remove('hidden');
+
+        // Setup event listeners
+        const closeBtn = document.getElementById('close-settings-modal');
+        const overlay = modal.querySelector('.modal-overlay');
+
+        if (closeBtn) {
+            closeBtn.onclick = () => this.closeSettingsModal();
+        }
+
+        if (overlay) {
+            overlay.onclick = () => this.closeSettingsModal();
+        }
+    }
+
+    /**
+     * Close settings modal
+     */
+    closeSettingsModal() {
+        const modal = document.getElementById('settings-modal');
         if (modal) {
             modal.classList.add('hidden');
         }

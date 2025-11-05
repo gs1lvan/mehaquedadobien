@@ -94,6 +94,10 @@
                         title="Crear nueva receta">
                         ➕ Nueva Receta
                     </button>
+                    <div class="menu-divider"></div>
+                    <button id="settings-btn" class="menu-item" role="menuitem" title="Configuración">
+                        ⚙️ Configuración
+                    </button>
                 </div>
 
                 <!-- Hidden file input for XML import -->
@@ -1190,6 +1194,40 @@
                         <span class="option-text">Eliminar</span>
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ Configuración</h2>
+                <button id="close-settings-modal" class="btn-icon">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Theme Section -->
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Tema</h3>
+                    <div class="settings-section-content">
+                        <button id="theme-toggle-btn" class="btn-icon theme-toggle-square" title="Cambiar a tema claro" aria-label="Cambiar a tema oscuro">
+                            ☀️
+                        </button>
+                        <span class="settings-description">Cambia entre tema claro y oscuro</span>
+                    </div>
+                </div>
+
+                <!-- Future sections can be added here -->
+                <!-- Example:
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Idioma</h3>
+                    <div class="settings-section-content">
+                        ...
+                    </div>
+                </div>
+                -->
             </div>
         </div>
     </div>
