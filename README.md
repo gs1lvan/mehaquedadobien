@@ -72,10 +72,10 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 ## 🎨 Última Actualización
 
 **Fecha:** 5 de noviembre de 2025  
-**Cambio:** Botón de Menús temporalmente oculto - Se ha ocultado temporalmente el botón de Menús del menú principal:
-- ⚠️ **Botón Menús:** Temporalmente oculto mediante comentarios HTML
-- ✅ **Funcionalidad preservada:** El código permanece en el archivo y puede ser reactivado fácilmente
-- ✅ **Otros botones activos:** Listas de Compra, Importar receta y demás opciones siguen disponibles
+**Cambio:** Botón de Menús restaurado - Se ha restaurado el botón de Menús en el menú principal:
+- ✅ **Botón Menús:** Ahora visible y accesible desde el menú hamburguesa (☰) → 📋 Menús
+- ✅ **Funcionalidad completa:** Acceso a la gestión de menús semanales y planificación de comidas
+- ✅ **Todos los botones activos:** Categorías, Listas de Compra, Menús, Importar/Exportar recetas disponibles
 
 **Fecha:** 4 de noviembre de 2025  
 **Cambio anterior:** Mejoras en UX del formulario y navegación - Se han implementado múltiples mejoras en la experiencia de usuario:

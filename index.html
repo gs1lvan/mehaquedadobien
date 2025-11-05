@@ -81,11 +81,9 @@
                         title="Gestionar listas de compra">
                         🛒 Listas de Compra
                     </button>
-                    <!-- OCULTO - Botón de Menús (2025-11-05)
                     <button id="menus-btn" class="menu-item" role="menuitem" title="Gestionar menús">
                         📋 Menús
                     </button>
-                    -->
                     <button id="import-xml-btn" class="menu-item" role="menuitem" title="Importar recetas desde XML">
                         📥 Importar receta
                     </button>
@@ -267,10 +265,8 @@
                                 <span id="detail-hospital-badge" class="recipe-hospital-badge"
                                     style="display: none;">Apto
                                     para Hospital</span>
-                                <!-- OCULTO - Badge de Menú (2025-11-05)
                                 <span id="detail-menu-badge" class="recipe-menu-badge" style="display: none;">Para
                                     Menú</span>
-                                -->
                             </div>
                         </div>
                         <!-- MOVIDO A FORMULARIO - Botones de acción (2025-11-04)
@@ -444,14 +440,12 @@
                                     <span class="checkbox-text">Hospital</span>
                                 </div>
 
-                                <!-- OCULTO - Checkbox de Menú (2025-11-05)
                                 <div class="checkbox-badge-container" data-checkbox="recipe-menu-friendly">
                                     <input type="checkbox" id="recipe-menu-friendly" name="menuFriendly"
                                         class="form-checkbox-hidden">
                                     <span class="checkbox-badge">🍽️</span>
                                     <span class="checkbox-text">Menú</span>
                                 </div>
-                                -->
                             </div>
                             <!-- <span class="helper-text">Marca esta opción si la receta es adecuada para preparar en caravana</span> -->
                             <!-- <span class="helper-text">Marca esta opción si la receta es adecuada para dieta hospitalaria</span> -->
@@ -759,7 +753,7 @@
                 </div>
             </section>
 
-            <!-- OCULTO - Menus View (2025-11-05)
+            <!-- Menus View -->
             <section id="menus-view" class="view-container hidden">
                 <div class="shopping-lists-header">
                     <div class="shopping-lists-header-title">
@@ -788,7 +782,6 @@
                     <p>Crea tu primer menú para empezar</p>
                 </div>
             </section>
-            -->
 
         </main>
     </div>
@@ -1008,7 +1001,8 @@
                 <!-- Menu Name -->
                 <div class="form-group">
                     <label for="menu-name-input">Nombre del menú</label>
-                    <input type="text" id="menu-name-input" class="form-input" placeholder="Ej: Menú Semanal">
+                    <input type="text" id="menu-name-input" class="form-input"
+                        placeholder="Ej: Semanal, Cumpleaños, Dieta blanda...">
                 </div>
 
                 <!-- Items Section -->
@@ -1104,6 +1098,14 @@
 
             <div class="modal-body">
                 <div class="options-menu">
+                    <button id="menu-option-edit" class="option-btn">
+                        <span class="option-icon">✏️</span>
+                        <span class="option-text">Editar</span>
+                    </button>
+                    <button id="menu-option-toggle" class="option-btn">
+                        <span class="option-icon">👁️</span>
+                        <span class="option-text" id="menu-option-toggle-text">Ocultar</span>
+                    </button>
                     <button id="menu-option-export" class="option-btn">
                         <span class="option-icon">💾</span>
                         <span class="option-text">Exportar</span>
@@ -1136,7 +1138,7 @@
 
             <div class="modal-body">
                 <p class="modal-description">Selecciona las categorías de recetas que quieres ver:</p>
-                
+
                 <!-- Categories list with selectable badges -->
                 <div id="category-selection-list" class="category-selection-list">
                     <!-- Categories will be rendered here dynamically -->

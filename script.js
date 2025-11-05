@@ -3630,8 +3630,7 @@ class RecipeApp {
             badgesContainer.appendChild(hospitalBadge);
         }
 
-        // OCULTO - Add menu badge if recipe is menu friendly (2025-11-05)
-        /*
+        // Add menu badge if recipe is menu friendly
         if (recipe.menuFriendly === true) {
             const menuBadge = document.createElement('div');
             menuBadge.className = 'recipe-menu-badge-image';
@@ -3639,7 +3638,6 @@ class RecipeApp {
             menuBadge.title = 'Para menú';
             badgesContainer.appendChild(menuBadge);
         }
-        */
 
         // Only append container if it has badges
         if (badgesContainer.children.length > 0) {
@@ -3815,8 +3813,7 @@ class RecipeApp {
             badgesContainer.appendChild(hospitalBadge);
         }
 
-        // OCULTO - Add menu badge if recipe is menu friendly (2025-11-05)
-        /*
+        // Add menu badge if recipe is menu friendly
         if (recipe.menuFriendly === true) {
             const menuBadge = document.createElement('div');
             menuBadge.className = 'recipe-menu-badge-image';
@@ -3824,7 +3821,6 @@ class RecipeApp {
             menuBadge.title = 'Para menú';
             badgesContainer.appendChild(menuBadge);
         }
-        */
 
         // Only append container if it has badges
         if (badgesContainer.children.length > 0) {
@@ -8811,31 +8807,9 @@ class RecipeApp {
         header.appendChild(counterContainer);
         header.appendChild(expandIcon);
 
-        // Create actions (eye, edit, more options) - DENTRO del card, después del header
+        // Create actions (only more options button) - DENTRO del card, después del header
         const actions = document.createElement('div');
         actions.className = 'shopping-list-actions';
-
-        // Create toggle enabled button (eye icon)
-        const toggleEnabledBtn = this.createButton({
-            className: 'btn-icon',
-            text: menu.enabled !== false ? '👁️' : '👁️‍🗨️',
-            title: menu.enabled !== false ? 'Deshabilitar menú' : 'Habilitar menú',
-            onClick: (e) => {
-                e.stopPropagation();
-                this.toggleMenuEnabled(menu.id);
-            }
-        });
-
-        // Create edit button
-        const editBtn = this.createButton({
-            className: 'btn-icon',
-            text: '✏️',
-            title: 'Editar menú',
-            onClick: (e) => {
-                e.stopPropagation();
-                this.showMenuForm(menu.id);
-            }
-        });
 
         // Create more options button (three dots)
         const moreBtn = this.createButton({
@@ -8848,8 +8822,6 @@ class RecipeApp {
             }
         });
 
-        actions.appendChild(toggleEnabledBtn);
-        actions.appendChild(editBtn);
         actions.appendChild(moreBtn);
 
         // Create content (collapsible)
@@ -9054,16 +9026,34 @@ class RecipeApp {
         // Store current menu ID for actions
         this.currentOptionsMenuId = menuId;
 
+        // Get menu to check enabled state
+        const menu = this.getMenuById(menuId);
+
         // Show modal
         modal.classList.remove('hidden');
 
         // Setup event listeners
         const closeBtn = document.getElementById('close-menu-options-modal');
         const overlay = modal.querySelector('.modal-overlay');
+        const editBtn = document.getElementById('menu-option-edit');
+        const toggleBtn = document.getElementById('menu-option-toggle');
+        const toggleText = document.getElementById('menu-option-toggle-text');
+        const toggleIcon = toggleBtn?.querySelector('.option-icon');
         const exportBtn = document.getElementById('menu-option-export');
         const copyBtn = document.getElementById('menu-option-copy');
         const duplicateBtn = document.getElementById('menu-option-duplicate');
         const deleteBtn = document.getElementById('menu-option-delete');
+
+        // Update toggle button text and icon based on menu state
+        if (toggleText && toggleIcon && menu) {
+            if (menu.enabled !== false) {
+                toggleText.textContent = 'Ocultar';
+                toggleIcon.textContent = '👁️';
+            } else {
+                toggleText.textContent = 'Mostrar';
+                toggleIcon.textContent = '👁️‍🗨️';
+            }
+        }
 
         if (closeBtn) {
             closeBtn.onclick = () => this.closeMenuOptionsModal();
@@ -9071,6 +9061,20 @@ class RecipeApp {
 
         if (overlay) {
             overlay.onclick = () => this.closeMenuOptionsModal();
+        }
+
+        if (editBtn) {
+            editBtn.onclick = () => {
+                this.showMenuForm(menuId);
+                this.closeMenuOptionsModal();
+            };
+        }
+
+        if (toggleBtn) {
+            toggleBtn.onclick = () => {
+                this.toggleMenuEnabled(menuId);
+                this.closeMenuOptionsModal();
+            };
         }
 
         if (exportBtn) {
@@ -9553,7 +9557,7 @@ class RecipeApp {
         const recipeInput = document.createElement('input');
         recipeInput.type = 'text';
         recipeInput.className = 'form-input recipe-selector-input';
-        recipeInput.placeholder = 'Seleccionar categoría';
+        recipeInput.placeholder = 'Seleccionar categoría (opcional)';
         recipeInput.readOnly = true;
         recipeInput.style.cursor = 'pointer';
         recipeInput.value = item ? item.quantity : '';
@@ -9609,7 +9613,13 @@ class RecipeApp {
             ...existingItemsContainer.querySelectorAll('.menu-item-input')
         ];
 
+        // Constants for default values
+        const DEFAULT_DAY = 'Sin día específico';
+        const DEFAULT_RECIPE = 'Sin receta';
+
         const items = [];
+        let itemIdCounter = Date.now();
+        
         allItemDivs.forEach(itemDiv => {
             // Get day select (first select)
             const daySelect = itemDiv.querySelector('select:first-of-type');
@@ -9631,13 +9641,15 @@ class RecipeApp {
                 recipeName = recipeInput.value || '';
             }
 
-            // Always add the item
+            // Always add the item (even if empty)
+            // Note: Reusing shopping list structure where 'name' = day, 'quantity' = recipe
+            // TODO: Consider creating a dedicated MenuItem structure with 'day' and 'recipe' fields
             items.push({
-                id: Date.now() + Math.random(),
-                name: dayValue || 'Sin día específico',
-                quantity: recipeName,
+                id: itemIdCounter++, // Guaranteed unique IDs
+                name: dayValue || DEFAULT_DAY,
+                quantity: recipeName || DEFAULT_RECIPE,
                 recipeId: recipeId,
-                completed: false
+                completed: false // Inherited from shopping list structure, not used for menus
             });
         });
 
