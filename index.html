@@ -252,12 +252,8 @@
                                 <div class="recipe-name-tooltip">Editar receta</div>
                             </h2>
                         </div>
-                        <!-- MOVIDO A FORMULARIO - Botones de acción (2025-11-04)
+                        <!-- Botones de acción en vista de detalle -->
                         <div class="detail-actions">
-                            <button id="edit-recipe-btn" class="btn-action btn-action-compact"
-                                title="Editar">Editar</button>
-                            <button id="duplicate-recipe-btn" class="btn-action btn-action-compact"
-                                title="Duplicar">Duplicar</button>
                             <button id="delete-recipe-btn" class="btn-action btn-action-compact btn-danger"
                                 title="Eliminar">Eliminar</button>
                             <button id="share-recipe-btn" class="btn-action btn-action-compact"
@@ -267,7 +263,6 @@
                             <button id="export-pdf-btn" class="btn-action btn-action-compact"
                                 title="Exportar PDF">PDF</button>
                         </div>
-                        -->
                     </div>
                 </div>
 
@@ -358,21 +353,6 @@
                 </div>
 
                 <div class="detail-actions" id="form-actions" style="display: none;">
-                    <!-- OCULTO - Botón Editar en formulario (2025-11-04)
-                    <button id="edit-recipe-btn" class="btn-action btn-action-compact"
-                        title="Editar">Editar</button>
-                    -->
-                    <!-- TEMPORALMENTE OCULTO - Botón Duplicar (2025-11-03)
-                    <button id="duplicate-recipe-btn" class="btn-action btn-action-compact"
-                        title="Duplicar">Duplicar</button>
-                    -->
-                    <button id="delete-recipe-btn" class="btn-action btn-action-compact btn-danger"
-                        title="Eliminar">Eliminar</button>
-                    <button id="share-recipe-btn" class="btn-action btn-action-compact"
-                        title="Compartir receta">Compartir</button>
-                    <button id="export-xml-btn" class="btn-action btn-action-compact"
-                        title="Exportar esta receta">Exportar</button>
-                    <button id="export-pdf-btn" class="btn-action btn-action-compact" title="Exportar PDF">PDF</button>
                     <button id="save-recipe-btn-top" class="btn-action btn-action-compact btn-save-top"
                         title="Guardar receta">💾 Guardar</button>
                 </div>
@@ -722,7 +702,7 @@
                         </button>
                     </div>
                     <div class="shopping-lists-buttons"
-                        style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm);">
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm); margin-top: var(--spacing-xs);">
                         <button id="new-shopping-list-btn" class="modal-trigger modal-trigger--option">
                             <span class="option-icon"><i class="fa-solid fa-plus"></i></span>
                             <span class="option-text">Nueva Lista</span>
@@ -735,7 +715,8 @@
                     </div>
                 </div>
 
-                <div id="shopping-lists-container" class="shopping-lists-container">
+                <div id="shopping-lists-container" class="shopping-lists-container"
+                    style="margin-top: var(--spacing-xs);">
                     <!-- Shopping list cards will be rendered here -->
                 </div>
 
@@ -755,7 +736,7 @@
                         </button>
                     </div>
                     <div class="shopping-lists-buttons"
-                        style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm);">
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm); margin-top: var(--spacing-sm);">
                         <button id="new-menu-btn" class="modal-trigger modal-trigger--option">
                             <span class="option-icon"><i class="fa-solid fa-plus"></i></span>
                             <span class="option-text">Nuevo Menú</span>
@@ -768,7 +749,7 @@
                     </div>
                 </div>
 
-                <div id="menus-container" class="shopping-lists-container">
+                <div id="menus-container" class="shopping-lists-container" style="margin-top: var(--spacing-sm);">
                     <!-- Menu cards will be rendered here -->
                 </div>
 
@@ -1247,7 +1228,7 @@
 
                 <!-- Categories and Theme Section (50/50 split) -->
                 <div
-                    style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); margin-top: var(--spacing-xl);">
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); margin-top: var(--spacing-sm);">
                     <!-- Categories Section -->
                     <div class="settings-section" style="margin-bottom: 0;">
                         <h3 class="settings-section-title">Categorías</h3>
@@ -1275,7 +1256,7 @@
                 </div>
 
                 <!-- Import/Export Section -->
-                <div class="settings-section" style="margin-top: var(--spacing-xl);">
+                <div class="settings-section" style="margin-top: var(--spacing-sm);">
                     <h3 class="settings-section-title">Importar y Exportar</h3>
                     <div class="settings-section-content"
                         style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm); width: 100%;">

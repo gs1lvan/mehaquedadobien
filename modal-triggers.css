@@ -663,7 +663,7 @@ body.dark-theme .modal-trigger--icon:active {
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
-    padding: var(--spacing-md);
+                                                                padding: var(--spacing-sm);
     background: var(--color-background);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
@@ -686,7 +686,7 @@ body.dark-theme .modal-trigger--icon:active {
 
 /* Icono dentro del botón de opción */
 .modal-trigger--option .option-icon {
-    font-size: 1.5rem;
+                                                                    font-size: 1.1rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -701,7 +701,7 @@ body.dark-theme .modal-trigger--icon:active {
 
 /* Texto dentro del botón de opción */
 .modal-trigger--option .option-text {
-    font-size: 1rem;
+                                                                    font-size: 1rem;
     font-weight: var(--font-weight-medium);
     color: var(--color-text);
     flex: 1;
@@ -734,6 +734,26 @@ body.dark-theme .modal-trigger--option .option-icon i {
     color: var(--color-text);
 }
 
+
+/* Botones más pequeños en modales de opciones */
+.shopping-list-options-content .modal-trigger--option {
+    padding: var(--spacing-md);  /* Más pequeño */
+}
+
+.shopping-list-options-content .modal-trigger--option .option-icon {
+    font-size: 1.5rem;  /* Icono más pequeño */
+}
+
+.shopping-list-options-content .modal-trigger--option .option-text {
+    font-size: 1rem;  /* Texto más pequeño */
+}
+
+
+
+
 /* ===================================================================
    FIN DE BOTONES DE OPCIONES
    =================================================================== */
+
+
+

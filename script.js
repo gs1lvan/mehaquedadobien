@@ -4405,16 +4405,15 @@ class RecipeApp {
 
         // Action badges removed - copy ingredients badge eliminated
 
-        /* TEMPORALMENTE OCULTO - Badge de opciones en tarjeta de receta (2025-11-03)
+        // Easter egg: Invisible options badge (transparent but functional)
         const optionsBadge = this.createActionBadge({
-            className: 'recipe-options-badge',
+            className: 'recipe-options-badge recipe-options-badge-hidden',
             title: 'Más opciones',
             ariaLabel: `Opciones para ${recipe.name}`,
             onClick: (e) => this.showRecipeOptionsModal(recipe.id),
             stopPropagation: true
         });
         imageDiv.appendChild(optionsBadge);
-        */
 
         // Create content section
         const contentDiv = document.createElement('div');
