@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test: Category Selector Confirm Button</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="recipe-header">
+            <h1>🧪 Test: Botón Confirmar en Selector de Categorías</h1>
+        </header>
+
+        <main style="padding: 2rem;">
+            <div class="test-section">
+                <h2>Objetivo del Test</h2>
+                <p>Verificar que al seleccionar una categoría sin recetas en el modal de categorías:</p>
+                <ol>
+                    <li>El botón "Confirmar" esté habilitado</li>
+                    <li>Al hacer click en "Confirmar", el modal se cierre</li>
+                    <li>El input mantenga la categoría seleccionada</li>
+                    <li>El modal de edición de menú permanezca visible</li>
+                </ol>
+            </div>
+
+            <div class="test-section">
+                <h2>Pasos para Probar</h2>
+                <ol>
+                    <li>Haz click en el botón "Abrir Modal de Menú"</li>
+                    <li>En el modal, haz click en "Añadir elemento"</li>
+                    <li>Selecciona un día del selector</li>
+                    <li>Haz click en el input de receta (debería abrir el selector de categorías)</li>
+                    <li>Selecciona una categoría que TENGA recetas con "Menú" marcado</li>
+                    <li>Verifica que aparezcan dos botones:
+                        <ul>
+                            <li>✅ "Confirmar" (habilitado)</li>
+                            <li>✅ "Ver Recetas →" (habilitado)</li>
+                        </ul>
+                    </li>
+                    <li>Haz click en "Confirmar"</li>
+                    <li>Verifica que:
+                        <ul>
+                            <li>El modal de categorías se cierre</li>
+                            <li>El modal de menú siga visible</li>
+                            <li>El input muestre la categoría seleccionada (emoji + nombre)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Prueba adicional:</strong> Repite el proceso pero selecciona una categoría SIN recetas</li>
+                    <li>Verifica que:
+                        <ul>
+                            <li>✅ "Confirmar" esté habilitado</li>
+                            <li>❌ "Ver Recetas →" esté deshabilitado (gris)</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <div class="test-section">
+                <button id="open-menu-modal-test" class="btn-primary">
+                    📋 Abrir Modal de Menú
+                </button>
+            </div>
+
+            <div class="test-section">
+                <h2>Resultado Esperado</h2>
+                <div class="expected-result">
+                    <p><strong>✅ Éxito (Categoría con recetas):</strong></p>
+                    <ul>
+                        <li>Ambos botones habilitados</li>
+                        <li>Input muestra la categoría seleccionada</li>
+                        <li>Modal de menú permanece abierto</li>
+                    </ul>
+                    <p><strong>✅ Éxito (Categoría sin recetas):</strong></p>
+                    <ul>
+                        <li>Botón "Confirmar" habilitado</li>
+                        <li>Botón "Ver Recetas →" deshabilitado (gris)</li>
+                        <li>Input muestra la categoría seleccionada</li>
+                        <li>Modal de menú permanece abierto</li>
+                    </ul>
+                    <p><strong>❌ Fallo:</strong> El modal no se cierra, el input no se actualiza, o el modal de menú se cierra</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Include modals from main app -->
+    <script src="models.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Initialize app
+        const app = new RecipeApp();
+
+        // Test button to open menu modal
+        document.getElementById('open-menu-modal-test').addEventListener('click', () => {
+            app.showMenuForm();
+        });
+
+        console.log('✅ Test page loaded');
+        console.log('📝 Instructions:');
+        console.log('1. Click "Abrir Modal de Menú"');
+        console.log('2. Click "Añadir elemento"');
+        console.log('3. Click on recipe input to open category selector');
+        console.log('4. Select a category');
+        console.log('5. Click "Confirmar" button');
+        console.log('6. Verify that category is saved in input and menu modal stays open');
+    </script>
+
+    <style>
+        .test-section {
+            background: white;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .test-section h2 {
+            color: #667eea;
+            margin-top: 0;
+        }
+
+        .test-section ol, .test-section ul {
+            line-height: 1.8;
+        }
+
+        .expected-result {
+            background: #f0f4ff;
+            padding: 1rem;
+            border-radius: 4px;
+            border-left: 4px solid #667eea;
+        }
+
+        .expected-result p {
+            margin: 0.5rem 0;
+        }
+
+        .dark-theme .test-section {
+            background: #2a2a2a;
+        }
+
+        .dark-theme .expected-result {
+            background: #1a1a2e;
+            border-left-color: #764ba2;
+        }
+    </style>
+</body>
+</html>

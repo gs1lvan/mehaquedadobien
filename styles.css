@@ -320,6 +320,20 @@ main {
     transform: scale(0.98);
 }
 
+.btn-primary:disabled,
+.btn-primary[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+    background: var(--color-text-secondary);
+}
+
+.btn-primary:disabled:hover,
+.btn-primary[disabled]:hover {
+    transform: none;
+    box-shadow: none;
+}
+
 .btn-secondary {
     background: var(--color-background);
     color: var(--color-text);
@@ -339,6 +353,23 @@ main {
 
 .btn-secondary:active {
     transform: scale(0.98);
+}
+
+.btn-secondary:disabled,
+.btn-secondary[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+    background: var(--color-background-secondary);
+    border-color: var(--color-text-secondary);
+    color: var(--color-text-secondary);
+}
+
+.btn-secondary:disabled:hover,
+.btn-secondary[disabled]:hover {
+    transform: none;
+    background: var(--color-background-secondary);
+    border-color: var(--color-text-secondary);
 }
 
 .btn-icon {
@@ -5759,7 +5790,7 @@ select {
 }
 
 .shopping-item-reorder-buttons {
-    display: flex;
+
     gap: 4px;
 }
 

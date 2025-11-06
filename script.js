@@ -1548,7 +1548,7 @@ class RecipeApp {
     /**
      * Render category chips in selector modal
      */
-    renderCategorySelectorChips() {
+    renderCategorySelectorChips(preSelectCategory = true) {
         const container = document.getElementById('category-selector-chips');
         if (!container) {
             console.error('Container category-selector-chips not found');
@@ -1557,8 +1557,12 @@ class RecipeApp {
 
         container.innerHTML = '';
 
-        const categoryInput = document.getElementById('recipe-category');
-        const currentValue = categoryInput ? categoryInput.value : '';
+        // Only check for current value if preSelectCategory is true (recipe form context)
+        let currentValue = '';
+        if (preSelectCategory) {
+            const categoryInput = document.getElementById('recipe-category');
+            currentValue = categoryInput ? categoryInput.value : '';
+        }
 
         // Add all categories (including hidden ones, excluding special ones like caravana and hospital)
         const categories = this.categoryManager.getAllCategories(true)
@@ -1567,7 +1571,8 @@ class RecipeApp {
         categories.forEach(category => {
             const chip = document.createElement('button');
             chip.className = 'category-selector-chip';
-            if (category.id === currentValue) {
+            // Only pre-select if preSelectCategory is true and matches current value
+            if (preSelectCategory && category.id === currentValue) {
                 chip.classList.add('selected');
             }
             chip.innerHTML = `
@@ -1606,20 +1611,31 @@ class RecipeApp {
             // Store the input reference for potential recipe selection
             this.pendingMenuInput = this.currentMenuCategoryInput;
             
+            // Check if category has menu-friendly recipes
+            const menuRecipes = this.recipes.filter(recipe => 
+                recipe.menuFriendly === true && recipe.category === categoryId
+            );
+            const hasRecipes = menuRecipes.length > 0;
+            
             // Show visual feedback that category was selected
             const footer = document.getElementById('category-selector-footer');
             const viewRecipesBtn = document.getElementById('category-view-recipes-btn');
+            const confirmBtn = document.getElementById('category-confirm-btn');
             
             if (footer && footer.style.display === 'none') {
                 footer.style.display = 'flex';
             }
             
-            // Enable the "Ver Recetas" button
+            // Enable/disable buttons based on whether category has recipes
             if (viewRecipesBtn) {
-                viewRecipesBtn.disabled = false;
+                viewRecipesBtn.disabled = !hasRecipes; // Disabled if no recipes
+            }
+            if (confirmBtn) {
+                confirmBtn.disabled = false; // Always enabled
             }
             
-            this.currentMenuCategoryInput = null;
+            // DON'T clear currentMenuCategoryInput here - keep it so user can change selection
+            // It will be cleared when modal closes
             
             // Don't close modal yet - let user choose to see recipes or finish
         } else {
@@ -6809,8 +6825,10 @@ class RecipeApp {
             basketBtn.dataset.ingredientQuantity = quantityText;
             basketBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                // Show modal to select shopping list (pass ingredient name, quantity, and recipe name)
-                this.showSelectShoppingListModal(ingredient.name, quantityText, this.currentRecipeName || '');
+                // Show modal to select shopping list (pass ingredient name, quantity, recipe name, and category)
+                const recipe = this.recipes.find(r => r.name === this.currentRecipeName);
+                const categoryId = recipe ? recipe.category : null;
+                this.showSelectShoppingListModal(ingredient.name, quantityText, this.currentRecipeName || '', categoryId);
             });
 
             quantityContainer.appendChild(quantitySpan);
@@ -9182,8 +9200,7 @@ class RecipeApp {
             });
 
             importMenuInput.addEventListener('change', (e) => {
-                console.log('[Menus] Import menu file selected');
-                // TODO: Implement handleImportMenu(e)
+                this.handleImportMenu(e);
             });
         }
 
@@ -9796,6 +9813,97 @@ class RecipeApp {
     }
 
     /**
+     * Handle menu import from file
+     * @param {Event} e - File input change event
+     */
+    handleImportMenu(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const text = event.target.result;
+                const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+
+                if (lines.length < 2) {
+                    this.showToast('Archivo vacío o formato incorrecto', 'error');
+                    return;
+                }
+
+                // First line is the menu name
+                const menuName = lines[0];
+
+                // Skip separator line if present (===)
+                let startIndex = 1;
+                if (lines[1].match(/^=+$/)) {
+                    startIndex = 2;
+                }
+
+                // Create new menu
+                const newMenu = {
+                    id: Date.now(),
+                    name: menuName,
+                    items: [],
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+
+                // Parse items: "1. Lunes (Filetes a la plancha)"
+                for (let i = startIndex; i < lines.length; i++) {
+                    const line = lines[i];
+                    if (!line || line === 'Sin elementos') continue;
+
+                    // Remove number prefix: "1. "
+                    const withoutNumber = line.replace(/^\d+\.\s*/, '');
+                    
+                    // Extract name and quantity from "Lunes (Filetes a la plancha)"
+                    const match = withoutNumber.match(/^(.+?)\s*\((.+)\)$/);
+                    
+                    if (match) {
+                        const name = match[1].trim();
+                        const quantity = match[2].trim();
+                        
+                        newMenu.items.push({
+                            id: Date.now() + i,
+                            name: name,
+                            quantity: quantity
+                        });
+                    } else {
+                        // No parentheses, just the name
+                        newMenu.items.push({
+                            id: Date.now() + i,
+                            name: withoutNumber.trim(),
+                            quantity: ''
+                        });
+                    }
+                }
+
+                // Save menu to localStorage
+                const menus = this.getMenusFromStorage();
+                menus.push(newMenu);
+                localStorage.setItem('recetario_menus', JSON.stringify(menus));
+
+                this.showToast('Menú importado correctamente', 'success');
+                this.renderMenus();
+
+            } catch (error) {
+                console.error('Error importing menu:', error);
+                this.showToast('Error al importar el menú', 'error');
+            }
+        };
+
+        reader.onerror = () => {
+            this.showToast('Error al leer el archivo', 'error');
+        };
+
+        reader.readAsText(file);
+
+        // Reset input
+        e.target.value = '';
+    }
+
+    /**
      * Copy menu to clipboard
      */
     copyMenuToClipboard(menuId) {
@@ -9859,13 +9967,24 @@ class RecipeApp {
         const modal = document.getElementById('category-selector-modal');
         if (!modal) return;
 
-        // Render categories in modal
-        this.renderCategorySelectorChips();
+        // Clear any pending selection
+        this.pendingMenuInput = null;
 
-        // Show footer with buttons for menu context
+        // Render categories in modal (without any pre-selection)
+        this.renderCategorySelectorChips(false);
+
+        // Remove any selected class from all chips (ensure clean state)
+        const container = document.getElementById('category-selector-chips');
+        if (container) {
+            container.querySelectorAll('.category-selector-chip').forEach(chip => {
+                chip.classList.remove('selected');
+            });
+        }
+
+        // Hide footer initially (show only when category is selected)
         const footer = document.getElementById('category-selector-footer');
         if (footer) {
-            footer.style.display = 'flex';
+            footer.style.display = 'none';
         }
 
         // Show modal
@@ -9891,9 +10010,28 @@ class RecipeApp {
             overlay.onclick = closeModal;
         }
 
+        // "Confirmar" button - close modal and keep category selection
+        const confirmBtn = document.getElementById('category-confirm-btn');
+        if (confirmBtn) {
+            confirmBtn.onclick = () => {
+                // Close the category selector modal
+                modal.classList.add('hidden');
+                if (footer) footer.style.display = 'none';
+                
+                // Clear references
+                this.pendingMenuInput = null;
+                this.currentMenuCategoryInput = null;
+            };
+        }
+
         // "Ver Recetas" button - open recipes modal
         if (viewRecipesBtn) {
             viewRecipesBtn.onclick = () => {
+                // Prevent action if button is disabled
+                if (viewRecipesBtn.disabled) {
+                    return;
+                }
+                
                 if (this.pendingMenuInput) {
                     modal.classList.add('hidden');
                     if (footer) footer.style.display = 'none';
@@ -10241,10 +10379,12 @@ class RecipeApp {
         const daySelect = document.createElement('select');
         daySelect.className = 'form-input';
 
-        // Add empty option (optional)
+        // Add empty option (optional) - disabled and selected by default
         const emptyOption = document.createElement('option');
         emptyOption.value = '';
         emptyOption.textContent = '-- Seleccionar día --';
+        emptyOption.disabled = true;
+        emptyOption.selected = true;
         daySelect.appendChild(emptyOption);
 
         // Add days of the week
@@ -10282,24 +10422,17 @@ class RecipeApp {
         // Store reference to this input for later conversion to select
         recipeInput.dataset.itemId = item ? item.id : Date.now();
 
-        // Click handler to open category or recipe selector based on state
+        // Click handler to open category selector
         recipeInput.addEventListener('click', () => {
-            // Check if a category is already selected
-            const categoryId = recipeInput.dataset.categoryId;
-            
-            if (categoryId) {
-                // Category selected → Open recipe selector filtered by category
-                this.openMenuCategorySelectorModal(recipeInput);
-            } else {
-                // No category → Open category selector first
-                this.openCategorySelectorForMenu(recipeInput);
-            }
+            // Always open category selector to allow changing category
+            // User can select a new category (with or without recipes)
+            this.openCategorySelectorForMenu(recipeInput);
         });
 
-        // Remove button
+        // Remove button with Font Awesome icon
         const removeBtn = document.createElement('button');
         removeBtn.className = 'btn-icon';
-        removeBtn.textContent = '🗑️';
+        removeBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
         removeBtn.title = 'Eliminar elemento';
         removeBtn.onclick = () => itemDiv.remove();
 
@@ -10878,7 +11011,7 @@ class RecipeApp {
         const removeBtn = document.createElement('button');
         removeBtn.className = 'btn-icon remove-shopping-item-btn';
         removeBtn.title = 'Eliminar';
-        removeBtn.textContent = '🗑️';
+        removeBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
         removeBtn.addEventListener('click', () => {
             itemDiv.remove();
         });
@@ -10930,7 +11063,7 @@ class RecipeApp {
             btn.type = 'button'; // Prevent form submission
             btn.className = 'btn-icon btn-reorder';
             btn.title = isUp ? 'Mover arriba' : 'Mover abajo';
-            btn.textContent = isUp ? '⬆️' : '⬇️';
+            btn.innerHTML = isUp ? '<i class="fa-solid fa-arrow-up"></i>' : '<i class="fa-solid fa-arrow-down"></i>';
             btn.setAttribute('aria-label', btn.title);
 
             // Use event delegation pattern for better performance
@@ -11373,7 +11506,7 @@ class RecipeApp {
                 option.appendChild(countSpan);
 
                 option.addEventListener('click', () => {
-                    this.addIngredientToShoppingList(list.id, ingredientName, ingredientQuantity, recipeName);
+                    this.addIngredientToShoppingList(list.id, ingredientName, ingredientQuantity, recipeName, categoryId);
                 });
 
                 listsContainer.appendChild(option);
@@ -11420,11 +11553,20 @@ class RecipeApp {
      * @param {string} ingredientName - Ingredient name
      * @param {string} ingredientQuantity - Ingredient quantity
      */
-    addIngredientToShoppingList(listId, ingredientName, ingredientQuantity, recipeName) {
+    addIngredientToShoppingList(listId, ingredientName, ingredientQuantity, recipeName, categoryId = null) {
         // Build quantity string with ingredient quantity and recipe name
         let quantityText = '';
+        
+        // Add category emoji if available
+        if (categoryId) {
+            const category = this.categoryManager.getCategoryById(categoryId);
+            if (category && category.emoji) {
+                quantityText = category.emoji;
+            }
+        }
+        
         if (ingredientQuantity) {
-            quantityText = ingredientQuantity;
+            quantityText += quantityText ? ` ${ingredientQuantity}` : ingredientQuantity;
         }
         if (recipeName) {
             quantityText += quantityText ? ` - para ${recipeName}` : `para ${recipeName}`;
