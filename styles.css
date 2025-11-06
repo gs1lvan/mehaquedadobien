@@ -3861,7 +3861,7 @@ html {
 
 /* Category form */
 .category-create-section {
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-xs);
 
     background: var(--color-background-secondary);
     border-radius: var(--radius-md);
@@ -3937,10 +3937,10 @@ html {
     }
 }
 
-/* 3 columns on very large screens */
+/* Maximum 2 columns on all screens */
 @media (min-width: 1200px) {
     .categories-list {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
