@@ -1,7 +1,7 @@
 # 🗺️ Mapa Completo de la Aplicación mehaquedadobien
 
-> **Última actualización:** 6 de noviembre de 2025 (16:30)  
-> **Último cambio:** Añadido botón "Confirmar" en selector de categorías para menús  
+> **Última actualización:** 7 de noviembre de 2025  
+> **Último cambio:** Mejora de espaciado en modal de configuración - Aumentado margen entre secciones principales  
 > Este documento mapea toda la estructura de la aplicación para facilitar el desarrollo y mantenimiento.
 
 ---

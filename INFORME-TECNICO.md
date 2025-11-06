@@ -1,7 +1,7 @@
 # INFORME TÉCNICO - mehaquedadobien 🍳
 
-**Fecha:** 31 de octubre de 2025  
-**Versión:** 2.2  
+**Fecha:** 7 de noviembre de 2025  
+**Versión:** 2.3  
 **Proyecto:** Recetario Personal - Aplicación Web PWA
 
 ---
@@ -379,7 +379,22 @@
 
 ---
 
-## 📝 CAMBIOS RECIENTES (Sesión Actual - 4 de noviembre de 2025)
+## 📝 CAMBIOS RECIENTES
+
+### 🎨 Mejora de Espaciado en Modal de Configuración (7 de noviembre de 2025)
+
+#### Cambios en index.html
+- ✅ **Espaciado aumentado:** Los tres divs principales del modal-body ahora tienen mayor separación
+- ✅ **margin-top actualizado:** Cambiado de `var(--spacing-sm)` a `var(--spacing-md)` en las secciones 2 y 3
+- ✅ **Mejor jerarquía visual:** Mayor claridad entre las secciones de Libro/Cocinoteca, Categorías/Tema e Importar/Exportar
+- ✅ **Legibilidad mejorada:** El espaciado adicional facilita la distinción entre grupos funcionales
+
+**Estructura del modal-body:**
+1. **Primer div** (grid 1fr 1fr) - Libro de receta de / Cocinoteca
+2. **Segundo div** (grid 1fr 1fr) - Categorías / Tema (margin-top: var(--spacing-md))
+3. **Tercer div** (settings-section) - Importar y Exportar (margin-top: var(--spacing-md))
+
+**Motivo:** Mejorar la legibilidad y organización visual del modal de configuración, facilitando la distinción entre los diferentes grupos funcionales mediante un espaciado más generoso.
 
 ### 🎨 Mejoras en UX del Formulario y Navegación (4 de noviembre de 2025)
 
@@ -816,5 +831,5 @@ const hiddenCategories = categoryManager.getHiddenCategories();
 ---
 
 **Fin del Informe Técnico**  
-*Última actualización: 4 de noviembre de 2025*  
-*Versión: 3.0 - Mejoras en UX del formulario y navegación*
+*Última actualización: 7 de noviembre de 2025*  
+*Versión: 2.3 - Mejora de espaciado en modal de configuración*

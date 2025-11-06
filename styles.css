@@ -235,8 +235,8 @@ body {
     font-size: 1rem;
     font-weight: var(--font-weight-semibold);
     color: var(--color-text);
-    margin-bottom: var(--spacing-md);
-    padding-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-xs);
     border-bottom: 1px solid var(--color-border-light);
 }
 
@@ -2499,7 +2499,7 @@ body.dark-theme .recipe-pdf-badge:hover {
     hyphens: none;
     line-height: 1.2;
     transition: all 0.3s ease;
-    padding: 30px 30px 10px 10px;
+    padding: var(--spacing-xs);
     border-radius: var(--radius-sm);
     margin: 8px 0px 0px 0px;
 }
@@ -2537,7 +2537,7 @@ body.dark-theme .recipe-pdf-badge:hover {
 
     /* Detail recipe name ID - Mobile (overrides inline styles) */
     #detail-recipe-name {
-        font-size: 2rem !important;
+        font-size: 3rem !important;
         cursor: pointer !important;
         position: relative !important;
     }
@@ -3335,8 +3335,10 @@ body.dark-theme .recipe-pdf-badge:hover {
         flex: 0 1 auto;
         min-width: auto;
         text-align: center;
-        padding: 6px 12px;
-        font-size: 0.8125rem;
+        padding: var(--spacing-sm);
+
+        font-size: 0.75rem;
+        font-weight: var(--font-weight-medium);
     }
 
     .detail-ingredients-list {

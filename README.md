@@ -73,8 +73,15 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 
 ## 🎨 Última Actualización
 
+**Fecha:** 7 de noviembre de 2025  
+**Cambio:** Mejora de espaciado en modal de configuración - Se ha optimizado el espaciado entre secciones:
+- ✅ **Espaciado aumentado:** Los tres divs principales del modal-body ahora tienen mayor separación (var(--spacing-md))
+- ✅ **Mejor jerarquía visual:** Mayor claridad entre las secciones de Libro/Cocinoteca, Categorías/Tema e Importar/Exportar
+- ✅ **Legibilidad mejorada:** El espaciado adicional facilita la distinción entre grupos funcionales
+- 💡 **Ubicación:** Modal de Configuración → Espaciado entre secciones principales
+
 **Fecha:** 6 de noviembre de 2025  
-**Cambio:** Categoría predeterminada en selector de categorías - Se ha establecido una categoría inicial en el formulario de recetas:
+**Cambio anterior:** Categoría predeterminada en selector de categorías - Se ha establecido una categoría inicial en el formulario de recetas:
 - ✅ **Categoría inicial:** El selector de categorías ahora muestra "Carne" como categoría predeterminada (`data-category="carne"`)
 - ✅ **Mejor experiencia inicial:** Los usuarios tienen un punto de partida visual al crear recetas
 - ✅ **Valor temporal:** Esta es una categoría de ejemplo que se puede cambiar fácilmente al hacer clic en el selector
