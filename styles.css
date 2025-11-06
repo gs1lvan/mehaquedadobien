@@ -1042,6 +1042,25 @@ body.dark-theme .recipe-pdf-badge:hover {
     padding: var(--spacing-xs);
 }
 
+/* Recipe content - Solo vista de cuadrícula */
+.recipe-card:not(.list-item) .recipe-content {
+    /* Estilos personalizados para vista de cuadrícula */
+    padding: var(--spacing-sm);
+}
+
+/* Espaciado uniforme entre elementos en vista de cuadrícula */
+.recipe-card:not(.list-item) .recipe-name {
+    margin-bottom: var(--spacing-sm);
+}
+
+.recipe-card:not(.list-item) .recipe-category {
+    margin-bottom: var(--spacing-sm);
+}
+
+.recipe-card:not(.list-item) .recipe-preview {
+    margin-bottom: 0;
+}
+
 .recipe-name {
     font-size: 1rem;
     font-weight: var(--font-weight-semibold);
@@ -5646,13 +5665,13 @@ select {
 }
 
 /* Day selector - first select without data-meal-type */
-.menu-item-input > select:not([data-meal-type]) {
+.menu-item-input>select:not([data-meal-type]) {
     grid-column: 1 / 3;
     grid-row: 1;
 }
 
 /* Buttons container */
-.menu-item-input > .menu-item-buttons {
+.menu-item-input>.menu-item-buttons {
     grid-column: 3;
     grid-row: 1 / 3;
     display: flex;
@@ -5662,15 +5681,15 @@ select {
 }
 
 /* Lunch selector (input or select) */
-.menu-item-input > input[data-meal-type="lunch"],
-.menu-item-input > select[data-meal-type="lunch"] {
+.menu-item-input>input[data-meal-type="lunch"],
+.menu-item-input>select[data-meal-type="lunch"] {
     grid-column: 1;
     grid-row: 2;
 }
 
 /* Dinner selector (input or select) */
-.menu-item-input > input[data-meal-type="dinner"],
-.menu-item-input > select[data-meal-type="dinner"] {
+.menu-item-input>input[data-meal-type="dinner"],
+.menu-item-input>select[data-meal-type="dinner"] {
     grid-column: 2;
     grid-row: 2;
 }

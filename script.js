@@ -5324,7 +5324,7 @@ class RecipeApp {
             const saveBtn = document.createElement('button');
             saveBtn.type = 'button';
             saveBtn.className = 'btn-ingredient-action btn-save';
-            saveBtn.textContent = '✓';
+            saveBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
             saveBtn.title = 'Guardar';
             saveBtn.addEventListener('click', () => {
                 this.handleSaveIngredient(ingredient.id, {
@@ -5338,7 +5338,7 @@ class RecipeApp {
             const cancelBtn = document.createElement('button');
             cancelBtn.type = 'button';
             cancelBtn.className = 'btn-ingredient-action btn-cancel';
-            cancelBtn.textContent = '✕';
+            cancelBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
             cancelBtn.title = 'Cancelar';
             cancelBtn.addEventListener('click', () => {
                 this.handleCancelEditIngredient();
@@ -5827,7 +5827,7 @@ class RecipeApp {
             const saveBtn = document.createElement('button');
             saveBtn.type = 'button';
             saveBtn.className = 'btn-sequence-action btn-save';
-            saveBtn.textContent = '✓';
+            saveBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
             saveBtn.title = 'Guardar';
             saveBtn.addEventListener('click', () => {
                 // Get selected ingredient IDs from chips
@@ -5857,7 +5857,7 @@ class RecipeApp {
             const cancelBtn = document.createElement('button');
             cancelBtn.type = 'button';
             cancelBtn.className = 'btn-sequence-action btn-cancel';
-            cancelBtn.textContent = '✕';
+            cancelBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
             cancelBtn.title = 'Cancelar';
             cancelBtn.addEventListener('click', () => {
                 this.handleCancelEditSequence();
