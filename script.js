@@ -1450,11 +1450,29 @@ class RecipeApp {
      * Render category selector in form (now uses modal)
      */
     renderCategorySelector() {
-        // Category chip is now a non-clickable span for display only
-        // No event listener needed
-        
         // Update display with current selection
         this.updateCategoryDisplay();
+        
+        // Add click handler to category chip to open modal
+        const categoryChip = document.getElementById('recipe-category-chip');
+        if (categoryChip) {
+            console.log('Setting up click handler for category chip');
+            categoryChip.style.cursor = 'pointer';
+            // Remove any existing onclick to avoid duplicates
+            categoryChip.onclick = null;
+            categoryChip.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Category chip clicked');
+                try {
+                    this.openCategorySelectorModal();
+                } catch (error) {
+                    console.error('Error opening modal:', error);
+                }
+            };
+        } else {
+            console.error('recipe-category-chip not found');
+        }
     }
 
     /**
@@ -1501,6 +1519,12 @@ class RecipeApp {
         // Render categories in modal
         this.renderCategorySelectorChips();
 
+        // Hide footer for recipe form context
+        const footer = document.getElementById('category-selector-footer');
+        if (footer) {
+            footer.style.display = 'none';
+        }
+
         // Show modal
         modal.classList.remove('hidden');
 
@@ -1526,15 +1550,18 @@ class RecipeApp {
      */
     renderCategorySelectorChips() {
         const container = document.getElementById('category-selector-chips');
-        if (!container) return;
+        if (!container) {
+            console.error('Container category-selector-chips not found');
+            return;
+        }
 
         container.innerHTML = '';
 
         const categoryInput = document.getElementById('recipe-category');
         const currentValue = categoryInput ? categoryInput.value : '';
 
-        // Add all categories (excluding special ones like caravana and hospital)
-        const categories = this.categoryManager.getAllCategories()
+        // Add all categories (including hidden ones, excluding special ones like caravana and hospital)
+        const categories = this.categoryManager.getAllCategories(true)
             .filter(cat => !cat.isSpecial);
 
         categories.forEach(category => {
@@ -1547,7 +1574,16 @@ class RecipeApp {
                 <span class="emoji">${category.emoji}</span>
                 <span class="name">${category.name}</span>
             `;
-            chip.onclick = () => {
+            chip.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Remove selected class from all chips
+                container.querySelectorAll('.category-selector-chip').forEach(c => c.classList.remove('selected'));
+                
+                // Add selected class to clicked chip
+                chip.classList.add('selected');
+                
                 this.selectCategory(category.id);
             };
             container.appendChild(chip);
@@ -1558,18 +1594,48 @@ class RecipeApp {
      * Select a category from modal
      */
     selectCategory(categoryId) {
-        const categoryInput = document.getElementById('recipe-category');
-        if (categoryInput) {
-            categoryInput.value = categoryId;
-        }
-
-        // Update display
-        this.updateCategoryDisplay();
-
-        // Close modal
-        const modal = document.getElementById('category-selector-modal');
-        if (modal) {
-            modal.classList.add('hidden');
+        // Check if we're selecting for a menu item or recipe form
+        if (this.currentMenuCategoryInput) {
+            // Update menu item input
+            const category = this.categoryManager.getCategoryById(categoryId);
+            if (category) {
+                this.currentMenuCategoryInput.value = `${category.emoji} ${category.name}`;
+                this.currentMenuCategoryInput.dataset.categoryId = categoryId;
+            }
+            
+            // Store the input reference for potential recipe selection
+            this.pendingMenuInput = this.currentMenuCategoryInput;
+            
+            // Show visual feedback that category was selected
+            const footer = document.getElementById('category-selector-footer');
+            const viewRecipesBtn = document.getElementById('category-view-recipes-btn');
+            
+            if (footer && footer.style.display === 'none') {
+                footer.style.display = 'flex';
+            }
+            
+            // Enable the "Ver Recetas" button
+            if (viewRecipesBtn) {
+                viewRecipesBtn.disabled = false;
+            }
+            
+            this.currentMenuCategoryInput = null;
+            
+            // Don't close modal yet - let user choose to see recipes or finish
+        } else {
+            // Update recipe form
+            const categoryInput = document.getElementById('recipe-category');
+            if (categoryInput) {
+                categoryInput.value = categoryId;
+            }
+            // Update display
+            this.updateCategoryDisplay();
+            
+            // Close modal
+            const modal = document.getElementById('category-selector-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
         }
     }
 
@@ -2871,6 +2937,15 @@ class RecipeApp {
             }
         });
 
+        // Setup writing assistant collapsible
+        const writingAssistantSection = document.getElementById('writing-assistant-section');
+        const writingAssistantHeader = writingAssistantSection?.querySelector('.collapsible-header');
+        if (writingAssistantHeader) {
+            writingAssistantHeader.addEventListener('click', () => {
+                writingAssistantSection.classList.toggle('collapsed');
+            });
+        }
+
         console.log('[CookingActions] Cooking action buttons initialized');
     }
 
@@ -3120,6 +3195,14 @@ class RecipeApp {
         if (collapsed) {
             title.classList.add('collapsed');
             content.classList.add('collapsed');
+            
+            // If collapsing sequences section, also collapse writing assistant
+            if (sectionName === 'sequences') {
+                const writingAssistant = document.getElementById('writing-assistant-section');
+                if (writingAssistant) {
+                    writingAssistant.classList.add('collapsed');
+                }
+            }
         } else {
             title.classList.remove('collapsed');
             content.classList.remove('collapsed');
@@ -6726,8 +6809,8 @@ class RecipeApp {
             basketBtn.dataset.ingredientQuantity = quantityText;
             basketBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                // Show modal to select shopping list (pass recipe name instead of quantity)
-                this.showSelectShoppingListModal(ingredient.name, this.currentRecipeName || '');
+                // Show modal to select shopping list (pass ingredient name, quantity, and recipe name)
+                this.showSelectShoppingListModal(ingredient.name, quantityText, this.currentRecipeName || '');
             });
 
             quantityContainer.appendChild(quantitySpan);
@@ -9766,17 +9849,85 @@ class RecipeApp {
     }
 
     /**
-     * Open category selector modal
+     * Open category selector for menu item (shows all categories to select from)
      */
-    openCategorySelectorModal(inputElement) {
+    openCategorySelectorForMenu(inputElement) {
+        // Store reference to the input element
+        this.currentMenuCategoryInput = inputElement;
+        
+        // Open the category selector modal (same as recipe form)
+        const modal = document.getElementById('category-selector-modal');
+        if (!modal) return;
+
+        // Render categories in modal
+        this.renderCategorySelectorChips();
+
+        // Show footer with buttons for menu context
+        const footer = document.getElementById('category-selector-footer');
+        if (footer) {
+            footer.style.display = 'flex';
+        }
+
+        // Show modal
+        modal.classList.remove('hidden');
+
+        // Setup close handlers
+        const closeBtn = document.getElementById('close-category-selector-modal');
+        const overlay = modal.querySelector('.modal-overlay');
+        const viewRecipesBtn = document.getElementById('category-view-recipes-btn');
+
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            if (footer) footer.style.display = 'none';
+            this.currentMenuCategoryInput = null;
+            this.pendingMenuInput = null;
+        };
+
+        if (closeBtn) {
+            closeBtn.onclick = closeModal;
+        }
+
+        if (overlay) {
+            overlay.onclick = closeModal;
+        }
+
+        // "Ver Recetas" button - open recipes modal
+        if (viewRecipesBtn) {
+            viewRecipesBtn.onclick = () => {
+                if (this.pendingMenuInput) {
+                    modal.classList.add('hidden');
+                    if (footer) footer.style.display = 'none';
+                    
+                    setTimeout(() => {
+                        this.openMenuCategorySelectorModal(this.pendingMenuInput);
+                        this.pendingMenuInput = null;
+                        this.currentMenuCategoryInput = null;
+                    }, 300);
+                }
+            };
+        }
+    }
+
+    /**
+     * Open menu category selector modal (for selecting recipes by category)
+     */
+    openMenuCategorySelectorModal(inputElement) {
         const modal = document.getElementById('menu-category-selector-modal');
         if (!modal) return;
 
         // Store reference to the input element
         this.currentRecipeInput = inputElement;
 
-        // Get all recipes marked as menu-friendly
-        const menuRecipes = this.recipes.filter(recipe => recipe.menuFriendly === true);
+        // Get category filter if one is selected
+        const selectedCategoryId = inputElement.dataset.categoryId;
+
+        // Get all recipes marked as menu-friendly, filtered by category if selected
+        let menuRecipes = this.recipes.filter(recipe => recipe.menuFriendly === true);
+        
+        if (selectedCategoryId) {
+            // Filter by selected category
+            menuRecipes = menuRecipes.filter(recipe => recipe.category === selectedCategoryId);
+        }
 
         // Check if there are any menu recipes
         const emptyState = document.getElementById('category-selection-empty');
@@ -9786,8 +9937,17 @@ class RecipeApp {
             // Show empty state
             if (emptyState) emptyState.classList.remove('hidden');
             if (categoryList) categoryList.classList.add('hidden');
+            
+            // Show modal
+            modal.classList.remove('hidden');
+            this.setupCategorySelectorModalListeners();
+        } else if (selectedCategoryId) {
+            // Category already selected - skip category selection and go directly to recipe selection
+            this.convertInputToRecipeSelector(inputElement, menuRecipes);
+            // Don't show the modal at all
+            return;
         } else {
-            // Hide empty state and show categories
+            // No category selected - show category selection
             if (emptyState) emptyState.classList.add('hidden');
             if (categoryList) categoryList.classList.remove('hidden');
 
@@ -9796,13 +9956,11 @@ class RecipeApp {
 
             // Render category badges
             this.renderCategorySelectionBadges(categoriesWithMenuRecipes);
+            
+            // Show modal
+            modal.classList.remove('hidden');
+            this.setupCategorySelectorModalListeners();
         }
-
-        // Show modal
-        modal.classList.remove('hidden');
-
-        // Setup event listeners
-        this.setupCategorySelectorModalListeners();
     }
 
     /**
@@ -9872,7 +10030,7 @@ class RecipeApp {
      */
     setupCategorySelectorModalListeners() {
         const modal = document.getElementById('menu-category-selector-modal');
-        const closeBtn = document.getElementById('close-category-selector-modal');
+        const closeBtn = document.getElementById('close-menu-category-selector-modal');
         const confirmBtn = document.getElementById('confirm-category-selection-btn');
         const overlay = modal.querySelector('.modal-overlay');
 
@@ -10124,9 +10282,18 @@ class RecipeApp {
         // Store reference to this input for later conversion to select
         recipeInput.dataset.itemId = item ? item.id : Date.now();
 
-        // Click handler to open category selector modal
+        // Click handler to open category or recipe selector based on state
         recipeInput.addEventListener('click', () => {
-            this.openCategorySelectorModal(recipeInput);
+            // Check if a category is already selected
+            const categoryId = recipeInput.dataset.categoryId;
+            
+            if (categoryId) {
+                // Category selected → Open recipe selector filtered by category
+                this.openMenuCategorySelectorModal(recipeInput);
+            } else {
+                // No category → Open category selector first
+                this.openCategorySelectorForMenu(recipeInput);
+            }
         });
 
         // Remove button
@@ -11163,17 +11330,21 @@ class RecipeApp {
      * @param {string} ingredientName - Name of the ingredient
      * @param {string} ingredientQuantity - Quantity of the ingredient
      */
-    showSelectShoppingListModal(ingredientName, ingredientQuantity) {
+    showSelectShoppingListModal(ingredientName, ingredientQuantity, recipeName) {
         const modal = document.getElementById('select-shopping-list-modal');
         const ingredientDisplay = document.getElementById('ingredient-to-add-display');
         const listsContainer = document.getElementById('shopping-lists-selection');
 
         if (!modal || !ingredientDisplay || !listsContainer) return;
 
-        // Display ingredient info (ingredientQuantity is now recipeName)
-        const displayText = ingredientQuantity
-            ? `${ingredientName} - para ${ingredientQuantity}`
-            : ingredientName;
+        // Display ingredient info with quantity and recipe name
+        let displayText = ingredientName;
+        if (ingredientQuantity) {
+            displayText += ` - ${ingredientQuantity}`;
+        }
+        if (recipeName) {
+            displayText += ` - para ${recipeName}`;
+        }
         ingredientDisplay.textContent = displayText;
 
         // Clear previous lists
@@ -11202,7 +11373,7 @@ class RecipeApp {
                 option.appendChild(countSpan);
 
                 option.addEventListener('click', () => {
-                    this.addIngredientToShoppingList(list.id, ingredientName, ingredientQuantity); // ingredientQuantity is now recipeName
+                    this.addIngredientToShoppingList(list.id, ingredientName, ingredientQuantity, recipeName);
                 });
 
                 listsContainer.appendChild(option);
@@ -11249,15 +11420,22 @@ class RecipeApp {
      * @param {string} ingredientName - Ingredient name
      * @param {string} ingredientQuantity - Ingredient quantity
      */
-    addIngredientToShoppingList(listId, ingredientName, recipeName) {
-        // Use "para [recipe name]" instead of quantity
-        const quantityWithSource = recipeName
-            ? `para ${recipeName}`
-            : 'para receta';
+    addIngredientToShoppingList(listId, ingredientName, ingredientQuantity, recipeName) {
+        // Build quantity string with ingredient quantity and recipe name
+        let quantityText = '';
+        if (ingredientQuantity) {
+            quantityText = ingredientQuantity;
+        }
+        if (recipeName) {
+            quantityText += quantityText ? ` - para ${recipeName}` : `para ${recipeName}`;
+        }
+        if (!quantityText) {
+            quantityText = 'para receta';
+        }
 
         this.shoppingListManager.addItem(listId, {
             name: ingredientName,
-            quantity: quantityWithSource
+            quantity: quantityText
         });
 
         this.closeSelectShoppingListModal();
