@@ -9637,10 +9637,27 @@ class RecipeApp {
 
             itemContent.appendChild(itemName);
 
-            if (item.quantity) {
+            // Show lunch and dinner if available (support old format with quantity)
+            const meals = [];
+            
+            // Check if using new format (lunch/dinner) or old format (quantity)
+            if (item.lunch || item.dinner) {
+                // New format
+                if (item.lunch && item.lunch !== 'Sin receta') {
+                    meals.push(`Comida: ${item.lunch}`);
+                }
+                if (item.dinner && item.dinner !== 'Sin receta') {
+                    meals.push(`Cena: ${item.dinner}`);
+                }
+            } else if (item.quantity && item.quantity !== 'Sin receta') {
+                // Old format - show as lunch
+                meals.push(`Comida: ${item.quantity}`);
+            }
+
+            if (meals.length > 0) {
                 const itemQuantity = document.createElement('span');
                 itemQuantity.className = 'shopping-item-quantity';
-                itemQuantity.textContent = ` (${item.quantity})`;
+                itemQuantity.textContent = ` (${meals.join(' | ')})`;
                 itemContent.appendChild(itemQuantity);
             }
 
@@ -9674,7 +9691,24 @@ class RecipeApp {
                 header.setAttribute('aria-expanded', 'false');
                 expandIcon.textContent = '▼';
             } else {
-                // Expand
+                // Collapse all other menus first (accordion behavior)
+                const allCards = document.querySelectorAll('[data-menu-id]');
+                allCards.forEach(otherCard => {
+                    if (otherCard !== card) {
+                        const otherContent = otherCard.querySelector('.shopping-list-content');
+                        const otherHeader = otherCard.querySelector('.shopping-list-header');
+                        const otherExpandIcon = otherCard.querySelector('.expand-icon');
+                        
+                        if (otherContent && otherHeader && otherExpandIcon) {
+                            otherContent.classList.add('collapsed');
+                            otherCard.classList.remove('expanded');
+                            otherHeader.setAttribute('aria-expanded', 'false');
+                            otherExpandIcon.textContent = '▼';
+                        }
+                    }
+                });
+
+                // Expand this menu
                 content.classList.remove('collapsed');
                 card.classList.add('expanded');
                 header.setAttribute('aria-expanded', 'true');
@@ -10307,6 +10341,11 @@ class RecipeApp {
         // Create select element
         const select = document.createElement('select');
         select.className = 'form-input';
+        
+        // Preserve meal type data attribute
+        if (inputElement.dataset.mealType) {
+            select.dataset.mealType = inputElement.dataset.mealType;
+        }
 
         // Add empty option
         const emptyOption = document.createElement('option');
@@ -10422,6 +10461,8 @@ class RecipeApp {
      * @param {boolean} isExisting - Whether this is an existing item
      */
     addMenuItemInput(item = null, isExisting = false) {
+        console.log('🔵 [addMenuItemInput] Called with:', { item, isExisting });
+        
         const newContainer = document.getElementById('menu-new-items-container');
         const existingContainer = document.getElementById('menu-existing-items-container');
 
@@ -10471,41 +10512,98 @@ class RecipeApp {
             daySelect.value = item.name;
         }
 
-        // Recipe selector input (opens modal to select categories, then shows recipes)
-        const recipeInput = document.createElement('input');
-        recipeInput.type = 'text';
-        recipeInput.className = 'form-input recipe-selector-input';
-        recipeInput.placeholder = 'Seleccionar categoría (opcional)';
-        recipeInput.readOnly = true;
-        recipeInput.style.cursor = 'pointer';
-        recipeInput.value = item ? item.quantity : '';
+        // Comida recipe selector input
+        const lunchInput = document.createElement('input');
+        lunchInput.type = 'text';
+        lunchInput.className = 'form-input recipe-selector-input';
+        lunchInput.placeholder = 'Comida (opcional)';
+        lunchInput.readOnly = true;
+        lunchInput.style.cursor = 'pointer';
+        // Support old format (quantity) and new format (lunch)
+        lunchInput.value = item ? (item.lunch || item.quantity || '') : '';
+        lunchInput.dataset.itemId = item ? item.id : Date.now();
+        lunchInput.dataset.mealType = 'lunch';
 
-        // Store reference to this input for later conversion to select
-        recipeInput.dataset.itemId = item ? item.id : Date.now();
-
-        // Click handler to open category selector
-        recipeInput.addEventListener('click', () => {
-            // Always open category selector to allow changing category
-            // User can select a new category (with or without recipes)
-            this.openCategorySelectorForMenu(recipeInput);
+        // Click handler to open category selector for lunch
+        lunchInput.addEventListener('click', () => {
+            this.openCategorySelectorForMenu(lunchInput);
         });
 
-        // Remove button with Font Awesome icon
+        // Cena recipe selector input
+        const dinnerInput = document.createElement('input');
+        dinnerInput.type = 'text';
+        dinnerInput.className = 'form-input recipe-selector-input';
+        dinnerInput.placeholder = 'Cena (opcional)';
+        dinnerInput.readOnly = true;
+        dinnerInput.style.cursor = 'pointer';
+        dinnerInput.value = item && item.dinner ? item.dinner : '';
+        dinnerInput.dataset.itemId = item ? item.id : Date.now();
+        dinnerInput.dataset.mealType = 'dinner';
+
+        // Click handler to open category selector for dinner
+        dinnerInput.addEventListener('click', () => {
+            this.openCategorySelectorForMenu(dinnerInput);
+        });
+
+        // Create buttons container
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.className = 'menu-item-buttons';
+
+        // Move up button
+        const moveUpBtn = document.createElement('button');
+        moveUpBtn.className = 'btn-icon reorder-btn';
+        moveUpBtn.innerHTML = '<i class="fa-solid fa-arrow-up"></i>';
+        moveUpBtn.title = 'Mover arriba';
+        moveUpBtn.onclick = () => this.moveMenuItemUp(itemDiv);
+
+        // Move down button
+        const moveDownBtn = document.createElement('button');
+        moveDownBtn.className = 'btn-icon reorder-btn';
+        moveDownBtn.innerHTML = '<i class="fa-solid fa-arrow-down"></i>';
+        moveDownBtn.title = 'Mover abajo';
+        moveDownBtn.onclick = () => this.moveMenuItemDown(itemDiv);
+
+        // Remove button
         const removeBtn = document.createElement('button');
         removeBtn.className = 'btn-icon';
         removeBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
         removeBtn.title = 'Eliminar elemento';
         removeBtn.onclick = () => itemDiv.remove();
 
+        buttonsContainer.appendChild(moveUpBtn);
+        buttonsContainer.appendChild(moveDownBtn);
+        buttonsContainer.appendChild(removeBtn);
+
         itemDiv.appendChild(daySelect);
-        itemDiv.appendChild(recipeInput);
-        itemDiv.appendChild(removeBtn);
+        itemDiv.appendChild(lunchInput);
+        itemDiv.appendChild(dinnerInput);
+        itemDiv.appendChild(buttonsContainer);
 
         container.appendChild(itemDiv);
 
         // Focus on day selector for new items
         if (!item) {
             daySelect.focus();
+        }
+    }
+
+    /**
+     * Move menu item up
+     */
+    moveMenuItemUp(itemDiv) {
+        const previousSibling = itemDiv.previousElementSibling;
+        if (previousSibling) {
+            itemDiv.parentNode.insertBefore(itemDiv, previousSibling);
+        }
+    }
+
+    /**
+     * Move menu item down
+     */
+    moveMenuItemDown(itemDiv) {
+        const nextSibling = itemDiv.nextElementSibling;
+        if (nextSibling) {
+            itemDiv.parentNode.insertBefore(nextSibling, itemDiv);
         }
     }
 
@@ -10540,35 +10638,44 @@ class RecipeApp {
         const items = [];
         let itemIdCounter = Date.now();
 
-        allItemDivs.forEach(itemDiv => {
+        allItemDivs.forEach((itemDiv, index) => {
             // Get day select (first select)
             const daySelect = itemDiv.querySelector('select:first-of-type');
 
-            // Get recipe selector (second select) or input
-            const recipeSelector = itemDiv.querySelector('select:not(:first-of-type)');
-            const recipeInput = itemDiv.querySelector('input.recipe-selector-input');
+            // Get lunch and dinner - can be either input or select
+            const lunchElement = itemDiv.querySelector('input[data-meal-type="lunch"], select[data-meal-type="lunch"]');
+            const dinnerElement = itemDiv.querySelector('input[data-meal-type="dinner"], select[data-meal-type="dinner"]');
 
             const dayValue = daySelect?.value || '';
-            let recipeName = '';
-            let recipeId = null;
+            let lunchValue = '';
+            let dinnerValue = '';
 
-            // Check if it's a select (recipe selected) or input (not yet selected)
-            if (recipeSelector) {
-                const selectedOption = recipeSelector.options[recipeSelector.selectedIndex];
-                recipeName = selectedOption?.dataset.recipeName || selectedOption?.textContent || '';
-                recipeId = recipeSelector.value || null;
-            } else if (recipeInput) {
-                recipeName = recipeInput.value || '';
+            // Get lunch value (from input or select)
+            if (lunchElement) {
+                if (lunchElement.tagName === 'SELECT') {
+                    const selectedOption = lunchElement.options[lunchElement.selectedIndex];
+                    lunchValue = selectedOption?.dataset.recipeName || selectedOption?.textContent || '';
+                } else {
+                    lunchValue = lunchElement.value || '';
+                }
+            }
+
+            // Get dinner value (from input or select)
+            if (dinnerElement) {
+                if (dinnerElement.tagName === 'SELECT') {
+                    const selectedOption = dinnerElement.options[dinnerElement.selectedIndex];
+                    dinnerValue = selectedOption?.dataset.recipeName || selectedOption?.textContent || '';
+                } else {
+                    dinnerValue = dinnerElement.value || '';
+                }
             }
 
             // Always add the item (even if empty)
-            // Note: Reusing shopping list structure where 'name' = day, 'quantity' = recipe
-            // TODO: Consider creating a dedicated MenuItem structure with 'day' and 'recipe' fields
             items.push({
                 id: itemIdCounter++, // Guaranteed unique IDs
                 name: dayValue || DEFAULT_DAY,
-                quantity: recipeName || DEFAULT_RECIPE,
-                recipeId: recipeId,
+                lunch: lunchValue || DEFAULT_RECIPE,
+                dinner: dinnerValue || DEFAULT_RECIPE,
                 completed: false // Inherited from shopping list structure, not used for menus
             });
         });
@@ -11049,42 +11156,63 @@ class RecipeApp {
             }
         }
 
-        // Name input (full width, first row)
+        // Name input (first row)
         const nameInput = document.createElement('input');
         nameInput.type = 'text';
         nameInput.className = 'form-input shopping-item-name-input';
         nameInput.placeholder = 'Nombre del elemento';
         nameInput.value = item ? item.name : '';
 
-        // Quantity row container (second row)
-        const quantityRow = document.createElement('div');
-        quantityRow.className = 'shopping-item-quantity-row';
-
+        // Quantity input (second row)
         const quantityInput = document.createElement('input');
         quantityInput.type = 'text';
         quantityInput.className = 'form-input shopping-item-quantity-input';
         quantityInput.placeholder = 'Cantidad, alternativas o posibilidades';
         quantityInput.value = item ? item.quantity : '';
 
-        // Reorder buttons container
-        const reorderButtons = this.createReorderButtons(itemDiv, container);
+        // Create buttons container (same pattern as menu items)
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.className = 'shopping-item-buttons';
 
+        // Move up button
+        const moveUpBtn = document.createElement('button');
+        moveUpBtn.className = 'btn-icon reorder-btn';
+        moveUpBtn.innerHTML = '<i class="fa-solid fa-arrow-up"></i>';
+        moveUpBtn.title = 'Mover arriba';
+        moveUpBtn.onclick = () => {
+            const sibling = itemDiv.previousElementSibling;
+            if (sibling && sibling.classList.contains('shopping-item-input')) {
+                container.insertBefore(itemDiv, sibling);
+            }
+        };
+
+        // Move down button
+        const moveDownBtn = document.createElement('button');
+        moveDownBtn.className = 'btn-icon reorder-btn';
+        moveDownBtn.innerHTML = '<i class="fa-solid fa-arrow-down"></i>';
+        moveDownBtn.title = 'Mover abajo';
+        moveDownBtn.onclick = () => {
+            const sibling = itemDiv.nextElementSibling;
+            if (sibling && sibling.classList.contains('shopping-item-input')) {
+                container.insertBefore(sibling, itemDiv);
+            }
+        };
+
+        // Remove button
         const removeBtn = document.createElement('button');
-        removeBtn.className = 'btn-icon remove-shopping-item-btn';
-        removeBtn.title = 'Eliminar';
+        removeBtn.className = 'btn-icon';
         removeBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
-        removeBtn.addEventListener('click', () => {
-            itemDiv.remove();
-        });
+        removeBtn.title = 'Eliminar';
+        removeBtn.onclick = () => itemDiv.remove();
 
-        // Assemble quantity row
-        quantityRow.appendChild(quantityInput);
-        quantityRow.appendChild(reorderButtons);
-        quantityRow.appendChild(removeBtn);
+        buttonsContainer.appendChild(moveUpBtn);
+        buttonsContainer.appendChild(moveDownBtn);
+        buttonsContainer.appendChild(removeBtn);
 
         // Assemble item div
         itemDiv.appendChild(nameInput);
-        itemDiv.appendChild(quantityRow);
+        itemDiv.appendChild(quantityInput);
+        itemDiv.appendChild(buttonsContainer);
 
         // Add to the appropriate container
         // For new items: prepend (add at the top, right after the button)
@@ -11523,8 +11651,10 @@ class RecipeApp {
      * Show modal to select shopping list for ingredient
      * @param {string} ingredientName - Name of the ingredient
      * @param {string} ingredientQuantity - Quantity of the ingredient
+     * @param {string} recipeName - Name of the recipe
+     * @param {string} categoryId - Category ID of the recipe
      */
-    showSelectShoppingListModal(ingredientName, ingredientQuantity, recipeName) {
+    showSelectShoppingListModal(ingredientName, ingredientQuantity, recipeName, categoryId = null) {
         const modal = document.getElementById('select-shopping-list-modal');
         const ingredientDisplay = document.getElementById('ingredient-to-add-display');
         const listsContainer = document.getElementById('shopping-lists-selection');
