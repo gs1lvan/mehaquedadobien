@@ -1204,6 +1204,12 @@ class RecipeApp {
         const manageCategoriesBtn = document.getElementById('manage-categories-btn');
         if (manageCategoriesBtn) {
             manageCategoriesBtn.addEventListener('click', () => {
+                console.log('🔴 Abriendo category-modal');
+                const modal = document.getElementById('category-modal');
+                const modalBody = modal?.querySelector('.modal-body');
+                console.log('🔴 Modal:', modal);
+                console.log('🔴 Modal body:', modalBody);
+                console.log('🔴 Computed styles:', modalBody ? window.getComputedStyle(modalBody).paddingBottom : 'N/A');
                 this.showCategoryModal(true); // true = opened from settings
                 closeMenu();
             });
