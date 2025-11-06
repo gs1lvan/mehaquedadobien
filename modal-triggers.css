@@ -1,0 +1,739 @@
+/* ===================================================================
+   MODAL TRIGGERS - Sistema Normalizado de Controles Modales
+   ===================================================================
+   
+   Propósito:
+   Este archivo contiene estilos normalizados y estandarizados para todos
+   los controles (botones, badges, enlaces) que abren modales en la aplicación.
+   
+   Convención de Nombres (BEM):
+   - Bloque base: .modal-trigger
+   - Modificadores: .modal-trigger--badge, .modal-trigger--button, etc.
+   - Estados: :hover, :active, :focus, .selected, .disabled
+   
+   Estructura:
+   1. Clase Base (.modal-trigger)
+   2. Modificador Badges (.modal-trigger--badge)
+   3. Modificador Botones (.modal-trigger--button)
+   4. Modificador Enlaces (.modal-trigger--link)
+   5. Modificador Iconos (.modal-trigger--icon)
+   6. Soporte Tema Oscuro
+   7. Responsive Design
+   8. Fallbacks y Compatibilidad
+   
+   Variables CSS del Sistema:
+   Este archivo utiliza las variables CSS definidas en styles.css:
+   - Colores: --color-primary, --color-text, --color-background, etc.
+   - Espaciado: --spacing-xs, --spacing-sm, --spacing-md, etc.
+   - Radios: --radius-sm, --radius-md, --radius-lg, --radius-xl
+   - Sombras: --shadow-sm, --shadow-md, --shadow-lg, --shadow-hover
+   - Tipografía: --font-weight-normal, --font-weight-medium, etc.
+   
+   Autor: Sistema de Gestión de Recetas
+   Fecha: 2025
+   Versión: 1.0.0
+   =================================================================== */
+
+/* ===================================================================
+   1. CLASE BASE - .modal-trigger
+   ===================================================================
+   Estilos compartidos por todos los controles que abren modales.
+   Incluye comportamiento de cursor, transiciones y estados de interacción.
+   =================================================================== */
+
+.modal-trigger {
+    /* Comportamiento de cursor */
+    cursor: pointer;
+
+    /* Prevenir selección de texto */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+
+    /* Eliminar highlight en dispositivos táctiles */
+    -webkit-tap-highlight-color: transparent;
+
+    /* Transición suave para todos los cambios */
+    transition: all 0.2s ease;
+}
+
+/* Estado Hover - Escala ligeramente hacia arriba */
+.modal-trigger:hover {
+    transform: scale(1.05);
+}
+
+/* Estado Active - Escala ligeramente hacia abajo */
+.modal-trigger:active {
+    transform: scale(0.95);
+}
+
+/* Estado Focus - Outline visible para accesibilidad */
+.modal-trigger:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Ocultar outline cuando no es navegación por teclado */
+.modal-trigger:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Estado Disabled - Cursor y opacidad */
+.modal-trigger:disabled,
+.modal-trigger.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* ===================================================================
+   2. MODIFICADOR BADGES - .modal-trigger--badge
+   ===================================================================
+   Estilos específicos para badges que abren modales.
+   Incluye posicionamiento absoluto, backdrop-filter y variantes.
+   =================================================================== */
+
+.modal-trigger--badge {
+    /* Posicionamiento - relative para badges en contenedor */
+    position: relative;
+    z-index: 2;
+
+    /* Apariencia visual */
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--color-text);
+
+    /* Espaciado unificado */
+    padding: 6px 12px;
+
+    /* Bordes */
+    border: 1px solid rgba(221, 221, 221, 0.6);
+    border-radius: 50px;
+
+    /* Tipografía unificada */
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-semibold);
+
+    /* Sombra unificada */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+    /* Efecto de desenfoque de fondo */
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+
+    /* Layout interno */
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    /* Ancho ajustado al contenido */
+    width: fit-content;
+}
+
+/* Badges con posicionamiento absoluto (para casos específicos) */
+.modal-trigger--badge-absolute {
+    position: absolute;
+}
+
+/* Estado Hover específico para badges */
+.modal-trigger--badge:hover {
+    /* Sombra más pronunciada */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+    /* Background más opaco */
+    background: rgba(255, 255, 255, 1);
+
+    /* Mantener escala del base */
+    transform: scale(1.05);
+}
+
+/* ===================================================================
+   2.1. VARIANTES DE POSICIÓN - Badges
+   ===================================================================
+   Clases para posicionar badges en diferentes esquinas.
+   =================================================================== */
+
+/* Esquina superior izquierda */
+.modal-trigger--badge-top-left {
+    top: 5px;
+    left: 5px;
+}
+
+/* Esquina superior derecha */
+.modal-trigger--badge-top-right {
+    top: 5px;
+    right: 5px;
+}
+
+/* Esquina inferior izquierda */
+.modal-trigger--badge-bottom-left {
+    bottom: 5px;
+    left: 5px;
+}
+
+/* Esquina inferior derecha */
+.modal-trigger--badge-bottom-right {
+    bottom: 5px;
+    right: 5px;
+}
+
+/* Posición personalizada inferior derecha con offset */
+.modal-trigger--badge-bottom-right-offset {
+    bottom: 5px;
+    right: 60px;
+}
+
+/* ===================================================================
+   2.2. VARIANTES DE TAMAÑO - Badges
+   ===================================================================
+   Clases para diferentes tamaños de badges (sm, md, lg).
+   =================================================================== */
+
+/* Badge pequeño */
+.modal-trigger--badge-sm {
+    padding: 4px 8px;
+    font-size: 0.625rem;
+}
+
+/* Badge mediano (por defecto, ya definido en .modal-trigger--badge) */
+.modal-trigger--badge-md {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+}
+
+/* Badge grande */
+.modal-trigger--badge-lg {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+}
+
+/* Badge extra grande (para iconos grandes) */
+.modal-trigger--badge-xl {
+    padding: 8px 12px;
+    font-size: 1.25rem;
+    width: 36px;
+    height: 36px;
+    justify-content: center;
+}
+
+/* ===================================================================
+   3. MODIFICADOR BOTONES - .modal-trigger--button
+   ===================================================================
+   Estilos específicos para botones que abren modales.
+   Incluye estados selected y disabled.
+   =================================================================== */
+
+.modal-trigger--button {
+    /* Apariencia visual */
+    background: var(--color-background);
+    color: var(--color-text);
+
+    /* Bordes */
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+
+    /* Espaciado unificado */
+    padding: 8px 16px;
+
+    /* Tipografía unificada */
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family);
+
+    /* Layout interno */
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+
+    /* Eliminar estilos de botón por defecto */
+    text-decoration: none;
+}
+
+/* Estado Hover específico para botones */
+.modal-trigger--button:hover {
+    border-color: var(--color-text);
+    box-shadow: var(--shadow-sm);
+    transform: scale(1.05);
+}
+
+/* Estado Active específico para botones */
+.modal-trigger--button:active {
+    background: var(--color-background-secondary);
+    transform: scale(0.95);
+}
+
+/* Estado Selected - Botón activo/seleccionado */
+.modal-trigger--button.selected {
+    background: var(--color-primary);
+    color: var(--color-background);
+    border-color: var(--color-primary);
+}
+
+.modal-trigger--button.selected:hover {
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+}
+
+/* Estado Disabled específico para botones */
+.modal-trigger--button:disabled,
+.modal-trigger--button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+    background: var(--color-background-secondary);
+    border-color: var(--color-text-secondary);
+    color: var(--color-text-secondary);
+}
+
+.modal-trigger--button:disabled:hover,
+.modal-trigger--button.disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* ===================================================================
+   4. MODIFICADOR ENLACES - .modal-trigger--link
+   ===================================================================
+   Estilos específicos para enlaces que abren modales.
+   =================================================================== */
+
+.modal-trigger--link {
+    /* Apariencia visual */
+    color: var(--color-primary);
+
+    /* Tipografía */
+    font-weight: var(--font-weight-medium);
+    text-decoration: none;
+
+    /* Layout interno */
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Estado Hover específico para enlaces */
+.modal-trigger--link:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+    transform: scale(1.05);
+}
+
+/* Estado Active específico para enlaces */
+.modal-trigger--link:active {
+    color: var(--color-primary-light);
+    transform: scale(0.95);
+}
+
+/* Estado Visited - mantener color primario */
+.modal-trigger--link:visited {
+    color: var(--color-primary);
+}
+
+/* ===================================================================
+   5. MODIFICADOR ICONOS - .modal-trigger--icon
+   ===================================================================
+   Estilos específicos para controles modales que son solo iconos.
+   =================================================================== */
+
+.modal-trigger--icon {
+    /* Apariencia visual */
+    background: transparent;
+    border: none;
+
+    /* Dimensiones fijas */
+    width: 36px;
+    height: 36px;
+    padding: 8px;
+
+    /* Forma circular */
+    border-radius: 50%;
+
+    /* Layout interno centrado */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* Tipografía */
+    font-size: 1.25rem;
+    color: var(--color-text);
+}
+
+/* Estado Hover específico para iconos */
+.modal-trigger--icon:hover {
+    background: var(--color-background-secondary);
+    transform: scale(1.1);
+}
+
+/* Estado Active específico para iconos */
+.modal-trigger--icon:active {
+    background: var(--color-border-light);
+    transform: scale(0.95);
+}
+
+/* ===================================================================
+   5.1. VARIANTES ESPECÍFICAS - Botones de Acción
+   ===================================================================
+   Estilos para botones de acción específicos (editar, eliminar, etc.)
+   =================================================================== */
+
+/* Botones de acción pequeños (ingredientes, secuencias) */
+.modal-trigger--action {
+    min-width: 32px;
+    height: 32px;
+    padding: 6px 10px;
+    font-size: 0.75rem;
+}
+
+/* Botón de editar */
+.modal-trigger--edit:hover {
+    background: var(--color-text);
+    color: var(--color-background);
+}
+
+/* Botón de eliminar */
+.modal-trigger--delete:hover {
+    background: var(--color-danger);
+    color: var(--color-background);
+    border-color: var(--color-danger);
+}
+
+/* Botón de guardar */
+.modal-trigger--save:hover {
+    background: var(--color-success);
+    color: var(--color-background);
+    border-color: var(--color-success);
+}
+
+/* Botón de cancelar */
+.modal-trigger--cancel:hover {
+    background: var(--color-text-secondary);
+    color: var(--color-background);
+    border-color: var(--color-text-secondary);
+}
+
+/* Botón de mover (arriba/abajo) */
+.modal-trigger--move:hover {
+    background: var(--color-text);
+    color: var(--color-background);
+}
+
+/* Estado disabled para botones de acción */
+.modal-trigger--action:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.modal-trigger--action:disabled:hover {
+    transform: none;
+    box-shadow: none;
+    background: var(--color-background);
+    color: var(--color-text);
+    border-color: var(--color-border);
+}
+
+/* ===================================================================
+   6. SOPORTE TEMA OSCURO
+   ===================================================================
+   Estilos para tema oscuro usando body.dark-theme.
+   =================================================================== */
+
+/* Badges en tema oscuro */
+body.dark-theme .modal-trigger--badge {
+    background: rgba(30, 30, 30, 0.95);
+    color: var(--color-text);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .modal-trigger--badge:hover {
+    background: rgba(30, 30, 30, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Botones en tema oscuro */
+body.dark-theme .modal-trigger--button {
+    background: var(--color-background-secondary);
+    border-color: var(--color-border);
+    color: var(--color-text);
+}
+
+body.dark-theme .modal-trigger--button:hover {
+    border-color: var(--color-text);
+    background: var(--color-background);
+}
+
+body.dark-theme .modal-trigger--button:active {
+    background: var(--color-border-light);
+}
+
+body.dark-theme .modal-trigger--button.selected {
+    background: var(--color-primary);
+    color: var(--color-background);
+    border-color: var(--color-primary);
+}
+
+/* Enlaces en tema oscuro */
+body.dark-theme .modal-trigger--link {
+    color: var(--color-primary-light);
+}
+
+body.dark-theme .modal-trigger--link:hover {
+    color: var(--color-primary);
+}
+
+/* Iconos en tema oscuro */
+body.dark-theme .modal-trigger--icon {
+    color: var(--color-text);
+}
+
+body.dark-theme .modal-trigger--icon:hover {
+    background: var(--color-background);
+}
+
+body.dark-theme .modal-trigger--icon:active {
+    background: var(--color-border);
+}
+
+/* ===================================================================
+   7. RESPONSIVE DESIGN
+   ===================================================================
+   Media queries para diferentes tamaños de pantalla.
+   =================================================================== */
+
+/* Mobile devices (< 768px) */
+@media (max-width: 767px) {
+
+    /* Badges más pequeños en mobile */
+    .modal-trigger--badge {
+        padding: 4px 8px;
+        font-size: 0.625rem;
+    }
+
+    /* Variantes de tamaño ajustadas para mobile */
+    .modal-trigger--badge-sm {
+        padding: 3px 6px;
+        font-size: 0.5625rem;
+    }
+
+    .modal-trigger--badge-lg {
+        padding: 5px 10px;
+        font-size: 0.6875rem;
+    }
+
+    .modal-trigger--badge-xl {
+        padding: 6px 8px;
+        font-size: 1rem;
+        width: 32px;
+        height: 32px;
+    }
+
+    /* Botones más pequeños en mobile */
+    .modal-trigger--button {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+    }
+
+    /* Iconos más pequeños en mobile */
+    .modal-trigger--icon {
+        width: 32px;
+        height: 32px;
+        padding: 6px;
+        font-size: 1rem;
+    }
+}
+
+/* Tablet devices (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+
+    /* Badges tamaño intermedio en tablet */
+    .modal-trigger--badge {
+        padding: 5px 10px;
+        font-size: 0.6875rem;
+    }
+
+    /* Botones tamaño intermedio en tablet */
+    .modal-trigger--button {
+        padding: 7px 14px;
+        font-size: 0.8125rem;
+    }
+
+    /* Iconos tamaño intermedio en tablet */
+    .modal-trigger--icon {
+        width: 34px;
+        height: 34px;
+        padding: 7px;
+        font-size: 1.125rem;
+    }
+}
+
+/* Desktop devices (> 1024px) - Tamaños por defecto ya definidos */
+@media (min-width: 1025px) {
+
+    /* Efecto hover más pronunciado en desktop */
+    .modal-trigger:hover {
+        transform: scale(1.06);
+    }
+
+    .modal-trigger--icon:hover {
+        transform: scale(1.15);
+    }
+}
+
+/* ===================================================================
+   8. FALLBACKS Y COMPATIBILIDAD
+   ===================================================================
+   Soporte para navegadores que no tienen ciertas características.
+   =================================================================== */
+
+/* Fallback para backdrop-filter (navegadores que no lo soportan) */
+@supports not (backdrop-filter: blur(4px)) {
+    .modal-trigger--badge {
+        /* Background completamente opaco si no hay soporte para blur */
+        background: rgba(255, 255, 255, 1);
+    }
+
+    body.dark-theme .modal-trigger--badge {
+        background: rgba(30, 30, 30, 1);
+    }
+}
+
+/* Fallback para navegadores sin soporte de CSS variables */
+@supports not (--css: variables) {
+    .modal-trigger--badge {
+        background: rgba(255, 255, 255, 0.95);
+        color: #222222;
+        border-radius: 50px;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-trigger--button {
+        background: #FFFFFF;
+        color: #222222;
+        border: 1px solid #DDDDDD;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+
+    .modal-trigger--link {
+        color: #FF385C;
+        font-weight: 500;
+    }
+}
+
+/* Prefijos vendor para user-select (compatibilidad con navegadores antiguos) */
+.modal-trigger {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Prefijos vendor para backdrop-filter */
+.modal-trigger--badge {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+}
+
+/* Prefijo vendor para tap-highlight-color (Safari iOS) */
+.modal-trigger {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Soporte para navegadores sin fit-content */
+@supports not (width: fit-content) {
+    .modal-trigger--badge {
+        width: auto;
+        display: inline-block;
+    }
+}
+
+/* ===================================================================
+   FIN DEL ARCHIVO
+   =================================================================== */
+/* ==
+=================================================================
+   9. BOTONES DE OPCIONES EN MODALES
+   ===================================================================
+   Estilos para botones dentro de modales de opciones (menús contextuales).
+   Estos botones tienen texto + icono y se desplazan al hacer hover.
+   =================================================================== */
+
+/* Botón de opción base */
+.modal-trigger--option {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    text-align: left;
+    width: 100%;
+    font-family: var(--font-family);
+}
+
+/* Hover con desplazamiento lateral */
+.modal-trigger--option:hover {
+    background: var(--color-background-secondary);
+    border-color: var(--color-primary);
+    transform: translateX(4px) scale(1);
+}
+
+/* Active sin escala (solo desplazamiento) */
+.modal-trigger--option:active {
+    transform: translateX(2px) scale(1);
+}
+
+/* Icono dentro del botón de opción */
+.modal-trigger--option .option-icon {
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    color: var(--color-text);
+    flex-shrink: 0;
+}
+
+.modal-trigger--option .option-icon i {
+    color: var(--color-text);
+}
+
+/* Texto dentro del botón de opción */
+.modal-trigger--option .option-text {
+    font-size: 1rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    flex: 1;
+}
+
+/* Variante danger para opciones de eliminar */
+.modal-trigger--option.modal-trigger--danger .option-text {
+    color: var(--color-danger);
+}
+
+.modal-trigger--option.modal-trigger--danger:hover {
+    background: var(--color-background-secondary);
+    border-color: var(--color-danger);
+    transform: translateX(4px) scale(1);
+}
+
+/* Tema oscuro para botones de opciones */
+body.dark-theme .modal-trigger--option {
+    background: var(--color-background-secondary);
+    border-color: var(--color-border);
+}
+
+body.dark-theme .modal-trigger--option:hover {
+    background: var(--color-background);
+    border-color: var(--color-primary);
+}
+
+body.dark-theme .modal-trigger--option .option-icon,
+body.dark-theme .modal-trigger--option .option-icon i {
+    color: var(--color-text);
+}
+
+/* ===================================================================
+   FIN DE BOTONES DE OPCIONES
+   =================================================================== */

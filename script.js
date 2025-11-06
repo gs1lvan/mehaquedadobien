@@ -4343,37 +4343,48 @@ class RecipeApp {
         // Add time badge if totalTime exists
         if (recipe.totalTime && recipe.totalTime.trim() !== '') {
             const timeBadge = document.createElement('div');
-            timeBadge.className = 'recipe-time-badge';
+            timeBadge.className = 'recipe-time-badge modal-trigger modal-trigger--badge';
             timeBadge.textContent = recipe.totalTime;
+            timeBadge.setAttribute('aria-label', `Tiempo de preparación: ${recipe.totalTime}`);
             badgesContainer.appendChild(timeBadge);
         }
 
-        // Add caravan badge if recipe is caravan friendly
-        if (recipe.caravanFriendly === true) {
-            const caravanBadge = document.createElement('div');
-            caravanBadge.className = 'recipe-caravan-badge-image';
-            caravanBadge.textContent = '🚐';
-            caravanBadge.title = 'Apto para caravana';
-            badgesContainer.appendChild(caravanBadge);
-        }
+        // Add special badges (caravan, hospital, menu) using data-driven approach
+        const specialBadges = [
+            {
+                condition: recipe.caravanFriendly,
+                type: 'caravan',
+                emoji: '🚐',
+                title: 'Apto para caravana',
+                ariaLabel: 'Receta apta para caravana'
+            },
+            {
+                condition: recipe.hospitalFriendly,
+                type: 'hospital',
+                emoji: '🏥',
+                title: 'Apto para hospital',
+                ariaLabel: 'Receta apta para hospital'
+            },
+            {
+                condition: recipe.menuFriendly,
+                type: 'menu',
+                emoji: '🍽️',
+                title: 'Para menú',
+                ariaLabel: 'Receta para menú'
+            }
+        ];
 
-        // Add hospital badge if recipe is hospital friendly
-        if (recipe.hospitalFriendly === true) {
-            const hospitalBadge = document.createElement('div');
-            hospitalBadge.className = 'recipe-hospital-badge-image';
-            hospitalBadge.textContent = '🏥';
-            hospitalBadge.title = 'Apto para hospital';
-            badgesContainer.appendChild(hospitalBadge);
-        }
-
-        // Add menu badge if recipe is menu friendly
-        if (recipe.menuFriendly === true) {
-            const menuBadge = document.createElement('div');
-            menuBadge.className = 'recipe-menu-badge-image';
-            menuBadge.textContent = '🍽️';
-            menuBadge.title = 'Para menú';
-            badgesContainer.appendChild(menuBadge);
-        }
+        specialBadges.forEach(({ condition, type, emoji, title, ariaLabel }) => {
+            if (condition) {
+                const badge = document.createElement('div');
+                badge.className = `recipe-${type}-badge-image modal-trigger modal-trigger--badge modal-trigger--badge-xl`;
+                badge.textContent = emoji;
+                badge.title = title;
+                badge.setAttribute('role', 'img');
+                badge.setAttribute('aria-label', ariaLabel);
+                badgesContainer.appendChild(badge);
+            }
+        });
 
         // Only append container if it has badges
         if (badgesContainer.children.length > 0) {
@@ -5329,9 +5340,10 @@ class RecipeApp {
             // Move up button
             const upBtn = document.createElement('button');
             upBtn.type = 'button';
-            upBtn.className = 'btn-ingredient-action btn-up';
-            upBtn.textContent = '↑';
+            upBtn.className = 'modal-trigger modal-trigger--button modal-trigger--action modal-trigger--move';
+            upBtn.innerHTML = '<i class="fa-solid fa-arrow-up"></i>';
             upBtn.title = 'Mover arriba';
+            upBtn.setAttribute('aria-label', 'Mover ingrediente arriba');
             upBtn.disabled = index === 0;
             upBtn.addEventListener('click', () => {
                 this.handleMoveIngredient(index, 'up');
@@ -5340,9 +5352,10 @@ class RecipeApp {
             // Move down button
             const downBtn = document.createElement('button');
             downBtn.type = 'button';
-            downBtn.className = 'btn-ingredient-action btn-down';
-            downBtn.textContent = '↓';
+            downBtn.className = 'modal-trigger modal-trigger--button modal-trigger--action modal-trigger--move';
+            downBtn.innerHTML = '<i class="fa-solid fa-arrow-down"></i>';
             downBtn.title = 'Mover abajo';
+            downBtn.setAttribute('aria-label', 'Mover ingrediente abajo');
             downBtn.disabled = index === this.ingredients.length - 1;
             downBtn.addEventListener('click', () => {
                 this.handleMoveIngredient(index, 'down');
@@ -5351,9 +5364,10 @@ class RecipeApp {
             // Edit button
             const editBtn = document.createElement('button');
             editBtn.type = 'button';
-            editBtn.className = 'btn-ingredient-action btn-edit';
+            editBtn.className = 'modal-trigger modal-trigger--button modal-trigger--action modal-trigger--edit';
             editBtn.textContent = '✎';
             editBtn.title = 'Editar';
+            editBtn.setAttribute('aria-label', 'Editar ingrediente');
             editBtn.addEventListener('click', () => {
                 this.handleEditIngredient(ingredient.id);
             });
@@ -5361,9 +5375,10 @@ class RecipeApp {
             // Delete button
             const deleteBtn = document.createElement('button');
             deleteBtn.type = 'button';
-            deleteBtn.className = 'btn-ingredient-action btn-delete';
-            deleteBtn.textContent = '🗑';
+            deleteBtn.className = 'modal-trigger modal-trigger--button modal-trigger--action modal-trigger--delete';
+            deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
             deleteBtn.title = 'Eliminar';
+            deleteBtn.setAttribute('aria-label', 'Eliminar ingrediente');
             deleteBtn.addEventListener('click', () => {
                 this.handleDeleteIngredient(ingredient.id);
             });
@@ -5875,9 +5890,10 @@ class RecipeApp {
                 // Move up button
                 const upBtn = document.createElement('button');
                 upBtn.type = 'button';
-                upBtn.className = 'btn-sequence-action btn-move btn-up';
-                upBtn.textContent = '▲';
+                upBtn.className = 'modal-trigger modal-trigger--button modal-trigger--action modal-trigger--move';
+                upBtn.innerHTML = '<i class="fa-solid fa-arrow-up"></i>';
                 upBtn.title = 'Mover arriba';
+                upBtn.setAttribute('aria-label', 'Mover secuencia arriba');
                 upBtn.disabled = index === 0;
                 upBtn.addEventListener('click', () => {
                     this.handleMoveSequence(index, 'up');
@@ -5886,9 +5902,10 @@ class RecipeApp {
                 // Move down button
                 const downBtn = document.createElement('button');
                 downBtn.type = 'button';
-                downBtn.className = 'btn-sequence-action btn-move btn-down';
-                downBtn.textContent = '▼';
+                downBtn.className = 'modal-trigger modal-trigger--button modal-trigger--action modal-trigger--move';
+                downBtn.innerHTML = '<i class="fa-solid fa-arrow-down"></i>';
                 downBtn.title = 'Mover abajo';
+                downBtn.setAttribute('aria-label', 'Mover secuencia abajo');
                 downBtn.disabled = index === this.sequences.length - 1;
                 downBtn.addEventListener('click', () => {
                     this.handleMoveSequence(index, 'down');
@@ -5901,9 +5918,10 @@ class RecipeApp {
             // Edit button
             const editBtn = document.createElement('button');
             editBtn.type = 'button';
-            editBtn.className = 'btn-sequence-action btn-edit';
+            editBtn.className = 'modal-trigger modal-trigger--button modal-trigger--action modal-trigger--edit';
             editBtn.textContent = '✎';
             editBtn.title = 'Editar';
+            editBtn.setAttribute('aria-label', 'Editar secuencia');
             editBtn.addEventListener('click', () => {
                 this.handleEditSequence(sequence.id);
             });
@@ -5911,9 +5929,10 @@ class RecipeApp {
             // Delete button
             const deleteBtn = document.createElement('button');
             deleteBtn.type = 'button';
-            deleteBtn.className = 'btn-sequence-action btn-delete';
-            deleteBtn.textContent = '🗑';
+            deleteBtn.className = 'modal-trigger modal-trigger--button modal-trigger--action modal-trigger--delete';
+            deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
             deleteBtn.title = 'Eliminar';
+            deleteBtn.setAttribute('aria-label', 'Eliminar secuencia');
             deleteBtn.addEventListener('click', () => {
                 this.handleDeleteSequence(sequence.id);
             });
@@ -6501,9 +6520,10 @@ class RecipeApp {
 
         const deleteBtn = document.createElement('button');
         deleteBtn.type = 'button';
-        deleteBtn.className = 'media-delete-btn';
-        deleteBtn.textContent = '🗑';
+        deleteBtn.className = 'media-delete-btn modal-trigger modal-trigger--icon modal-trigger--delete';
+        deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
         deleteBtn.title = 'Eliminar';
+        deleteBtn.setAttribute('aria-label', 'Eliminar multimedia');
         deleteBtn.addEventListener('click', () => {
             this.handleDeleteMedia(mediaFile.id, type);
         });
@@ -7110,27 +7130,30 @@ class RecipeApp {
         // Add caravan badge if applicable
         if (caravanFriendly === true) {
             const caravanBadge = document.createElement('div');
-            caravanBadge.className = 'recipe-caravan-badge-image';
+            caravanBadge.className = 'recipe-caravan-badge-image modal-trigger modal-trigger--badge modal-trigger--badge-xl';
             caravanBadge.textContent = '🚐';
             caravanBadge.title = 'Apto para caravana';
+            caravanBadge.setAttribute('aria-label', 'Receta apta para caravana');
             badgesContainer.appendChild(caravanBadge);
         }
 
         // Add hospital badge if applicable
         if (hospitalFriendly === true) {
             const hospitalBadge = document.createElement('div');
-            hospitalBadge.className = 'recipe-hospital-badge-image';
+            hospitalBadge.className = 'recipe-hospital-badge-image modal-trigger modal-trigger--badge modal-trigger--badge-xl';
             hospitalBadge.textContent = '🏥';
             hospitalBadge.title = 'Apto para hospital';
+            hospitalBadge.setAttribute('aria-label', 'Receta apta para hospital');
             badgesContainer.appendChild(hospitalBadge);
         }
 
         // Add menu badge if applicable
         if (menuFriendly === true) {
             const menuBadge = document.createElement('div');
-            menuBadge.className = 'recipe-menu-badge-image';
+            menuBadge.className = 'recipe-menu-badge-image modal-trigger modal-trigger--badge modal-trigger--badge-xl';
             menuBadge.textContent = '🍽️';
             menuBadge.title = 'Para menú';
+            menuBadge.setAttribute('aria-label', 'Receta para menú');
             badgesContainer.appendChild(menuBadge);
         }
 
@@ -7192,27 +7215,30 @@ class RecipeApp {
         // Add caravan badge if applicable
         if (caravanFriendly === true) {
             const caravanBadge = document.createElement('div');
-            caravanBadge.className = 'recipe-caravan-badge-image';
+            caravanBadge.className = 'recipe-caravan-badge-image modal-trigger modal-trigger--badge modal-trigger--badge-xl';
             caravanBadge.textContent = '🚐';
             caravanBadge.title = 'Apto para caravana';
+            caravanBadge.setAttribute('aria-label', 'Receta apta para caravana');
             badgesContainer.appendChild(caravanBadge);
         }
 
         // Add hospital badge if applicable
         if (hospitalFriendly === true) {
             const hospitalBadge = document.createElement('div');
-            hospitalBadge.className = 'recipe-hospital-badge-image';
+            hospitalBadge.className = 'recipe-hospital-badge-image modal-trigger modal-trigger--badge modal-trigger--badge-xl';
             hospitalBadge.textContent = '🏥';
             hospitalBadge.title = 'Apto para hospital';
+            hospitalBadge.setAttribute('aria-label', 'Receta apta para hospital');
             badgesContainer.appendChild(hospitalBadge);
         }
 
         // Add menu badge if applicable
         if (menuFriendly === true) {
             const menuBadge = document.createElement('div');
-            menuBadge.className = 'recipe-menu-badge-image';
+            menuBadge.className = 'recipe-menu-badge-image modal-trigger modal-trigger--badge modal-trigger--badge-xl';
             menuBadge.textContent = '🍽️';
             menuBadge.title = 'Para menú';
+            menuBadge.setAttribute('aria-label', 'Receta para menú');
             badgesContainer.appendChild(menuBadge);
         }
 
@@ -8267,9 +8293,18 @@ class RecipeApp {
      * @param {boolean} isDark - Whether dark theme is active
      */
     updateThemeButton(isDark) {
+        const themeIconModal = document.getElementById('theme-icon-modal');
+        const themeTextModal = document.getElementById('theme-text-modal');
         const themeBtn = document.getElementById('theme-toggle-btn-modal');
+        
+        if (themeIconModal && themeTextModal) {
+            // Si está en modo oscuro, mostrar sol (para cambiar a claro)
+            // Si está en modo claro, mostrar luna (para cambiar a oscuro)
+            themeIconModal.innerHTML = isDark ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+            themeTextModal.textContent = isDark ? 'Modo claro' : 'Modo oscuro';
+        }
+        
         if (themeBtn) {
-            themeBtn.innerHTML = isDark ? '☀️' : '🌙';
             themeBtn.title = isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro';
         }
     }

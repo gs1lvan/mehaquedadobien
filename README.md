@@ -34,6 +34,8 @@ Una aplicación web moderna para gestionar tus recetas personales con funcionali
 - **[GUIA-CREAR-APK.md](GUIA-CREAR-APK.md)** - Guía para crear APK de Android
 - **[test-xml-parsing.md](test-xml-parsing.md)** - Casos de prueba para validación de parsing XML
 - **[xml-constants.js](xml-constants.js)** - Constantes y helpers para formatos XML
+- **[docs/modal-triggers-examples.md](docs/modal-triggers-examples.md)** - Guía de uso del sistema de controles modales
+- **[modal-controls-mapping.md](modal-controls-mapping.md)** - Mapeo de controles modales existentes
 
 ## 🧪 Archivos de Prueba
 
@@ -71,8 +73,168 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 
 ## 🎨 Última Actualización
 
+**Fecha:** 6 de noviembre de 2025  
+**Cambio:** Corrección de posicionamiento de badges en modal-triggers.css - Se ha corregido el comportamiento de posicionamiento de badges modales:
+- ✅ **Position relative por defecto:** Los badges ahora usan `position: relative` en lugar de `absolute` como valor base
+- ✅ **Nueva clase para absoluto:** Se ha añadido `.modal-trigger--badge-absolute` para casos que requieren posicionamiento absoluto
+- ✅ **Mayor flexibilidad:** Permite usar badges tanto en flujo normal del documento como posicionados absolutamente
+- ✅ **Mejor control:** Los desarrolladores pueden elegir explícitamente el tipo de posicionamiento según el caso de uso
+- ✅ **Compatibilidad:** Las variantes de posición (top-left, top-right, etc.) siguen funcionando correctamente
+- 💡 **Uso:** Añade `.modal-trigger--badge-absolute` cuando necesites posicionamiento absoluto sobre un contenedor
+- 📚 **Documentación:** Ver `docs/modal-triggers-examples.md` para ejemplos actualizados
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Reordenación del menú principal - Se ha optimizado el orden de los botones en el menú hamburguesa para priorizar la acción principal:
+- ✅ **Nueva Receta primero:** El botón "Nueva Receta" ahora aparece en primera posición (anteriormente en segunda)
+- ✅ **Recetas en segunda posición:** El botón "Recetas" se ha movido a la segunda posición
+- ✅ **Mejor jerarquía visual:** La acción principal de crear recetas está más accesible
+- ✅ **Flujo mejorado:** Orden más lógico que prioriza la creación sobre la visualización
+- ✅ **Orden actual:** Nueva Receta → Recetas → Menús → Listas de Compra → Configuración
+- 💡 **Ubicación:** Menú hamburguesa (☰) → Dropdown principal
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Limpieza de emojis en menú principal - Se han eliminado los emojis de los botones del menú hamburguesa para un diseño más limpio y profesional:
+- ✅ **Texto simplificado:** Los botones ahora muestran solo texto sin emojis decorativos
+- ✅ **Botones actualizados:** Recetas, Nueva Receta, Menús, Listas de Compra, Configuración
+- ✅ **Diseño más limpio:** Interfaz más minimalista y profesional
+- ✅ **Mejor legibilidad:** Texto más claro sin distracciones visuales
+- ✅ **Consistencia:** Alineado con el estilo de diseño moderno de la aplicación
+- 💡 **Ubicación:** Menú hamburguesa (☰) → Todos los elementos del dropdown
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Refinamiento de separadores en listas de compra - Se ha optimizado el diseño de los separadores entre elementos:
+- ✅ **Separador más visible:** Opacidad aumentada de 0.3 a 0.5 para mejor definición visual
+- ✅ **Último elemento sin borde:** El último elemento de cada lista ya no tiene borde inferior, creando un final más limpio
+- ✅ **Mejor jerarquía visual:** Los elementos están claramente delimitados sin sobrecargar la interfaz
+- ✅ **Legibilidad mejorada:** Facilita la distinción entre elementos, especialmente en listas largas
+- ✅ **Diseño pulido:** Acabado más profesional y consistente con el resto de la aplicación
+- 💡 **Ubicación:** Vista de Listas de Compra → Elementos individuales de cada lista
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Separadores visuales en elementos de listas de compra - Se ha mejorado la legibilidad de las listas de compra añadiendo separadores entre elementos:
+- ✅ **Separador sutil:** Línea inferior de 1px con color rgba(221, 221, 221, 0.3) entre cada elemento
+- ✅ **Mejor organización visual:** Los elementos ahora están claramente delimitados sin sobrecargar la interfaz
+- ✅ **Legibilidad mejorada:** Facilita la distinción entre elementos, especialmente en listas largas
+- ✅ **Diseño consistente:** El separador mantiene la estética minimalista de la aplicación
+- 💡 **Ubicación:** Vista de Listas de Compra → Elementos individuales de cada lista
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Iconos Font Awesome en botones de Listas de Compra - Se han reemplazado los emojis por iconos Font Awesome en los botones del formulario de listas de compra:
+- ✅ **Botón "Añadir Elemento":** Ahora usa `<i class="fa-solid fa-plus"></i>` en lugar del emoji ➕
+- ✅ **Botón "Guardar Lista":** Ahora usa `<i class="fa-solid fa-floppy-disk"></i>` en lugar del emoji 💾
+- ✅ **Consistencia visual:** Los iconos Font Awesome ofrecen mejor renderizado y consistencia entre navegadores
+- ✅ **Mejor escalabilidad:** Los iconos vectoriales se adaptan mejor a diferentes tamaños de pantalla
+- 💡 **Ubicación:** Vista de Listas de Compra → Formulario de edición/creación
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Renombrado de sección Preferencias a Cocinoteca - Se ha actualizado el título de la sección en la vista de Configuración:
+- ✅ **Nuevo nombre:** "Cocinoteca" (anteriormente "Preferencias")
+- ✅ **Layout 50/50:** Las secciones "Libro de receta de" y "Cocinoteca" se muestran lado a lado en un grid de dos columnas
+- ✅ **Selector de preferencias:** Dropdown con opciones predefinidas (Cocina asiática, Cocina vegana, No me gustan las verduras, Cómo meter comida en el hospital)
+- ✅ **Mejor aprovechamiento del espacio:** Uso más eficiente del espacio horizontal en la primera sección de Configuración
+- ✅ **Diseño consistente:** Mantiene el mismo estilo de grid 50/50 usado en otras secciones de Configuración
+- ✅ **Ancho completo:** Ambos campos (input y select) ocupan el 100% del ancho de su columna
+- 💡 **Ubicación:** Vista de Configuración → Primera sección (antes de Categorías/Tema)
+- 📝 **Nota:** Campo preparado para futuras funcionalidades de personalización y recomendaciones
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Nuevo campo de Preferencias en Configuración - Se ha añadido un selector de preferencias culinarias en la vista de Configuración
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Mejora de espaciado en grid Categorías/Tema - Se ha optimizado el espaciado visual del grid 50/50 en la vista de Configuración:
+- ✅ **Separación mejorada:** Añadido margen superior (var(--spacing-xl)) al grid de Categorías/Tema
+- ✅ **Mejor jerarquía visual:** Mayor separación entre el título de Configuración y las secciones de contenido
+- ✅ **Legibilidad mejorada:** El espaciado adicional facilita la distinción entre el encabezado y el contenido
+- ✅ **Consistencia visual:** Mantiene el espaciado uniforme con otras secciones de la aplicación
+- 💡 **Ubicación:** Vista de Configuración → Grid de Categorías y Tema
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Mejora de espaciado en sección Importar/Exportar - Se ha optimizado el espaciado visual en la vista de Configuración:
+- ✅ **Separación mejorada:** Añadido margen superior (var(--spacing-xl)) a la sección "Importar y Exportar"
+- ✅ **Mejor jerarquía visual:** Mayor separación entre las secciones de Categorías/Tema y la sección de Importar/Exportar
+- ✅ **Legibilidad mejorada:** El espaciado adicional facilita la distinción entre grupos funcionales
+- 💡 **Ubicación:** Vista de Configuración → Sección Importar y Exportar
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Refinamiento de texto en botón de Categorías - Se ha simplificado el texto del botón de gestión de categorías en la vista de Configuración:
+- ✅ **Texto simplificado:** De "Gestionar Categorías" a "Categorías" para mayor concisión
+- ✅ **Mejor UX:** Texto más corto y directo que mantiene la claridad
+- ✅ **Consistencia:** Alineado con el estilo de nomenclatura de otros botones del sistema
+- 💡 **Ubicación:** Vista de Configuración → Sección Categorías
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Migración de botones de Listas de Compra al sistema modal-triggers - Se han migrado los botones de gestión de listas de compra al sistema normalizado:
+- ✅ **Botones migrados:** "Nueva Lista" e "Importar Lista" ahora usan `.modal-trigger .modal-trigger--option`
+- ✅ **Layout grid 2 columnas:** Los botones se muestran en un grid de 2 columnas con gap consistente
+- ✅ **Estructura unificada:** Uso de `.option-icon` y `.option-text` para iconos y texto
+- ✅ **Efecto hover mejorado:** Desplazamiento lateral (translateX) en lugar de escala
+- ✅ **Iconos Font Awesome:** Mantiene los iconos `fa-plus` y `fa-file-import` dentro de la nueva estructura
+- ✅ **Consistencia visual:** Mismo estilo que los botones del menú de opciones de recetas y configuración
+- 💡 **Progreso de migración:** Cuarto grupo de componentes migrados al sistema modal-triggers
+- 📚 **Documentación:** Ver `docs/modal-triggers-examples.md` sección "Botones de Opciones en Modales"
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Layout 50/50 en Configuración - Se ha optimizado el diseño de la vista de Configuración con un layout de dos columnas:
+- ✅ **Grid 50/50:** Las secciones de Categorías y Tema ahora se muestran lado a lado en un grid de dos columnas
+- ✅ **Mejor aprovechamiento del espacio:** Uso más eficiente del espacio horizontal en pantallas anchas
+- ✅ **Diseño compacto:** Ambas secciones visibles simultáneamente sin necesidad de scroll
+- ✅ **Responsive:** El grid se adapta automáticamente a diferentes tamaños de pantalla
+- ✅ **Consistencia visual:** Mantiene el espaciado y alineación del sistema de diseño
+- 💡 **Mejora UX:** Acceso más rápido a ambas funcionalidades principales de configuración
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Mejora del botón de Cambiar Tema con iconos dinámicos - Se ha mejorado el botón de cambio de tema para mostrar el estado actual del tema:
+- ✅ **Iconos dinámicos:** El botón ahora muestra el icono correspondiente al tema actual (🌙 luna para modo oscuro, ☀️ sol para modo claro)
+- ✅ **Texto descriptivo:** El texto del botón indica el modo actual ("Modo oscuro" o "Modo claro")
+- ✅ **IDs añadidos:** `theme-icon-modal` y `theme-text-modal` para actualización dinámica del contenido
+- ✅ **Icono Font Awesome:** Usa `<i class="fa-solid fa-moon"></i>` para modo oscuro y `<i class="fa-solid fa-sun"></i>` para modo claro
+- ✅ **Mejor UX:** El usuario puede ver de un vistazo qué tema está activo antes de hacer clic
+- ✅ **Sistema modal-triggers:** Mantiene la estructura `.modal-trigger .modal-trigger--option` con efecto hover de desplazamiento lateral
+- 💡 **Progreso de migración:** Tercer componente migrado al sistema modal-triggers (después del menú de opciones de recetas y gestionar categorías)
+- 📚 **Documentación:** Ver `docs/modal-triggers-examples.md` sección "Botones de Opciones en Modales"
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Migración de botones del menú de opciones - Se han migrado los 6 botones del menú de opciones de recetas al sistema normalizado de controles modales:
+- ✅ **Botones migrados:** Editar, Ocultar, Exportar, Copiar, Duplicar, Eliminar
+- ✅ **Clases actualizadas:** De `.option-btn` a `.modal-trigger .modal-trigger--option`
+- ✅ **Variante danger:** El botón Eliminar usa `.modal-trigger--danger` para estilo rojo
+- ✅ **Efecto hover mejorado:** Desplazamiento lateral (translateX) en lugar de escala
+- ✅ **Consistencia visual:** Todos los botones de opciones ahora siguen el mismo patrón de diseño
+- 💡 **Progreso de migración:** Primera implementación real del sistema modal-triggers en componentes HTML
+- 📚 **Documentación:** Ver `docs/modal-triggers-examples.md` sección "Botones de Opciones en Modales"
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Limpieza de estilos duplicados en styles.css - Se han eliminado estilos de badges duplicados que ahora están en `modal-triggers.css`:
+- ✅ **Estilos eliminados:** `.recipe-time-badge`, `.recipe-caravan-badge-image`, `.recipe-hospital-badge-image`, `.recipe-menu-badge-image`
+- ✅ **Reducción de código:** ~70 líneas de CSS duplicado eliminadas de `styles.css`
+- ✅ **Centralización:** Todos los estilos de badges modales ahora están exclusivamente en `modal-triggers.css`
+- ✅ **Mantenibilidad mejorada:** Un único lugar para gestionar estilos de controles modales
+- 💡 **Estado:** Los estilos siguen funcionando correctamente desde `modal-triggers.css` (activo desde línea 39 de `index.html`)
+- 📚 **Documentación:** Ver `docs/modal-triggers-examples.md` para guía de uso completa
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Variantes de botones de acción añadidas - Se han añadido nuevas clases CSS para botones de acción específicos en `modal-triggers.css`:
+- ✅ **`.modal-trigger--action`:** Clase base para botones de acción pequeños (32px altura, padding reducido)
+- ✅ **`.modal-trigger--edit`:** Botón de editar con hover negro sobre fondo blanco
+- ✅ **`.modal-trigger--delete`:** Botón de eliminar con hover rojo (color-danger)
+- ✅ **`.modal-trigger--save`:** Botón de guardar con hover verde (color-success)
+- ✅ **`.modal-trigger--cancel`:** Botón de cancelar con hover gris (color-text-secondary)
+- ✅ **`.modal-trigger--move`:** Botón de mover (arriba/abajo) con hover negro
+- ✅ **Estado disabled:** Opacidad reducida (0.3) y cursor not-allowed para botones deshabilitados
+- 💡 **Uso:** Estas clases están listas para ser aplicadas a botones de ingredientes, secuencias y otros controles de acción
+- 📚 **Documentación:** Ver ejemplos de uso en `docs/modal-triggers-examples.md`
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Sistema de controles modales activado - Se ha activado el sistema normalizado de controles modales:
+- ✅ **Sistema modular activo:** `modal-triggers.css` está ahora vinculado y funcionando en `index.html`
+- ✅ **Estilos base activos:** `styles.css` continúa activo para estilos generales de la aplicación
+- ⚠️ **Migración pendiente:** Las clases HTML en componentes aún usan el sistema antiguo (Tarea 15 pendiente)
+- 💡 **Estado actual:** Ambos sistemas CSS coexisten - el nuevo sistema está listo pero los componentes HTML aún no usan las nuevas clases BEM
+- 🔄 **Próximo paso:** Actualizar clases HTML en componentes existentes para usar `.modal-trigger` y sus modificadores
+- 📚 **Documentación disponible:** Especificaciones completas en `.kiro/specs/modal-triggers-normalization/` y ejemplos en `docs/modal-triggers-examples.md`
+
 **Fecha:** 5 de noviembre de 2025  
-**Cambio:** Botón de Menús restaurado - Se ha restaurado el botón de Menús en el menú principal:
+**Cambio anterior:** Botón de Menús restaurado - Se ha restaurado el botón de Menús en el menú principal:
 - ✅ **Botón Menús:** Ahora visible y accesible desde el menú hamburguesa (☰) → 📋 Menús
 - ✅ **Funcionalidad completa:** Acceso a la gestión de menús semanales y planificación de comidas
 - ✅ **Todos los botones activos:** Categorías, Listas de Compra, Menús, Importar/Exportar recetas disponibles
@@ -225,6 +387,86 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 
 **Fecha:** 1 de noviembre de 2025  
 **Cambio:** Añadido botón de Listas de Compra al menú - Se ha agregado acceso directo a la funcionalidad de listas de compra desde el menú principal de la aplicación.
+
+## 🎨 Sistema de Controles Modales (Infraestructura Completa - Activado)
+
+✅ **ESTADO ACTUAL:** Este sistema está completamente desarrollado y activado. El archivo `modal-triggers.css` está vinculado en `index.html` (línea 39) y listo para usar. Los estilos base continúan funcionando desde `styles.css` (línea 38).
+
+⚠️ **MIGRACIÓN PENDIENTE:** Aunque el CSS está activo, los componentes HTML aún no han sido migrados para usar las nuevas clases BEM. Actualmente ambos sistemas coexisten sin conflictos.
+
+La aplicación tiene la infraestructura completa para un sistema normalizado de controles modales (badges, botones, enlaces):
+
+### Arquitectura
+
+- **Archivo modular:** `modal-triggers.css` - Hoja CSS independiente con estilos normalizados (DESACTIVADO)
+- **Convención BEM:** Metodología Block Element Modifier para nombres de clases
+- **Variables CSS:** Integración completa con el sistema de diseño existente
+- **Responsive:** Soporte para mobile, tablet y desktop
+- **Tema oscuro:** Estilos específicos para modo oscuro
+
+### Estructura de Clases
+
+```css
+/* Clase base para todos los controles modales */
+.modal-trigger
+
+/* Modificadores por tipo de control */
+.modal-trigger--badge    /* Para badges (recipe-ingredients-badge, etc.) */
+.modal-trigger--button   /* Para botones (category-chip, btn-upload-media, etc.) */
+.modal-trigger--link     /* Para enlaces */
+.modal-trigger--icon     /* Para controles de solo icono */
+
+/* Variantes de posición para badges */
+.modal-trigger--badge-top-left
+.modal-trigger--badge-top-right
+.modal-trigger--badge-bottom-left
+.modal-trigger--badge-bottom-right
+
+/* Variantes de tamaño */
+.modal-trigger--badge-sm
+.modal-trigger--badge-md
+.modal-trigger--badge-lg
+
+/* Variantes de botones de acción (NEW) */
+.modal-trigger--action   /* Botones de acción pequeños (32px altura) */
+.modal-trigger--edit     /* Botón de editar con hover negro */
+.modal-trigger--delete   /* Botón de eliminar con hover rojo */
+.modal-trigger--save     /* Botón de guardar con hover verde */
+.modal-trigger--cancel   /* Botón de cancelar con hover gris */
+.modal-trigger--move     /* Botón de mover (arriba/abajo) con hover negro */
+```
+
+### Controles Identificados para Migración
+
+- **7 Badges:** recipe-ingredients-badge, recipe-options-badge, recipe-pdf-badge, recipe-time-badge, recipe-caravan-badge, recipe-hospital-badge, recipe-menu-badge
+- **6 Botones:** category-chip, btn-upload-media, cooking-action-btn, appliance-chip, sequence-ingredient-chip, menu-btn
+- **2 Enlaces/Selectores:** category-selection-badge, btn-copy-ingredients
+
+### Estado del Proyecto
+
+✅ **Estado actual:** ACTIVADO Y EN USO - El archivo CSS está vinculado en `index.html` (línea 39) y ya se está utilizando en componentes
+
+📝 **Fase actual:** Infraestructura CSS completada (Tareas 1-14 ✅), migración de clases HTML iniciada (Tarea 15 en progreso)
+
+🎯 **Componentes migrados:**
+- ✅ **Menú de opciones de recetas** (6 botones): Editar, Ocultar, Exportar, Copiar, Duplicar, Eliminar
+- ✅ **Botón de Gestionar Categorías** (1 botón): En vista de Configuración
+- ✅ **Botón de Cambiar Tema** (1 botón): En vista de Configuración → Tema
+- ✅ **Botones de Listas de Compra** (2 botones): Nueva Lista, Importar Lista
+
+🔄 **Pendientes de migración:**
+- ⏳ **Badges** (7): recipe-ingredients-badge, recipe-options-badge, recipe-pdf-badge, recipe-time-badge, recipe-caravan-badge, recipe-hospital-badge, recipe-menu-badge
+- ⏳ **Botones de formulario** (5): category-chip, btn-upload-media, cooking-action-btn, appliance-chip, sequence-ingredient-chip
+- ⏳ **Enlaces/Selectores** (2): category-selection-badge, btn-copy-ingredients
+
+💡 **Estado actual:** Migración gradual en progreso. El sistema modal-triggers está activo y funcionando correctamente en los componentes migrados. Los componentes pendientes continúan usando clases antiguas sin conflictos.
+
+Ver documentación completa en:
+- `.kiro/specs/modal-triggers-normalization/requirements.md` - Requisitos funcionales
+- `.kiro/specs/modal-triggers-normalization/design.md` - Arquitectura y diseño
+- `.kiro/specs/modal-triggers-normalization/tasks.md` - Plan de implementación (Tareas 1-14 completadas)
+- `modal-controls-mapping.md` - Mapeo detallado de controles existentes
+- `docs/modal-triggers-examples.md` - Guía de uso con ejemplos HTML
 
 ## 🔧 Arquitectura de Importación XML
 

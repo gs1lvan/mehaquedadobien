@@ -740,77 +740,8 @@ main {
     z-index: 1;
 }
 
-.recipe-time-badge {
-    background: rgba(255, 255, 255, 0.95);
-    color: var(--color-text);
-    padding: 6px 12px;
-    border-radius: 50px;
-    font-size: 0.75rem;
-    font-weight: var(--font-weight-semibold);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    backdrop-filter: blur(4px);
-    width: fit-content;
-}
-
-.recipe-time-badge::before {
-    content: '⏱️';
-    font-size: 0.875rem;
-}
-
-/* Caravan badge inside image gallery */
-.recipe-caravan-badge-image {
-    background: rgba(255, 255, 255, 0.95);
-    color: var(--color-text);
-    padding: 6px 10px;
-    border-radius: 50px;
-    font-size: 1.25rem;
-    font-weight: var(--font-weight-semibold);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-    line-height: 1;
-    width: fit-content;
-
-}
-
-/* Hospital badge inside image gallery */
-.recipe-hospital-badge-image {
-    background: rgba(255, 255, 255, 0.95);
-    color: var(--color-text);
-    padding: 6px 10px;
-    border-radius: 50px;
-    font-size: 1.25rem;
-    font-weight: var(--font-weight-semibold);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-    line-height: 1;
-    width: fit-content;
-}
-
-/* Menu badge inside image gallery */
-.recipe-menu-badge-image {
-    background: rgba(255, 255, 255, 0.95);
-    color: var(--color-text);
-    padding: 6px 10px;
-    border-radius: 50px;
-    font-size: 1.25rem;
-    font-weight: var(--font-weight-semibold);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-    line-height: 1;
-    width: fit-content;
-}
+/* ELIMINADO - Ahora en modal-triggers.css */
+/* .recipe-time-badge, .recipe-caravan-badge-image, .recipe-hospital-badge-image, .recipe-menu-badge-image */
 
 /* ===== Recipe Image Carousel ===== */
 .recipe-image-carousel {
@@ -2033,69 +1964,7 @@ body.dark-theme .recipe-pdf-badge:hover {
     align-items: center;
 }
 
-.btn-ingredient-action {
-    background: var(--color-background);
-    border: 1px solid var(--color-border);
-    color: var(--color-text);
-    padding: 6px 10px;
-    border-radius: var(--radius-sm);
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-weight: var(--font-weight-medium);
-    min-width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-ingredient-action:hover {
-    border-color: var(--color-text);
-    box-shadow: var(--shadow-sm);
-}
-
-.btn-ingredient-action.btn-edit:hover {
-    background: var(--color-text);
-    color: var(--color-background);
-}
-
-.btn-ingredient-action.btn-delete:hover {
-    background: var(--color-danger);
-    color: var(--color-background);
-    border-color: var(--color-danger);
-}
-
-.btn-ingredient-action.btn-save:hover {
-    background: var(--color-success);
-    color: var(--color-background);
-    border-color: var(--color-success);
-}
-
-.btn-ingredient-action.btn-cancel:hover {
-    background: var(--color-text-secondary);
-    color: var(--color-background);
-    border-color: var(--color-text-secondary);
-}
-
-.btn-ingredient-action.btn-up:hover,
-.btn-ingredient-action.btn-down:hover {
-    background: var(--color-text);
-    color: var(--color-background);
-}
-
-.btn-ingredient-action:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-}
-
-.btn-ingredient-action:disabled:hover {
-    transform: none;
-    box-shadow: none;
-    background: var(--color-background);
-    color: var(--color-text);
-    border-color: var(--color-border);
-}
+/* ELIMINADO - Ahora en modal-triggers.css como .modal-trigger--action */
 
 /* ===== Sequence Management - Airbnb Style ===== */
 .sequence-add-form {
@@ -2394,69 +2263,7 @@ body.dark-theme .recipe-pdf-badge:hover {
     align-items: center;
 }
 
-.btn-sequence-action {
-    background: var(--color-background);
-    border: 1px solid var(--color-border);
-    color: var(--color-text);
-    padding: 6px 10px;
-    border-radius: var(--radius-sm);
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-weight: var(--font-weight-medium);
-    min-width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-sequence-action:hover {
-    border-color: var(--color-text);
-    box-shadow: var(--shadow-sm);
-}
-
-.btn-sequence-action.btn-edit:hover {
-    background: var(--color-text);
-    color: var(--color-background);
-}
-
-.btn-sequence-action.btn-delete:hover {
-    background: var(--color-danger);
-    color: var(--color-background);
-    border-color: var(--color-danger);
-}
-
-.btn-sequence-action.btn-save:hover {
-    background: var(--color-success);
-    color: var(--color-background);
-    border-color: var(--color-success);
-}
-
-.btn-sequence-action.btn-cancel:hover {
-    background: var(--color-text-secondary);
-    color: var(--color-background);
-    border-color: var(--color-text-secondary);
-}
-
-.btn-sequence-action.btn-move:hover {
-    background: var(--color-primary);
-    color: white;
-    border-color: var(--color-primary);
-}
-
-.btn-sequence-action:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-}
-
-.btn-sequence-action:disabled:hover {
-    transform: none;
-    box-shadow: none;
-    background: var(--color-background);
-    color: var(--color-text);
-    border-color: var(--color-border);
-}
+/* ELIMINADO - Ahora en modal-triggers.css como .modal-trigger--action */
 
 .form-actions {
     display: flex;
@@ -3967,54 +3774,7 @@ html {
     gap: var(--spacing-xs);
 }
 
-.option-btn {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: left;
-    width: 100%;
-}
-
-.option-btn:hover {
-    background: var(--color-background-secondary);
-    border-color: var(--color-primary);
-    transform: translateX(4px);
-}
-
-.option-icon {
-    font-size: 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    color: var(--color-text);
-}
-
-.option-icon i {
-    color: var(--color-text);
-}
-
-.option-text {
-    font-size: 1rem;
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text);
-}
-
-.option-btn-danger:hover {
-    background: var(--color-background-secondary);
-    border-color: var(--color-primary);
-    transform: translateX(4px);
-}
-
-.option-btn-danger .option-text {
-    color: #d32f2f;
-}
+/* ELIMINADO - Ahora en modal-triggers.css como .modal-trigger--option */
 
 .modal-footer {
     display: flex;
@@ -5156,21 +4916,7 @@ body.dark-theme .recipe-card:hover {
     box-shadow: var(--shadow-hover);
 }
 
-body.dark-theme .recipe-time-badge {
-    color: #2a2a2a;
-}
-
-body.dark-theme .recipe-caravan-badge-image {
-    color: #2a2a2a;
-}
-
-body.dark-theme .recipe-hospital-badge-image {
-    color: #2a2a2a;
-}
-
-body.dark-theme .recipe-menu-badge-image {
-    color: #2a2a2a;
-}
+/* ELIMINADO - Ahora en modal-triggers.css */
 
 /* Form inputs in dark theme */
 body.dark-theme input[type="text"],
@@ -5442,15 +5188,7 @@ body.dark-theme .sequence-item:hover {
     background: var(--color-background);
 }
 
-body.dark-theme .btn-sequence-action {
-    background: var(--color-background-secondary);
-    border-color: var(--color-border);
-}
-
-body.dark-theme .btn-sequence-action.btn-move:hover {
-    background: var(--color-primary);
-    color: white;
-}
+/* ELIMINADO - Ahora en modal-triggers.css */
 
 body.dark-theme .editable-title:hover {
     background: var(--color-background);
@@ -5694,6 +5432,12 @@ select {
     gap: var(--spacing-sm);
     padding: var(--spacing-xs) var(--spacing-sm);
     line-height: 1.6;
+    border-bottom: 1px solid rgba(221, 221, 221, 0.5);
+}
+
+/* Remove border from last item */
+.shopping-item:last-child {
+    border-bottom: none;
 }
 
 .shopping-item-bullet {

@@ -36,6 +36,7 @@
     </script>
 
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="modal-triggers.css">
 
     <!-- Font Awesome Icons - Para icono de lápiz en nombre de receta -->
     <!-- Si deseas eliminar Font Awesome, borra esta línea y el icono en script.js (buscar: fa-pencil) -->
@@ -62,29 +63,29 @@
                 </div>
 
                 <!-- Menu button (always visible) -->
-                <button id="menu-btn" class="menu-btn" title="Menú" aria-label="Menú de opciones" aria-expanded="false"
-                    aria-haspopup="true">
+                <button id="menu-btn" class="menu-btn modal-trigger modal-trigger--button" title="Menú"
+                    aria-label="Menú de opciones" aria-expanded="false" aria-haspopup="true">
                     <span class="hamburger-icon">☰</span>
                 </button>
 
                 <!-- Dropdown menu -->
                 <div id="menu-dropdown" class="menu-dropdown" role="menu" aria-label="Opciones de la aplicación">
-                    <button id="recipes-btn" class="menu-item" role="menuitem" title="Ver recetas">
-                        📖 Recetas
-                    </button>
                     <button id="new-recipe-btn" class="menu-item menu-item-primary" role="menuitem"
                         title="Crear nueva receta">
-                        ➕ Nueva Receta
+                        Nueva Receta
+                    </button>
+                    <button id="recipes-btn" class="menu-item" role="menuitem" title="Ver recetas">
+                        Recetas
                     </button>
                     <button id="menus-btn" class="menu-item" role="menuitem" title="Gestionar menús">
-                        📋 Menús
+                        Menús
                     </button>
                     <button id="shopping-lists-btn" class="menu-item" role="menuitem"
                         title="Gestionar listas de compra">
-                        🛒 Listas de Compra
+                        Listas de Compra
                     </button>
                     <button id="settings-btn" class="menu-item" role="menuitem" title="Configuración">
-                        ⚙️ Configuración
+                        Configuración
                     </button>
                 </div>
 
@@ -352,7 +353,8 @@
                 <div class="form-header" style="position: relative;">
                     <h2 id="recipe-name" class="editable-title" contenteditable="true"
                         data-placeholder="Nombre de la receta...">Nueva Receta</h2>
-                    <button id="close-form-btn" class="btn-icon" title="Cerrar" style="position: absolute; right: 0; top: 50%; transform: translateY(-50%);">✕</button>
+                    <button id="close-form-btn" class="btn-icon" title="Cerrar"
+                        style="position: absolute; right: 0; top: 50%; transform: translateY(-50%);">✕</button>
                 </div>
 
                 <div class="detail-actions" id="form-actions" style="display: none;">
@@ -383,7 +385,8 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="recipe-category-chip">Categoría</label>
-                                <span id="recipe-category-chip" class="recipe-category" style="display: inline-block;" data-category="">
+                                <span id="recipe-category-chip" class="recipe-category" style="display: inline-block;"
+                                    data-category="">
                                     <span id="selected-category-display">Sin categoría</span>
                                 </span>
                                 <input type="hidden" id="recipe-category" name="category" value="">
@@ -681,7 +684,8 @@
                                         <button type="button" id="upload-image-btn" class="btn-upload-media">
                                             📷 Añadir Imágenes
                                         </button>
-                                        <span class="helper-text">Formatos: JPEG, PNG, WebP. Máximo 10MB por imagen</span>
+                                        <span class="helper-text">Formatos: JPEG, PNG, WebP. Máximo 10MB por
+                                            imagen</span>
                                         <span class="error-message" id="image-error"></span>
                                     </div>
 
@@ -720,12 +724,15 @@
                             ✕
                         </button>
                     </div>
-                    <div class="shopping-lists-buttons">
-                        <button id="new-shopping-list-btn" class="btn-primary">
-                            ➕ Nueva Lista
+                    <div class="shopping-lists-buttons"
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm);">
+                        <button id="new-shopping-list-btn" class="modal-trigger modal-trigger--option">
+                            <span class="option-icon"><i class="fa-solid fa-plus"></i></span>
+                            <span class="option-text">Nueva Lista</span>
                         </button>
-                        <button id="import-shopping-list-btn" class="btn-primary">
-                            📥 Importar Lista
+                        <button id="import-shopping-list-btn" class="modal-trigger modal-trigger--option">
+                            <span class="option-icon"><i class="fa-solid fa-file-import"></i></span>
+                            <span class="option-text">Importar Lista</span>
                         </button>
                         <input type="file" id="import-shopping-list-input" accept=".txt" style="display: none;">
                     </div>
@@ -750,12 +757,15 @@
                             ✕
                         </button>
                     </div>
-                    <div class="shopping-lists-buttons">
-                        <button id="new-menu-btn" class="btn-primary">
-                            ➕ Nuevo Menú
+                    <div class="shopping-lists-buttons"
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm);">
+                        <button id="new-menu-btn" class="modal-trigger modal-trigger--option">
+                            <span class="option-icon"><i class="fa-solid fa-plus"></i></span>
+                            <span class="option-text">Nuevo Menú</span>
                         </button>
-                        <button id="import-menu-btn" class="btn-primary">
-                            📥 Importar Menú
+                        <button id="import-menu-btn" class="modal-trigger modal-trigger--option">
+                            <span class="option-icon"><i class="fa-solid fa-file-import"></i></span>
+                            <span class="option-text">Importar Menú</span>
                         </button>
                         <input type="file" id="import-menu-input" accept=".txt" style="display: none;">
                     </div>
@@ -775,7 +785,8 @@
     </div>
 
     <!-- Category Management Modal -->
-    <div id="category-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="category-modal-title">
+    <div id="category-modal" class="modal hidden" role="dialog" aria-modal="true"
+        aria-labelledby="category-modal-title">
         <div class="modal-overlay"></div>
         <div class="modal-content category-modal-content">
             <div class="modal-header">
@@ -872,7 +883,8 @@
     </div>
 
     <!-- Category Options Modal -->
-    <div id="category-options-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="category-options-modal-title">
+    <div id="category-options-modal" class="modal hidden" role="dialog" aria-modal="true"
+        aria-labelledby="category-options-modal-title">
         <div class="modal-overlay"></div>
         <div class="modal-content shopping-list-options-content">
             <div class="modal-header">
@@ -886,12 +898,13 @@
                         <span class="option-icon"><i class="fa-regular fa-pen-to-square"></i></span>
                         <span class="option-text">Editar</span>
                     </button> -->
-                    <button id="category-option-toggle" class="option-btn">
+                    <button id="category-option-toggle" class="modal-trigger modal-trigger--option">
                         <span class="option-icon"><i class="fa-regular fa-eye"></i></span>
                         <span class="option-text" id="category-option-toggle-text">Ocultar</span>
                     </button>
-                    <button id="category-option-delete" class="option-btn option-btn-danger">
-                        <span class="option-icon"><i class="fa-regular fa-trash-can"></i></span>
+                    <button id="category-option-delete"
+                        class="modal-trigger modal-trigger--option modal-trigger--danger">
+                        <span class="option-icon"><i class="fa-solid fa-trash"></i></span>
                         <span class="option-text">Eliminar</span>
                     </button>
                 </div>
@@ -972,10 +985,10 @@
                     <label>Elementos</label>
                     <div class="shopping-list-buttons">
                         <button id="add-shopping-item-btn" class="btn-secondary">
-                            ➕ Añadir Elemento
+                            <i class="fa-solid fa-plus"></i> Añadir Elemento
                         </button>
                         <button id="save-shopping-list-btn" class="btn-primary">
-                            💾 Guardar Lista
+                            <i class="fa-solid fa-floppy-disk"></i> Guardar Lista
                         </button>
                     </div>
                     <!-- New items container (appears right below the buttons) -->
@@ -1013,10 +1026,10 @@
                     <label>Elementos del Menú</label>
                     <div class="menu-buttons">
                         <button id="add-menu-item-btn" class="btn-secondary">
-                            ➕ Añadir Elemento
+                            <i class="fa-solid fa-plus"></i> Añadir Elemento
                         </button>
                         <button id="save-menu-btn" class="btn-primary">
-                            💾 Guardar Menú
+                            <i class="fa-solid fa-floppy-disk"></i> Guardar Menú
                         </button>
                     </div>
                     <!-- New items container (appears right below the buttons) -->
@@ -1063,28 +1076,28 @@
 
             <div class="modal-body">
                 <div class="options-menu">
-                    <button id="option-edit" class="option-btn">
+                    <button id="option-edit" class="modal-trigger modal-trigger--option">
                         <span class="option-icon"><i class="fa-regular fa-pen-to-square"></i></span>
                         <span class="option-text">Editar</span>
                     </button>
-                    <button id="option-toggle" class="option-btn">
+                    <button id="option-toggle" class="modal-trigger modal-trigger--option">
                         <span class="option-icon"><i class="fa-regular fa-eye"></i></span>
                         <span class="option-text" id="option-toggle-text">Ocultar</span>
                     </button>
-                    <button id="option-export" class="option-btn">
+                    <button id="option-export" class="modal-trigger modal-trigger--option">
                         <span class="option-icon"><i class="fa-regular fa-floppy-disk"></i></span>
                         <span class="option-text">Exportar</span>
                     </button>
-                    <button id="option-copy" class="option-btn">
+                    <button id="option-copy" class="modal-trigger modal-trigger--option">
                         <span class="option-icon"><i class="fa-regular fa-clipboard"></i></span>
                         <span class="option-text">Copiar</span>
                     </button>
-                    <button id="option-duplicate" class="option-btn">
+                    <button id="option-duplicate" class="modal-trigger modal-trigger--option">
                         <span class="option-icon"><i class="fa-regular fa-copy"></i></span>
                         <span class="option-text">Duplicar</span>
                     </button>
-                    <button id="option-delete" class="option-btn option-btn-danger">
-                        <span class="option-icon"><i class="fa-regular fa-trash-can"></i></span>
+                    <button id="option-delete" class="modal-trigger modal-trigger--option modal-trigger--danger">
+                        <span class="option-icon"><i class="fa-solid fa-trash"></i></span>
                         <span class="option-text">Eliminar</span>
                     </button>
                 </div>
@@ -1103,28 +1116,28 @@
 
             <div class="modal-body">
                 <div class="options-menu">
-                    <button id="menu-option-edit" class="option-btn">
+                    <button id="menu-option-edit" class="modal-trigger modal-trigger--option">
                         <span class="option-icon"><i class="fa-regular fa-pen-to-square"></i></span>
                         <span class="option-text">Editar</span>
                     </button>
-                    <button id="menu-option-toggle" class="option-btn">
+                    <button id="menu-option-toggle" class="modal-trigger modal-trigger--option">
                         <span class="option-icon"><i class="fa-regular fa-eye"></i></span>
                         <span class="option-text" id="menu-option-toggle-text">Ocultar</span>
                     </button>
-                    <button id="menu-option-export" class="option-btn">
+                    <button id="menu-option-export" class="modal-trigger modal-trigger--option">
                         <span class="option-icon"><i class="fa-regular fa-floppy-disk"></i></span>
                         <span class="option-text">Exportar</span>
                     </button>
-                    <button id="menu-option-copy" class="option-btn">
+                    <button id="menu-option-copy" class="modal-trigger modal-trigger--option">
                         <span class="option-icon"><i class="fa-regular fa-clipboard"></i></span>
                         <span class="option-text">Copiar</span>
                     </button>
-                    <button id="menu-option-duplicate" class="option-btn">
+                    <button id="menu-option-duplicate" class="modal-trigger modal-trigger--option">
                         <span class="option-icon"><i class="fa-regular fa-copy"></i></span>
                         <span class="option-text">Duplicar</span>
                     </button>
-                    <button id="menu-option-delete" class="option-btn option-btn-danger">
-                        <span class="option-icon"><i class="fa-regular fa-trash-can"></i></span>
+                    <button id="menu-option-delete" class="modal-trigger modal-trigger--option modal-trigger--danger">
+                        <span class="option-icon"><i class="fa-solid fa-trash"></i></span>
                         <span class="option-text">Eliminar</span>
                     </button>
                 </div>
@@ -1173,24 +1186,24 @@
 
             <div class="modal-body">
                 <div class="options-menu">
-                    <button id="recipe-option-edit" class="option-btn">
-                        <span class="option-icon">✏️</span>
+                    <button id="recipe-option-edit" class="modal-trigger modal-trigger--option">
+                        <span class="option-icon"><i class="fa-solid fa-pen"></i></span>
                         <span class="option-text">Editar</span>
                     </button>
-                    <button id="recipe-option-duplicate" class="option-btn">
-                        <span class="option-icon">📑</span>
+                    <button id="recipe-option-duplicate" class="modal-trigger modal-trigger--option">
+                        <span class="option-icon"><i class="fa-regular fa-clone"></i></span>
                         <span class="option-text">Duplicar</span>
                     </button>
-                    <button id="recipe-option-share" class="option-btn">
-                        <span class="option-icon">📤</span>
+                    <button id="recipe-option-share" class="modal-trigger modal-trigger--option">
+                        <span class="option-icon"><i class="fa-solid fa-share-nodes"></i></span>
                         <span class="option-text">Compartir</span>
                     </button>
-                    <button id="recipe-option-pdf" class="option-btn">
-                        <span class="option-icon">📄</span>
+                    <button id="recipe-option-pdf" class="modal-trigger modal-trigger--option">
+                        <span class="option-icon"><i class="fa-regular fa-file-pdf"></i></span>
                         <span class="option-text">Exportar PDF</span>
                     </button>
-                    <button id="recipe-option-delete" class="option-btn option-btn-danger">
-                        <span class="option-icon">🗑️</span>
+                    <button id="recipe-option-delete" class="modal-trigger modal-trigger--option modal-trigger--danger">
+                        <span class="option-icon"><i class="fa-solid fa-trash"></i></span>
                         <span class="option-text">Eliminar</span>
                     </button>
                 </div>
@@ -1199,7 +1212,8 @@
     </div>
 
     <!-- Settings Modal -->
-    <div id="settings-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+    <div id="settings-modal" class="modal hidden" role="dialog" aria-modal="true"
+        aria-labelledby="settings-modal-title">
         <div class="modal-overlay"></div>
         <div class="modal-content">
             <div class="modal-header">
@@ -1208,47 +1222,75 @@
             </div>
 
             <div class="modal-body">
-                <!-- Recipe Book Owner Section -->
-                <div class="settings-section">
-                    <h3 class="settings-section-title">Libro de receta de:</h3>
-                    <div class="settings-section-content">
-                        <input type="text" id="recipe-book-owner" class="form-input" placeholder="Escribe tu nombre..."
-                            style="flex: 1; max-width: 300px;">
+                <!-- Recipe Book Owner and Preferences Section -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                    <!-- Recipe Book Owner -->
+                    <div class="settings-section" style="margin-bottom: 0;">
+                        <h3 class="settings-section-title">Libro de receta de:</h3>
+                        <div class="settings-section-content">
+                            <input type="text" id="recipe-book-owner" class="form-input"
+                                placeholder="Escribe tu nombre..." style="width: 100%;">
+                        </div>
+                    </div>
+
+                    <!-- Preferences -->
+                    <div class="settings-section" style="margin-bottom: 0;">
+                        <h3 class="settings-section-title">Cocinoteca:</h3>
+                        <div class="settings-section-content">
+                            <select id="recipe-preferences" class="form-input" style="width: 100%;">
+                                <option value="">Selecciona una opción...</option>
+                                <option value="cocina-asiatica">Cocina asiática</option>
+                                <option value="cocina-vegana">Cocina vegana</option>
+                                <option value="no-verduras">No me gustan las verduras</option>
+                                <option value="comida-hospital">Cómo meter comida en el hospital</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Categories Section -->
-                <div class="settings-section">
-                    <h3 class="settings-section-title">Categorías</h3>
-                    <div class="settings-section-content">
-                        <button id="manage-categories-btn" class="btn-secondary" style="width: 100%;" title="Gestionar categorías">
-                            🏷️ Gestionar Categorías
-                        </button>
+                <!-- Categories and Theme Section (50/50 split) -->
+                <div
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); margin-top: var(--spacing-xl);">
+                    <!-- Categories Section -->
+                    <div class="settings-section" style="margin-bottom: 0;">
+                        <h3 class="settings-section-title">Categorías</h3>
+                        <div class="settings-section-content">
+                            <button id="manage-categories-btn" class="modal-trigger modal-trigger--option"
+                                style="width: 100%;" title="Gestionar categorías">
+                                <span class="option-icon"><i class="fa-solid fa-tags"></i></span>
+                                <span class="option-text">Categorías</span>
+                            </button>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Theme Section -->
-                <div class="settings-section">
-                    <h3 class="settings-section-title">Tema</h3>
-                    <div class="settings-section-content">
-                        <button id="theme-toggle-btn-modal" class="btn-icon theme-toggle-square"
-                            title="Cambiar a tema claro" aria-label="Cambiar a tema oscuro">
-                            ☀️
-                        </button>
-                        <span class="settings-description">Cambia entre tema claro y oscuro</span>
+                    <!-- Theme Section -->
+                    <div class="settings-section" style="margin-bottom: 0;">
+                        <h3 class="settings-section-title">Tema</h3>
+                        <div class="settings-section-content">
+                            <button id="theme-toggle-btn-modal" class="modal-trigger modal-trigger--option"
+                                style="width: 100%;" title="Cambiar tema"
+                                aria-label="Cambiar entre tema claro y oscuro">
+                                <span class="option-icon" id="theme-icon-modal"><i class="fa-solid fa-moon"></i></span>
+                                <span class="option-text" id="theme-text-modal">Modo oscuro</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Import/Export Section -->
-                <div class="settings-section">
+                <div class="settings-section" style="margin-top: var(--spacing-xl);">
                     <h3 class="settings-section-title">Importar y Exportar</h3>
                     <div class="settings-section-content"
                         style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm); width: 100%;">
-                        <button id="import-xml-btn" class="btn-secondary" title="Importar recetas desde XML">
-                            📥 Importar recetas
+                        <button id="import-xml-btn" class="modal-trigger modal-trigger--option"
+                            title="Importar recetas desde XML">
+                            <span class="option-icon"><i class="fa-solid fa-file-import"></i></span>
+                            <span class="option-text">Importar recetas</span>
                         </button>
-                        <button id="export-all-btn" class="btn-secondary" title="Exportar todas las recetas">
-                            📤 Exportar recetas
+                        <button id="export-all-btn" class="modal-trigger modal-trigger--option"
+                            title="Exportar todas las recetas">
+                            <span class="option-icon"><i class="fa-solid fa-file-export"></i></span>
+                            <span class="option-text">Exportar recetas</span>
                         </button>
                     </div>
                 </div>
@@ -1270,7 +1312,7 @@
                     <!-- Categories will be rendered here dynamically -->
                 </div>
             </div>
-            
+
             <div class="modal-footer" id="category-selector-footer" style="display: none;">
                 <button id="category-confirm-btn" class="btn-secondary">Confirmar</button>
                 <button id="category-view-recipes-btn" class="btn-primary">Ver Recetas →</button>
