@@ -74,7 +74,32 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 ## 🎨 Última Actualización
 
 **Fecha:** 6 de noviembre de 2025  
-**Cambio:** Corrección de posicionamiento de badges en modal-triggers.css - Se ha corregido el comportamiento de posicionamiento de badges modales:
+**Cambio:** Categoría predeterminada en selector de categorías - Se ha establecido una categoría inicial en el formulario de recetas:
+- ✅ **Categoría inicial:** El selector de categorías ahora muestra "Carne" como categoría predeterminada (`data-category="carne"`)
+- ✅ **Mejor experiencia inicial:** Los usuarios tienen un punto de partida visual al crear recetas
+- ✅ **Valor temporal:** Esta es una categoría de ejemplo que se puede cambiar fácilmente al hacer clic en el selector
+- ⚠️ **Nota técnica:** El campo oculto `recipe-category` sigue con `value=""` vacío, por lo que la categoría no se guarda hasta que el usuario la seleccione explícitamente
+- 💡 **Ubicación:** Vista de Formulario de Recetas → Sección Información Básica → Campo Categoría
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Eliminación del botón Cancelar en formulario de recetas - Se ha simplificado la interfaz del formulario de recetas:
+- ✅ **Botón Cancelar eliminado:** El botón "Cancelar" ha sido removido de la sección de acciones del formulario
+- ✅ **Interfaz más limpia:** Reducción de opciones redundantes en el formulario
+- ✅ **Navegación simplificada:** Los usuarios pueden cerrar el formulario usando el botón X en el encabezado
+- ✅ **Mejor enfoque:** El formulario ahora enfatiza la acción principal de guardar
+- ✅ **Consistencia:** Alineado con patrones de diseño modernos que priorizan acciones positivas
+- 💡 **Ubicación:** Vista de Formulario de Recetas → Sección de acciones del formulario (parte inferior)
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Mejora de placeholder en selector de Cocinoteca - Se ha optimizado el comportamiento del selector de preferencias culinarias:
+- ✅ **Placeholder mejorado:** La opción "Selecciona una opción..." ahora está marcada como `disabled` y `selected`
+- ✅ **Mejor UX:** El placeholder no se puede seleccionar como valor válido, forzando al usuario a elegir una opción real
+- ✅ **Comportamiento estándar:** Sigue las mejores prácticas de HTML para selectores con placeholder
+- ✅ **Validación implícita:** El campo queda vacío (`value=""`) hasta que se selecciona una opción válida
+- 💡 **Ubicación:** Vista de Configuración → Sección Cocinoteca → Selector de preferencias
+
+**Fecha:** 6 de noviembre de 2025  
+**Cambio anterior:** Corrección de posicionamiento de badges en modal-triggers.css - Se ha corregido el comportamiento de posicionamiento de badges modales:
 - ✅ **Position relative por defecto:** Los badges ahora usan `position: relative` en lugar de `absolute` como valor base
 - ✅ **Nueva clase para absoluto:** Se ha añadido `.modal-trigger--badge-absolute` para casos que requieren posicionamiento absoluto
 - ✅ **Mayor flexibilidad:** Permite usar badges tanto en flujo normal del documento como posicionados absolutamente

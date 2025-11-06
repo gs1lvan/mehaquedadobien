@@ -813,7 +813,7 @@ class XMLExporter {
 
             // Add category (can be null)
             const categoryElement = xmlDoc.createElement('category');
-            categoryElement.textContent = recipe.category || 'sin-categoria';
+            categoryElement.textContent = recipe.category || NO_CATEGORY_ID;
             root.appendChild(categoryElement);
 
             // Add total time (optional)
@@ -1993,7 +1993,7 @@ class XMLImporter {
             // Create recipe with new ID and current timestamp
             const recipeData = {
                 name: name.trim(),
-                category: category === 'sin-categoria' ? null : category,
+                category: category === NO_CATEGORY_ID ? null : category,
                 totalTime: totalTime || '',
                 caravanFriendly: caravanFriendly,
                 hospitalFriendly: hospitalFriendly,

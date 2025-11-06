@@ -15,6 +15,7 @@
     --color-border-light: #EBEBEB;
 
     /* Category Colors - Softer Palette */
+    --color-sin-categoria: #008A05;
     --color-carne: #D93B30;
     --color-verdura: #008A05;
     --color-pescado: #0073CF;
@@ -1059,6 +1060,12 @@ body.dark-theme .recipe-pdf-badge:hover {
     color: var(--color-carne);
 }
 
+.recipe-category[data-category="sin-categoria"] {
+    background: rgba(255, 56, 92, 0.1);
+    color: var(--color-primary);
+    border: 2px dashed var(--color-primary);
+}
+
 .recipe-category[data-category="verdura"] {
     background: rgba(0, 138, 5, 0.1);
     color: var(--color-verdura);
@@ -1084,7 +1091,6 @@ body.dark-theme .recipe-pdf-badge:hover {
     color: var(--color-mix);
 }
 
-.recipe-category[data-category="sin-categoria"],
 .recipe-category:not([data-category]) {
     background: var(--color-background-secondary);
     color: var(--color-text-secondary);

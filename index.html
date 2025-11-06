@@ -386,7 +386,7 @@
                             <div class="form-group">
                                 <label for="recipe-category-chip">Categoría</label>
                                 <span id="recipe-category-chip" class="recipe-category" style="display: inline-block;"
-                                    data-category="">
+                                    data-category="sin-categoria">
                                     <span id="selected-category-display">Sin categoría</span>
                                 </span>
                                 <input type="hidden" id="recipe-category" name="category" value="">
@@ -704,9 +704,6 @@
 
                     <!-- Form Actions -->
                     <div class="form-actions">
-                        <button type="button" id="cancel-form-btn" class="btn-secondary">
-                            Cancelar
-                        </button>
                         <button type="submit" id="save-recipe-btn" class="btn-primary">
                             💾 Guardar Receta
                         </button>
@@ -1238,7 +1235,7 @@
                         <h3 class="settings-section-title">Cocinoteca:</h3>
                         <div class="settings-section-content">
                             <select id="recipe-preferences" class="form-input" style="width: 100%;">
-                                <option value="">Selecciona una opción...</option>
+                                <option value="" disabled selected>Selecciona una opción...</option>
                                 <option value="cocina-asiatica">Cocina asiática</option>
                                 <option value="cocina-vegana">Cocina vegana</option>
                                 <option value="no-verduras">No me gustan las verduras</option>

@@ -101,6 +101,16 @@ const EMOJI_CATEGORIES = {
 const DEFAULT_EMOJI = '🐱';
 
 /**
+ * Special category ID for recipes without a category
+ */
+const NO_CATEGORY_ID = 'sin-categoria';
+
+/**
+ * Display text for recipes without a category
+ */
+const NO_CATEGORY_LABEL = 'Sin categoría';
+
+/**
  * Kitchen appliances available for recipes
  */
 const KITCHEN_APPLIANCES = [
@@ -285,7 +295,7 @@ class CategoryManager {
         });
 
         // Count recipes without category
-        counts['sin-categoria'] = recipes.filter(r => !r.category).length;
+        counts[NO_CATEGORY_ID] = recipes.filter(r => !r.category).length;
 
         return counts;
     }
@@ -1488,9 +1498,11 @@ class RecipeApp {
         const selectedValue = categoryInput.value;
 
         if (!selectedValue) {
-            displaySpan.textContent = 'Sin categoría';
+            displaySpan.textContent = NO_CATEGORY_LABEL;
             if (categoryChip) {
-                categoryChip.dataset.category = '';
+                categoryChip.dataset.category = NO_CATEGORY_ID;
+                console.log('🔴 SIN CATEGORÍA - data-category asignado:', categoryChip.dataset.category);
+                console.log('🔴 Elemento:', categoryChip);
             }
             return;
         }
@@ -1502,9 +1514,9 @@ class RecipeApp {
                 categoryChip.dataset.category = category.id;
             }
         } else {
-            displaySpan.textContent = 'Sin categoría';
+            displaySpan.textContent = NO_CATEGORY_LABEL;
             if (categoryChip) {
-                categoryChip.dataset.category = '';
+                categoryChip.dataset.category = NO_CATEGORY_ID;
             }
         }
     }
@@ -2683,7 +2695,7 @@ class RecipeApp {
         const action = category.isPredefined ? 'ocultar' : 'eliminar';
         let message = `¿Estás seguro de que quieres ${action} la categoría "${category.name}"?`;
         if (affectedCount > 0) {
-            message += `\n\n${affectedCount} ${affectedCount === 1 ? 'receta' : 'recetas'} ${affectedCount === 1 ? 'usa' : 'usan'} esta categoría y ${affectedCount === 1 ? 'pasará' : 'pasarán'} a "Sin categoría".`;
+            message += `\n\n${affectedCount} ${affectedCount === 1 ? 'receta' : 'recetas'} ${affectedCount === 1 ? 'usa' : 'usan'} esta categoría y ${affectedCount === 1 ? 'pasará' : 'pasarán'} a "${NO_CATEGORY_LABEL}".`;
         }
         if (category.isPredefined) {
             message += '\n\nPodrás restaurarla desde la sección "Categorías ocultas".';
@@ -3725,7 +3737,7 @@ class RecipeApp {
         categoryChips.forEach(chip => {
             const category = chip.dataset.category;
             const hasRecipes = recipesInTimeRange.some(recipe => {
-                if (category === 'sin-categoria') {
+                if (category === NO_CATEGORY_ID) {
                     return !recipe.category;
                 }
                 return recipe.category === category;
@@ -3817,8 +3829,8 @@ class RecipeApp {
                 // Check category filters (must match ANY - OR logic)
                 let categoryMatch = false;
 
-                // Check "sin-categoria" filter
-                if (activeCategoryFilters.includes('sin-categoria') && (recipe.category === null || recipe.category === undefined)) {
+                // Check NO_CATEGORY_ID filter
+                if (activeCategoryFilters.includes(NO_CATEGORY_ID) && (recipe.category === null || recipe.category === undefined)) {
                     categoryMatch = true;
                 }
 
@@ -4421,7 +4433,7 @@ class RecipeApp {
             categorySpan.dataset.category = recipe.category;
             categorySpan.textContent = this.getCategoryLabel(recipe.category);
         } else {
-            categorySpan.textContent = 'Sin categoría';
+            categorySpan.textContent = NO_CATEGORY_LABEL;
         }
 
         // Recipe preview (ingredients)
@@ -4911,6 +4923,15 @@ class RecipeApp {
 
         // Get form data
         const formData = this.getFormData();
+
+        // Validate category is selected
+        const categoryInput = document.getElementById('recipe-category');
+        if (!categoryInput || !categoryInput.value) {
+            this.showError('Por favor, selecciona una categoría para la receta');
+            const categoryChip = document.getElementById('recipe-category-chip');
+            categoryChip?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
 
         // Show loading state
         const saveBtn = document.getElementById('save-recipe-btn');
@@ -10143,7 +10164,7 @@ class RecipeApp {
         const categoriesMap = new Map();
 
         menuRecipes.forEach(recipe => {
-            const categoryId = recipe.category || 'sin-categoria';
+            const categoryId = recipe.category || NO_CATEGORY_ID;
             if (!categoriesMap.has(categoryId)) {
                 categoriesMap.set(categoryId, {
                     id: categoryId,
@@ -10262,7 +10283,7 @@ class RecipeApp {
         // Get recipes from selected categories
         const menuRecipes = this.recipes.filter(recipe =>
             recipe.menuFriendly === true &&
-            selectedCategoryIds.includes(recipe.category || 'sin-categoria')
+            selectedCategoryIds.includes(recipe.category || NO_CATEGORY_ID)
         );
 
         // Convert input to select dropdown
@@ -11096,7 +11117,7 @@ class RecipeApp {
             const isUp = direction === 'up';
             const btn = document.createElement('button');
             btn.type = 'button'; // Prevent form submission
-            btn.className = 'btn-icon btn-reorder';
+            btn.className = 'modal-trigger modal-trigger--button modal-trigger--action modal-trigger--move';
             btn.title = isUp ? 'Mover arriba' : 'Mover abajo';
             btn.innerHTML = isUp ? '<i class="fa-solid fa-arrow-up"></i>' : '<i class="fa-solid fa-arrow-down"></i>';
             btn.setAttribute('aria-label', btn.title);
