@@ -31,11 +31,25 @@ Una aplicación web moderna para gestionar tus recetas personales con funcionali
 
 - **[INFORME-TECNICO.md](INFORME-TECNICO.md)** - Documentación técnica completa
 - **[RESUMEN-CAMBIOS.md](RESUMEN-CAMBIOS.md)** - Historial de cambios implementados
-- **[GUIA-CREAR-APK.md](GUIA-CREAR-APK.md)** - Guía para crear APK de Android
 - **[test-xml-parsing.md](test-xml-parsing.md)** - Casos de prueba para validación de parsing XML
 - **[xml-constants.js](xml-constants.js)** - Constantes y helpers para formatos XML
 - **[docs/modal-triggers-examples.md](docs/modal-triggers-examples.md)** - Guía de uso del sistema de controles modales
 - **[modal-controls-mapping.md](modal-controls-mapping.md)** - Mapeo de controles modales existentes
+- **[MAPA-APLICACION.md](MAPA-APLICACION.md)** - Mapa aplicacion
+- **[PLAN-UNIFICACION-BOTONES.md](PLAN-UNIFICACION-BOTONES.md)** -Unificar tamaños, fuentes y colores de todos los botones de la aplicación
+- **[hidden-categories-inline-summary.md](hidden-categories-inline-summary.md)** - Casos de prueba para validación de parsing XML
+
+- **[RESUMEN-CAMBIOS-CATEGORIA-SELECTOR.md](RESUMEN-CAMBIOS-CATEGORIA-SELECTOR.md)** - MSelector de Categorías para Menús
+- **[remove-predefined-categories-summary.md](remove-predefined-categories-summary.md)** - Las categorías predefinidas ya no necesitan ser gestionadas desde esta modal
+- **[RESUMEN-CAMBIOS-CATEGORIA-SELECTOR.md](RESUMEN-CAMBIOS-CATEGORIA-SELECTOR.md)** - Nuevo botón en el modal de selector de categorías- Permite cerrar el modal sin seleccionar una receta- Siempre habilitado cuando se selecciona una categoría
+- **[RESUMEN-FINAL-SELECTOR-CATEGORIAS.md](RESUMEN-FINAL-SELECTOR-CATEGORIAS.md)** Mejorar el selector de categorías en el contexto de edición de menús para permitir:
+1. Seleccionar categorías sin recetas asociadas
+2. Feedback visual claro sobre disponibilidad de recetas
+3. Estado limpio al abrir el modal
+4. Cambio flexible entre categorías
+- **[QUE-HACE-CADA-SPEC.md](QUE-HACE-CADA-SPEC.md)** - QUE-HACE-CADA-SPEC
+- **[SECCIONES-WEB.md](SECCIONES-WEB.md)** - SECCIONES-WEB
+
 
 ## 🧪 Archivos de Prueba
 
