@@ -48,7 +48,7 @@ Una aplicación web moderna para gestionar tus recetas personales con funcionali
 3. Estado limpio al abrir el modal
 4. Cambio flexible entre categorías
 - **[QUE-HACE-CADA-SPEC.md](QUE-HACE-CADA-SPEC.md)** - QUE-HACE-CADA-SPEC
-- **[SECCIONES-WEB.md](SECCIONES-WEB.md)** - SECCIONES-WEB
+- **[SECCIONES-WEB-COMPLETO_TECNICO.md](SECCIONES-WEB-COMPLETO_TECNICO.md)** - Documentación Completa y Técnica
 
 
 ## 🧪 Archivos de Prueba
