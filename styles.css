@@ -527,7 +527,7 @@ main {
     border: 1px solid var(--color-border);
     color: var(--color-text);
     padding: 5px 8px;
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-sm);
     font-size: 0. rem;
     font-weight: var(--font-weight-medium);
     cursor: pointer;
@@ -2662,7 +2662,7 @@ body.dark-theme .recipe-pdf-badge:hover {
     background: var(--color-background);
     color: var(--color-text);
     border: 1px solid var(--color-border);
-    padding: 4px 8px;
+    padding: var(--spacing-sm);
     border-radius: var(--radius-sm);
     font-size: 0.75rem;
     font-weight: var(--font-weight-semibold);
@@ -3337,7 +3337,7 @@ body.dark-theme .recipe-pdf-badge:hover {
         text-align: center;
         padding: var(--spacing-sm);
 
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         font-weight: var(--font-weight-medium);
     }
 

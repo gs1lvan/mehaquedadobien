@@ -1385,14 +1385,14 @@ class RecipeApp {
 
         filterChipsContainer.innerHTML = '';
 
-        // "Todas" chip
+        // "Limpiar" chip
         const allChip = document.createElement('button');
         allChip.className = 'filter-chip';
         if (this.activeFilters.size === 0) {
             allChip.classList.add('active');
         }
         allChip.dataset.category = 'all';
-        allChip.textContent = 'Todas';
+        allChip.textContent = 'Limpiar';
         filterChipsContainer.appendChild(allChip);
 
         // Get custom and predefined categories separately (only visible ones)
