@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<recipes>
+  <recipe id="recipe-1">
+    <name>Paella Valenciana</name>
+    <category>Arroces</category>
+    <totalTime>1h 30min</totalTime>
+    <author>Chef García</author>
+    <history>Receta tradicional valenciana transmitida de generación en generación</history>
+    <preparationMethod>Sofreír el pollo y conejo, añadir las verduras, incorporar el arroz y el caldo, cocinar a fuego medio hasta que el arroz esté en su punto</preparationMethod>
+    <ingredients>
+      <ingredient id="ing-1">
+        <name>Arroz</name>
+        <quantity>400</quantity>
+        <unit>g</unit>
+      </ingredient>
+      <ingredient id="ing-2">
+        <name>Pollo</name>
+        <quantity>500</quantity>
+        <unit>g</unit>
+      </ingredient>
+      <ingredient id="ing-3">
+        <name>Conejo</name>
+        <quantity>300</quantity>
+        <unit>g</unit>
+      </ingredient>
+      <ingredient id="ing-4">
+        <name>Judías verdes</name>
+        <quantity>200</quantity>
+        <unit>g</unit>
+      </ingredient>
+      <ingredient id="ing-5">
+        <name>Tomate</name>
+        <quantity>2</quantity>
+        <unit>unidades</unit>
+      </ingredient>
+    </ingredients>
+    <sequences>
+      <sequence>
+        <duration>15min</duration>
+        <description>Sofreír el pollo y el conejo hasta dorar</description>
+        <ingredientIds>
+          <ingredientId>ing-2</ingredientId>
+          <ingredientId>ing-3</ingredientId>
+        </ingredientIds>
+      </sequence>
+      <sequence>
+        <duration>10min</duration>
+        <description>Añadir las judías verdes y el tomate rallado</description>
+        <ingredientIds>
+          <ingredientId>ing-4</ingredientId>
+          <ingredientId>ing-5</ingredientId>
+        </ingredientIds>
+      </sequence>
+      <sequence>
+        <duration>20min</duration>
+        <description>Incorporar el arroz y el caldo, cocinar a fuego medio</description>
+        <ingredientIds>
+          <ingredientId>ing-1</ingredientId>
+        </ingredientIds>
+      </sequence>
+    </sequences>
+    <images>
+    </images>
+    <appliances>
+      <appliance>Paellera</appliance>
+      <appliance>Fuego</appliance>
+    </appliances>
+    <caravanFriendly value="false"/>
+    <hospitalFriendly value="false"/>
+    <menuFriendly value="true"/>
+  </recipe>
+
+  <recipe id="recipe-2">
+    <name>Ensalada César</name>
+    <category>Ensaladas</category>
+    <totalTime>20min</totalTime>
+    <author></author>
+    <history></history>
+    <preparationMethod>Mezclar la lechuga con el pollo, añadir los picatostes, el queso parmesano y la salsa césar</preparationMethod>
+    <ingredients>
+      <ingredient id="ing-6">
+        <name>Lechuga romana</name>
+        <quantity>1</quantity>
+        <unit>unidad</unit>
+      </ingredient>
+      <ingredient id="ing-7">
+        <name>Pechuga de pollo</name>
+        <quantity>200</quantity>
+        <unit>g</unit>
+      </ingredient>
+      <ingredient id="ing-8">
+        <name>Queso parmesano</name>
+        <quantity>50</quantity>
+        <unit>g</unit>
+      </ingredient>
+      <ingredient id="ing-9">
+        <name>Picatostes</name>
+        <quantity>100</quantity>
+        <unit>g</unit>
+      </ingredient>
+    </ingredients>
+    <sequences>
+      <sequence>
+        <duration>10min</duration>
+        <description>Cocinar la pechuga de pollo a la plancha</description>
+        <ingredientIds>
+          <ingredientId>ing-7</ingredientId>
+        </ingredientIds>
+      </sequence>
+      <sequence>
+        <duration>5min</duration>
+        <description>Mezclar todos los ingredientes con la salsa</description>
+        <ingredientIds>
+          <ingredientId>ing-6</ingredientId>
+          <ingredientId>ing-8</ingredientId>
+          <ingredientId>ing-9</ingredientId>
+        </ingredientIds>
+      </sequence>
+    </sequences>
+    <images>
+    </images>
+    <appliances>
+      <appliance>Plancha</appliance>
+    </appliances>
+    <caravanFriendly value="true"/>
+    <hospitalFriendly value="true"/>
+    <menuFriendly value="true"/>
+  </recipe>
+
+  <recipe id="recipe-3">
+    <name>Tarta de Chocolate</name>
+    <category>Postres</category>
+    <totalTime></totalTime>
+    <author>María López</author>
+    <history>Receta familiar de mi abuela</history>
+    <preparationMethod>Mezclar los ingredientes secos, añadir los húmedos, hornear a 180°C durante 35 minutos</preparationMethod>
+    <ingredients>
+      <ingredient id="ing-10">
+        <name>Harina</name>
+        <quantity>200</quantity>
+        <unit>g</unit>
+      </ingredient>
+      <ingredient id="ing-11">
+        <name>Chocolate negro</name>
+        <quantity>200</quantity>
+        <unit>g</unit>
+      </ingredient>
+      <ingredient id="ing-12">
+        <name>Huevos</name>
+        <quantity>3</quantity>
+        <unit>unidades</unit>
+      </ingredient>
+      <ingredient id="ing-13">
+        <name>Azúcar</name>
+        <quantity>150</quantity>
+        <unit>g</unit>
+      </ingredient>
+    </ingredients>
+    <sequences>
+      <sequence>
+        <duration>10min</duration>
+        <description>Derretir el chocolate al baño maría</description>
+        <ingredientIds>
+          <ingredientId>ing-11</ingredientId>
+        </ingredientIds>
+      </sequence>
+      <sequence>
+        <duration>5min</duration>
+        <description>Batir los huevos con el azúcar</description>
+        <ingredientIds>
+          <ingredientId>ing-12</ingredientId>
+          <ingredientId>ing-13</ingredientId>
+        </ingredientIds>
+      </sequence>
+      <sequence>
+        <duration>35min</duration>
+        <description>Mezclar todo, verter en molde y hornear</description>
+        <ingredientIds>
+          <ingredientId>ing-10</ingredientId>
+        </ingredientIds>
+      </sequence>
+    </sequences>
+    <images>
+    </images>
+    <appliances>
+      <appliance>Horno</appliance>
+      <appliance>Batidora</appliance>
+    </appliances>
+    <caravanFriendly value="false"/>
+    <hospitalFriendly value="false"/>
+    <menuFriendly value="true"/>
+  </recipe>
+
+  <recipe id="recipe-4">
+    <name>Gazpacho Andaluz</name>
+    <category>Sopas</category>
+    <totalTime>15min</totalTime>
+    <author>Chef García</author>
+    <history></history>
+    <preparationMethod>Triturar todos los ingredientes hasta obtener una textura suave, refrigerar antes de servir</preparationMethod>
+    <ingredients>
+      <ingredient id="ing-14">
+        <name>Tomates maduros</name>
+        <quantity>1</quantity>
+        <unit>kg</unit>
+      </ingredient>
+      <ingredient id="ing-15">
+        <name>Pepino</name>
+        <quantity>1</quantity>
+        <unit>unidad</unit>
+      </ingredient>
+      <ingredient id="ing-16">
+        <name>Pimiento verde</name>
+        <quantity>1</quantity>
+        <unit>unidad</unit>
+      </ingredient>
+      <ingredient id="ing-17">
+        <name>Ajo</name>
+        <quantity>2</quantity>
+        <unit>dientes</unit>
+      </ingredient>
+      <ingredient id="ing-18">
+        <name>Aceite de oliva</name>
+        <quantity>100</quantity>
+        <unit>ml</unit>
+      </ingredient>
+    </ingredients>
+    <sequences>
+      <sequence>
+        <duration>10min</duration>
+        <description>Triturar todos los ingredientes hasta obtener textura suave</description>
+        <ingredientIds>
+          <ingredientId>ing-14</ingredientId>
+          <ingredientId>ing-15</ingredientId>
+          <ingredientId>ing-16</ingredientId>
+          <ingredientId>ing-17</ingredientId>
+          <ingredientId>ing-18</ingredientId>
+        </ingredientIds>
+      </sequence>
+      <sequence>
+        <duration>2h</duration>
+        <description>Refrigerar antes de servir</description>
+        <ingredientIds>
+        </ingredientIds>
+      </sequence>
+    </sequences>
+    <images>
+    </images>
+    <appliances>
+      <appliance>Batidora</appliance>
+      <appliance>Nevera</appliance>
+    </appliances>
+    <caravanFriendly value="true"/>
+    <hospitalFriendly value="true"/>
+    <menuFriendly value="true"/>
+  </recipe>
+
+  <recipe id="recipe-5">
+    <name>Pasta Carbonara</name>
+    <category>Pasta</category>
+    <totalTime>25min</totalTime>
+    <author></author>
+    <history></history>
+    <preparationMethod></preparationMethod>
+    <ingredients>
+    </ingredients>
+    <sequences>
+    </sequences>
+    <images>
+    </images>
+    <appliances>
+    </appliances>
+    <caravanFriendly value="false"/>
+    <hospitalFriendly value="false"/>
+    <menuFriendly value="false"/>
+  </recipe>
+</recipes>

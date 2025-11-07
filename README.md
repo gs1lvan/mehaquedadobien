@@ -1,4 +1,4 @@
-# mehaquedadobien 🍳
+# mehaquedadobien 🍳 en español asi que el chat en español, gracias
 
 **Recetario Personal - Progressive Web App**
 
@@ -29,8 +29,16 @@ Una aplicación web moderna para gestionar tus recetas personales con funcionali
 |
 ## 📖 Documentación
 
+### ⭐ Empezar Aquí
+- **[RESUMEN-EJECUTIVO.md](RESUMEN-EJECUTIVO.md)** - Resumen ejecutivo del proyecto completo (aplicación + CMS)
+
+### � Índimce Completo
+- **[DOCUMENTACION-INDICE.md](DOCUMENTACION-INDICE.md)** - Índice completo de toda la documentación del proyecto
+
+### 📋 Documentos Principales
 - **[INFORME-TECNICO.md](INFORME-TECNICO.md)** - Documentación técnica completa
 - **[RESUMEN-CAMBIOS.md](RESUMEN-CAMBIOS.md)** - Historial de cambios implementados
+- **[QUE-HACE-CADA-SPEC.md](QUE-HACE-CADA-SPEC.md)** - Explicación simple de cada funcionalidad (12 specs)
 - **[test-xml-parsing.md](test-xml-parsing.md)** - Casos de prueba para validación de parsing XML
 - **[xml-constants.js](xml-constants.js)** - Constantes y helpers para formatos XML
 - **[docs/modal-triggers-examples.md](docs/modal-triggers-examples.md)** - Guía de uso del sistema de controles modales
@@ -49,6 +57,7 @@ Una aplicación web moderna para gestionar tus recetas personales con funcionali
 4. Cambio flexible entre categorías
 - **[QUE-HACE-CADA-SPEC.md](QUE-HACE-CADA-SPEC.md)** - QUE-HACE-CADA-SPEC
 - **[SECCIONES-WEB-COMPLETO_TECNICO.md](SECCIONES-WEB-COMPLETO_TECNICO.md)** - Documentación Completa y Técnica
+
 
 
 ## 🧪 Archivos de Prueba
@@ -88,7 +97,23 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 ## 🎨 Última Actualización
 
 **Fecha:** 7 de noviembre de 2025  
-**Cambio:** Añadidas nuevas acciones de cocina - Se han incorporado 2 nuevas acciones a la constante `COOKING_ACTIONS`:
+**Cambio:** Recipe Content Manager completado - Se ha implementado un CMS completo para gestión masiva de recetas:
+- ✅ **Sistema completo de gestión**: Edición individual, en lote, buscar y reemplazar
+- ✅ **Dashboard con estadísticas**: Total de recetas, categorías, porcentajes, recetas incompletas
+- ✅ **Búsqueda y filtrado avanzado**: Por nombre, categoría, autor, flags, estado
+- ✅ **Tabla ordenable**: Click en columnas para ordenar, selección múltiple
+- ✅ **Exportación**: XML y CSV con timestamp automático
+- ✅ **Historial y deshacer**: Últimos 50 cambios, Ctrl+Z para deshacer
+- ✅ **Atajos de teclado**: Ctrl+S (guardar), Ctrl+F (buscar), Escape (cerrar)
+- ✅ **Toast notifications**: 4 tipos de notificaciones visuales
+- ✅ **Backups automáticos**: Guardado en localStorage
+- ✅ **Modal de ayuda**: Guía completa de funcionalidades
+- 💡 **Archivos**: `recipe-manager.html`, `recipe-manager.js`, `RECIPE-MANAGER-README.md`
+- 📊 **Estadísticas**: ~1500 líneas de código, 40+ métodos, 5 modales
+- 🎯 **Estado**: 100% funcional y listo para usar
+
+**Fecha:** 7 de noviembre de 2025  
+**Cambio anterior:** Añadidas nuevas acciones de cocina - Se han incorporado 2 nuevas acciones a la constante `COOKING_ACTIONS`:
 - ✅ **sofreír** - Freír ligeramente en poco aceite
 - ✅ **cubrir** - Tapar con tapa o papel
 - 💡 **Total actual:** 29 acciones de cocina (antes: 27)
@@ -567,6 +592,27 @@ La aplicación utiliza un sistema robusto de importación XML con soporte para m
 1. Clona el repositorio
 2. Abre `index.html` en un navegador moderno
 3. ¡Listo! No requiere instalación de dependencias
+
+## 🛠️ Recipe Content Manager
+
+El proyecto incluye un **Recipe Content Manager** (CMS) standalone para gestión masiva de recetas:
+
+### Características del CMS
+- ✅ **Edición masiva** - Edita múltiples recetas simultáneamente
+- ✅ **Buscar y reemplazar** - Corrige datos en lote
+- ✅ **Filtrado avanzado** - Por categoría, autor, tiempo, flags
+- ✅ **Estadísticas** - Dashboard con métricas del recetario
+- ✅ **Detección de incompletas** - Identifica recetas sin autor, tiempo, ingredientes o imágenes
+- ✅ **Exportación** - XML y CSV
+- ✅ **Historial** - Deshacer cambios con Ctrl+Z
+- ✅ **Atajos de teclado** - Ctrl+S (guardar), Ctrl+F (buscar), Escape (cerrar)
+
+### Acceso
+Abre `recipe-manager.html` en tu navegador para usar el CMS.
+
+Ver documentación completa en [RECIPE-MANAGER-README.md](RECIPE-MANAGER-README.md)
+
+---
 
 ## 📄 Licencia
 

@@ -427,13 +427,205 @@ Usuario tiene archivo con 50 recetas:
 
 ---
 
+## ✅ 12. recipe-content-manager
+
+### ¿Qué hace?
+Sistema de gestión de contenido (CMS) standalone para edición masiva de recetas en formato XML.
+
+### ¿Cómo funciona?
+- Aplicación separada: `recipe-manager.html`
+- Carga archivos XML con todas las recetas
+- Permite editar múltiples recetas a la vez
+- Dashboard con estadísticas completas
+- Búsqueda y filtrado avanzado
+- Exportación a XML y CSV
+
+### Funcionalidades principales:
+
+#### 📊 Dashboard y Estadísticas
+- Total de recetas
+- Número de categorías
+- Porcentaje con autor
+- Porcentaje con imágenes
+- Recetas aptas para caravana/hospital
+- Lista de recetas incompletas (sin autor, tiempo, ingredientes o imágenes)
+
+#### 🔍 Búsqueda y Filtrado
+- Búsqueda en tiempo real por nombre
+- Filtros por categoría
+- Filtros por autor
+- Filtros por flags (caravana, hospital, menú)
+- Filtros de estado (sin autor, sin imágenes)
+- Combinación de múltiples filtros
+
+#### ✏️ Edición Individual
+- Modal completo para editar una receta
+- Todos los campos: nombre, categoría, tiempo, autor, historia, método
+- Flags: caravana, hospital, menú
+- Validación de campos obligatorios
+- Detección de nombres duplicados
+
+#### 📝 Edición en Lote (Batch Edit)
+- Seleccionar múltiples recetas con checkboxes
+- Actualizar campos en todas las seleccionadas:
+  - Autor
+  - Categoría
+  - Historia
+  - Tiempo total
+  - Flags (caravana, hospital, menú)
+- Modos de actualización:
+  - Sobrescribir todos los valores
+  - Solo actualizar si está vacío
+
+#### 🔎 Buscar y Reemplazar
+- Buscar texto en campos específicos:
+  - Nombre
+  - Autor
+  - Categoría
+  - Historia
+  - Método de preparación
+- Reemplazar en todas las recetas o solo seleccionadas
+- Opción case-sensitive
+- Vista previa de coincidencias
+
+#### 📋 Tabla Ordenable
+- Vista de tabla con todas las recetas
+- Columnas: Nombre, Categoría, Autor, Tiempo, Flags, Imágenes
+- Click en encabezados para ordenar (A-Z, Z-A)
+- Indicadores visuales de ordenamiento (↑ ↓)
+- Selección múltiple con checkboxes
+
+#### 💾 Exportación
+- **Descargar XML**: Genera archivo XML con todas las recetas actualizadas
+- **Exportar CSV**: Exporta a formato CSV para Excel
+- Nombres con timestamp automático: `recetas_2025-11-07_1430.xml`
+
+#### ⏮️ Historial y Deshacer
+- Guarda los últimos 50 cambios
+- Deshacer con botón o Ctrl+Z
+- Backups automáticos en localStorage (últimos 5)
+- Cada cambio incluye timestamp y descripción
+
+#### ⌨️ Atajos de Teclado
+- `Ctrl+S` / `Cmd+S` → Descargar XML
+- `Ctrl+Z` / `Cmd+Z` → Deshacer último cambio
+- `Ctrl+F` / `Cmd+F` → Enfocar búsqueda
+- `Escape` → Cerrar modales
+
+#### 🔔 Notificaciones
+- Toast notifications con 4 tipos:
+  - ✓ Éxito (verde)
+  - ✕ Error (rojo)
+  - ⚠ Advertencia (amarillo)
+  - ℹ Información (azul)
+- Auto-desaparecen después de 3 segundos
+- Botón para cerrar manualmente
+
+### Ejemplo de uso:
+
+#### Caso 1: Completar recetas sin autor
+```
+1. Cargar XML con 50 recetas
+2. Dashboard muestra: "15 recetas sin autor"
+3. Click en sección "Recetas Incompletas"
+4. Ve lista de 15 recetas sin autor
+5. Selecciona todas con checkbox
+6. Click en "Editar Seleccionadas"
+7. Marca "Actualizar Autor"
+8. Escribe "Chef García"
+9. Selecciona "Solo si está vacío"
+10. Click en "Aplicar Cambios"
+11. ✓ 15 recetas actualizadas
+```
+
+#### Caso 2: Corregir error de escritura
+```
+1. Cargar XML
+2. Click en "Buscar y Reemplazar"
+3. Campo: "Autor"
+4. Buscar: "Jhon"
+5. Reemplazar: "John"
+6. Click en "Vista Previa" → "3 coincidencias"
+7. Click en "Reemplazar"
+8. ✓ 3 reemplazos realizados
+```
+
+#### Caso 3: Cambiar categoría de múltiples recetas
+```
+1. Filtrar por categoría "Postres"
+2. Seleccionar 10 recetas
+3. Click en "Editar Seleccionadas"
+4. Marca "Actualizar Categoría"
+5. Selecciona "Dulces"
+6. Click en "Aplicar Cambios"
+7. ✓ 10 recetas actualizadas
+```
+
+#### Caso 4: Exportar recetas filtradas
+```
+1. Filtrar por "Apto para caravana"
+2. Se muestran 25 recetas
+3. Click en "Exportar CSV"
+4. Se descarga archivo con las 25 recetas
+5. Abrir en Excel para análisis
+```
+
+### ¿Para qué sirve?
+
+#### 🎯 Gestión masiva
+- Actualizar múltiples recetas a la vez
+- Corregir errores en lote
+- Completar información faltante
+- Estandarizar datos
+
+#### 📊 Análisis
+- Ver estadísticas del recetario
+- Identificar recetas incompletas
+- Analizar distribución por categorías
+- Detectar inconsistencias
+
+#### 🔧 Mantenimiento
+- Limpiar datos duplicados
+- Corregir errores de escritura
+- Estandarizar formatos
+- Validar información
+
+#### 💾 Backup y migración
+- Exportar todo el recetario
+- Hacer backups periódicos
+- Migrar entre dispositivos
+- Compartir colecciones
+
+### Archivos del CMS:
+- `recipe-manager.html` - Interfaz completa (~500 líneas)
+- `recipe-manager.js` - Lógica completa (~700 líneas)
+- `RECIPE-MANAGER-README.md` - Documentación detallada
+- `recetas-ejemplo.xml` - Archivo de prueba con 5 recetas
+
+### Acceso:
+Abre `recipe-manager.html` en tu navegador para usar el CMS.
+
+### Estado:
+✅ **100% COMPLETADO** - Todas las funcionalidades implementadas y funcionando.
+
+---
+
 ## Conclusión
 
-La aplicación tiene **11 specs** que añaden funcionalidades para:
+La aplicación tiene **12 specs** que añaden funcionalidades para:
 - ✅ Organizar recetas (categorías, filtros, vistas)
 - ✅ Compartir información (copiar, exportar)
 - ✅ Gestionar compras (listas)
 - ✅ Mostrar contenido (galerías)
 - ✅ Mejorar la interfaz (menú, navegación)
+- ✅ **Gestión masiva (CMS completo)**
 
-**9 están completamente funcionales** y **2 necesitan mejoras** (accesibilidad e importación masiva).
+**10 están completamente funcionales** y **2 necesitan mejoras** (accesibilidad e importación masiva).
+
+### 🆕 Novedad: Recipe Content Manager
+El CMS es una herramienta profesional para gestionar grandes cantidades de recetas. Ideal para:
+- Mantener un recetario con 50+ recetas
+- Corregir errores en lote
+- Completar información faltante
+- Hacer backups periódicos
+- Análisis y estadísticas del recetario
