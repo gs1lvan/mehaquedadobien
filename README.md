@@ -88,7 +88,23 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 ## 🎨 Última Actualización
 
 **Fecha:** 7 de noviembre de 2025  
-**Cambio:** Mejora de espaciado en modal de configuración - Se ha optimizado el espaciado entre secciones:
+**Cambio:** Añadidas nuevas acciones de cocina - Se han incorporado 2 nuevas acciones a la constante `COOKING_ACTIONS`:
+- ✅ **sofreír** - Freír ligeramente en poco aceite
+- ✅ **cubrir** - Tapar con tapa o papel
+- 💡 **Total actual:** 29 acciones de cocina (antes: 27)
+- 📍 **Ubicación:** `script.js` constante `COOKING_ACTIONS`
+
+**Fecha:** 7 de noviembre de 2025  
+**Cambio anterior:** Refactorización de acciones de cocina - Se han movido las acciones de cocina de HTML a JavaScript para mayor consistencia:
+- ✅ **Centralización:** Las 27 acciones de cocina ahora están definidas en la constante `COOKING_ACTIONS` en `script.js`
+- ✅ **Renderizado dinámico:** Los botones se generan automáticamente con `renderCookingActionButtons()`
+- ✅ **Consistencia arquitectónica:** Mismo patrón que las categorías (definidas en JS, renderizadas dinámicamente)
+- ✅ **Mantenibilidad:** Fácil añadir, modificar o categorizar acciones desde un solo lugar
+- ✅ **Escalabilidad:** Preparado para futuras mejoras (acciones personalizadas, internacionalización)
+- 💡 **Ubicación:** `script.js` líneas 95-142 (constante) y función `renderCookingActionButtons()`
+
+**Fecha:** 7 de noviembre de 2025  
+**Cambio anterior:** Mejora de espaciado en modal de configuración - Se ha optimizado el espaciado entre secciones:
 - ✅ **Espaciado aumentado:** Los tres divs principales del modal-body ahora tienen mayor separación (var(--spacing-md))
 - ✅ **Mejor jerarquía visual:** Mayor claridad entre las secciones de Libro/Cocinoteca, Categorías/Tema e Importar/Exportar
 - ✅ **Legibilidad mejorada:** El espaciado adicional facilita la distinción entre grupos funcionales
