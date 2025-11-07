@@ -1189,6 +1189,14 @@ class RecipeApp {
                     closeMenu();
                 }
             });
+
+            // Close menu with Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && menuDropdown.classList.contains('active')) {
+                    closeMenu();
+                    menuBtn.focus(); // Return focus to menu button
+                }
+            });
         }
 
         // Theme toggle button (in settings modal)
@@ -8743,8 +8751,39 @@ class RecipeApp {
         try {
             console.log('[Import] Starting XML import:', file.name);
 
-            // Import recipes using XMLImporter
-            const result = await XMLImporter.importFromFile(file);
+            // Show progress modal for multiple recipes
+            const progressModal = document.getElementById('import-progress-modal');
+            const progressBar = document.getElementById('import-progress-bar');
+            const progressText = document.getElementById('import-progress-text');
+            const progressDetails = document.getElementById('import-progress-details');
+
+            // Progress callback
+            const onProgress = (progress) => {
+                if (progressModal && progressBar && progressText) {
+                    // Show modal if not visible
+                    if (progressModal.classList.contains('hidden')) {
+                        progressModal.classList.remove('hidden');
+                    }
+
+                    // Update progress bar
+                    progressBar.style.width = `${progress.percentage}%`;
+
+                    // Update text
+                    progressText.textContent = `Importando ${progress.current} de ${progress.total} recetas...`;
+                    
+                    if (progressDetails) {
+                        progressDetails.textContent = progress.recipeName || '';
+                    }
+                }
+            };
+
+            // Import recipes using XMLImporter with progress callback
+            const result = await XMLImporter.importFromFile(file, onProgress);
+
+            // Hide progress modal
+            if (progressModal) {
+                progressModal.classList.add('hidden');
+            }
 
             console.log('[Import] Import completed:', result.summary);
 

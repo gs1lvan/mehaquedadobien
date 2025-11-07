@@ -1734,9 +1734,10 @@ class XMLImporter {
      * Import recipes from XML file
      * Requirements: 1.2, 4.1
      * @param {File} file - XML file to import
+     * @param {Function} onProgress - Optional progress callback
      * @returns {Promise<Object>} Import result with successful and failed recipes
      */
-    static async importFromFile(file) {
+    static async importFromFile(file, onProgress = null) {
         try {
             // Validate file
             this.validateFile(file);
@@ -1744,8 +1745,8 @@ class XMLImporter {
             // Read file content
             const xmlString = await this.readFileContent(file);
 
-            // Parse XML and import recipes
-            return await this.parseXMLString(xmlString);
+            // Parse XML and import recipes with progress callback
+            return await this.parseXMLString(xmlString, onProgress);
 
         } catch (error) {
             console.error('[XMLImporter] Error importing from file:', error);
@@ -1828,9 +1829,10 @@ class XMLImporter {
      * Parse XML string and extract recipes
      * Requirements: 1.3, 1.4, 4.2
      * @param {string} xmlString - XML content as string
+     * @param {Function} onProgress - Optional progress callback (current, total, percentage)
      * @returns {Promise<Object>} Import result
      */
-    static async parseXMLString(xmlString) {
+    static async parseXMLString(xmlString, onProgress = null) {
         try {
             // Parse XML
             const parser = new DOMParser();
@@ -1885,6 +1887,18 @@ class XMLImporter {
                         error: error.message
                     });
                     results.summary.errors++;
+                }
+
+                // Call progress callback if provided
+                if (onProgress && typeof onProgress === 'function') {
+                    const current = i + 1;
+                    const percentage = Math.round((current / recipeElements.length) * 100);
+                    onProgress({
+                        current,
+                        total: recipeElements.length,
+                        percentage,
+                        recipeName: this.extractRecipeName(recipeElements[i]) || `Receta ${i + 1}`
+                    });
                 }
             }
 
