@@ -949,16 +949,11 @@
                 <!-- Items Section -->
                 <div class="form-group">
                     <label>Elementos del Menú</label>
-                    <div class="menu-buttons">
-                        <button id="add-menu-item-btn" class="modal-trigger modal-trigger--action modal-trigger--secondary">
-                            <span class="option-icon"><i class="fa-solid fa-plus"></i></span>
-                            <span class="option-text">Añadir Elemento</span>
-                        </button>
-                        <button id="save-menu-btn" class="modal-trigger modal-trigger--action modal-trigger--primary">
-                            <span class="option-icon"><i class="fa-solid fa-floppy-disk"></i></span>
-                            <span class="option-text">Guardar Menú</span>
-                        </button>
-                    </div>
+                    <!-- Botón Añadir Elemento (oculto por defecto, se muestra solo en modo edición) -->
+                    <button id="add-menu-item-btn" class="modal-trigger modal-trigger--action modal-trigger--secondary hidden">
+                        <span class="option-icon"><i class="fa-solid fa-plus"></i></span>
+                        <span class="option-text">Añadir Elemento</span>
+                    </button>
                     <!-- New items container (appears right below the buttons) -->
                     <div id="menu-new-items-container">
                         <!-- New items will be added here -->
@@ -968,6 +963,13 @@
                         <!-- Existing items will be added here -->
                     </div>
                 </div>
+            </div>
+
+            <!-- Footer sticky con botón Guardar -->
+            <div class="modal-footer" style="position: sticky; bottom: 0; background: var(--color-background); border-top: 1px solid var(--color-border); padding: var(--spacing-md); z-index: 10;">
+                <button id="save-menu-btn" class="btn-primary" style="width: 100%;">
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar Menú
+                </button>
             </div>
         </div>
     </div>
@@ -1101,6 +1103,96 @@
             </div>
         </div>
     </div>
+
+    <!-- ============================================ -->
+    <!-- Menu Recipe Selector Modal -->
+    <!-- ============================================ -->
+    <div id="menu-recipe-selector-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="menu-recipe-selector-title">Seleccionar Receta</h2>
+                <button id="close-menu-recipe-selector-modal" class="btn-icon">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <p class="modal-description" id="menu-recipe-selector-description">
+                    Selecciona una receta de la categoría:
+                </p>
+
+                <div id="menu-recipe-list" class="menu-recipe-list">
+                    <!-- Recipes will be rendered here dynamically -->
+                </div>
+
+                <div id="menu-recipe-empty" class="empty-state hidden">
+                    <p>❌ No hay recetas disponibles en esta categoría</p>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button id="cancel-recipe-selection-btn" class="btn-secondary">Cancelar</button>
+                <button id="confirm-recipe-selection-btn" class="btn-primary" disabled>Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Estilos para la lista de recetas en la modal */
+        .menu-recipe-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .menu-recipe-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border: 2px solid var(--color-border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .menu-recipe-item:hover {
+            border-color: var(--color-primary);
+            background: var(--color-background-secondary);
+        }
+
+        .menu-recipe-item.selected {
+            border-color: var(--color-primary);
+            background: var(--color-primary-light);
+        }
+
+        .menu-recipe-item-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: var(--color-background-secondary);
+        }
+
+        .menu-recipe-item-info {
+            flex: 1;
+        }
+
+        .menu-recipe-item-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .menu-recipe-item-category {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+        }
+    </style>
+    <!-- ============================================ -->
+    <!-- FIN Menu Recipe Selector Modal -->
+    <!-- ============================================ -->
 
     <!-- Recipe Options Modal -->
     <div id="recipe-options-modal" class="modal hidden">
@@ -1297,6 +1389,95 @@
         
         #import-progress-details.updating {
             animation: fadeIn 0.2s ease;
+        }
+    </style>
+
+    <!-- Menu Items Responsive Styles -->
+    <style>
+        /* Menu item row - Base styles */
+        .menu-item-row {
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        /* Desktop and Tablet (>= 768px) */
+        @media (min-width: 768px) {
+            .menu-item-row {
+                display: grid;
+                grid-template-columns: 120px 1fr 1fr;
+                gap: 16px;
+                padding: 12px;
+                align-items: start;
+            }
+        }
+
+        /* Mobile (< 768px) */
+        @media (max-width: 767px) {
+            .menu-item-row {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                padding: 8px;
+            }
+        }
+
+        /* Day column */
+        .menu-day-column {
+            font-weight: 600;
+            color: var(--color-text);
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 767px) {
+            .menu-day-column {
+                font-size: 0.875rem;
+                margin-bottom: 4px;
+            }
+        }
+
+        /* Meal columns (lunch/dinner) */
+        .menu-meal-column {
+            color: var(--color-text);
+            font-weight: normal;
+            font-size: 0.875rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 767px) {
+            .menu-meal-column {
+                font-size: 0.8125rem;
+                white-space: normal;
+            }
+        }
+
+        /* Meals container for mobile */
+        .menu-meals-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        /* Meal row for mobile (with label) */
+        .menu-meal-row {
+            display: flex;
+            gap: 8px;
+            align-items: start;
+        }
+
+        .menu-meal-label {
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            min-width: 60px;
+            flex-shrink: 0;
+        }
+
+        /* Header adjustments */
+        @media (max-width: 767px) {
+            .menu-item-row + .menu-item-row {
+                /* Hide header in mobile */
+            }
         }
     </style>
 

@@ -430,6 +430,54 @@ Todos los modales tienen la clase `modal hidden` y se muestran al activarse:
 | `menu-category-selector-modal` | Click en seleccionar categorías |
 | `recipe-options-modal` | Click en opciones de receta |
 | `settings-modal` | Click en "Configuración" |
+| `import-progress-modal` | Durante importación de XML |
+
+### 📊 Modal de Progreso de Importación
+**ID técnico:** `import-progress-modal`  
+**Ubicación en código:** `index.html` líneas ~1255-1285
+
+#### Elementos del modal:
+- **Overlay:** Fondo oscuro semitransparente (z-index: 10001)
+- **Header:** Título "Importando Recetas" con spinner animado
+- **Texto de progreso:** `import-progress-text` - "Importando X de Y recetas"
+- **Barra de progreso:** `import-progress-bar` - Barra animada con gradiente
+- **Porcentaje:** `import-progress-percentage` - "X%" dentro de la barra
+- **Detalles:** `import-progress-details` - Nombre de la receta actual con emoji 📝
+
+#### Estilos personalizables:
+```css
+/* Modal principal */
+#import-progress-modal {
+    z-index: 10000;
+}
+
+/* Barra de progreso */
+#import-progress-bar {
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
+    transition: width 0.3s ease;
+}
+
+/* Detalles de receta actual */
+#import-progress-details {
+    font-size: 1.1rem;
+    color: #000000;
+    background: #f0f0f0;
+    border: 2px solid #e0e0e0;
+}
+```
+
+#### Flujo de visualización:
+1. Se muestra al iniciar importación XML
+2. Actualiza en tiempo real cada 50ms por receta
+3. Muestra "💾 Finalizando importación" al guardar
+4. Se oculta después de renderizar las recetas
+5. Aparece mensaje de éxito verde
+
+#### Lógica JavaScript:
+- **Función:** `handleXMLFileSelected()` en `script.js` líneas ~8820-8870
+- **Callback de progreso:** Actualiza UI en cada receta procesada
+- **Delay artificial:** 50ms entre recetas para visualización
+- **Delay final:** Se mantiene visible hasta renderizar recetas
 
 ## Elementos Condicionales
 

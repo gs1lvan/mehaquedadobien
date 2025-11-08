@@ -1667,27 +1667,66 @@ class RecipeApp {
             );
             const hasRecipes = menuRecipes.length > 0;
 
-            // Show visual feedback that category was selected
-            const footer = document.getElementById('category-selector-footer');
-            const viewRecipesBtn = document.getElementById('category-view-recipes-btn');
-            const confirmBtn = document.getElementById('category-confirm-btn');
+            // NEW FLOW: Automatically open recipes modal if category has recipes
+            if (hasRecipes) {
+                // Close category selector modal
+                const categorySelectorModal = document.getElementById('category-selector-modal');
+                if (categorySelectorModal) {
+                    categorySelectorModal.classList.add('hidden');
+                }
 
-            if (footer && footer.style.display === 'none') {
-                footer.style.display = 'flex';
+                // ============================================
+                // OPCIÓN A: Usar <select> dropdown (COMENTADO)
+                // ============================================
+                /*
+                // Convert input to recipe selector dropdown and open it automatically
+                setTimeout(() => {
+                    const selectElement = this.convertInputToRecipeSelector(this.currentMenuCategoryInput, menuRecipes);
+
+                    // Automatically open the dropdown
+                    if (selectElement) {
+                        // Focus and trigger click to open dropdown
+                        selectElement.focus();
+                        // Use a small delay to ensure the select is rendered
+                        setTimeout(() => {
+                            // Trigger the dropdown to open
+                            selectElement.click();
+                            // Alternative method for some browsers
+                            if (selectElement.showPicker) {
+                                selectElement.showPicker();
+                            }
+                        }, 50);
+                    }
+
+                    // Clear references after conversion
+                    this.pendingMenuInput = null;
+                    this.currentMenuCategoryInput = null;
+                }, 100);
+                */
+
+                // ============================================
+                // OPCIÓN B: Usar modal personalizada (ACTIVA)
+                // ============================================
+                setTimeout(() => {
+                    this.openMenuRecipeSelectorModal(this.currentMenuCategoryInput, menuRecipes, category);
+                }, 100);
+            } else {
+                // No recipes: Set category value and close modal
+                if (category) {
+                    this.currentMenuCategoryInput.value = `${category.emoji} ${category.name}`;
+                    this.currentMenuCategoryInput.dataset.categoryId = categoryId;
+                }
+
+                // Close category selector modal
+                const categorySelectorModal = document.getElementById('category-selector-modal');
+                if (categorySelectorModal) {
+                    categorySelectorModal.classList.add('hidden');
+                }
+
+                // Clear references
+                this.pendingMenuInput = null;
+                this.currentMenuCategoryInput = null;
             }
-
-            // Enable/disable buttons based on whether category has recipes
-            if (viewRecipesBtn) {
-                viewRecipesBtn.disabled = !hasRecipes; // Disabled if no recipes
-            }
-            if (confirmBtn) {
-                confirmBtn.disabled = false; // Always enabled
-            }
-
-            // DON'T clear currentMenuCategoryInput here - keep it so user can change selection
-            // It will be cleared when modal closes
-
-            // Don't close modal yet - let user choose to see recipes or finish
         } else {
             // Update recipe form
             const categoryInput = document.getElementById('recipe-category');
@@ -9816,15 +9855,21 @@ class RecipeApp {
         const headerDiv = document.createElement('div');
         headerDiv.style.cssText = `
             display: grid;
-            grid-template-columns: 150px 1fr 1fr;
-            gap: 16px;
-            padding: 12px;
+            grid-template-columns: 100px 1fr 1fr;
+            gap: 12px;
+            padding: 8px;
             background: var(--color-background-secondary);
             border-bottom: 2px solid var(--color-border);
             font-weight: 600;
             font-size: 0.875rem;
             color: var(--color-text-secondary);
         `;
+
+        // Responsive adjustments for mobile
+        if (window.innerWidth < 768) {
+            // Hide header in mobile since we have inline labels
+            headerDiv.style.display = 'none';
+        }
 
         const dayHeader = document.createElement('div');
         dayHeader.textContent = 'Día';
@@ -9844,35 +9889,32 @@ class RecipeApp {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'menu-item-row';
             itemDiv.dataset.itemId = item.id;
-            itemDiv.style.cssText = `
-                display: grid;
-                grid-template-columns: 150px 1fr 1fr;
-                gap: 16px;
-                padding: 12px;
-                border-bottom: 1px solid var(--color-border);
-                align-items: start;
-            `;
 
             // Day column
             const dayColumn = document.createElement('div');
-            dayColumn.style.cssText = `
-                font-weight: 600;
-                color: var(--color-text);
-            `;
+            dayColumn.className = 'menu-day-column';
             dayColumn.textContent = item.name;
+
+            // Helper function to truncate text
+            const truncateText = (text, maxLength = 30) => {
+                if (text && text.length > maxLength) {
+                    return text.substring(0, maxLength) + '...';
+                }
+                return text;
+            };
 
             // Lunch column
             const lunchColumn = document.createElement('div');
-            lunchColumn.style.cssText = `
-                color: var(--color-text);
-            `;
+            lunchColumn.className = 'menu-meal-column';
 
             // Check if using new format (lunch/dinner) or old format (quantity)
             if (item.lunch && item.lunch !== 'Sin receta') {
-                lunchColumn.textContent = item.lunch;
+                lunchColumn.textContent = truncateText(item.lunch);
+                lunchColumn.title = item.lunch; // Show full text on hover
             } else if (item.quantity && item.quantity !== 'Sin receta') {
                 // Old format - show as lunch
-                lunchColumn.textContent = item.quantity;
+                lunchColumn.textContent = truncateText(item.quantity);
+                lunchColumn.title = item.quantity;
             } else {
                 lunchColumn.textContent = '-';
                 lunchColumn.style.color = 'var(--color-text-secondary)';
@@ -9880,20 +9922,50 @@ class RecipeApp {
 
             // Dinner column
             const dinnerColumn = document.createElement('div');
-            dinnerColumn.style.cssText = `
-                color: var(--color-text);
-            `;
+            dinnerColumn.className = 'menu-meal-column';
 
             if (item.dinner && item.dinner !== 'Sin receta') {
-                dinnerColumn.textContent = item.dinner;
+                dinnerColumn.textContent = truncateText(item.dinner);
+                dinnerColumn.title = item.dinner; // Show full text on hover
             } else {
                 dinnerColumn.textContent = '-';
                 dinnerColumn.style.color = 'var(--color-text-secondary)';
             }
 
-            itemDiv.appendChild(dayColumn);
-            itemDiv.appendChild(lunchColumn);
-            itemDiv.appendChild(dinnerColumn);
+            // Assemble based on screen size
+            if (window.innerWidth < 768) {
+                // Mobile: Day first, then meals in a flex container
+                const mealsContainer = document.createElement('div');
+                mealsContainer.className = 'menu-meals-container';
+
+                // Add labels for mobile
+                const lunchRow = document.createElement('div');
+                lunchRow.className = 'menu-meal-row';
+                const lunchLabel = document.createElement('span');
+                lunchLabel.className = 'menu-meal-label';
+                lunchLabel.textContent = 'Comida:';
+                lunchRow.appendChild(lunchLabel);
+                lunchRow.appendChild(lunchColumn);
+
+                const dinnerRow = document.createElement('div');
+                dinnerRow.className = 'menu-meal-row';
+                const dinnerLabel = document.createElement('span');
+                dinnerLabel.className = 'menu-meal-label';
+                dinnerLabel.textContent = 'Cena:';
+                dinnerRow.appendChild(dinnerLabel);
+                dinnerRow.appendChild(dinnerColumn);
+
+                mealsContainer.appendChild(lunchRow);
+                mealsContainer.appendChild(dinnerRow);
+
+                itemDiv.appendChild(dayColumn);
+                itemDiv.appendChild(mealsContainer);
+            } else {
+                // Desktop: Grid layout
+                itemDiv.appendChild(dayColumn);
+                itemDiv.appendChild(lunchColumn);
+                itemDiv.appendChild(dinnerColumn);
+            }
 
             container.appendChild(itemDiv);
         });
@@ -10340,8 +10412,19 @@ class RecipeApp {
         const confirmBtn = document.getElementById('category-confirm-btn');
         if (confirmBtn) {
             confirmBtn.onclick = () => {
-                // If user confirms without selecting a recipe, clear the input
-                if (this.currentMenuCategoryInput && !this.currentMenuCategoryInput.value) {
+                // If user selected a category (stored in dataset), use it
+                if (this.currentMenuCategoryInput && this.currentMenuCategoryInput.dataset.categoryId) {
+                    const categoryId = this.currentMenuCategoryInput.dataset.categoryId;
+                    const category = this.categoryManager.getCategoryById(categoryId);
+
+                    if (category) {
+                        // Set the category name as the value (without recipe)
+                        this.currentMenuCategoryInput.value = `${category.emoji} ${category.name}`;
+                        // Keep the categoryId in dataset for future reference
+                        this.currentMenuCategoryInput.dataset.categoryId = categoryId;
+                    }
+                } else if (this.currentMenuCategoryInput && !this.currentMenuCategoryInput.value) {
+                    // If no category selected, clear the input
                     this.currentMenuCategoryInput.placeholder = 'Comida (opcional)';
                     delete this.currentMenuCategoryInput.dataset.categoryId;
                 }
@@ -10571,9 +10654,10 @@ class RecipeApp {
 
     /**
      * Convert input to recipe selector dropdown
+     * @returns {HTMLSelectElement} The created select element
      */
     convertInputToRecipeSelector(inputElement, recipes) {
-        if (!inputElement) return;
+        if (!inputElement) return null;
 
         // Create select element
         const select = document.createElement('select');
@@ -10620,6 +10704,168 @@ class RecipeApp {
 
         // Check if save button should be shown after replacement
         this.checkAndShowSaveButton();
+
+        // Return the select element
+        return select;
+    }
+
+    // ============================================
+    // FUNCIÓN: openMenuRecipeSelectorModal (ACTIVA)
+    // Muestra modal personalizada para seleccionar recetas
+    // ============================================
+    openMenuRecipeSelectorModal(inputElement, recipes, category) {
+        const modal = document.getElementById('menu-recipe-selector-modal');
+        if (!modal) {
+            console.error('Modal menu-recipe-selector-modal not found');
+            return;
+        }
+
+        // Store reference
+        this.currentMenuRecipeInput = inputElement;
+        this.selectedRecipeId = null;
+
+        // Update modal title
+        const title = document.getElementById('menu-recipe-selector-title');
+        if (title && category) {
+            title.textContent = `${category.emoji} ${category.name}`;
+        }
+
+        // Render recipes
+        const recipeList = document.getElementById('menu-recipe-list');
+        const emptyState = document.getElementById('menu-recipe-empty');
+        const confirmBtn = document.getElementById('confirm-recipe-selection-btn');
+
+        if (recipes.length === 0) {
+            if (recipeList) recipeList.classList.add('hidden');
+            if (emptyState) emptyState.classList.remove('hidden');
+            if (confirmBtn) confirmBtn.disabled = true;
+        } else {
+            if (recipeList) {
+                recipeList.classList.remove('hidden');
+                recipeList.innerHTML = '';
+
+                recipes.forEach(recipe => {
+                    const item = document.createElement('div');
+                    item.className = 'menu-recipe-item';
+                    item.dataset.recipeId = recipe.id;
+
+                    // Image
+                    const img = document.createElement('img');
+                    img.className = 'menu-recipe-item-image';
+
+                    // Get the main image (first one) or use placeholder
+                    const placeholderSvg = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="60" height="60"%3E%3Crect fill="%23f0f0f0" width="60" height="60"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" font-size="24"%3E🍽️%3C/text%3E%3C/svg%3E';
+
+                    if (recipe.images && recipe.images.length > 0) {
+                        // Images are MediaFile objects with .data property containing base64
+                        const firstImage = recipe.images[0];
+                        img.src = firstImage.data || firstImage; // Support both MediaFile objects and direct base64
+                        // Fallback to placeholder if image fails to load
+                        img.onerror = () => {
+                            img.src = placeholderSvg;
+                        };
+                    } else {
+                        img.src = placeholderSvg;
+                    }
+
+                    img.alt = recipe.name;
+                    img.loading = 'lazy'; // Lazy loading for better performance
+
+                    // Info
+                    const info = document.createElement('div');
+                    info.className = 'menu-recipe-item-info';
+
+                    // Name
+                    const name = document.createElement('div');
+                    name.className = 'menu-recipe-item-name';
+                    name.textContent = recipe.name;
+
+                    const categoryLabel = document.createElement('div');
+                    categoryLabel.className = 'menu-recipe-item-category';
+                    categoryLabel.textContent = this.getCategoryLabel(recipe.category);
+
+                    info.appendChild(name);
+                    info.appendChild(categoryLabel);
+
+                    item.appendChild(img);
+                    item.appendChild(info);
+
+                    // Click handler
+                    item.onclick = () => {
+                        // Remove selected from all
+                        recipeList.querySelectorAll('.menu-recipe-item').forEach(i => {
+                            i.classList.remove('selected');
+                        });
+                        // Add selected to this
+                        item.classList.add('selected');
+                        this.selectedRecipeId = recipe.id;
+                        // Enable confirm button
+                        if (confirmBtn) confirmBtn.disabled = false;
+                    };
+
+                    // Double click handler - same as confirm button
+                    item.ondblclick = () => {
+                        // Select the recipe first
+                        this.selectedRecipeId = recipe.id;
+
+                        // Execute confirm action
+                        if (this.currentMenuRecipeInput) {
+                            // Set recipe name in input
+                            this.currentMenuRecipeInput.value = recipe.name;
+                            this.currentMenuRecipeInput.dataset.recipeId = recipe.id;
+                            this.currentMenuRecipeInput.dataset.categoryId = recipe.category;
+                        }
+
+                        // Close modal
+                        modal.classList.add('hidden');
+                        this.currentMenuRecipeInput = null;
+                        this.selectedRecipeId = null;
+
+                        // Show save button
+                        this.checkAndShowSaveButton();
+                    };
+
+                    recipeList.appendChild(item);
+                });
+            }
+            if (emptyState) emptyState.classList.add('hidden');
+        }
+
+        // Show modal
+        modal.classList.remove('hidden');
+
+        // Setup close handlers
+        const closeBtn = document.getElementById('close-menu-recipe-selector-modal');
+        const cancelBtn = document.getElementById('cancel-recipe-selection-btn');
+        const overlay = modal.querySelector('.modal-overlay');
+
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            this.currentMenuRecipeInput = null;
+            this.selectedRecipeId = null;
+        };
+
+        if (closeBtn) closeBtn.onclick = closeModal;
+        if (cancelBtn) cancelBtn.onclick = closeModal;
+        if (overlay) overlay.onclick = closeModal;
+
+        // Confirm button
+        if (confirmBtn) {
+            confirmBtn.onclick = () => {
+                if (this.selectedRecipeId && this.currentMenuRecipeInput) {
+                    const selectedRecipe = recipes.find(r => r.id === this.selectedRecipeId);
+                    if (selectedRecipe) {
+                        // Set recipe name in input
+                        this.currentMenuRecipeInput.value = selectedRecipe.name;
+                        this.currentMenuRecipeInput.dataset.recipeId = selectedRecipe.id;
+                        this.currentMenuRecipeInput.dataset.categoryId = selectedRecipe.category;
+                    }
+                }
+                closeModal();
+                // Show save button
+                this.checkAndShowSaveButton();
+            };
+        }
     }
 
     /**
@@ -10659,9 +10905,25 @@ class RecipeApp {
         // Set mode
         this.currentMenuId = menuId;
 
+        // Get add element button
+        const addElementBtn = document.getElementById('add-menu-item-btn');
+        console.log('[Menu Form] Add element button found:', !!addElementBtn);
+        if (addElementBtn) {
+            console.log('[Menu Form] Button classes before:', addElementBtn.className);
+            console.log('[Menu Form] Button display before:', window.getComputedStyle(addElementBtn).display);
+        }
+
         if (menuId) {
             // Edit mode
             title.textContent = 'Editar Menú';
+            console.log('[Menu Form] Mode: EDIT');
+
+            // Show "Añadir Elemento" button in edit mode
+            if (addElementBtn) {
+                addElementBtn.style.removeProperty('display');
+                console.log('[Menu Form] Removed display property');
+                console.log('[Menu Form] Button display after:', window.getComputedStyle(addElementBtn).display);
+            }
 
             // Load menu data
             const menu = this.getMenuById(menuId);
@@ -10681,6 +10943,14 @@ class RecipeApp {
         } else {
             // Create mode
             title.textContent = 'Nuevo Menú';
+            console.log('[Menu Form] Mode: CREATE');
+
+            // Hide "Añadir Elemento" button in create mode
+            if (addElementBtn) {
+                addElementBtn.style.setProperty('display', 'none', 'important');
+                console.log('[Menu Form] Set display to none with !important');
+                console.log('[Menu Form] Button display after:', window.getComputedStyle(addElementBtn).display);
+            }
 
             // Add 7 days automatically (Monday to Sunday)
             const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -10734,6 +11004,11 @@ class RecipeApp {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'menu-item-input';
         if (item) itemDiv.dataset.itemId = item.id;
+
+        // Add separator border between days
+        itemDiv.style.borderBottom = '1px solid var(--color-border)';
+        itemDiv.style.paddingBottom = '12px';
+        itemDiv.style.marginBottom = '12px';
 
         if (isExisting) {
             itemDiv.classList.add('existing-item');
