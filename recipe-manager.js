@@ -3,6 +3,8 @@
  * Sistema de gestión de contenido para recetas en formato XML
  */
 
+// PREDEFINED_CATEGORY_IDS is now imported from categories.js
+
 class RecipeContentManager {
     constructor() {
         // State
@@ -12,6 +14,7 @@ class RecipeContentManager {
         this.history = [];
         this.backups = [];
         this.currentFile = null;
+        this.hasUnsavedChanges = false;
         
         // Filters
         this.filters = {
@@ -108,6 +111,16 @@ class RecipeContentManager {
             this.applyFilters();
         });
 
+        document.getElementById('filter-hospital').addEventListener('change', (e) => {
+            this.filters.hospital = e.target.checked;
+            this.applyFilters();
+        });
+
+        document.getElementById('filter-menu').addEventListener('change', (e) => {
+            this.filters.menu = e.target.checked;
+            this.applyFilters();
+        });
+
         document.getElementById('clear-filters').addEventListener('click', () => {
             this.clearFilters();
         });
@@ -118,7 +131,13 @@ class RecipeContentManager {
         });
 
         document.getElementById('select-all-btn').addEventListener('click', () => {
-            this.selectAll(true);
+            // Toggle: if all are selected, deselect all; otherwise select all
+            const allSelected = this.filteredRecipes.length > 0 && 
+                               this.filteredRecipes.every(r => this.selectedRecipes.has(r.id));
+            this.selectAll(!allSelected);
+            // Update checkbox state
+            const checkbox = document.getElementById('select-all-checkbox');
+            if (checkbox) checkbox.checked = !allSelected;
         });
 
         // Batch edit
@@ -126,21 +145,21 @@ class RecipeContentManager {
             this.openBatchEditModal();
         });
 
-        // Actions
-        document.getElementById('undo-btn').addEventListener('click', () => {
-            this.undo();
-        });
-
-        document.getElementById('export-csv-btn').addEventListener('click', () => {
-            this.exportToCSV();
-        });
-
-        document.getElementById('download-xml-btn').addEventListener('click', () => {
+        // Actions - Header buttons only
+        document.getElementById('download-xml-btn-header').addEventListener('click', () => {
             this.downloadXML();
         });
 
-        document.getElementById('find-replace-btn').addEventListener('click', () => {
+        document.getElementById('find-replace-btn-header').addEventListener('click', () => {
             this.openFindReplaceModal();
+        });
+
+        document.getElementById('new-recipe-btn-header').addEventListener('click', () => {
+            this.createNewRecipe();
+        });
+
+        document.getElementById('duplicate-btn-header').addEventListener('click', () => {
+            this.duplicateSelectedRecipes();
         });
 
         // Batch edit modal
@@ -182,9 +201,21 @@ class RecipeContentManager {
             let aVal = a[field] || '';
             let bVal = b[field] || '';
 
-            // Convert to lowercase for string comparison
-            if (typeof aVal === 'string') aVal = aVal.toLowerCase();
-            if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+            // Special handling for totalTime - convert to minutes for proper sorting
+            if (field === 'totalTime') {
+                aVal = this.timeToMinutes(aVal);
+                bVal = this.timeToMinutes(bVal);
+            }
+            // Special handling for array fields - sort by length
+            else if (field === 'ingredients' || field === 'sequences' || field === 'appliances') {
+                aVal = Array.isArray(a[field]) ? a[field].length : 0;
+                bVal = Array.isArray(b[field]) ? b[field].length : 0;
+            }
+            else {
+                // Convert to lowercase for string comparison
+                if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+                if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+            }
 
             if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
             if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
@@ -202,22 +233,50 @@ class RecipeContentManager {
         this.renderTable();
     }
 
+    timeToMinutes(timeStr) {
+        if (!timeStr) return 0;
+        const time = this.parseTimeString(timeStr);
+        const hours = parseInt(time.hours) || 0;
+        const minutes = parseInt(time.minutes) || 0;
+        return hours * 60 + minutes;
+    }
+
     // ==================== FILE HANDLING ====================
 
     async handleFileUpload(file) {
         if (!file) return;
+
+        // Validate file type
+        if (!file.name.endsWith('.xml')) {
+            this.showNotification('Por favor selecciona un archivo XML válido', 'error');
+            return;
+        }
 
         this.showLoading(true);
         this.currentFile = file;
 
         try {
             const text = await file.text();
+            
+            // Log first 200 characters for debugging
+            console.log('XML Preview:', text.substring(0, 200));
+            
+            // Check if file is empty
+            if (!text || text.trim().length === 0) {
+                throw new Error('El archivo XML está vacío');
+            }
+            
             this.parseXML(text);
             this.createBackup('Carga inicial');
-            this.showNotification('XML cargado correctamente', 'success');
+            this.showNotification(`XML cargado correctamente: ${this.recipes.length} recetas`, 'success');
         } catch (error) {
             console.error('Error loading XML:', error);
             this.showNotification('Error al cargar el XML: ' + error.message, 'error');
+            
+            // Reset state
+            this.recipes = [];
+            this.filteredRecipes = [];
+            this.showEmptyState(true);
         } finally {
             this.showLoading(false);
         }
@@ -230,22 +289,48 @@ class RecipeContentManager {
         // Check for parsing errors
         const parserError = xmlDoc.querySelector('parsererror');
         if (parserError) {
-            throw new Error('XML mal formado');
+            console.error('Parser error:', parserError.textContent);
+            throw new Error('XML mal formado: ' + parserError.textContent);
         }
 
-        // Check for root element
-        const recipesRoot = xmlDoc.querySelector('recipes');
+        // Check for root element - support both <recipes> (multiple) and <recipe> (single)
+        let recipesRoot = xmlDoc.querySelector('recipes');
+        let recipeElements = [];
+        
+        // If not found, try with documentElement
         if (!recipesRoot) {
-            throw new Error('El XML no contiene el elemento raíz <recipes>');
+            recipesRoot = xmlDoc.documentElement;
+            const rootTag = recipesRoot.tagName.toLowerCase();
+            console.log('Root element:', rootTag);
+            
+            // Check if it's a single recipe export
+            if (rootTag === 'recipe') {
+                console.log('Detected single recipe export format');
+                recipeElements = [recipesRoot];
+            } else if (rootTag !== 'recipes') {
+                throw new Error(`Formato XML no soportado. Encontrado: <${recipesRoot.tagName}>. Se esperaba <recipes> o <recipe>`);
+            }
         }
 
-        // Parse all recipes
-        const recipeElements = xmlDoc.querySelectorAll('recipe');
+        if (!recipesRoot) {
+            throw new Error('El XML no contiene un elemento raíz válido');
+        }
+
+        // Parse all recipes (if not already parsed from single recipe)
+        if (recipeElements.length === 0) {
+            recipeElements = recipesRoot.querySelectorAll('recipe');
+        }
+        
+        if (recipeElements.length === 0) {
+            console.warn('No se encontraron elementos <recipe> en el XML');
+            this.showNotification('El XML no contiene recetas', 'warning');
+        }
+
         this.recipes = Array.from(recipeElements).map((recipeEl, index) => {
             return this.parseRecipeElement(recipeEl, index);
         });
 
-        console.log(`Parsed ${this.recipes.length} recipes`);
+        console.log(`Parsed ${this.recipes.length} recipe${this.recipes.length !== 1 ? 's' : ''}`);
         
         // Update UI
         this.filteredRecipes = [...this.recipes];
@@ -263,7 +348,17 @@ class RecipeContentManager {
 
         const getBooleanAttribute = (selector, attr = 'value') => {
             const el = recipeEl.querySelector(selector);
-            return el ? el.getAttribute(attr) === 'true' : false;
+            if (!el) return false;
+            
+            // Try attribute first (format: <caravanFriendly value="true"/>)
+            const attrValue = el.getAttribute(attr);
+            if (attrValue !== null) {
+                return attrValue === 'true';
+            }
+            
+            // Try text content (format: <caravanFriendly>true</caravanFriendly>)
+            const textValue = el.textContent.trim().toLowerCase();
+            return textValue === 'true';
         };
 
         // Parse ingredients
@@ -274,12 +369,15 @@ class RecipeContentManager {
             unit: ing.querySelector('unit')?.textContent.trim() || ''
         }));
 
-        // Parse sequences
-        const sequences = Array.from(recipeEl.querySelectorAll('sequence')).map(seq => ({
-            duration: seq.querySelector('duration')?.textContent.trim() || '',
-            description: seq.querySelector('description')?.textContent.trim() || '',
-            ingredientIds: Array.from(seq.querySelectorAll('ingredientId')).map(id => id.textContent.trim())
-        }));
+        // Parse sequences (support both <sequences> and <additionSequences>)
+        const sequencesContainer = recipeEl.querySelector('sequences') || recipeEl.querySelector('additionSequences');
+        const sequences = sequencesContainer 
+            ? Array.from(sequencesContainer.querySelectorAll('sequence')).map(seq => ({
+                duration: seq.querySelector('duration')?.textContent.trim() || '',
+                description: seq.querySelector('description')?.textContent.trim() || '',
+                ingredientIds: Array.from(seq.querySelectorAll('ingredientId')).map(id => id.textContent.trim())
+            }))
+            : [];
 
         // Parse images
         const images = Array.from(recipeEl.querySelectorAll('image')).map(img => ({
@@ -288,10 +386,11 @@ class RecipeContentManager {
             data: img.querySelector('data')?.textContent.trim() || ''
         }));
 
-        // Parse appliances
-        const appliances = Array.from(recipeEl.querySelectorAll('appliance')).map(app => 
-            app.textContent.trim()
-        );
+        // Parse appliances (support both <appliances> and <kitchenAppliances>)
+        const appliancesContainer = recipeEl.querySelector('appliances') || recipeEl.querySelector('kitchenAppliances');
+        const appliances = appliancesContainer
+            ? Array.from(appliancesContainer.querySelectorAll('appliance')).map(app => app.textContent.trim())
+            : [];
 
         return {
             id: recipeEl.getAttribute('id') || `recipe-${index}`,
@@ -320,6 +419,7 @@ class RecipeContentManager {
         const categories = new Set(this.recipes.map(r => r.category)).size;
         const caravan = this.recipes.filter(r => r.caravanFriendly).length;
         const hospital = this.recipes.filter(r => r.hospitalFriendly).length;
+        const menu = this.recipes.filter(r => r.menuFriendly).length;
 
         document.getElementById('stat-total').textContent = total;
         document.getElementById('stat-categories').textContent = categories;
@@ -327,6 +427,7 @@ class RecipeContentManager {
         document.getElementById('stat-with-images').textContent = total > 0 ? Math.round((withImages / total) * 100) + '%' : '0%';
         document.getElementById('stat-caravan').textContent = caravan;
         document.getElementById('stat-hospital').textContent = hospital;
+        document.getElementById('stat-menu').textContent = menu;
 
         // Render incomplete recipes
         this.renderIncompleteRecipes();
@@ -338,11 +439,19 @@ class RecipeContentManager {
         });
 
         const container = document.getElementById('incomplete-recipes');
+        const icon = document.getElementById('incomplete-toggle-icon');
         
         if (incomplete.length === 0) {
             container.innerHTML = '<p style="color: var(--color-success);">✓ Todas las recetas están completas</p>';
+            // Keep collapsed if all complete
+            container.style.display = 'none';
+            icon.textContent = '▶';
             return;
         }
+
+        // Auto-expand if there are incomplete recipes
+        container.style.display = 'block';
+        icon.textContent = '▼';
 
         let html = `<p style="margin-bottom: var(--spacing-sm);">${incomplete.length} receta${incomplete.length !== 1 ? 's' : ''} incompleta${incomplete.length !== 1 ? 's' : ''}</p>`;
         html += '<div style="max-height: 200px; overflow-y: auto;">';
@@ -419,16 +528,47 @@ class RecipeContentManager {
             tr.classList.add('selected');
         }
 
+        // Parse time for hours and minutes
+        const parseTime = (timeStr) => {
+            if (!timeStr) return { hours: '', minutes: '' };
+            const hourMatch = timeStr.match(/(\d+)\s*h/);
+            const minMatch = timeStr.match(/(\d+)\s*min/);
+            return {
+                hours: hourMatch ? hourMatch[1] : '',
+                minutes: minMatch ? minMatch[1] : ''
+            };
+        };
+        
+        const time = parseTime(recipe.totalTime);
+        
+        // Build category options
+        let categoryOptions = '';
+        PREDEFINED_CATEGORY_IDS.forEach(cat => {
+            const selected = cat === recipe.category ? 'selected' : '';
+            const displayName = cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, ' ');
+            categoryOptions += `<option value="${cat}" ${selected}>${displayName}</option>`;
+        });
+
         tr.innerHTML = `
             <td><input type="checkbox" class="recipe-checkbox" data-recipe-id="${recipe.id}" ${this.selectedRecipes.has(recipe.id) ? 'checked' : ''}></td>
-            <td>${this.escapeHtml(recipe.name)}</td>
-            <td>${this.escapeHtml(recipe.category)}</td>
-            <td>${this.escapeHtml(recipe.author) || '<span style="color: var(--color-text-secondary);">Sin autor</span>'}</td>
-            <td>${this.escapeHtml(recipe.totalTime)}</td>
-            <td>${recipe.caravanFriendly ? '✅' : '❌'}</td>
-            <td>${recipe.hospitalFriendly ? '✅' : '❌'}</td>
-            <td>${recipe.menuFriendly ? '✅' : '❌'}</td>
-            <td>${recipe.images.length}</td>
+            <td style="min-width: 150px;"><input type="text" class="editable-field" data-recipe-id="${recipe.id}" data-field="name" value="${this.escapeHtml(recipe.name)}" style="width: 100%; padding: 4px; border: 1px solid var(--color-border); border-radius: 4px;"></td>
+            <td><select class="editable-field" data-recipe-id="${recipe.id}" data-field="category" style="width: 100%; padding: 4px; border: 1px solid var(--color-border); border-radius: 4px;">${categoryOptions}</select></td>
+            <td><input type="text" class="editable-field" data-recipe-id="${recipe.id}" data-field="author" value="${this.escapeHtml(recipe.author || '')}" placeholder="Sin autor" style="width: 100%; padding: 4px; border: 1px solid var(--color-border); border-radius: 4px;"></td>
+            <td style="min-width: 120px;">
+                <div style="display: flex; gap: 4px; align-items: center;">
+                    <input type="number" class="editable-time" data-recipe-id="${recipe.id}" data-time-part="hours" ${time.hours ? `value="${time.hours}"` : ''} placeholder="0" min="0" max="24" style="width: 50px; padding: 4px; border: 1px solid var(--color-border); border-radius: 4px;">
+                    <span style="font-size: 0.75rem;">h</span>
+                    <input type="number" class="editable-time" data-recipe-id="${recipe.id}" data-time-part="minutes" ${time.minutes ? `value="${time.minutes}"` : ''} placeholder="0" min="0" max="59" style="width: 50px; padding: 4px; border: 1px solid var(--color-border); border-radius: 4px;">
+                    <span style="font-size: 0.75rem;">min</span>
+                </div>
+            </td>
+            <td style="text-align: center; color: #666;">${recipe.ingredients.length}</td>
+            <td style="text-align: center; color: #666;">${recipe.sequences.length}</td>
+            <td style="text-align: center; color: #666;">${recipe.appliances.length > 0 ? recipe.appliances.length : '-'}</td>
+            <td style="text-align: center;">${recipe.images.length > 0 ? recipe.images.length : '<span style="color: var(--color-text-secondary);">-</span>'}</td>
+            <td style="text-align: center;"><input type="checkbox" class="flag-checkbox" data-recipe-id="${recipe.id}" data-flag="caravanFriendly" ${recipe.caravanFriendly ? 'checked' : ''}></td>
+            <td style="text-align: center;"><input type="checkbox" class="flag-checkbox" data-recipe-id="${recipe.id}" data-flag="hospitalFriendly" ${recipe.hospitalFriendly ? 'checked' : ''}></td>
+            <td style="text-align: center;"><input type="checkbox" class="flag-checkbox" data-recipe-id="${recipe.id}" data-flag="menuFriendly" ${recipe.menuFriendly ? 'checked' : ''}></td>
             <td>
                 <button class="modal-trigger modal-trigger--icon" onclick="rcm.editRecipe('${recipe.id}')" title="Editar receta">
                     <i class="fa-solid fa-edit"></i>
@@ -436,7 +576,7 @@ class RecipeContentManager {
             </td>
         `;
 
-        // Add checkbox event listener
+        // Add checkbox event listener for selection
         const checkbox = tr.querySelector('.recipe-checkbox');
         checkbox.addEventListener('change', (e) => {
             if (e.target.checked) {
@@ -447,6 +587,87 @@ class RecipeContentManager {
                 tr.classList.remove('selected');
             }
             this.updateSelectedCount();
+        });
+
+        // Add event listeners for editable fields
+        const editableFields = tr.querySelectorAll('.editable-field');
+        editableFields.forEach(field => {
+            field.addEventListener('change', (e) => {
+                const recipeId = e.target.dataset.recipeId;
+                const fieldName = e.target.dataset.field;
+                const value = e.target.value;
+                
+                // Update recipe data
+                const recipe = this.recipes.find(r => r.id === recipeId);
+                if (recipe) {
+                    recipe[fieldName] = value;
+                    this.markUnsavedChanges();
+                }
+            });
+        });
+
+        // Add event listeners for time fields
+        const timeFields = tr.querySelectorAll('.editable-time');
+        timeFields.forEach(field => {
+            // Validate input on change
+            field.addEventListener('input', (e) => {
+                const timePart = e.target.dataset.timePart;
+                let value = parseInt(e.target.value);
+                
+                // Validate minutes (0-59)
+                if (timePart === 'minutes' && value > 59) {
+                    e.target.value = 59;
+                }
+                // Validate hours (0-24)
+                if (timePart === 'hours' && value > 24) {
+                    e.target.value = 24;
+                }
+                // No negative values
+                if (value < 0) {
+                    e.target.value = 0;
+                }
+            });
+            
+            field.addEventListener('change', (e) => {
+                const recipeId = e.target.dataset.recipeId;
+                const recipe = this.recipes.find(r => r.id === recipeId);
+                if (!recipe) return;
+                
+                // Get both hour and minute fields
+                const row = e.target.closest('tr');
+                const hoursField = row.querySelector('.editable-time[data-time-part="hours"]');
+                const minutesField = row.querySelector('.editable-time[data-time-part="minutes"]');
+                
+                const hours = parseInt(hoursField.value) || 0;
+                const minutes = parseInt(minutesField.value) || 0;
+                
+                // Format time string
+                let timeStr = '';
+                if (hours > 0) timeStr += `${hours}h`;
+                if (minutes > 0) timeStr += (timeStr ? ' ' : '') + `${minutes}min`;
+                
+                recipe.totalTime = timeStr;
+                this.markUnsavedChanges();
+            });
+        });
+
+        // Add event listeners for flag checkboxes
+        const flagCheckboxes = tr.querySelectorAll('.flag-checkbox');
+        flagCheckboxes.forEach(flagCheckbox => {
+            flagCheckbox.addEventListener('change', (e) => {
+                const recipeId = e.target.dataset.recipeId;
+                const flag = e.target.dataset.flag;
+                const checked = e.target.checked;
+                
+                // Update recipe data immediately
+                const recipe = this.recipes.find(r => r.id === recipeId);
+                if (recipe) {
+                    recipe[flag] = checked;
+                }
+                
+                // Mark as having unsaved changes
+                this.markUnsavedChanges();
+            });
         });
 
         return tr;
@@ -486,6 +707,16 @@ class RecipeContentManager {
                 return false;
             }
 
+            // Hospital filter
+            if (this.filters.hospital && !recipe.hospitalFriendly) {
+                return false;
+            }
+
+            // Menu filter
+            if (this.filters.menu && !recipe.menuFriendly) {
+                return false;
+            }
+
             return true;
         });
 
@@ -499,7 +730,9 @@ class RecipeContentManager {
             author: '',
             noAuthor: false,
             noImages: false,
-            caravan: false
+            caravan: false,
+            hospital: false,
+            menu: false
         };
 
         document.getElementById('search-input').value = '';
@@ -508,6 +741,8 @@ class RecipeContentManager {
         document.getElementById('filter-no-author').checked = false;
         document.getElementById('filter-no-images').checked = false;
         document.getElementById('filter-caravan').checked = false;
+        document.getElementById('filter-hospital').checked = false;
+        document.getElementById('filter-menu').checked = false;
 
         this.applyFilters();
     }
@@ -558,10 +793,14 @@ class RecipeContentManager {
         document.getElementById('edit-recipe-id').value = recipe.id;
         document.getElementById('edit-name').value = recipe.name;
         document.getElementById('edit-category').value = recipe.category;
-        document.getElementById('edit-time').value = recipe.totalTime;
+        
+        // Parse and set time
+        const time = this.parseTimeString(recipe.totalTime);
+        document.getElementById('edit-time-hours').value = time.hours || '';
+        document.getElementById('edit-time-minutes').value = time.minutes || '';
+        
         document.getElementById('edit-author').value = recipe.author;
         document.getElementById('edit-history').value = recipe.history;
-        document.getElementById('edit-preparation').value = recipe.preparationMethod;
         document.getElementById('edit-caravan').checked = recipe.caravanFriendly;
         document.getElementById('edit-hospital').checked = recipe.hospitalFriendly;
         document.getElementById('edit-menu').checked = recipe.menuFriendly;
@@ -569,20 +808,140 @@ class RecipeContentManager {
         document.getElementById('edit-sequences-count').textContent = recipe.sequences.length;
         document.getElementById('edit-images-count').textContent = recipe.images.length;
 
-        // Populate category dropdown
-        const categories = [...new Set(this.recipes.map(r => r.category))].sort();
+        // Populate ingredients textarea
+        const ingredientsText = recipe.ingredients.map(ing => {
+            const name = ing.name.padEnd(25, ' ');
+            const quantity = `${ing.quantity} ${ing.unit}`;
+            return `${name}${quantity}`;
+        }).join('\n');
+        document.getElementById('edit-ingredients').value = ingredientsText;
+
+        // Populate category dropdown with predefined categories
         const categorySelect = document.getElementById('edit-category');
         categorySelect.innerHTML = '';
-        categories.forEach(cat => {
+        PREDEFINED_CATEGORY_IDS.forEach(cat => {
             const option = document.createElement('option');
             option.value = cat;
-            option.textContent = cat;
+            // Capitalize first letter for display
+            option.textContent = cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, ' ');
             categorySelect.appendChild(option);
         });
         categorySelect.value = recipe.category;
 
+        // Render appliance badges
+        this.renderApplianceBadges(recipe);
+
+        // Render sequences
+        this.renderSequencesList(recipe);
+
+        // Render images
+        this.renderImagesPreview(recipe);
+        this.setupImageUpload(recipe);
+
         // Show modal
         document.getElementById('edit-recipe-modal').style.display = 'flex';
+    }
+
+    renderSequencesList(recipe) {
+        const listElement = document.getElementById('edit-sequences-list');
+        listElement.innerHTML = '';
+
+        if (!recipe.sequences || recipe.sequences.length === 0) {
+            listElement.innerHTML = '<p style="color: var(--color-text-secondary); font-size: 0.875rem;">No hay secuencias definidas</p>';
+            return;
+        }
+
+        recipe.sequences.forEach((sequence, index) => {
+            const item = document.createElement('div');
+            item.className = 'detail-sequence-item';
+
+            // Number
+            const numberDiv = document.createElement('div');
+            numberDiv.className = 'detail-sequence-number';
+            numberDiv.textContent = index + 1;
+
+            // Content
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'detail-sequence-content';
+
+            // Description and duration container
+            if (sequence.description || sequence.duration) {
+                const descDurationDiv = document.createElement('div');
+                descDurationDiv.className = 'detail-sequence-desc-duration';
+
+                // Description
+                if (sequence.description) {
+                    const descriptionSpan = document.createElement('span');
+                    descriptionSpan.className = 'detail-sequence-description';
+                    descriptionSpan.textContent = sequence.description;
+                    descDurationDiv.appendChild(descriptionSpan);
+                }
+
+                // Duration
+                if (sequence.duration) {
+                    const durationSpan = document.createElement('span');
+                    durationSpan.className = 'detail-sequence-duration';
+                    durationSpan.textContent = ` ⏱️ ${sequence.duration}`;
+                    descDurationDiv.appendChild(durationSpan);
+                }
+
+                contentDiv.appendChild(descDurationDiv);
+            }
+
+            // Ingredients tags
+            if (sequence.ingredientIds && sequence.ingredientIds.length > 0) {
+                const ingredientsDiv = document.createElement('div');
+                ingredientsDiv.className = 'detail-sequence-ingredients';
+
+                sequence.ingredientIds.forEach(ingredientId => {
+                    const ingredient = recipe.ingredients.find(ing => ing.id === ingredientId);
+                    if (ingredient) {
+                        const tag = document.createElement('span');
+                        tag.className = 'detail-sequence-ingredient-tag';
+                        tag.textContent = ingredient.name;
+                        ingredientsDiv.appendChild(tag);
+                    }
+                });
+
+                contentDiv.appendChild(ingredientsDiv);
+            }
+
+            item.appendChild(numberDiv);
+            item.appendChild(contentDiv);
+            listElement.appendChild(item);
+        });
+    }
+
+    renderApplianceBadges(recipe) {
+        const container = document.getElementById('edit-appliances');
+        container.innerHTML = '';
+
+        // Show assigned appliances (read-only)
+        if (recipe.appliances.length === 0) {
+            container.innerHTML = '<span style="color: var(--color-text-secondary); font-size: 0.875rem;">No hay aparatos asignados</span>';
+            return;
+        }
+
+        recipe.appliances.forEach(applianceName => {
+            const applianceDef = PREDEFINED_APPLIANCES.find(a => a.name === applianceName);
+            const emoji = applianceDef ? applianceDef.emoji : '🔧';
+
+            const badge = document.createElement('span');
+            badge.className = 'appliance-badge';
+            badge.style.cssText = `
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                padding: 6px 12px;
+                border-radius: 16px;
+                background: #FF385C;
+                color: white;
+                font-size: 0.875rem;
+            `;
+            badge.textContent = `${emoji} ${applianceName}`;
+
+            container.appendChild(badge);
+        });
     }
 
     closeEditRecipeModal() {
@@ -619,16 +978,26 @@ class RecipeContentManager {
         // Update recipe
         recipe.name = name;
         recipe.category = category;
-        recipe.totalTime = document.getElementById('edit-time').value.trim();
+        
+        // Format time from hours and minutes inputs
+        const hours = parseInt(document.getElementById('edit-time-hours').value) || 0;
+        const minutes = parseInt(document.getElementById('edit-time-minutes').value) || 0;
+        let timeStr = '';
+        if (hours > 0) timeStr += `${hours}h`;
+        if (minutes > 0) timeStr += (timeStr ? ' ' : '') + `${minutes}min`;
+        recipe.totalTime = timeStr;
+        
         recipe.author = document.getElementById('edit-author').value.trim();
         recipe.history = document.getElementById('edit-history').value.trim();
-        recipe.preparationMethod = document.getElementById('edit-preparation').value.trim();
         recipe.caravanFriendly = document.getElementById('edit-caravan').checked;
         recipe.hospitalFriendly = document.getElementById('edit-hospital').checked;
         recipe.menuFriendly = document.getElementById('edit-menu').checked;
+        // Appliances are already updated in renderApplianceBadges
+        // Ingredients are read-only and not editable in this modal
 
         // Update UI
         this.renderDashboard();
+        this.renderFilters(); // Update filters dynamically
         this.renderTable();
         this.closeEditRecipeModal();
         this.showNotification('Receta actualizada correctamente', 'success');
@@ -640,14 +1009,14 @@ class RecipeContentManager {
         // Update count
         document.getElementById('batch-edit-count').textContent = this.selectedRecipes.size;
 
-        // Populate category dropdown
-        const categories = [...new Set(this.recipes.map(r => r.category))].sort();
+        // Populate category dropdown with predefined categories
         const categorySelect = document.getElementById('batch-category');
         categorySelect.innerHTML = '<option value="">Seleccionar categoría</option>';
-        categories.forEach(cat => {
+        PREDEFINED_CATEGORY_IDS.forEach(cat => {
             const option = document.createElement('option');
             option.value = cat;
-            option.textContent = cat;
+            // Capitalize first letter for display
+            option.textContent = cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, ' ');
             categorySelect.appendChild(option);
         });
 
@@ -727,6 +1096,7 @@ class RecipeContentManager {
 
         // Update UI
         this.renderDashboard();
+        this.renderFilters(); // Update filters dynamically
         this.renderTable();
         this.closeBatchEditModal();
         this.showNotification(`${this.selectedRecipes.size} recetas actualizadas`, 'success');
@@ -823,6 +1193,19 @@ class RecipeContentManager {
         modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
     }
 
+    toggleIncompleteRecipes() {
+        const content = document.getElementById('incomplete-recipes');
+        const icon = document.getElementById('incomplete-toggle-icon');
+        
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            icon.textContent = '▼';
+        } else {
+            content.style.display = 'none';
+            icon.textContent = '▶';
+        }
+    }
+
     // ==================== EXPORT ====================
 
     generateXML() {
@@ -848,8 +1231,8 @@ class RecipeContentManager {
             });
             xml += `    </ingredients>\n`;
 
-            // Sequences
-            xml += `    <sequences>\n`;
+            // Sequences (use additionSequences to match app format)
+            xml += `    <additionSequences>\n`;
             recipe.sequences.forEach(seq => {
                 xml += `      <sequence>\n`;
                 xml += `        <duration>${this.escapeXml(seq.duration)}</duration>\n`;
@@ -861,7 +1244,7 @@ class RecipeContentManager {
                 xml += `        </ingredientIds>\n`;
                 xml += `      </sequence>\n`;
             });
-            xml += `    </sequences>\n`;
+            xml += `    </additionSequences>\n`;
 
             // Images
             xml += `    <images>\n`;
@@ -874,12 +1257,12 @@ class RecipeContentManager {
             });
             xml += `    </images>\n`;
 
-            // Appliances
-            xml += `    <appliances>\n`;
+            // Appliances (use kitchenAppliances to match app format)
+            xml += `    <kitchenAppliances>\n`;
             recipe.appliances.forEach(app => {
                 xml += `      <appliance>${this.escapeXml(app)}</appliance>\n`;
             });
-            xml += `    </appliances>\n`;
+            xml += `    </kitchenAppliances>\n`;
 
             // Flags
             xml += `    <caravanFriendly value="${recipe.caravanFriendly}"/>\n`;
@@ -988,7 +1371,7 @@ class RecipeContentManager {
             this.history.shift();
         }
 
-        document.getElementById('undo-btn').disabled = false;
+        document.getElementById('undo-btn-header').disabled = false;
     }
 
     undo() {
@@ -1003,7 +1386,7 @@ class RecipeContentManager {
         this.showNotification('Cambios deshechos', 'success');
 
         if (this.history.length === 0) {
-            document.getElementById('undo-btn').disabled = true;
+            document.getElementById('undo-btn-header').disabled = true;
         }
     }
 
@@ -1051,10 +1434,11 @@ class RecipeContentManager {
         document.getElementById('empty-state').classList.toggle('hidden', !show);
         document.getElementById('table-container').classList.toggle('hidden', show);
         
-        // Enable/disable action buttons
-        document.getElementById('export-csv-btn').disabled = show;
-        document.getElementById('download-xml-btn').disabled = show;
-        document.getElementById('find-replace-btn').disabled = show;
+        // Enable/disable action buttons (header only)
+        document.getElementById('download-xml-btn-header').disabled = show;
+        document.getElementById('find-replace-btn-header').disabled = show;
+        document.getElementById('new-recipe-btn-header').disabled = show;
+        document.getElementById('duplicate-btn-header').disabled = show;
     }
 
     showNotification(message, type = 'info') {
@@ -1101,6 +1485,354 @@ class RecipeContentManager {
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&apos;');
+    }
+
+    // ==================== CREATE & DUPLICATE ====================
+
+    createNewRecipe() {
+        const newRecipe = {
+            id: `recipe-${Date.now()}`,
+            name: 'Nueva Receta',
+            category: 'carne',
+            totalTime: '',
+            author: '',
+            history: '',
+            preparationMethod: '',
+            ingredients: [],
+            sequences: [],
+            images: [],
+            appliances: [],
+            caravanFriendly: false,
+            hospitalFriendly: false,
+            menuFriendly: false
+        };
+
+        this.addToHistory('Crear nueva receta');
+        this.recipes.push(newRecipe);
+        this.renderFilters(); // Update filters dynamically
+        this.applyFilters();
+        this.renderDashboard();
+        this.showNotification('Nueva receta creada', 'success');
+        
+        // Open edit modal for the new recipe
+        this.editRecipe(newRecipe.id);
+    }
+
+    duplicateSelectedRecipes() {
+        if (this.selectedRecipes.size === 0) {
+            this.showNotification('Selecciona al menos una receta para duplicar', 'warning');
+            return;
+        }
+
+        this.addToHistory(`Duplicar ${this.selectedRecipes.size} receta(s)`);
+
+        const duplicatedRecipes = [];
+        this.selectedRecipes.forEach(recipeId => {
+            const original = this.recipes.find(r => r.id === recipeId);
+            if (original) {
+                const duplicate = {
+                    ...JSON.parse(JSON.stringify(original)),
+                    id: `recipe-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    name: `${original.name} (copia)`
+                };
+                duplicatedRecipes.push(duplicate);
+            }
+        });
+
+        this.recipes.push(...duplicatedRecipes);
+        this.selectedRecipes.clear();
+        this.renderFilters(); // Update filters dynamically
+        this.applyFilters();
+        this.renderDashboard();
+        this.showNotification(`${duplicatedRecipes.length} receta(s) duplicada(s)`, 'success');
+    }
+
+    // ==================== UNSAVED CHANGES ====================
+
+    markUnsavedChanges() {
+        this.hasUnsavedChanges = true;
+        // Enable save buttons
+        document.getElementById('save-changes-top-btn')?.classList.remove('hidden');
+        document.getElementById('save-changes-bottom-btn')?.classList.remove('hidden');
+    }
+
+    saveTableChanges() {
+        if (!this.hasUnsavedChanges) {
+            this.showNotification('No hay cambios pendientes', 'info');
+            return;
+        }
+
+        this.addToHistory('Guardar cambios de tabla');
+        this.hasUnsavedChanges = false;
+        
+        // Hide save buttons
+        document.getElementById('save-changes-top-btn')?.classList.add('hidden');
+        document.getElementById('save-changes-bottom-btn')?.classList.add('hidden');
+        
+        this.renderDashboard();
+        this.showNotification('Cambios guardados correctamente', 'success');
+    }
+
+    // ==================== IMAGE MANAGEMENT ====================
+
+    setupImageUpload(recipe) {
+        const dropzone = document.getElementById('edit-images-dropzone');
+        const input = document.getElementById('edit-images-input');
+
+        // Click to select files
+        dropzone.addEventListener('click', () => {
+            input.click();
+        });
+
+        // File input change
+        input.addEventListener('change', (e) => {
+            this.handleImageUpload(e.target.files, recipe);
+            input.value = ''; // Reset input
+        });
+
+        // Drag and drop
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('dragover');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            this.handleImageUpload(e.dataTransfer.files, recipe);
+        });
+    }
+
+    async handleImageUpload(files, recipe) {
+        if (!files || files.length === 0) return;
+
+        for (const file of files) {
+            try {
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    this.showNotification(`${file.name} no es una imagen válida`, 'error');
+                    continue;
+                }
+
+                // Process and compress image
+                const processedImage = await this.processImageFile(file);
+                
+                // Add to recipe images
+                recipe.images.push(processedImage);
+                
+                this.showNotification(`Imagen ${file.name} añadida`, 'success');
+            } catch (error) {
+                this.showNotification(`Error al procesar ${file.name}: ${error.message}`, 'error');
+            }
+        }
+
+        // Re-render images
+        this.renderImagesPreview(recipe);
+        this.markUnsavedChanges();
+    }
+
+    async processImageFile(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                const img = new Image();
+
+                img.onload = () => {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+
+                        // Calculate dimensions (max 1920px)
+                        let width = img.width;
+                        let height = img.height;
+                        const maxDimension = 1920;
+
+                        if (width > maxDimension || height > maxDimension) {
+                            if (width > height) {
+                                height = (height / width) * maxDimension;
+                                width = maxDimension;
+                            } else {
+                                width = (width / height) * maxDimension;
+                                height = maxDimension;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Start with 80% quality
+                        let quality = 0.8;
+                        let compressedData = canvas.toDataURL('image/jpeg', quality);
+
+                        // Reduce quality until under 500KB
+                        const maxSize = 500 * 1024; // 500 KB in bytes
+                        while (compressedData.length > maxSize && quality > 0.1) {
+                            quality -= 0.1;
+                            compressedData = canvas.toDataURL('image/jpeg', quality);
+                        }
+
+                        // Create image object
+                        const imageObj = {
+                            id: `img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                            name: file.name,
+                            type: 'image/jpeg',
+                            data: compressedData,
+                            size: compressedData.length
+                        };
+
+                        resolve(imageObj);
+                    } catch (error) {
+                        reject(new Error('Error al comprimir imagen: ' + error.message));
+                    }
+                };
+
+                img.onerror = () => {
+                    reject(new Error('Error al cargar imagen'));
+                };
+
+                img.src = e.target.result;
+            };
+
+            reader.onerror = () => {
+                reject(new Error('Error al leer archivo'));
+            };
+
+            reader.readAsDataURL(file);
+        });
+    }
+
+    renderImagesPreview(recipe) {
+        const preview = document.getElementById('edit-images-preview');
+        const count = document.getElementById('edit-images-count');
+        
+        preview.innerHTML = '';
+        count.textContent = recipe.images.length;
+
+        if (recipe.images.length === 0) {
+            preview.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--color-text-secondary); font-size: 0.875rem;">No hay imágenes</p>';
+            return;
+        }
+
+        recipe.images.forEach((image, index) => {
+            const item = document.createElement('div');
+            item.className = 'media-preview-item';
+
+            // Image container
+            const container = document.createElement('div');
+            container.className = 'media-preview-container';
+
+            const img = document.createElement('img');
+            img.src = image.data;
+            img.alt = image.name;
+            img.className = 'media-preview-image';
+            container.appendChild(img);
+
+            // Actions
+            const actions = document.createElement('div');
+            actions.className = 'media-actions';
+
+            // Move buttons (only if multiple images)
+            if (recipe.images.length > 1) {
+                const upBtn = document.createElement('button');
+                upBtn.type = 'button';
+                upBtn.className = 'media-move-btn';
+                upBtn.textContent = '▲';
+                upBtn.title = 'Mover arriba';
+                upBtn.addEventListener('click', () => {
+                    this.moveImage(recipe, index, -1);
+                });
+
+                const downBtn = document.createElement('button');
+                downBtn.type = 'button';
+                downBtn.className = 'media-move-btn';
+                downBtn.textContent = '▼';
+                downBtn.title = 'Mover abajo';
+                downBtn.addEventListener('click', () => {
+                    this.moveImage(recipe, index, 1);
+                });
+
+                actions.appendChild(upBtn);
+                actions.appendChild(downBtn);
+            }
+
+            // Delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'media-delete-btn';
+            deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+            deleteBtn.title = 'Eliminar';
+            deleteBtn.addEventListener('click', () => {
+                this.deleteImage(recipe, index);
+            });
+
+            actions.appendChild(deleteBtn);
+
+            // Info
+            const info = document.createElement('div');
+            info.className = 'media-info';
+
+            const name = document.createElement('span');
+            name.className = 'media-name';
+            name.textContent = image.name;
+            name.title = image.name;
+
+            const size = document.createElement('span');
+            size.className = 'media-size';
+            size.textContent = this.formatFileSize(image.size);
+
+            info.appendChild(name);
+            info.appendChild(size);
+
+            item.appendChild(container);
+            item.appendChild(actions);
+            item.appendChild(info);
+
+            preview.appendChild(item);
+        });
+    }
+
+    moveImage(recipe, index, direction) {
+        const newIndex = index + direction;
+        
+        if (newIndex < 0 || newIndex >= recipe.images.length) return;
+
+        // Swap
+        const temp = recipe.images[index];
+        recipe.images[index] = recipe.images[newIndex];
+        recipe.images[newIndex] = temp;
+
+        this.renderImagesPreview(recipe);
+        this.markUnsavedChanges();
+    }
+
+    deleteImage(recipe, index) {
+        if (!confirm('¿Eliminar esta imagen?')) return;
+
+        recipe.images.splice(index, 1);
+        this.renderImagesPreview(recipe);
+        this.markUnsavedChanges();
+    }
+
+    formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    parseTimeString(timeStr) {
+        if (!timeStr) return { hours: '', minutes: '' };
+        const hourMatch = timeStr.match(/(\d+)\s*h/);
+        const minMatch = timeStr.match(/(\d+)\s*min/);
+        return {
+            hours: hourMatch ? hourMatch[1] : '',
+            minutes: minMatch ? minMatch[1] : ''
+        };
     }
 }
 

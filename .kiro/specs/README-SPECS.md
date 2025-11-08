@@ -19,7 +19,7 @@ Cada spec tiene su propio directorio con 3 archivos:
 
 ## 📊 Specs Disponibles
 
-### ✅ Completadas (10)
+### ✅ Completadas (11)
 
 #### 1. copy-ingredients-from-card
 **Copiar ingredientes al portapapeles**
@@ -86,9 +86,9 @@ Cada spec tiene su propio directorio con 3 archivos:
 - Exportación XML/CSV
 - Historial y deshacer
 
-### ⚠️ En Progreso (2)
+### ⚠️ En Progreso (1)
 
-#### 11. hamburger-menu-always (56%)
+#### 12. hamburger-menu-always (56%)
 **Menú unificado**
 - Menú hamburguesa en todas las resoluciones
 - Interfaz más limpia
@@ -99,18 +99,13 @@ Cada spec tiene su propio directorio con 3 archivos:
 - Limpiar código obsoleto
 - Testing completo
 
-#### 12. xml-import-functionality (43%)
-**Importación masiva**
-- Importar múltiples recetas
-- Barra de progreso
-- Validación de archivos
-- Resumen de importación
-
-**Pendiente:**
-- Importación de 50+ recetas
-- Feedback visual
-- Validación robusta
-- Manejo de errores
+#### 11. xml-import-functionality
+**Importación/Exportación XML completa**
+- Importar recetas individuales y múltiples
+- Exportar recetas individuales y múltiples
+- Compatibilidad total CMS ↔ App
+- Preservación de todos los datos
+- Manejo de errores robusto
 
 ---
 
@@ -236,8 +231,8 @@ Ejemplo:
 - **Importar**: xml-import-functionality
 
 ### Por Estado
-- **Completadas**: 10 specs (ver lista arriba)
-- **En progreso**: 2 specs (hamburger-menu-always, xml-import-functionality)
+- **Completadas**: 11 specs (ver lista arriba)
+- **En progreso**: 1 spec (hamburger-menu-always)
 
 ---
 
@@ -268,8 +263,8 @@ Ejemplo:
 ## 📊 Estadísticas
 
 ### Total de Specs: 12
-- ✅ Completadas: 10 (83%)
-- ⚠️ En progreso: 2 (17%)
+- ✅ Completadas: 11 (92%)
+- ⚠️ En progreso: 1 (8%)
 - ❌ Pendientes: 0 (0%)
 
 ### Archivos por Spec: 3

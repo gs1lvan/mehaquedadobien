@@ -322,58 +322,52 @@ Se muestra como: "2h 30min", "15min", "1h"
 
 ---
 
-## ⚠️ 11. xml-import-functionality (43% completado)
+## ✅ 11. xml-import-functionality
 
 ### ¿Qué hace?
-Sistema de importación y exportación de recetas en formato XML.
+Sistema completo de importación y exportación de recetas en formato XML con compatibilidad total entre la app principal y el CMS.
 
-### ¿Cómo funciona actualmente?
-✅ **Funciona:**
-- Importar 1 receta desde XML
-- Exportar 1 receta a XML
-- Exportar todas las recetas a XML
-- Botones en la interfaz
+### ¿Cómo funciona?
+✅ **Importación:**
+- Importar recetas individuales desde XML
+- Importar múltiples recetas desde un solo archivo
+- Validación automática de estructura
+- Detección y skip de duplicados
+- Creación automática de categorías desconocidas
+- Manejo robusto de errores
 
-❌ **Falta:**
-- Importar múltiples recetas a la vez
-- Barra de progreso
-- Validación de archivos
-- Resumen de importación
+✅ **Exportación:**
+- Exportar recetas individuales
+- Exportar todas las recetas en un solo archivo
+- Formato compatible entre CMS y app
+- Preservación total de datos
 
-### Ejemplo de uso actual:
+### Ejemplo de uso:
 ```
-Usuario exporta receta:
-→ Click en "📤" en tarjeta
-→ Descarga "pollo-al-horno.xml"
+Usuario exporta desde CMS:
+→ Click en "Descargar XML"
+→ Descarga "recetas_2025-11-07_1430.xml" con 50 recetas
 
-Usuario importa receta:
+Usuario importa en app:
 → Click en "📥 Importar XML"
 → Selecciona archivo
-→ Receta aparece en la lista
-```
-
-### Ejemplo de uso objetivo:
-```
-Usuario tiene archivo con 50 recetas:
-→ Click en "📥 Importar XML"
-→ Selecciona "mis-recetas.xml"
-→ Validación: ✓ Archivo válido
-→ Barra de progreso: "Importando 25/50..."
-→ Resumen: "✅ 48 importadas, ❌ 2 fallaron"
-→ Lista de errores: "Receta 12: falta nombre"
+→ Progreso: "Importando 25/50..."
+→ Resumen: "✅ 48 importadas, 2 duplicadas"
+→ Todas las recetas aparecen con:
+  - Ingredientes completos
+  - Secuencias de preparación
+  - Método de preparación
+  - Utensilios de cocina
+  - Imágenes
+  - Flags (caravana, hospital, menú)
 ```
 
 ### ¿Para qué sirve?
-- Hacer backup de todas tus recetas
-- Compartir colecciones de recetas
+- Hacer backup completo de todas tus recetas
 - Migrar recetas entre dispositivos
-- Importar recetas de otras fuentes
-
-### ¿Qué falta?
-- Importación masiva (50+ recetas)
-- Feedback visual de progreso
-- Validación robusta
-- Manejo de errores
+- Compartir colecciones de recetas
+- Edición masiva en CMS y sincronización con app
+- Intercambio bidireccional CMS ↔ App sin pérdida de datos
 
 ---
 
@@ -614,13 +608,14 @@ Abre `recipe-manager.html` en tu navegador para usar el CMS.
 
 La aplicación tiene **12 specs** que añaden funcionalidades para:
 - ✅ Organizar recetas (categorías, filtros, vistas)
-- ✅ Compartir información (copiar, exportar)
+- ✅ Compartir información (copiar, exportar, importar)
 - ✅ Gestionar compras (listas)
 - ✅ Mostrar contenido (galerías)
 - ✅ Mejorar la interfaz (menú, navegación)
 - ✅ **Gestión masiva (CMS completo)**
+- ✅ **Importación/Exportación XML completa**
 
-**10 están completamente funcionales** y **2 necesitan mejoras** (accesibilidad e importación masiva).
+**11 están completamente funcionales** y **1 necesita mejoras** (accesibilidad del menú hamburguesa).
 
 ### 🆕 Novedad: Recipe Content Manager
 El CMS es una herramienta profesional para gestionar grandes cantidades de recetas. Ideal para:

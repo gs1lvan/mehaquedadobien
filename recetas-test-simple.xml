@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<recipes>
+  <recipe id="test-1">
+    <name>Receta de Prueba</name>
+    <category>Pruebas</category>
+    <totalTime>30min</totalTime>
+    <author>Test</author>
+    <history>Receta de prueba para validar el CMS</history>
+    <preparationMethod>Método de prueba</preparationMethod>
+    <ingredients>
+      <ingredient id="ing-1">
+        <name>Ingrediente 1</name>
+        <quantity>100</quantity>
+        <unit>g</unit>
+      </ingredient>
+    </ingredients>
+    <sequences>
+      <sequence>
+        <duration>10min</duration>
+        <description>Paso de prueba</description>
+        <ingredientIds>
+          <ingredientId>ing-1</ingredientId>
+        </ingredientIds>
+      </sequence>
+    </sequences>
+    <images>
+    </images>
+    <appliances>
+      <appliance>Horno</appliance>
+    </appliances>
+    <caravanFriendly value="true"/>
+    <hospitalFriendly value="false"/>
+    <menuFriendly value="true"/>
+  </recipe>
+</recipes>

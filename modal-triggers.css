@@ -844,6 +844,29 @@ body.dark-theme .modal-trigger--option .option-icon i {
     color: var(--color-text);
 }
 
+/* Variante Success - Acción de éxito */
+.modal-trigger--action.modal-trigger--success {
+    background: var(--color-success);
+    color: white;
+    border-color: var(--color-success);
+}
+
+.modal-trigger--action.modal-trigger--success:hover {
+    background: #007504;
+    border-color: #007504;
+    transform: scale(1.02);
+}
+
+.modal-trigger--action.modal-trigger--success:active {
+    transform: scale(0.98);
+}
+
+.modal-trigger--action.modal-trigger--success .option-icon,
+.modal-trigger--action.modal-trigger--success .option-icon i,
+.modal-trigger--action.modal-trigger--success .option-text {
+    color: white;
+}
+
 /* Tema oscuro para botones de acción */
 body.dark-theme .modal-trigger--action.modal-trigger--primary {
     background: var(--color-primary);
@@ -862,4 +885,19 @@ body.dark-theme .modal-trigger--action.modal-trigger--secondary {
 body.dark-theme .modal-trigger--action.modal-trigger--secondary:hover {
     background: var(--color-background);
     border-color: var(--color-text);
+}
+
+body.dark-theme .modal-trigger--action.modal-trigger--success {
+    background: var(--color-success);
+    color: white;
+}
+
+body.dark-theme .modal-trigger--action.modal-trigger--success:hover {
+    background: #007504;
+}
+
+body.dark-theme .modal-trigger--action.modal-trigger--success .option-icon,
+body.dark-theme .modal-trigger--action.modal-trigger--success .option-icon i,
+body.dark-theme .modal-trigger--action.modal-trigger--success .option-text {
+    color: white;
 }

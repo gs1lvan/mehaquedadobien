@@ -430,6 +430,31 @@ class StorageManager {
 
             // Use IndexedDB
             return new Promise((resolve, reject) => {
+                // Check if database connection is still open
+                if (!this.db || this.db.objectStoreNames.length === 0) {
+                    console.warn('[Storage] Database connection lost, reinitializing...');
+                    this.initDB().then(() => {
+                        // Retry save after reconnection
+                        const transaction = this.db.transaction(['recipes'], 'readwrite');
+                        const store = transaction.objectStore('recipes');
+                        const request = store.put(recipe.toJSON());
+
+                        request.onsuccess = () => {
+                            console.log('[Storage] Receta guardada en IndexedDB:', recipe.id);
+                            resolve(recipe.id);
+                        };
+
+                        request.onerror = () => {
+                            console.error('[Storage] Error al guardar receta:', request.error);
+                            reject(new StorageError(
+                                'Error al guardar la receta: ' + request.error.message,
+                                StorageError.SAVE_ERROR
+                            ));
+                        };
+                    }).catch(reject);
+                    return;
+                }
+
                 const transaction = this.db.transaction(['recipes'], 'readwrite');
                 const store = transaction.objectStore('recipes');
                 const request = store.put(recipe.toJSON());
@@ -2045,7 +2070,18 @@ class XMLImporter {
      */
     static getElementText(parent, tagName) {
         const element = parent.querySelector(tagName);
-        return element ? element.textContent.trim() : '';
+        if (!element) return '';
+        
+        // For boolean flags, check 'value' attribute first (format: <tag value="true"/>)
+        if (tagName === 'caravanFriendly' || tagName === 'hospitalFriendly' || tagName === 'menuFriendly') {
+            const attrValue = element.getAttribute('value');
+            if (attrValue !== null) {
+                return attrValue;
+            }
+        }
+        
+        // Return text content (format: <tag>value</tag>)
+        return element.textContent.trim();
     }
 
     /**
@@ -2158,10 +2194,9 @@ class XMLImporter {
         const { supportCompactFormat = false } = options;
         const sequences = [];
 
-        // Support both formats
-        const sequencesElement = supportCompactFormat
-            ? (recipeElement.querySelector('sequences') || recipeElement.querySelector('additionSequences'))
-            : recipeElement.querySelector('additionSequences');
+        // Support both formats: 'sequences' (CMS format) and 'additionSequences' (app format)
+        const sequencesElement = recipeElement.querySelector('sequences') || 
+                                 recipeElement.querySelector('additionSequences');
 
         if (!sequencesElement) {
             console.log('[XMLImporter] No sequences found in recipe');

@@ -16,6 +16,8 @@ Abre recipe-manager.html en tu navegador
 Click en "Cargar XML" → Selecciona tu archivo XML
 ```
 
+**Nota:** El CMS acepta tanto archivos con múltiples recetas (`<recipes>`) como recetas individuales (`<recipe>`) exportadas desde la app principal.
+
 ### 3️⃣ ¡Listo!
 ```
 Ya puedes editar, filtrar y exportar tus recetas
@@ -226,9 +228,25 @@ El CMS funciona en:
 ## 🆘 Problemas Comunes
 
 ### No se carga el XML
-- Verifica que sea un archivo XML válido
-- Debe tener el elemento raíz `<recipes>`
-- Revisa la consola del navegador (F12)
+- **Verifica que sea un archivo XML válido**
+  - Debe empezar con `<?xml version="1.0" encoding="UTF-8"?>`
+  - Debe tener el elemento raíz `<recipes>`
+  - Todas las etiquetas deben estar cerradas correctamente
+  
+- **Revisa la consola del navegador (F12)**
+  - Abre las herramientas de desarrollador (F12)
+  - Ve a la pestaña "Console"
+  - Busca mensajes de error en rojo
+  - El CMS muestra un preview de las primeras 200 caracteres del XML
+  
+- **Prueba con el archivo de ejemplo**
+  - Usa `recetas-test-simple.xml` para verificar que el CMS funciona
+  - Si el archivo de ejemplo funciona, el problema está en tu XML
+  
+- **Errores comunes**
+  - "XML mal formado": Hay un error de sintaxis en el XML
+  - "No contiene <recipes>": El elemento raíz no es correcto
+  - "Archivo vacío": El archivo no tiene contenido
 
 ### Los cambios no se guardan
 - Debes descargar el XML (Ctrl+S)

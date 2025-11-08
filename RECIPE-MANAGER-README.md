@@ -70,6 +70,8 @@ Sistema de gestión de contenido (CMS) para edición masiva de recetas en format
 
 **¿Primera vez?** Lee la [Guía de Inicio Rápido](RECIPE-MANAGER-QUICKSTART.md) para empezar en 5 minutos.
 
+**¿Problemas?** Consulta la [Guía de Troubleshooting](RECIPE-MANAGER-TROUBLESHOOTING.md) para solucionar errores comunes.
+
 ---
 
 ## 📋 Cómo Usar
@@ -78,6 +80,10 @@ Sistema de gestión de contenido (CMS) para edición masiva de recetas en format
 1. Haz clic en "Cargar XML" en el header
 2. Selecciona tu archivo XML de recetas
 3. El sistema parseará y mostrará todas las recetas
+
+**Formatos soportados:**
+- ✅ Exportación completa: `<recipes>` con múltiples `<recipe>`
+- ✅ Exportación individual: `<recipe>` único (exportado desde la app principal)
 
 ### 2. Buscar y Filtrar
 - **Búsqueda**: Escribe en el campo de búsqueda para filtrar por nombre
@@ -222,11 +228,61 @@ El sistema soporta el formato XML completo de mehaquedadobien con:
 - [ ] Comparación de versiones
 - [ ] Modo claro/oscuro toggle
 
+## 🔗 Independencia del CMS
+
+### ✅ Confirmación de Separación
+
+El CMS (Recipe Content Manager) y la aplicación principal (mehaquedadobien) son **completamente independientes**:
+
+#### Archivos del CMS (Independientes)
+- `recipe-manager.html` - Interfaz HTML completa del CMS
+- `recipe-manager.js` - Lógica JavaScript exclusiva del CMS
+- No hay código del CMS en los archivos de la app principal
+
+#### Archivos Compartidos (Configuración)
+- `categories.js` - Configuración de categorías compartida
+- `appliances.js` - Configuración de aparatos compartida
+- `styles.css` - Variables CSS y estilos base compartidos
+- `modal-triggers.css` - Estilos de botones compartidos
+
+#### Integración Mínima
+La única conexión entre la app y el CMS es:
+1. **Botón "CMS"** en el modal de opciones de receta (`index.html` línea 1124)
+2. **Event listener** que abre el CMS en nueva pestaña (`script.js` línea 8075)
+3. **Compatibilidad XML**: El CMS lee/escribe el mismo formato XML que la app
+
+```javascript
+// Única referencia en script.js
+const cmsBtn = document.getElementById('recipe-option-cms');
+if (cmsBtn) {
+    cmsBtn.onclick = () => {
+        window.open('recipe-manager.html', '_blank');
+    };
+}
+```
+
+#### Compatibilidad de Formatos
+- `models.js` soporta ambos formatos de secuencias: `<sequences>` (CMS) y `<additionSequences>` (app)
+- Esta compatibilidad permite que ambos sistemas lean XMLs generados por el otro
+
+### Ventajas de la Separación
+- ✅ El CMS puede actualizarse sin afectar la app
+- ✅ La app puede actualizarse sin afectar el CMS
+- ✅ Ambos pueden ejecutarse independientemente
+- ✅ Fácil mantenimiento y debugging
+- ✅ Código más limpio y organizado
+
 ## 📄 Archivos
 
+### CMS (Independientes)
 - `recipe-manager.html` - Interfaz HTML con estructura y estilos
 - `recipe-manager.js` - Lógica JavaScript completa
-- `styles.css` - Estilos compartidos con mehaquedadobien (reutilizado)
+
+### Compartidos (Configuración)
+- `categories.js` - Categorías predefinidas
+- `appliances.js` - Aparatos de cocina
+- `styles.css` - Variables CSS base
+- `modal-triggers.css` - Estilos de botones
 
 ## 🎉 Estado del Proyecto
 

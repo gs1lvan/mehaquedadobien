@@ -57,27 +57,7 @@ const DebugLogger = {
 /**
  * Predefined categories that come with the application
  */
-const PREDEFINED_CATEGORIES = [
-    { id: 'caldo', name: 'Caldo', emoji: '🍲', color: '#FF8C42', isPredefined: true },
-    { id: 'carne', name: 'Carne', emoji: '🥩', color: '#D93B30', isPredefined: true },
-    { id: 'cereales', name: 'Cereales', emoji: '🌾', color: '#C4A053', isPredefined: true },
-    { id: 'cerdo', name: 'Cerdo', emoji: '🐷', color: '#FFB6C1', isPredefined: true },
-    { id: 'con-huevo', name: 'Con huevo', emoji: '🥚', color: '#FFD700', isPredefined: true },
-    { id: 'conejo', name: 'Conejo', emoji: '🐰', color: '#D4A5A5', isPredefined: true },
-    { id: 'encurtidos', name: 'Encurtidos', emoji: '🥒', color: '#7CB342', isPredefined: true },
-    { id: 'escabeche', name: 'Escabeche', emoji: '🥒', color: '#32CD32', isPredefined: true },
-    { id: 'fruta', name: 'Fruta', emoji: '🍎', color: '#FF8C00', isPredefined: true },
-    { id: 'legumbres', name: 'Legumbres', emoji: '🫘', color: '#8D6E63', isPredefined: true },
-    { id: 'marisco', name: 'Marisco', emoji: '🦐', color: '#FF6B9D', isPredefined: true },
-    { id: 'pescado', name: 'Pescado', emoji: '🐟', color: '#0073CF', isPredefined: true },
-    { id: 'pollo', name: 'Pollo', emoji: '🐔', color: '#FFA500', isPredefined: true },
-    { id: 'postres', name: 'Postres', emoji: '🍰', color: '#FFB6C1', isPredefined: true },
-    { id: 'salsas', name: 'Salsas', emoji: '🍅', color: '#E53935', isPredefined: true },
-    { id: 'verdura', name: 'Verdura', emoji: '🥬', color: '#008A05', isPredefined: true },
-    { id: 'caravana', name: 'Caravana', emoji: '🚐', color: '#6B7280', isPredefined: true, isSpecial: true },
-    { id: 'hospital', name: 'Hospital', emoji: '🏥', color: '#10B981', isPredefined: true, isSpecial: true },
-    { id: 'menu', name: 'Menú', emoji: '🍽️', color: '#8B4513', isPredefined: true, isSpecial: true }
-];
+// PREDEFINED_CATEGORIES is now imported from categories.js
 
 /**
  * Color palette for custom categories
@@ -4624,8 +4604,13 @@ class RecipeApp {
             formTitle.classList.add('editing-mode');
         }
 
-        // Reset form
-        this.resetForm();
+        // If editing, load recipe data first (before reset to avoid flashing empty state)
+        if (recipeId) {
+            this.loadRecipeIntoForm(recipeId);
+        } else {
+            // Only reset if creating new recipe
+            this.resetForm();
+        }
 
         // Render category selector with current categories
         this.renderCategorySelector();
@@ -4646,11 +4631,6 @@ class RecipeApp {
             } else {
                 formActions.style.display = 'none';
             }
-        }
-
-        // If editing, load recipe data
-        if (recipeId) {
-            this.loadRecipeIntoForm(recipeId);
         }
 
         // Update current view state
@@ -8092,6 +8072,14 @@ class RecipeApp {
             };
         }
 
+        const cmsBtn = document.getElementById('recipe-option-cms');
+        if (cmsBtn) {
+            cmsBtn.onclick = () => {
+                this.closeRecipeOptionsModal();
+                window.open('recipe-manager.html', '_blank');
+            };
+        }
+
         if (shareBtn) {
             shareBtn.onclick = () => {
                 this.closeRecipeOptionsModal();
@@ -8899,7 +8887,14 @@ class RecipeApp {
 
             // Save only new recipes to storage
             for (const recipe of newRecipes) {
-                await this.storageManager.saveRecipe(recipe);
+                try {
+                    await this.storageManager.saveRecipe(recipe);
+                    // Small delay to prevent connection issues
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                } catch (saveError) {
+                    console.error('[Import] Error saving recipe:', recipe.name, saveError);
+                    // Continue with next recipe even if one fails
+                }
             }
 
             // Update result summary with duplicate info
@@ -8907,6 +8902,9 @@ class RecipeApp {
             result.summary.duplicates = duplicateRecipes.length;
             result.successful = newRecipes;
             result.duplicates = duplicateRecipes;
+
+            // Wait a bit before reloading to ensure all transactions are complete
+            await new Promise(resolve => setTimeout(resolve, 100));
 
             // Reload recipes and update UI
             await this.loadRecipes();
