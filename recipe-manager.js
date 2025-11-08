@@ -145,6 +145,11 @@ class RecipeContentManager {
             this.openBatchEditModal();
         });
 
+        // Delete selected
+        document.getElementById('delete-selected-btn').addEventListener('click', () => {
+            this.openDeleteConfirmationModal();
+        });
+
         // Actions - Header buttons only
         document.getElementById('download-xml-btn-header').addEventListener('click', () => {
             this.downloadXML();
@@ -386,12 +391,16 @@ class RecipeContentManager {
             data: img.querySelector('data')?.textContent.trim() || ''
         }));
 
-        // Parse appliances (support both <appliances> and <kitchenAppliances>)
-        const appliancesContainer = recipeEl.querySelector('appliances') || recipeEl.querySelector('kitchenAppliances');
+        // Parse appliances (support both <kitchenAppliances> and <appliances>)
+        const appliancesContainer = recipeEl.querySelector('kitchenAppliances') || recipeEl.querySelector('appliances');
         const appliances = appliancesContainer
             ? Array.from(appliancesContainer.querySelectorAll('appliance')).map(app => app.textContent.trim())
             : [];
 
+        // Parse timestamps
+        const createdAtText = getTextContent('createdAt');
+        const updatedAtText = getTextContent('updatedAt');
+        
         return {
             id: recipeEl.getAttribute('id') || `recipe-${index}`,
             name: getTextContent('name'),
@@ -406,7 +415,9 @@ class RecipeContentManager {
             appliances,
             caravanFriendly: getBooleanAttribute('caravanFriendly'),
             hospitalFriendly: getBooleanAttribute('hospitalFriendly'),
-            menuFriendly: getBooleanAttribute('menuFriendly')
+            menuFriendly: getBooleanAttribute('menuFriendly'),
+            createdAt: createdAtText ? new Date(createdAtText) : new Date(),
+            updatedAt: updatedAtText ? new Date(updatedAtText) : new Date()
         };
     }
 
@@ -551,6 +562,11 @@ class RecipeContentManager {
 
         tr.innerHTML = `
             <td><input type="checkbox" class="recipe-checkbox" data-recipe-id="${recipe.id}" ${this.selectedRecipes.has(recipe.id) ? 'checked' : ''}></td>
+            <td>
+                <button class="modal-trigger modal-trigger--icon" onclick="rcm.editRecipe('${recipe.id}')" title="Editar receta">
+                    <i class="fa-solid fa-edit"></i>
+                </button>
+            </td>
             <td style="min-width: 150px;"><input type="text" class="editable-field" data-recipe-id="${recipe.id}" data-field="name" value="${this.escapeHtml(recipe.name)}" style="width: 100%; padding: 4px; border: 1px solid var(--color-border); border-radius: 4px;"></td>
             <td><select class="editable-field" data-recipe-id="${recipe.id}" data-field="category" style="width: 100%; padding: 4px; border: 1px solid var(--color-border); border-radius: 4px;">${categoryOptions}</select></td>
             <td><input type="text" class="editable-field" data-recipe-id="${recipe.id}" data-field="author" value="${this.escapeHtml(recipe.author || '')}" placeholder="Sin autor" style="width: 100%; padding: 4px; border: 1px solid var(--color-border); border-radius: 4px;"></td>
@@ -563,17 +579,10 @@ class RecipeContentManager {
                 </div>
             </td>
             <td style="text-align: center; color: #666;">${recipe.ingredients.length}</td>
-            <td style="text-align: center; color: #666;">${recipe.sequences.length}</td>
-            <td style="text-align: center; color: #666;">${recipe.appliances.length > 0 ? recipe.appliances.length : '-'}</td>
             <td style="text-align: center;">${recipe.images.length > 0 ? recipe.images.length : '<span style="color: var(--color-text-secondary);">-</span>'}</td>
             <td style="text-align: center;"><input type="checkbox" class="flag-checkbox" data-recipe-id="${recipe.id}" data-flag="caravanFriendly" ${recipe.caravanFriendly ? 'checked' : ''}></td>
             <td style="text-align: center;"><input type="checkbox" class="flag-checkbox" data-recipe-id="${recipe.id}" data-flag="hospitalFriendly" ${recipe.hospitalFriendly ? 'checked' : ''}></td>
             <td style="text-align: center;"><input type="checkbox" class="flag-checkbox" data-recipe-id="${recipe.id}" data-flag="menuFriendly" ${recipe.menuFriendly ? 'checked' : ''}></td>
-            <td>
-                <button class="modal-trigger modal-trigger--icon" onclick="rcm.editRecipe('${recipe.id}')" title="Editar receta">
-                    <i class="fa-solid fa-edit"></i>
-                </button>
-            </td>
         `;
 
         // Add checkbox event listener for selection
@@ -779,8 +788,9 @@ class RecipeContentManager {
         const count = this.selectedRecipes.size;
         document.getElementById('selected-count').textContent = `${count} seleccionada${count !== 1 ? 's' : ''}`;
         
-        // Enable/disable batch edit button
+        // Enable/disable batch edit and delete buttons
         document.getElementById('batch-edit-btn').disabled = count === 0;
+        document.getElementById('delete-selected-btn').disabled = count === 0;
     }
 
     // ==================== EDITING ====================
@@ -814,7 +824,11 @@ class RecipeContentManager {
             const quantity = `${ing.quantity} ${ing.unit}`;
             return `${name}${quantity}`;
         }).join('\n');
-        document.getElementById('edit-ingredients').value = ingredientsText;
+        const ingredientsTextarea = document.getElementById('edit-ingredients');
+        ingredientsTextarea.value = ingredientsText;
+        
+        // Auto-resize textarea based on content
+        this.autoResizeTextarea(ingredientsTextarea);
 
         // Populate category dropdown with predefined categories
         const categorySelect = document.getElementById('edit-category');
@@ -837,6 +851,22 @@ class RecipeContentManager {
         // Render images
         this.renderImagesPreview(recipe);
         this.setupImageUpload(recipe);
+
+        // Display timestamps
+        const formatDate = (date) => {
+            if (!date) return '-';
+            const d = date instanceof Date ? date : new Date(date);
+            return d.toLocaleString('es-ES', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        };
+        
+        document.getElementById('edit-created-at').textContent = formatDate(recipe.createdAt);
+        document.getElementById('edit-updated-at').textContent = formatDate(recipe.updatedAt);
 
         // Show modal
         document.getElementById('edit-recipe-modal').style.display = 'flex';
@@ -926,21 +956,26 @@ class RecipeContentManager {
             const applianceDef = PREDEFINED_APPLIANCES.find(a => a.name === applianceName);
             const emoji = applianceDef ? applianceDef.emoji : '🔧';
 
-            const badge = document.createElement('span');
-            badge.className = 'appliance-badge';
-            badge.style.cssText = `
-                display: inline-flex;
-                align-items: center;
-                gap: 4px;
-                padding: 6px 12px;
-                border-radius: 16px;
-                background: #FF385C;
-                color: white;
-                font-size: 0.875rem;
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'appliance-chip';
+            chip.disabled = true;
+            chip.style.cssText = `
+                cursor: default;
+                opacity: 1;
+                border-color: var(--color-primary);
+                background: transparent;
+                color: var(--color-text);
             `;
-            badge.textContent = `${emoji} ${applianceName}`;
+            
+            const emojiSpan = document.createElement('span');
+            emojiSpan.className = 'chip-emoji';
+            emojiSpan.textContent = emoji;
+            
+            chip.appendChild(emojiSpan);
+            chip.appendChild(document.createTextNode(` ${applianceName}`));
 
-            container.appendChild(badge);
+            container.appendChild(chip);
         });
     }
 
@@ -994,6 +1029,9 @@ class RecipeContentManager {
         recipe.menuFriendly = document.getElementById('edit-menu').checked;
         // Appliances are already updated in renderApplianceBadges
         // Ingredients are read-only and not editable in this modal
+
+        // Update timestamp
+        recipe.updatedAt = new Date();
 
         // Update UI
         this.renderDashboard();
@@ -1100,6 +1138,66 @@ class RecipeContentManager {
         this.renderTable();
         this.closeBatchEditModal();
         this.showNotification(`${this.selectedRecipes.size} recetas actualizadas`, 'success');
+    }
+
+    // ==================== DELETE RECIPES ====================
+
+    openDeleteConfirmationModal() {
+        if (this.selectedRecipes.size === 0) return;
+
+        // Update count
+        const count = this.selectedRecipes.size;
+        document.getElementById('delete-count').textContent = count;
+
+        // Build list of recipes to delete
+        const listContainer = document.getElementById('delete-recipe-list');
+        listContainer.innerHTML = '';
+        
+        const ul = document.createElement('ul');
+        ul.style.cssText = 'list-style: none; padding: 0; margin: 0;';
+        
+        this.selectedRecipes.forEach(recipeId => {
+            const recipe = this.recipes.find(r => r.id === recipeId);
+            if (recipe) {
+                const li = document.createElement('li');
+                li.style.cssText = 'padding: 8px; margin-bottom: 4px; background: white; border-radius: 4px; border-left: 3px solid var(--color-danger);';
+                li.innerHTML = `<strong>${this.escapeHtml(recipe.name)}</strong> <span style="color: var(--color-text-secondary);">(${recipe.category})</span>`;
+                ul.appendChild(li);
+            }
+        });
+        
+        listContainer.appendChild(ul);
+
+        // Show modal
+        document.getElementById('delete-confirmation-modal').style.display = 'flex';
+    }
+
+    closeDeleteConfirmationModal() {
+        document.getElementById('delete-confirmation-modal').style.display = 'none';
+    }
+
+    confirmDeleteRecipes() {
+        if (this.selectedRecipes.size === 0) return;
+
+        // Save to history
+        this.addToHistory('Eliminar recetas');
+
+        const count = this.selectedRecipes.size;
+
+        // Delete selected recipes
+        this.recipes = this.recipes.filter(recipe => !this.selectedRecipes.has(recipe.id));
+        
+        // Clear selection
+        this.selectedRecipes.clear();
+
+        // Update UI
+        this.filteredRecipes = [...this.recipes];
+        this.renderDashboard();
+        this.renderFilters();
+        this.renderTable();
+        this.closeDeleteConfirmationModal();
+        
+        this.showNotification(`${count} receta${count !== 1 ? 's' : ''} eliminada${count !== 1 ? 's' : ''}`, 'success');
     }
 
     // ==================== FIND AND REPLACE ====================
@@ -1231,8 +1329,8 @@ class RecipeContentManager {
             });
             xml += `    </ingredients>\n`;
 
-            // Sequences (use additionSequences to match app format)
-            xml += `    <additionSequences>\n`;
+            // Sequences
+            xml += `    <sequences>\n`;
             recipe.sequences.forEach(seq => {
                 xml += `      <sequence>\n`;
                 xml += `        <duration>${this.escapeXml(seq.duration)}</duration>\n`;
@@ -1244,7 +1342,7 @@ class RecipeContentManager {
                 xml += `        </ingredientIds>\n`;
                 xml += `      </sequence>\n`;
             });
-            xml += `    </additionSequences>\n`;
+            xml += `    </sequences>\n`;
 
             // Images
             xml += `    <images>\n`;
@@ -1257,7 +1355,7 @@ class RecipeContentManager {
             });
             xml += `    </images>\n`;
 
-            // Appliances (use kitchenAppliances to match app format)
+            // Kitchen Appliances
             xml += `    <kitchenAppliances>\n`;
             recipe.appliances.forEach(app => {
                 xml += `      <appliance>${this.escapeXml(app)}</appliance>\n`;
@@ -1268,6 +1366,12 @@ class RecipeContentManager {
             xml += `    <caravanFriendly value="${recipe.caravanFriendly}"/>\n`;
             xml += `    <hospitalFriendly value="${recipe.hospitalFriendly}"/>\n`;
             xml += `    <menuFriendly value="${recipe.menuFriendly}"/>\n`;
+
+            // Timestamps
+            const createdAt = recipe.createdAt instanceof Date ? recipe.createdAt : new Date(recipe.createdAt || Date.now());
+            const updatedAt = recipe.updatedAt instanceof Date ? recipe.updatedAt : new Date(recipe.updatedAt || Date.now());
+            xml += `    <createdAt>${createdAt.toISOString()}</createdAt>\n`;
+            xml += `    <updatedAt>${updatedAt.toISOString()}</updatedAt>\n`;
 
             xml += `  </recipe>\n`;
         });
@@ -1371,7 +1475,10 @@ class RecipeContentManager {
             this.history.shift();
         }
 
-        document.getElementById('undo-btn-header').disabled = false;
+        const undoBtn = document.getElementById('undo-btn-header');
+        if (undoBtn) {
+            undoBtn.disabled = false;
+        }
     }
 
     undo() {
@@ -1386,7 +1493,10 @@ class RecipeContentManager {
         this.showNotification('Cambios deshechos', 'success');
 
         if (this.history.length === 0) {
-            document.getElementById('undo-btn-header').disabled = true;
+            const undoBtn = document.getElementById('undo-btn-header');
+            if (undoBtn) {
+                undoBtn.disabled = true;
+            }
         }
     }
 
@@ -1399,16 +1509,29 @@ class RecipeContentManager {
 
         this.backups.push(backup);
 
-        // Keep only last 5 backups
-        if (this.backups.length > 5) {
+        // Keep only last 3 backups (reduced to save space)
+        if (this.backups.length > 3) {
             this.backups.shift();
         }
 
-        // Save to localStorage
+        // Save to localStorage with quota handling
         try {
             localStorage.setItem('rcm_backups', JSON.stringify(this.backups));
         } catch (e) {
-            console.error('Error saving backup:', e);
+            if (e.name === 'QuotaExceededError') {
+                console.warn('LocalStorage quota exceeded. Clearing old backups...');
+                // Clear all backups and try again with just the current one
+                this.backups = [backup];
+                try {
+                    localStorage.setItem('rcm_backups', JSON.stringify(this.backups));
+                    this.showNotification('Espacio limitado: solo se guardó el backup más reciente', 'warning');
+                } catch (e2) {
+                    console.error('Cannot save backup even after clearing:', e2);
+                    this.showNotification('No se pudo guardar el backup (espacio insuficiente)', 'error');
+                }
+            } else {
+                console.error('Error saving backup:', e);
+            }
         }
     }
 
@@ -1485,6 +1608,25 @@ class RecipeContentManager {
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&apos;');
+    }
+
+    autoResizeTextarea(textarea) {
+        // Reset height to auto to get the correct scrollHeight
+        textarea.style.height = 'auto';
+        
+        // Calculate the number of lines
+        const lineCount = (textarea.value.match(/\n/g) || []).length + 1;
+        
+        // Set minimum and maximum heights
+        const minLines = 2;
+        const maxLines = 20;
+        const lineHeight = 20; // Approximate line height in pixels
+        
+        // Calculate height based on content
+        const lines = Math.max(minLines, Math.min(lineCount, maxLines));
+        const newHeight = lines * lineHeight + 20; // +20 for padding
+        
+        textarea.style.height = newHeight + 'px';
     }
 
     // ==================== CREATE & DUPLICATE ====================

@@ -141,8 +141,8 @@
 
         /* Columnas con ancho específico */
         .recipe-table td:nth-child(2) {
-            min-width: 150px;
-            max-width: 250px;
+            min-width: 40px;
+            max-width: 60px;
         }
 
         /* Columnas numéricas centradas */
@@ -795,11 +795,13 @@
                 </div>
 
                 <div class="filter-section">
-                    <h3 style="cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px;" onclick="rcm.toggleIncompleteRecipes()">
+                    <h3 style="cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px;"
+                        onclick="rcm.toggleIncompleteRecipes()">
                         <span id="incomplete-toggle-icon">▶</span>
                         ⚠️ Recetas Incompletas
                     </h3>
-                    <div id="incomplete-recipes" style="font-size: 0.875rem; color: var(--color-text-secondary); display: none; margin-top: 8px;">
+                    <div id="incomplete-recipes"
+                        style="font-size: 0.875rem; color: var(--color-text-secondary); display: none; margin-top: 8px;">
                         <p>Carga un XML para ver recetas incompletas</p>
                     </div>
                 </div>
@@ -887,6 +889,11 @@
                             <span class="option-icon"><i class="fa-solid fa-pen-to-square"></i></span>
                             <span class="option-text">Editar Seleccionadas</span>
                         </button>
+                        <button class="modal-trigger modal-trigger--action modal-trigger--danger" id="delete-selected-btn"
+                            disabled style="width: auto;">
+                            <span class="option-icon"><i class="fa-solid fa-trash"></i></span>
+                            <span class="option-text">Eliminar Seleccionadas</span>
+                        </button>
                         <button class="modal-trigger modal-trigger--action modal-trigger--success hidden"
                             id="save-changes-top-btn" onclick="rcm.saveTableChanges()" style="width: auto;">
                             <span class="option-icon"><i class="fa-solid fa-save"></i></span>
@@ -900,18 +907,16 @@
                         <thead>
                             <tr>
                                 <th style="width: 40px;"><input type="checkbox" id="select-all-checkbox"></th>
+                                <th>Acciones</th>
                                 <th class="sortable" data-sort="name">Nombre</th>
                                 <th class="sortable" data-sort="category">Categoría</th>
                                 <th class="sortable" data-sort="author">Autor</th>
                                 <th class="sortable" data-sort="totalTime">Tiempo</th>
                                 <th class="sortable" data-sort="ingredients">Ingredientes</th>
-                                <th class="sortable" data-sort="sequences">Secuencias</th>
-                                <th class="sortable" data-sort="appliances">Aparatos</th>
                                 <th>Imágenes</th>
                                 <th>Caravana</th>
                                 <th>Hospital</th>
                                 <th>Menú</th>
-                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="recipe-table-body">
@@ -1079,9 +1084,31 @@
             <div class="modal-body">
                 <input type="hidden" id="edit-recipe-id">
 
-                <div style="margin-bottom: var(--spacing-md);">
-                    <label class="label">Nombre *</label>
-                    <input type="text" id="edit-name" class="input" required>
+                <!-- Nombre y Fechas en la misma línea -->
+                <div
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
+                    <div>
+                        <label class="label">Nombre *</label>
+                        <input type="text" id="edit-name" class="input" required>
+                    </div>
+                    <div>
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.875rem;">
+                            <div>
+                                <label
+                                    style="display: block; font-weight: 500; margin-bottom: 4px; color: var(--color-text);">Fecha
+                                    de creación</label>
+                                <span id="edit-created-at"
+                                    style="display: block; color: var(--color-text-secondary);">-</span>
+                            </div>
+                            <div>
+                                <label
+                                    style="display: block; font-weight: 500; margin-bottom: 4px; color: var(--color-text);">Última
+                                    modificación</label>
+                                <span id="edit-updated-at"
+                                    style="display: block; color: var(--color-text-secondary);">-</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div
@@ -1118,15 +1145,15 @@
                 <hr style="border: none; border-top: 1px solid var(--color-border); margin: var(--spacing-lg) 0;">
 
                 <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
-                    <div style="flex: 0 0 65%;">
+                    <div style="flex: 0 0 50%;">
                         <label class="label">Ingredientes: <span id="edit-ingredients-count">0</span></label>
-                        <textarea id="edit-ingredients" class="input" rows="8" readonly
-                            style="font-family: 'Courier New', monospace; white-space: pre; background: var(--color-background-secondary); cursor: default;"></textarea>
+                        <textarea id="edit-ingredients" class="input" readonly
+                            style="font-family: 'Courier New', monospace; white-space: pre; background: var(--color-background-secondary); cursor: default; min-height: 60px; max-height: 400px; resize: vertical; overflow-y: auto;"></textarea>
                     </div>
-                    <div style="flex: 0 0 35%;">
+                    <div style="flex: 0 0 50%;">
                         <label class="label">Aparatos</label>
-                        <div id="edit-appliances" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
-                            <!-- Appliance badges will be rendered here -->
+                        <div id="edit-appliances" class="kitchen-appliances-chips" style="margin-top: 8px;">
+                            <!-- Appliance chips will be rendered here -->
                         </div>
                     </div>
                 </div>
@@ -1188,6 +1215,38 @@
                 <button class="modal-trigger modal-trigger--action modal-trigger--primary"
                     onclick="rcm.saveEditRecipe()" style="width: auto;">
                     <span class="option-text">Guardar Cambios</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-confirmation-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header" style="background: var(--color-danger); color: white;">
+                <h2><i class="fa-solid fa-triangle-exclamation"></i> Confirmar Eliminación</h2>
+                <button class="modal-close" onclick="rcm.closeDeleteConfirmationModal()" style="color: white;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 1.1rem; margin-bottom: var(--spacing-md);">
+                    ⚠️ Estás a punto de eliminar <strong id="delete-count">0</strong> receta(s).
+                </p>
+                <p style="color: var(--color-text-secondary); margin-bottom: var(--spacing-md);">
+                    Esta acción no se puede deshacer. Las recetas seleccionadas serán eliminadas permanentemente.
+                </p>
+                <div id="delete-recipe-list" style="max-height: 200px; overflow-y: auto; background: var(--color-background-secondary); padding: var(--spacing-sm); border-radius: 4px; margin-bottom: var(--spacing-md);">
+                    <!-- Lista de recetas a eliminar -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-trigger modal-trigger--action modal-trigger--secondary"
+                    onclick="rcm.closeDeleteConfirmationModal()" style="width: auto;">
+                    <span class="option-text">Cancelar</span>
+                </button>
+                <button class="modal-trigger modal-trigger--action modal-trigger--danger"
+                    onclick="rcm.confirmDeleteRecipes()" style="width: auto;">
+                    <span class="option-icon"><i class="fa-solid fa-trash"></i></span>
+                    <span class="option-text">Eliminar Recetas</span>
                 </button>
             </div>
         </div>

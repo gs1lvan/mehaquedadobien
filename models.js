@@ -919,7 +919,7 @@ class XMLExporter {
             const ingredientMap = new Map();
             recipe.ingredients.forEach(ing => ingredientMap.set(ing.id, ing));
 
-            const sequencesElement = xmlDoc.createElement('additionSequences');
+            const sequencesElement = xmlDoc.createElement('sequences');
             recipe.additionSequences.forEach(sequence => {
                 const sequenceElement = xmlDoc.createElement('sequence');
 
@@ -1900,6 +1900,26 @@ class XMLImporter {
             };
 
             for (let i = 0; i < recipeElements.length; i++) {
+                // Call progress callback BEFORE processing (to show name in real-time)
+                const recipeName = this.extractRecipeName(recipeElements[i]) || `Receta ${i + 1}`;
+                if (onProgress && typeof onProgress === 'function') {
+                    const current = i + 1;
+                    const percentage = Math.round((current / recipeElements.length) * 100);
+                    const progressData = {
+                        current,
+                        total: recipeElements.length,
+                        percentage,
+                        recipeName: recipeName,
+                        status: 'processing'
+                    };
+                    console.log('[XMLImporter] Calling progress callback:', progressData);
+                    onProgress(progressData);
+                    // Small delay to allow UI to update and show progress
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                } else {
+                    console.log('[XMLImporter] No progress callback provided');
+                }
+
                 try {
                     const recipe = await this.parseRecipeElement(recipeElements[i]);
                     results.successful.push(recipe);
@@ -1908,22 +1928,10 @@ class XMLImporter {
                     console.error(`[XMLImporter] Error parsing recipe ${i + 1}:`, error);
                     results.failed.push({
                         index: i + 1,
-                        name: this.extractRecipeName(recipeElements[i]) || `Receta ${i + 1}`,
+                        name: recipeName,
                         error: error.message
                     });
                     results.summary.errors++;
-                }
-
-                // Call progress callback if provided
-                if (onProgress && typeof onProgress === 'function') {
-                    const current = i + 1;
-                    const percentage = Math.round((current / recipeElements.length) * 100);
-                    onProgress({
-                        current,
-                        total: recipeElements.length,
-                        percentage,
-                        recipeName: this.extractRecipeName(recipeElements[i]) || `Receta ${i + 1}`
-                    });
                 }
             }
 
