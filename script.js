@@ -8891,13 +8891,12 @@ class RecipeApp {
             // Import recipes using XMLImporter with progress callback
             const result = await XMLImporter.importFromFile(file, onProgress);
 
-            // Keep progress modal visible for a moment to show 100%
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            // Hide progress modal
-            if (progressModal) {
-                progressModal.classList.add('hidden');
-                progressModal.style.display = 'none';
+            // Update progress text to show we're finishing up
+            if (progressText) {
+                progressText.textContent = 'Guardando recetas...';
+            }
+            if (progressDetails) {
+                progressDetails.textContent = '💾 Finalizando importación';
             }
 
             console.log('[Import] Import completed:', result.summary);
@@ -8967,6 +8966,12 @@ class RecipeApp {
             await this.loadRecipes();
             this.renderFilterChips();
             this.renderRecipeList();
+
+            // Hide progress modal AFTER recipes are rendered
+            if (progressModal) {
+                progressModal.classList.add('hidden');
+                progressModal.style.display = 'none';
+            }
 
             // Show import summary
             this.showImportSummary(result);
