@@ -1,0 +1,279 @@
+/* 🍳 Estilos de Impresión para Menú Semanal - Estilo Nevera Desenfadado */
+
+@media print {
+    /* Ocultar todo excepto el contenido del menú */
+    body * {
+        visibility: hidden;
+    }
+
+    #print-menu-container,
+    #print-menu-container * {
+        visibility: visible;
+    }
+
+    #print-menu-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+
+    /* Configuración de página */
+    @page {
+        size: A4 landscape;
+        margin: 10mm;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        background: white;
+    }
+}
+
+/* Contenedor del menú para imprimir */
+#print-menu-container {
+    display: none;
+}
+
+/* Estilos base del menú (visibles en pantalla y en impresión) */
+#print-menu-container,
+#print-menu-preview {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', cursive, sans-serif;
+    max-width: 210mm;
+    margin: 0 auto;
+    background: white;
+    color: #333;
+}
+
+@media print {
+    #print-menu-container {
+        display: block !important;
+    }
+}
+
+/* Header del menú - Estilo pizarra */
+.print-menu-header {
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #FF5A5F 0%, #FF385C 100%);
+    border-radius: 15px 15px 0 0;
+    border: 4px dashed #333;
+    border-bottom: none;
+    position: relative;
+}
+
+.print-menu-header::before {
+    content: '🍳';
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    font-size: 2rem;
+}
+
+.print-menu-header::after {
+    content: '🥗';
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 2rem;
+}
+
+.print-menu-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: white;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    letter-spacing: 2px;
+}
+
+.print-menu-subtitle {
+    font-size: 1.2rem;
+    color: white;
+    margin: 5px 0 0 0;
+    font-style: italic;
+}
+
+.print-menu-date {
+    font-size: 1rem;
+    color: white;
+    margin: 10px 0 0 0;
+    font-weight: bold;
+}
+
+/* Cuerpo del menú */
+.print-menu-body {
+    padding: 20px;
+    border: 4px dashed #333;
+    border-top: none;
+    border-radius: 0 0 15px 15px;
+    background: #FFFEF7;
+}
+
+/* Tabla del menú */
+.print-menu-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 20px;
+}
+
+.print-menu-table th,
+.print-menu-table td {
+    padding: 12px;
+    text-align: center;
+    border: 3px solid #FF5A5F;
+}
+
+/* Header de la tabla */
+.print-menu-th-meal {
+    background: linear-gradient(135deg, #FF5A5F 0%, #FF385C 100%);
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-top-left-radius: 10px;
+}
+
+.print-menu-th-day {
+    background: linear-gradient(135deg, #FFB6B9 0%, #FFA5A9 100%);
+    color: #333;
+    font-size: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    line-height: 1.4;
+}
+
+.print-menu-th-day:last-child {
+    border-top-right-radius: 10px;
+}
+
+/* Filas de comidas */
+.print-menu-td-label {
+    background: linear-gradient(135deg, #FF5A5F 0%, #FF385C 100%);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-align: left;
+    padding-left: 15px;
+}
+
+.print-menu-row-lunch .print-menu-td-label {
+    background: linear-gradient(135deg, #FFD93D 0%, #FFC93D 100%);
+    color: #333;
+}
+
+.print-menu-row-dinner .print-menu-td-label {
+    background: linear-gradient(135deg, #6C5CE7 0%, #5B4CD3 100%);
+    color: white;
+}
+
+.print-menu-td-meal {
+    background: white;
+    font-size: 1rem;
+    color: #333;
+    text-align: left;
+    padding: 15px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.print-menu-row-lunch .print-menu-td-meal {
+    background: #FFFEF7;
+}
+
+.print-menu-row-dinner .print-menu-td-meal {
+    background: #F5F3FF;
+}
+
+/* Footer del menú */
+.print-menu-footer {
+    margin-top: 20px;
+    padding: 15px;
+    text-align: center;
+    background: #FFF9E6;
+    border-radius: 10px;
+    border: 2px dashed #FFB6B9;
+}
+
+.print-menu-footer-text {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0;
+}
+
+.print-menu-footer-emoji {
+    font-size: 1.5rem;
+    margin-top: 5px;
+}
+
+/* Notas adicionales */
+.print-menu-notes {
+    margin-top: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 10px;
+    border: 2px dashed #333;
+}
+
+.print-menu-notes-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #FF5A5F;
+    margin: 0 0 10px 0;
+}
+
+.print-menu-notes-content {
+    font-size: 0.95rem;
+    color: #666;
+    line-height: 1.6;
+}
+
+/* Decoraciones */
+.print-decoration {
+    text-align: center;
+    font-size: 1.5rem;
+    margin: 10px 0;
+    opacity: 0.6;
+}
+
+/* Ajustes para impresión */
+@media print {
+    .print-menu-day {
+        box-shadow: none;
+    }
+    
+    .print-menu-header {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .print-menu-recipe {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+
+/* Vista previa en modal (no para impresión) */
+#print-menu-preview {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', cursive, sans-serif;
+    max-width: 210mm;
+    margin: 0 auto;
+}
+
+#print-menu-preview .print-menu-header {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+#print-menu-preview .print-menu-recipe {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+#print-menu-preview .print-menu-body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}

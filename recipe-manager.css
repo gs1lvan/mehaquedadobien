@@ -84,22 +84,29 @@
 
 .dash-stat {
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: var(--spacing-xs);
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--spacing-md);
     background: rgba(255, 90, 95, 0.08);
     border-left: 3px solid #FF5A5F;
     border-radius: var(--radius-sm);
     color: var(--color-text);
     flex: 1;
     min-width: 150px;
-    transition: all 0.2s;
+    transition: all 0.3s;
 }
 
 .dash-stat:hover {
     background: rgba(255, 90, 95, 0.15);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(255, 90, 95, 0.2);
+}
+
+.dash-stat-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
 }
 
 .dash-icon {
@@ -111,11 +118,73 @@
     font-size: 1.5rem;
     font-weight: var(--font-weight-bold);
     color: #FF5A5F;
+    transition: all 0.3s ease;
+}
+
+.dash-value.updating {
+    animation: pulse 0.5s ease;
 }
 
 .dash-label {
     font-size: 0.75rem;
     color: var(--color-text-secondary);
+    text-align: center;
+}
+
+/* Circular Progress */
+.circular-progress {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin-bottom: var(--spacing-xs);
+}
+
+.progress-ring {
+    transform: rotate(-90deg);
+}
+
+.progress-ring-circle-bg {
+    fill: none;
+    stroke: rgba(255, 90, 95, 0.1);
+    stroke-width: 6;
+}
+
+.progress-ring-circle {
+    fill: none;
+    stroke: #FF5A5F;
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 201;
+    stroke-dashoffset: 201;
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.progress-content .dash-icon {
+    font-size: 1.2rem;
+}
+
+.progress-content .dash-value {
+    font-size: 1rem;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
 }
 
 /* Recetas Incompletas */
@@ -285,14 +354,10 @@
     max-width: 60px;
 }
 
-/* Columnas numéricas centradas */
+/* Columnas de flags centradas */
+.recipe-table td:nth-child(7),
 .recipe-table td:nth-child(8),
-.recipe-table td:nth-child(9),
-.recipe-table td:nth-child(10),
-.recipe-table td:nth-child(11),
-.recipe-table td:nth-child(12),
-.recipe-table td:nth-child(13),
-.recipe-table td:nth-child(14) {
+.recipe-table td:nth-child(9) {
     text-align: center;
 }
 
@@ -495,6 +560,37 @@
         transform: translateX(0);
         opacity: 1;
     }
+}
+
+/* Filter animations */
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.recipe-table tbody tr {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.recipe-table tbody tr.filtering-out {
+    animation: fadeOut 0.2s ease-out forwards;
 }
 
 .toast.success {

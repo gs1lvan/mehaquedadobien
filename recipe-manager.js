@@ -674,21 +674,64 @@ class RecipeContentManager {
         }
     }
 
-    renderTable() {
+    renderTable(animated = false) {
         const tbody = document.getElementById('recipe-table-body');
-        tbody.innerHTML = '';
-
+        
         if (this.filteredRecipes.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: var(--spacing-xl); color: var(--color-text-secondary);">No se encontraron recetas</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: var(--spacing-xl); color: var(--color-text-secondary);">No se encontraron recetas</td></tr>';
             return;
         }
 
-        this.filteredRecipes.forEach(recipe => {
-            const row = this.createRecipeRow(recipe);
-            tbody.appendChild(row);
-        });
+        if (!animated) {
+            // Render sin animación (carga inicial)
+            tbody.innerHTML = '';
+            this.filteredRecipes.forEach(recipe => {
+                const row = this.createRecipeRow(recipe);
+                tbody.appendChild(row);
+            });
+            this.updateSelectedCount();
+            return;
+        }
 
-        this.updateSelectedCount();
+        // Render con animación (filtrado)
+        const currentRows = Array.from(tbody.querySelectorAll('tr'));
+        const currentIds = new Set(currentRows.map(row => row.dataset.recipeId));
+        const newIds = new Set(this.filteredRecipes.map(r => r.id));
+        
+        // Marcar filas que desaparecerán
+        const rowsToRemove = currentRows.filter(row => !newIds.has(row.dataset.recipeId));
+        
+        if (rowsToRemove.length > 0) {
+            // Animar salida de filas
+            rowsToRemove.forEach(row => {
+                row.classList.add('filtering-out');
+            });
+            
+            // Esperar a que termine la animación de salida
+            setTimeout(() => {
+                // Eliminar filas que salieron
+                rowsToRemove.forEach(row => row.remove());
+                
+                // Agregar nuevas filas con animación de entrada
+                this.filteredRecipes.forEach(recipe => {
+                    if (!currentIds.has(recipe.id)) {
+                        const row = this.createRecipeRow(recipe);
+                        tbody.appendChild(row);
+                    }
+                });
+                
+                this.updateSelectedCount();
+            }, 200);
+        } else {
+            // Solo agregar nuevas filas
+            this.filteredRecipes.forEach(recipe => {
+                if (!currentIds.has(recipe.id)) {
+                    const row = this.createRecipeRow(recipe);
+                    tbody.appendChild(row);
+                }
+            });
+            this.updateSelectedCount();
+        }
     }
 
     createRecipeRow(recipe) {
@@ -738,8 +781,6 @@ class RecipeContentManager {
                     <span style="font-size: 0.75rem;">min</span>
                 </div>
             </td>
-            <td style="text-align: center; color: #666;">${recipe.ingredients.length}</td>
-            <td style="text-align: center;">${recipe.images.length > 0 ? recipe.images.length : '<span style="color: var(--color-text-secondary);">-</span>'}</td>
             <td style="text-align: center;"><input type="checkbox" class="flag-checkbox" data-recipe-id="${recipe.id}" data-flag="caravanFriendly" ${recipe.caravanFriendly ? 'checked' : ''}></td>
             <td style="text-align: center;"><input type="checkbox" class="flag-checkbox" data-recipe-id="${recipe.id}" data-flag="hospitalFriendly" ${recipe.hospitalFriendly ? 'checked' : ''}></td>
             <td style="text-align: center;"><input type="checkbox" class="flag-checkbox" data-recipe-id="${recipe.id}" data-flag="menuFriendly" ${recipe.menuFriendly ? 'checked' : ''}></td>
@@ -889,7 +930,7 @@ class RecipeContentManager {
             return true;
         });
 
-        this.renderTable();
+        this.renderTable(true); // true = con animación
         this.updateDashboardStats(); // Update dashboard with filtered data
     }
 
@@ -912,11 +953,50 @@ class RecipeContentManager {
         const statTimeH = document.getElementById('stat-time-h');
         const statAuthorsH = document.getElementById('stat-authors-h');
 
-        if (statTotalH) statTotalH.textContent = total;
-        if (statImagesH) statImagesH.textContent = totalImages;
-        if (statIngredientsH) statIngredientsH.textContent = totalIngredients;
-        if (statTimeH) statTimeH.textContent = Math.round(totalTime) + 'h';
-        if (statAuthorsH) statAuthorsH.textContent = total > 0 ? Math.round((withAuthor / total) * 100) + '%' : '0%';
+        // Animate value changes
+        this.animateStatValue(statTotalH, total);
+        this.animateStatValue(statImagesH, totalImages);
+        this.animateStatValue(statIngredientsH, totalIngredients);
+        this.animateStatValue(statTimeH, Math.round(totalTime) + 'h');
+        
+        const authorsPercent = total > 0 ? Math.round((withAuthor / total) * 100) : 0;
+        this.animateStatValue(statAuthorsH, authorsPercent + '%');
+
+        // Update circular progress
+        this.updateCircularProgress('images', totalImages, this.recipes.reduce((sum, r) => sum + r.images.length, 0));
+        this.updateCircularProgress('ingredients', totalIngredients, this.recipes.reduce((sum, r) => sum + r.ingredients.length, 0));
+        this.updateCircularProgress('time', Math.round(totalTime), Math.round(this.recipes.reduce((sum, r) => {
+            const time = this.parseTimeString(r.totalTime);
+            return sum + (parseInt(time.hours) || 0) + (parseInt(time.minutes) || 0) / 60;
+        }, 0)));
+        this.updateCircularProgress('authors', authorsPercent, 100);
+    }
+
+    animateStatValue(element, newValue) {
+        if (!element) return;
+        
+        // Add pulse animation
+        element.classList.add('updating');
+        setTimeout(() => {
+            element.textContent = newValue;
+            element.classList.remove('updating');
+        }, 150);
+    }
+
+    updateCircularProgress(stat, current, max) {
+        const progressElement = document.querySelector(`.circular-progress[data-stat="${stat}"]`);
+        if (!progressElement) return;
+
+        const circle = progressElement.querySelector('.progress-ring-circle');
+        const radius = 32;
+        const circumference = 2 * Math.PI * radius;
+        
+        // Calculate percentage
+        const percentage = max > 0 ? (current / max) * 100 : 0;
+        const offset = circumference - (percentage / 100) * circumference;
+        
+        // Animate the circle
+        circle.style.strokeDashoffset = offset;
     }
 
     clearFilters() {

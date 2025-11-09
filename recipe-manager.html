@@ -180,28 +180,62 @@
                 <!-- Dashboard Horizontal -->
                 <div class="dashboard-horizontal">
                     <div class="dash-stat">
-                        <span class="dash-icon"><i class="fa-solid fa-book"></i></span>
-                        <span class="dash-value" id="stat-total-h">0</span>
-                        <span class="dash-label">recetas</span>
+                        <div class="dash-stat-content">
+                            <span class="dash-icon"><i class="fa-solid fa-book"></i></span>
+                            <span class="dash-value" id="stat-total-h">0</span>
+                            <span class="dash-label">recetas</span>
+                        </div>
                     </div>
                     <div class="dash-stat">
-                        <span class="dash-icon"><i class="fa-solid fa-images"></i></span>
-                        <span class="dash-value" id="stat-images-h">0</span>
+                        <div class="circular-progress" data-stat="images">
+                            <svg class="progress-ring" width="80" height="80">
+                                <circle class="progress-ring-circle-bg" cx="40" cy="40" r="32"></circle>
+                                <circle class="progress-ring-circle" cx="40" cy="40" r="32"></circle>
+                            </svg>
+                            <div class="progress-content">
+                                <span class="dash-icon"><i class="fa-solid fa-images"></i></span>
+                                <span class="dash-value" id="stat-images-h">0</span>
+                            </div>
+                        </div>
                         <span class="dash-label">imágenes</span>
                     </div>
                     <div class="dash-stat">
-                        <span class="dash-icon"><i class="fa-solid fa-carrot"></i></span>
-                        <span class="dash-value" id="stat-ingredients-h">0</span>
+                        <div class="circular-progress" data-stat="ingredients">
+                            <svg class="progress-ring" width="80" height="80">
+                                <circle class="progress-ring-circle-bg" cx="40" cy="40" r="32"></circle>
+                                <circle class="progress-ring-circle" cx="40" cy="40" r="32"></circle>
+                            </svg>
+                            <div class="progress-content">
+                                <span class="dash-icon"><i class="fa-solid fa-carrot"></i></span>
+                                <span class="dash-value" id="stat-ingredients-h">0</span>
+                            </div>
+                        </div>
                         <span class="dash-label">ingredientes</span>
                     </div>
                     <div class="dash-stat">
-                        <span class="dash-icon"><i class="fa-solid fa-clock"></i></span>
-                        <span class="dash-value" id="stat-time-h">0h</span>
+                        <div class="circular-progress" data-stat="time">
+                            <svg class="progress-ring" width="80" height="80">
+                                <circle class="progress-ring-circle-bg" cx="40" cy="40" r="32"></circle>
+                                <circle class="progress-ring-circle" cx="40" cy="40" r="32"></circle>
+                            </svg>
+                            <div class="progress-content">
+                                <span class="dash-icon"><i class="fa-solid fa-clock"></i></span>
+                                <span class="dash-value" id="stat-time-h">0h</span>
+                            </div>
+                        </div>
                         <span class="dash-label">tiempo total</span>
                     </div>
                     <div class="dash-stat">
-                        <span class="dash-icon"><i class="fa-solid fa-user-pen"></i></span>
-                        <span class="dash-value" id="stat-authors-h">0%</span>
+                        <div class="circular-progress" data-stat="authors">
+                            <svg class="progress-ring" width="80" height="80">
+                                <circle class="progress-ring-circle-bg" cx="40" cy="40" r="32"></circle>
+                                <circle class="progress-ring-circle" cx="40" cy="40" r="32"></circle>
+                            </svg>
+                            <div class="progress-content">
+                                <span class="dash-icon"><i class="fa-solid fa-user-pen"></i></span>
+                                <span class="dash-value" id="stat-authors-h">0%</span>
+                            </div>
+                        </div>
                         <span class="dash-label">con autor</span>
                     </div>
                 </div>
@@ -293,8 +327,6 @@
                                 <th class="sortable" data-sort="category">Categoría</th>
                                 <th class="sortable" data-sort="author">Autor</th>
                                 <th class="sortable" data-sort="totalTime">Tiempo</th>
-                                <th class="sortable" data-sort="ingredients">Ingredientes</th>
-                                <th>Imágenes</th>
                                 <th>Caravana</th>
                                 <th>Hospital</th>
                                 <th>Menú</th>
