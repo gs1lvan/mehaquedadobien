@@ -2,7 +2,7 @@
 
 Resumen de la actualización de estilos del CMS para usar el sistema de diseño de la aplicación principal.
 
-**Fecha**: 7 de noviembre de 2025
+**Última actualización**: 9 de noviembre de 2025
 
 ---
 
