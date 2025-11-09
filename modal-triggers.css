@@ -867,6 +867,29 @@ body.dark-theme .modal-trigger--option .option-icon i {
     color: white;
 }
 
+/* Variante Danger - Acción de eliminar */
+.modal-trigger--action.modal-trigger--danger {
+    background: var(--color-danger);
+    color: white;
+    border-color: var(--color-danger);
+}
+
+.modal-trigger--action.modal-trigger--danger:hover {
+    background: #A02A10;
+    border-color: #A02A10;
+    transform: scale(1.02);
+}
+
+.modal-trigger--action.modal-trigger--danger:active {
+    transform: scale(0.98);
+}
+
+.modal-trigger--action.modal-trigger--danger .option-icon,
+.modal-trigger--action.modal-trigger--danger .option-icon i,
+.modal-trigger--action.modal-trigger--danger .option-text {
+    color: white;
+}
+
 /* Tema oscuro para botones de acción */
 body.dark-theme .modal-trigger--action.modal-trigger--primary {
     background: var(--color-primary);
@@ -899,5 +922,20 @@ body.dark-theme .modal-trigger--action.modal-trigger--success:hover {
 body.dark-theme .modal-trigger--action.modal-trigger--success .option-icon,
 body.dark-theme .modal-trigger--action.modal-trigger--success .option-icon i,
 body.dark-theme .modal-trigger--action.modal-trigger--success .option-text {
+    color: white;
+}
+
+body.dark-theme .modal-trigger--action.modal-trigger--danger {
+    background: var(--color-danger);
+    color: white;
+}
+
+body.dark-theme .modal-trigger--action.modal-trigger--danger:hover {
+    background: #A02A10;
+}
+
+body.dark-theme .modal-trigger--action.modal-trigger--danger .option-icon,
+body.dark-theme .modal-trigger--action.modal-trigger--danger .option-icon i,
+body.dark-theme .modal-trigger--action.modal-trigger--danger .option-text {
     color: white;
 }

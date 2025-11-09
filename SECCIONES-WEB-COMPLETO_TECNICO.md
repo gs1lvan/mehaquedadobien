@@ -859,3 +859,177 @@ Todos los métodos están en la clase `RecipeApp` en `script.js`.
 ---
 
 **Nota:** Todos estos métodos están definidos en la clase `RecipeApp` en el archivo `script.js`. Para ver la implementación completa de cualquier método, busca su nombre en ese archivo.
+
+
+---
+
+# ACTUALIZACIONES RECIENTES
+
+## Modal de Selección de Recetas para Menús
+
+### ID técnico: `menu-recipe-selector-modal`
+**Ubicación:** `index.html` líneas ~1105-1195
+
+#### Funcionalidad
+Modal personalizada que muestra recetas disponibles de una categoría seleccionada para añadir a menús.
+
+#### Elementos
+- **Título dinámico:** Muestra emoji y nombre de la categoría
+- **Lista de recetas:** `menu-recipe-list` - Grid de recetas con imágenes
+- **Estado vacío:** `menu-recipe-empty` - Mensaje cuando no hay recetas
+- **Botones:** Cancelar y Confirmar
+
+#### Estructura de cada receta
+```html
+<div class="menu-recipe-item">
+  <img class="menu-recipe-item-image" /> <!-- 60x60px -->
+  <div class="menu-recipe-item-info">
+    <div class="menu-recipe-item-name">Nombre</div>
+    <div class="menu-recipe-item-category">Categoría</div>
+  </div>
+</div>
+```
+
+#### Interacciones
+- **Click simple:** Selecciona la receta (borde azul)
+- **Doble click:** Selecciona y confirma automáticamente (cierra modal)
+- **Botón Confirmar:** Aplica la selección y cierra modal
+
+#### Estilos CSS
+- `.menu-recipe-list` - Contenedor flex vertical con scroll
+- `.menu-recipe-item` - Item individual con hover y selección
+- `.menu-recipe-item.selected` - Estado seleccionado (borde primario)
+- `.menu-recipe-item-image` - Imagen 60x60px con lazy loading
+- `.menu-recipe-item-info` - Información de la receta
+
+---
+
+## Modal de Progreso de Importación
+
+### Mejoras implementadas
+**Ubicación:** `index.html` líneas ~1255-1285
+
+#### Características
+- **Progreso en tiempo real:** Muestra nombre de cada receta mientras se procesa
+- **Delay artificial:** 50ms entre recetas para visualización
+- **Texto dinámico:** 
+  - Durante importación: "Importando X de Y recetas"
+  - Al finalizar: "💾 Finalizando importación"
+- **Persistencia:** Se mantiene visible hasta que las recetas se renderizan
+
+#### Elementos
+- `import-progress-text` - Texto principal
+- `import-progress-bar` - Barra animada con gradiente
+- `import-progress-percentage` - Porcentaje dentro de la barra
+- `import-progress-details` - Nombre de receta actual (📝 emoji + nombre)
+
+---
+
+## Vista de Menús - Responsive
+
+### Clases CSS para menús
+**Ubicación:** `index.html` líneas ~1396-1480
+
+#### Desktop/Tablet (≥768px)
+```css
+.menu-item-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 1fr;
+  gap: 16px;
+  padding: 12px;
+  align-items: start;
+}
+```
+
+#### Móvil (<768px)
+```css
+.menu-item-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+}
+```
+
+#### Clases disponibles
+- `.menu-item-row` - Fila del menú (responsive automático)
+- `.menu-day-column` - Columna del día de la semana
+- `.menu-meal-column` - Columnas de comida/cena
+- `.menu-meals-container` - Contenedor de comidas en móvil
+- `.menu-meal-row` - Fila de comida/cena en móvil (align-items: start)
+- `.menu-meal-label` - Label "Comida:" / "Cena:" en móvil
+
+#### Características responsive
+- **Desktop:** Grid horizontal de 3 columnas
+- **Móvil:** Layout vertical con labels inline
+- **Truncado:** Nombres >30 caracteres muestran "..." con tooltip
+- **Font-size:** 0.875rem (MD) para mejor legibilidad
+- **Alineación:** Arriba (start) en lugar de centrado
+
+---
+
+## Modal de Nuevo Menú
+
+### Mejoras de UX
+**Ubicación:** `index.html` líneas ~933-975
+
+#### Cambios implementados
+- **Botón "Añadir Elemento":** Oculto en modo crear, visible en modo editar
+- **Botón "Guardar Menú":** Movido a footer sticky (siempre visible)
+- **Días automáticos:** Al crear, se añaden automáticamente Lunes-Domingo
+- **Separadores:** Filete entre cada día (border-bottom)
+
+#### Footer sticky
+```css
+.modal-footer {
+  position: sticky;
+  bottom: 0;
+  background: var(--color-background);
+  border-top: 1px solid var(--color-border);
+  padding: var(--spacing-md);
+  z-index: 10;
+}
+```
+
+---
+
+## Flujo de Selección de Categoría para Menús
+
+### Función: `openCategorySelectorForMenu(inputElement)`
+**Ubicación:** `script.js` líneas ~10287
+
+#### Flujo mejorado
+1. Usuario hace click en campo comida/cena
+2. Se abre modal de categorías
+3. Usuario selecciona una categoría
+4. **Automáticamente:**
+   - Si tiene recetas → Abre modal de recetas
+   - Si no tiene recetas → Establece categoría y cierra
+
+#### Ventajas
+- Elimina paso intermedio de volver a hacer click
+- Flujo directo: Categoría → Recetas (si hay)
+- Si no hay recetas, deja solo la categoría en el campo
+
+---
+
+## Notas Técnicas
+
+### Estilos inline vs CSS
+- **Antes:** Muchos estilos inline en JavaScript
+- **Ahora:** Clases CSS con media queries
+- **Ventaja:** Fácil personalización y mantenimiento
+
+### Responsive
+- **Breakpoint:** 768px
+- **Detección:** `window.innerWidth < 768`
+- **Aplicación:** Automática vía CSS media queries
+
+### Performance
+- **Lazy loading:** Imágenes de recetas con `loading="lazy"`
+- **Truncado:** Nombres largos con `text-overflow: ellipsis`
+- **Tooltips:** `title` attribute para nombres completos
+
+---
+
+**Última actualización:** Noviembre 2025

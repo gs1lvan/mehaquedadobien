@@ -820,6 +820,7 @@ class RecipeApp {
         this.recipes = [];
         this.activeFilters = new Set(); // Track active category filters
         this.activeTimeFilter = 'all'; // Track active time filter
+        this.activeMenuFilter = null; // Track active menu filter
         this.currentView = 'list'; // 'list', 'detail', 'form'
         this.viewMode = localStorage.getItem('viewMode') || 'grid'; // 'grid' or 'list'
         this.sortBy = 'date'; // 'name' or 'date'
@@ -888,6 +889,9 @@ class RecipeApp {
 
             // Render filter chips dynamically
             this.renderFilterChips();
+
+            // Render menu filter chips
+            this.renderMenuFilterChips();
 
             // Render initial view
             this.renderRecipeList();
@@ -1299,6 +1303,15 @@ class RecipeApp {
         if (settingsBtn) {
             settingsBtn.addEventListener('click', () => {
                 this.openSettingsModal();
+                closeMenu();
+            });
+        }
+
+        // Help button
+        const helpBtn = document.getElementById('help-btn');
+        if (helpBtn) {
+            helpBtn.addEventListener('click', () => {
+                this.openHelpModal();
                 closeMenu();
             });
         }
@@ -2136,6 +2149,50 @@ class RecipeApp {
                 menuBtn.setAttribute('aria-expanded', 'false');
             }
         }
+    }
+
+    /**
+     * Open help modal
+     */
+    openHelpModal() {
+        this.syncModalStack();
+
+        const modal = document.getElementById('help-modal');
+        if (!modal) return;
+
+        modal.dataset.previousFocus = document.activeElement?.id || '';
+        modal.classList.remove('hidden');
+        this.pushModal('help-modal');
+
+        const closeBtn = document.getElementById('close-help-modal');
+        const overlay = modal.querySelector('.modal-overlay');
+
+        if (closeBtn) {
+            closeBtn.onclick = () => this.closeHelpModal();
+        }
+
+        if (overlay) {
+            overlay.onclick = () => this.closeHelpModal();
+        }
+
+        this.setModalFocus(modal);
+    }
+
+    /**
+     * Close help modal
+     */
+    closeHelpModal() {
+        const modal = document.getElementById('help-modal');
+        if (modal) {
+            const previousFocusId = modal.dataset.previousFocus;
+            modal.classList.add('hidden');
+
+            if (previousFocusId) {
+                this.restoreFocus(previousFocusId);
+            }
+        }
+
+        this.popModal();
     }
 
     // ===== Modal Stack Management =====
@@ -3769,6 +3826,9 @@ class RecipeApp {
     clearFilters() {
         this.activeFilters.clear();
 
+        // Clear menu filter as well
+        this.activeMenuFilter = null;
+
         // Update UI - remove active class from all chips except "all"
         const filterChips = document.querySelectorAll('.filter-chip');
         filterChips.forEach(chip => {
@@ -3778,6 +3838,9 @@ class RecipeApp {
                 chip.classList.remove('active');
             }
         });
+
+        // Update menu filter chips
+        this.renderMenuFilterChips();
 
         // Render all recipes
         this.renderRecipeList();
@@ -3946,6 +4009,30 @@ class RecipeApp {
 
                 return categoryMatch;
             });
+        }
+
+        // Apply menu filter
+        if (this.activeMenuFilter) {
+            const menu = this.getMenuById(this.activeMenuFilter);
+            if (menu) {
+                const recipeNames = this.getRecipeNamesFromMenu(menu);
+                console.log('[Menu Filter] Filtering by menu:', menu.name, 'Recipe names:', recipeNames);
+                
+                filtered = filtered.filter(recipe => {
+                    const recipeName = recipe.name.toLowerCase();
+                    // Use bidirectional partial matching
+                    const matches = recipeNames.some(menuName => {
+                        // Check if recipe name contains menu item name OR menu item name contains recipe name
+                        return recipeName.includes(menuName) || menuName.includes(recipeName);
+                    });
+                    if (matches) {
+                        console.log('[Menu Filter] Recipe matched:', recipe.name);
+                    }
+                    return matches;
+                });
+                
+                console.log('[Menu Filter] Filtered to', filtered.length, 'recipes');
+            }
         }
 
         // TEMPORALMENTE OCULTO - Apply time filter (2025-11-04)
@@ -4153,7 +4240,7 @@ class RecipeApp {
             }
 
             // Update empty state message based on filters
-            if (this.activeFilters.size > 0) {
+            if (this.activeFilters.size > 0 || this.activeMenuFilter) {
                 const emptyStateTitle = emptyState.querySelector('h3');
                 const emptyStateText = emptyState.querySelector('p');
                 if (emptyStateTitle) emptyStateTitle.textContent = 'No se encontraron recetas';
@@ -8273,9 +8360,11 @@ class RecipeApp {
         const detailView = document.getElementById('recipe-detail-view');
         const formView = document.getElementById('recipe-form-view');
         const shoppingListsView = document.getElementById('shopping-lists-view');
+        const menusView = document.getElementById('menus-view');
         if (detailView) detailView.classList.add('hidden');
         if (formView) formView.classList.add('hidden');
         if (shoppingListsView) shoppingListsView.classList.add('hidden');
+        if (menusView) menusView.classList.add('hidden');
 
         // Show list view
         const listView = document.getElementById('recipe-list-view');
@@ -9742,11 +9831,30 @@ class RecipeApp {
         header.style.alignItems = 'center';
         header.style.gap = '1rem';
 
+        // Create name container with bookmark icon
+        const nameContainer = document.createElement('div');
+        nameContainer.style.display = 'flex';
+        nameContainer.style.alignItems = 'center';
+        nameContainer.style.gap = '0.5rem';
+        nameContainer.style.flex = '0 1 auto';
+
         const name = document.createElement('h3');
         name.className = 'shopping-list-name';
         name.textContent = menu.name;
         name.style.margin = '0';
-        name.style.flex = '0 1 auto';
+        
+        // Add bookmark icon button
+        const bookmarkBtn = document.createElement('button');
+        bookmarkBtn.className = 'menu-bookmark-btn';
+        bookmarkBtn.title = menu.isFilter ? 'Quitar de filtros' : 'Añadir a filtros';
+        bookmarkBtn.innerHTML = `<i class="fa-${menu.isFilter ? 'solid' : 'regular'} fa-bookmark"></i>`;
+        bookmarkBtn.onclick = (e) => {
+            e.stopPropagation();
+            this.toggleMenuAsFilter(menu.id);
+        };
+        
+        nameContainer.appendChild(name);
+        nameContainer.appendChild(bookmarkBtn);
 
         // Create right side container (counter + expand icon + actions)
         const rightSide = document.createElement('div');
@@ -9796,7 +9904,7 @@ class RecipeApp {
         rightSide.appendChild(actions);
 
         // Assemble header
-        header.appendChild(name);
+        header.appendChild(nameContainer);
         header.appendChild(rightSide);
 
         // Create content (collapsible)
@@ -9808,8 +9916,8 @@ class RecipeApp {
 
         // Add event listeners for expand/collapse
         header.addEventListener('click', (e) => {
-            // Don't toggle if clicking on actions
-            if (e.target.closest('.shopping-list-actions')) {
+            // Don't toggle if clicking on actions or bookmark button
+            if (e.target.closest('.shopping-list-actions') || e.target.closest('.menu-bookmark-btn')) {
                 return;
             }
             this.toggleMenuExpanded(menu.id);
@@ -10175,130 +10283,212 @@ class RecipeApp {
     }
 
     /**
-     * Export menu to text file
+     * Export menu to XML
+     * Requirements: 1.1, 1.2, 1.3, 1.4, 1.5
+     * @param {number} menuId - Menu ID to export
      */
-    exportMenu(menuId) {
-        const menu = this.getMenuById(menuId);
-        if (!menu) return;
+    exportMenuToXML(menuId) {
+        try {
+            // Find the menu
+            const menu = this.getMenuById(menuId);
 
-        let text = `${menu.name}\n`;
-        text += `${'='.repeat(menu.name.length)}\n\n`;
+            if (!menu) {
+                throw new Error('Menú no encontrado');
+            }
 
-        if (menu.items.length > 0) {
-            menu.items.forEach((item, index) => {
-                text += `${index + 1}. ${item.name}`;
-                if (item.quantity) {
-                    text += ` (${item.quantity})`;
-                }
-                text += '\n';
-            });
-        } else {
-            text += 'Sin elementos\n';
+            // Show loading state
+            const exportBtn = document.querySelector(`[onclick*="exportMenu(${menuId})"]`);
+            const originalText = exportBtn?.textContent;
+            if (exportBtn) {
+                exportBtn.disabled = true;
+                exportBtn.textContent = '⏳ Exportando...';
+            }
+
+            // Export menu using XMLExporter
+            XMLExporter.exportMenu(menu);
+
+            console.log('Menu exported to XML successfully:', menuId);
+
+            // Show success message
+            this.showToast('¡Menú exportado a XML exitosamente!', 'success');
+
+            // Restore button state
+            if (exportBtn) {
+                exportBtn.disabled = false;
+                exportBtn.textContent = originalText;
+            }
+
+        } catch (error) {
+            console.error('Error exporting menu to XML:', error);
+            this.showToast('Error al exportar el menú: ' + error.message, 'error');
+
+            // Restore button state on error
+            const exportBtn = document.querySelector(`[onclick*="exportMenu(${menuId})"]`);
+            if (exportBtn) {
+                exportBtn.disabled = false;
+                exportBtn.textContent = '📤 Exportar';
+            }
         }
-
-        // Create and download file
-        const blob = new Blob([text], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `menu-${menu.name.toLowerCase().replace(/\s+/g, '-')}.txt`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        this.showToast('Menú exportado correctamente', 'success');
     }
 
     /**
-     * Handle menu import from file
+     * Export menu to text file (legacy wrapper, now calls XML export)
+     */
+    exportMenu(menuId) {
+        this.exportMenuToXML(menuId);
+    }
+
+    /**
+     * Handle menu import from file (supports XML and TXT)
+     * Requirements: 1.3, 1.4, 1.5, 5.1, 5.4, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3, 8.5
      * @param {Event} e - File input change event
      */
-    handleImportMenu(e) {
+    async handleImportMenu(e) {
         const file = e.target.files[0];
         if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            try {
-                const text = event.target.result;
-                const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+        try {
+            // Show loading state
+            this.showToast('Importando menú...', 'info');
 
-                if (lines.length < 2) {
-                    this.showToast('Archivo vacío o formato incorrecto', 'error');
-                    return;
-                }
+            // Detect file format
+            const isXML = file.name.toLowerCase().endsWith('.xml');
+            const isTXT = file.name.toLowerCase().endsWith('.txt');
 
-                // First line is the menu name
-                const menuName = lines[0];
-
-                // Skip separator line if present (===)
-                let startIndex = 1;
-                if (lines[1].match(/^=+$/)) {
-                    startIndex = 2;
-                }
-
-                // Create new menu
-                const newMenu = {
-                    id: Date.now(),
-                    name: menuName,
-                    items: [],
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                };
-
-                // Parse items: "1. Lunes (Filetes a la plancha)"
-                for (let i = startIndex; i < lines.length; i++) {
-                    const line = lines[i];
-                    if (!line || line === 'Sin elementos') continue;
-
-                    // Remove number prefix: "1. "
-                    const withoutNumber = line.replace(/^\d+\.\s*/, '');
-
-                    // Extract name and quantity from "Lunes (Filetes a la plancha)"
-                    const match = withoutNumber.match(/^(.+?)\s*\((.+)\)$/);
-
-                    if (match) {
-                        const name = match[1].trim();
-                        const quantity = match[2].trim();
-
-                        newMenu.items.push({
-                            id: Date.now() + i,
-                            name: name,
-                            quantity: quantity
-                        });
-                    } else {
-                        // No parentheses, just the name
-                        newMenu.items.push({
-                            id: Date.now() + i,
-                            name: withoutNumber.trim(),
-                            quantity: ''
-                        });
-                    }
-                }
-
-                // Save menu to localStorage
-                const menus = this.getMenusFromStorage();
-                menus.push(newMenu);
-                localStorage.setItem('recetario_menus', JSON.stringify(menus));
-
-                this.showToast('Menú importado correctamente', 'success');
-                this.renderMenus();
-
-            } catch (error) {
-                console.error('Error importing menu:', error);
-                this.showToast('Error al importar el menú', 'error');
+            if (!isXML && !isTXT) {
+                throw new Error('Formato de archivo no soportado. Use .xml o .txt');
             }
+
+            let newMenu;
+
+            if (isXML) {
+                // Import from XML
+                newMenu = await XMLImporter.importMenuFromFile(file);
+
+                // Check for ID conflicts
+                const existingMenu = this.getMenuById(newMenu.id);
+                if (existingMenu) {
+                    console.log(`Menu ID ${newMenu.id} already exists, generating new ID`);
+                    newMenu.id = Date.now();
+                }
+
+                // Check for name conflicts
+                const menus = this.getMenusFromStorage();
+                const existingMenuWithName = menus.find(m => m.name === newMenu.name);
+                if (existingMenuWithName) {
+                    newMenu.name = newMenu.name + ' - copia';
+                    console.log(`Menu name already exists, renamed to: ${newMenu.name}`);
+                }
+
+                // Update timestamps to import time
+                const now = new Date().toISOString();
+                newMenu.createdAt = now;
+                newMenu.updatedAt = now;
+
+            } else {
+                // Import from TXT (legacy)
+                const text = await this.readFileAsText(file);
+                newMenu = this.parseMenuFromTXT(text);
+            }
+
+            // Save menu to localStorage
+            const menus = this.getMenusFromStorage();
+            menus.push(newMenu);
+            localStorage.setItem('recetario_menus', JSON.stringify(menus));
+
+            this.showToast(`Menú "${newMenu.name}" importado correctamente`, 'success');
+            this.renderMenus();
+
+        } catch (error) {
+            console.error('Error importing menu:', error);
+            this.showToast('Error al importar el menú: ' + error.message, 'error');
+
+        } finally {
+            // Reset input
+            e.target.value = '';
+        }
+    }
+
+    /**
+     * Read file as text (helper method)
+     * @param {File} file - File to read
+     * @returns {Promise<string>} File content as text
+     */
+    readFileAsText(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = () => reject(new Error('Error al leer el archivo'));
+            reader.readAsText(file);
+        });
+    }
+
+    /**
+     * Parse menu from TXT format (legacy)
+     * @param {string} text - TXT file content
+     * @returns {Object} Menu object
+     */
+    parseMenuFromTXT(text) {
+        const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+
+        if (lines.length < 2) {
+            throw new Error('Archivo vacío o formato incorrecto');
+        }
+
+        // First line is the menu name
+        const menuName = lines[0];
+
+        // Skip separator line if present (===)
+        let startIndex = 1;
+        if (lines[1].match(/^=+$/)) {
+            startIndex = 2;
+        }
+
+        // Create new menu
+        const newMenu = {
+            id: Date.now(),
+            name: menuName,
+            items: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            isFilter: false
         };
 
-        reader.onerror = () => {
-            this.showToast('Error al leer el archivo', 'error');
-        };
+        // Parse items: "1. Lunes (Filetes a la plancha)"
+        for (let i = startIndex; i < lines.length; i++) {
+            const line = lines[i];
+            if (!line || line === 'Sin elementos') continue;
 
-        reader.readAsText(file);
+            // Remove number prefix: "1. "
+            const withoutNumber = line.replace(/^\d+\.\s*/, '');
 
-        // Reset input
-        e.target.value = '';
+            // Extract name and quantity from "Lunes (Filetes a la plancha)"
+            const match = withoutNumber.match(/^(.+?)\s*\((.+)\)$/);
+
+            if (match) {
+                const name = match[1].trim();
+                const quantity = match[2].trim();
+
+                newMenu.items.push({
+                    id: Date.now() + i,
+                    name: name,
+                    lunch: quantity,  // Store in lunch field for compatibility
+                    dinner: '',
+                    completed: false
+                });
+            } else {
+                // No parentheses, just the name
+                newMenu.items.push({
+                    id: Date.now() + i,
+                    name: withoutNumber.trim(),
+                    lunch: '',
+                    dinner: '',
+                    completed: false
+                });
+            }
+        }
+
+        return newMenu;
     }
 
     /**
@@ -10343,7 +10533,8 @@ class RecipeApp {
             id: Date.now(),
             name: `${menu.name} (copia)`,
             createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
+            isFilter: false  // Duplicated menus are not filters by default
         };
 
         const menus = this.getMenusFromStorage();
@@ -10877,11 +11068,177 @@ class RecipeApp {
         }
 
         const menus = this.getMenusFromStorage();
+        const menu = menus.find(m => m.id === menuId);
+        
+        // Clear filter if this menu is active
+        if (menu && menu.isFilter && this.activeMenuFilter === menuId) {
+            this.clearMenuFilter();
+        }
+        
         const filteredMenus = menus.filter(m => m.id !== menuId);
         localStorage.setItem('recetario_menus', JSON.stringify(filteredMenus));
 
         this.showToast('Menú eliminado correctamente', 'success');
         this.renderMenus();
+    }
+
+    /**
+     * Toggle menu as filter
+     * @param {number} menuId - Menu ID to toggle
+     */
+    toggleMenuAsFilter(menuId) {
+        const menus = this.getMenusFromStorage();
+        const menu = menus.find(m => m.id === menuId);
+        
+        if (!menu) {
+            console.error('[Menu Filter] Menu not found:', menuId);
+            return;
+        }
+        
+        // Toggle isFilter property
+        menu.isFilter = !menu.isFilter;
+        
+        // Save to localStorage
+        localStorage.setItem('recetario_menus', JSON.stringify(menus));
+        
+        // If filter was active and we're removing it, clear the filter
+        if (!menu.isFilter && this.activeMenuFilter === menuId) {
+            this.clearMenuFilter();
+        }
+        
+        // Re-render
+        this.renderMenus();
+        this.renderMenuFilterChips();
+        
+        // Show toast
+        const message = menu.isFilter 
+            ? `"${menu.name}" añadido a filtros`
+            : `"${menu.name}" quitado de filtros`;
+        this.showToast(message, 'success');
+        
+        console.log('[Menu Filter] Toggled filter for menu:', menu.name, 'isFilter:', menu.isFilter);
+    }
+
+    /**
+     * Get all menus marked as filters
+     * @returns {Array} Array of menu objects
+     */
+    getMenuFilters() {
+        const menus = this.getMenusFromStorage();
+        return menus.filter(m => m.isFilter === true);
+    }
+
+    /**
+     * Render menu filter chips in home page
+     */
+    renderMenuFilterChips() {
+        const menuFilterBar = document.getElementById('menu-filter-bar');
+        const menuFilterChips = document.getElementById('menu-filter-chips');
+        
+        if (!menuFilterBar || !menuFilterChips) {
+            console.warn('[Menu Filter] Menu filter elements not found');
+            return;
+        }
+        
+        // Get menus marked as filters
+        const filterMenus = this.getMenuFilters();
+        
+        console.log('[Menu Filter] Rendering filter chips, found', filterMenus.length, 'filter menus');
+        
+        // Hide section if no filter menus
+        if (filterMenus.length === 0) {
+            menuFilterBar.classList.add('hidden');
+            return;
+        }
+        
+        // Show section
+        menuFilterBar.classList.remove('hidden');
+        
+        // Clear existing chips
+        menuFilterChips.innerHTML = '';
+        
+        // Create chip for each filter menu
+        filterMenus.forEach(menu => {
+            const chip = document.createElement('button');
+            chip.className = 'filter-chip';
+            chip.dataset.menuId = menu.id;
+            chip.textContent = `📋 ${menu.name}`;
+            
+            // Mark as active if this is the active filter
+            if (this.activeMenuFilter === menu.id) {
+                chip.classList.add('active');
+            }
+            
+            // Add click handler
+            chip.onclick = () => this.handleMenuFilterClick(menu.id);
+            
+            menuFilterChips.appendChild(chip);
+        });
+        
+        console.log('[Menu Filter] Rendered', filterMenus.length, 'filter chips');
+    }
+
+    /**
+     * Extract recipe names from menu
+     * @param {Object} menu - Menu object
+     * @returns {Array<string>} Array of recipe names (lowercase)
+     */
+    getRecipeNamesFromMenu(menu) {
+        const recipeNames = new Set();
+        
+        if (!menu || !menu.items) {
+            return [];
+        }
+        
+        menu.items.forEach(item => {
+            if (item.lunch && item.lunch.trim() && item.lunch !== 'Sin receta') {
+                recipeNames.add(item.lunch.trim().toLowerCase());
+            }
+            if (item.dinner && item.dinner.trim() && item.dinner !== 'Sin receta') {
+                recipeNames.add(item.dinner.trim().toLowerCase());
+            }
+        });
+        
+        return Array.from(recipeNames);
+    }
+
+    /**
+     * Handle menu filter chip click
+     * @param {number} menuId - Menu ID to filter by
+     */
+    handleMenuFilterClick(menuId) {
+        console.log('[Menu Filter] Clicked menu filter:', menuId, 'Type:', typeof menuId);
+        console.log('[Menu Filter] Current activeMenuFilter:', this.activeMenuFilter);
+        
+        // Toggle filter
+        if (this.activeMenuFilter === menuId) {
+            // Deactivate if already active
+            console.log('[Menu Filter] Deactivating filter');
+            this.clearMenuFilter();
+        } else {
+            // Activate new filter
+            console.log('[Menu Filter] Activating filter for menu:', menuId);
+            this.activeMenuFilter = menuId;
+            
+            // Switch to recipe list view and render with filter
+            this.goToHome();
+            this.renderRecipeList();
+        }
+        
+        // Update chip styling
+        this.renderMenuFilterChips();
+        
+        console.log('[Menu Filter] Active menu filter after click:', this.activeMenuFilter);
+    }
+
+    /**
+     * Clear active menu filter
+     */
+    clearMenuFilter() {
+        console.log('[Menu Filter] Clearing menu filter');
+        this.activeMenuFilter = null;
+        this.renderRecipeList();
+        this.renderMenuFilterChips();
     }
 
     /**
@@ -11277,7 +11634,8 @@ class RecipeApp {
             name: menuName,
             items: items,
             createdAt: this.currentMenuId ? this.getMenuById(this.currentMenuId)?.createdAt : new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
+            isFilter: this.currentMenuId ? (this.getMenuById(this.currentMenuId)?.isFilter || false) : false
         };
 
         // Save to localStorage
@@ -11321,7 +11679,9 @@ class RecipeApp {
      */
     getMenuById(menuId) {
         const menus = this.getMenusFromStorage();
-        return menus.find(m => m.id === menuId);
+        // Convert to number for comparison to handle both string and number IDs
+        const numericId = Number(menuId);
+        return menus.find(m => Number(m.id) === numericId);
     }
 
     /**
@@ -12061,112 +12421,200 @@ class RecipeApp {
     }
 
     /**
-     * Export shopping list to text file
-     * @param {number} listId - List ID
+     * Export shopping list to XML
+     * Requirements: 2.1, 2.2, 2.3, 2.4, 2.5
+     * @param {number} listId - Shopping list ID to export
      */
-    exportShoppingList(listId) {
-        const list = this.shoppingListManager.getList(listId);
-        if (!list) {
-            this.showToast('Error: Lista no encontrada', 'error');
-            return;
+    exportShoppingListToXML(listId) {
+        try {
+            // Find the list
+            const list = this.shoppingListManager.getList(listId);
+
+            if (!list) {
+                throw new Error('Lista no encontrada');
+            }
+
+            // Show loading state
+            const exportBtn = document.querySelector(`[onclick*="exportShoppingList(${listId})"]`);
+            const originalText = exportBtn?.textContent;
+            if (exportBtn) {
+                exportBtn.disabled = true;
+                exportBtn.textContent = '⏳ Exportando...';
+            }
+
+            // Export list using XMLExporter
+            XMLExporter.exportShoppingList(list);
+
+            console.log('Shopping list exported to XML successfully:', listId);
+
+            // Show success message
+            this.showToast('¡Lista exportada a XML exitosamente!', 'success');
+
+            // Restore button state
+            if (exportBtn) {
+                exportBtn.disabled = false;
+                exportBtn.textContent = originalText;
+            }
+
+        } catch (error) {
+            console.error('Error exporting shopping list to XML:', error);
+            this.showToast('Error al exportar la lista: ' + error.message, 'error');
+
+            // Restore button state on error
+            const exportBtn = document.querySelector(`[onclick*="exportShoppingList(${listId})"]`);
+            if (exportBtn) {
+                exportBtn.disabled = false;
+                exportBtn.textContent = '📤 Exportar';
+            }
         }
-
-        // Format list content
-        const text = this.shoppingListManager.formatListForClipboard(listId, true);
-
-        if (!text) {
-            this.showToast('Error al exportar la lista', 'error');
-            return;
-        }
-
-        // Create blob and download
-        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-
-        // Generate filename with sanitized list name
-        const sanitizedName = list.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        const timestamp = new Date().toISOString().split('T')[0];
-        link.download = `lista_compra_${sanitizedName}_${timestamp}.txt`;
-
-        link.href = url;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-
-        this.showToast('Lista exportada correctamente', 'success');
     }
 
     /**
-     * Handle import shopping list from file
+     * Export shopping list to text file (legacy wrapper, now calls XML export)
+     * @param {number} listId - List ID
+     */
+    exportShoppingList(listId) {
+        this.exportShoppingListToXML(listId);
+    }
+
+    /**
+     * Handle import shopping list from file (supports XML and TXT)
+     * Requirements: 2.3, 2.4, 2.5, 5.2, 5.4, 7.1, 7.2, 7.3, 8.1, 8.2, 8.4, 8.5
      * @param {Event} e - File input change event
      */
-    handleImportShoppingList(e) {
+    async handleImportShoppingList(e) {
         const file = e.target.files[0];
         if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            try {
-                const text = event.target.result;
-                const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+        try {
+            // Show loading state
+            this.showToast('Importando lista...', 'info');
 
-                if (lines.length < 2) {
-                    this.showToast('Archivo vacío o formato incorrecto', 'error');
-                    return;
-                }
+            // Detect file format
+            const isXML = file.name.toLowerCase().endsWith('.xml');
+            const isTXT = file.name.toLowerCase().endsWith('.txt');
 
-                // First line is the list name
-                const listName = lines[0];
-
-                // Skip separator line if present
-                let startIndex = 1;
-                if (lines[1].startsWith('---')) {
-                    startIndex = 2;
-                }
-
-                // Create new list
-                const newList = this.shoppingListManager.createList(listName);
-
-                // Parse items
-                for (let i = startIndex; i < lines.length; i++) {
-                    const line = lines[i];
-                    if (!line) continue;
-
-                    // Remove completed mark if present
-                    const cleanLine = line.replace(/^✓\s*/, '');
-
-                    // Split by " - " to separate name and quantity
-                    const parts = cleanLine.split(' - ');
-                    const name = parts[0].trim();
-                    const quantity = parts.length > 1 ? parts.slice(1).join(' - ').trim() : '';
-
-                    if (name) {
-                        this.shoppingListManager.addItem(newList.id, {
-                            name: name,
-                            quantity: quantity
-                        });
-                    }
-                }
-
-                this.showToast('Lista importada correctamente', 'success');
-                this.renderShoppingLists();
-
-            } catch (error) {
-                console.error('Error importing shopping list:', error);
-                this.showToast('Error al importar la lista', 'error');
+            if (!isXML && !isTXT) {
+                throw new Error('Formato de archivo no soportado. Use .xml o .txt');
             }
-        };
 
-        reader.onerror = () => {
-            this.showToast('Error al leer el archivo', 'error');
-        };
+            let newList;
 
-        reader.readAsText(file);
+            if (isXML) {
+                // Import from XML
+                const listData = await XMLImporter.importShoppingListFromFile(file);
 
-        // Reset input so the same file can be imported again
-        e.target.value = '';
+                // Check for ID conflicts
+                const existingList = this.shoppingListManager.getList(listData.id);
+                if (existingList) {
+                    console.log(`List ID ${listData.id} already exists, generating new ID`);
+                    listData.id = Date.now();
+                }
+
+                // Check for name conflicts
+                const existingListWithName = this.shoppingListManager.lists.find(l => l.name === listData.name);
+                if (existingListWithName) {
+                    listData.name = listData.name + ' - copia';
+                    console.log(`List name already exists, renamed to: ${listData.name}`);
+                }
+
+                // Update timestamps to import time
+                const now = new Date().toISOString();
+                listData.createdAt = now;
+                listData.updatedAt = now;
+
+                // Create list using ShoppingListManager
+                newList = this.shoppingListManager.createList(listData.name);
+                
+                // Update list properties
+                newList.id = listData.id;
+                newList.enabled = listData.enabled;
+                newList.createdAt = listData.createdAt;
+                newList.updatedAt = listData.updatedAt;
+
+                // Add items
+                listData.items.forEach(item => {
+                    this.shoppingListManager.addItem(newList.id, {
+                        name: item.name,
+                        quantity: item.quantity
+                    });
+                    
+                    // Set completed status if needed
+                    if (item.completed) {
+                        const list = this.shoppingListManager.getList(newList.id);
+                        const addedItem = list.items[list.items.length - 1];
+                        addedItem.completed = true;
+                    }
+                });
+
+                // Save updated list
+                this.shoppingListManager.saveLists();
+
+            } else {
+                // Import from TXT (legacy)
+                const text = await this.readFileAsText(file);
+                newList = this.parseShoppingListFromTXT(text);
+            }
+
+            this.showToast(`Lista "${newList.name}" importada correctamente`, 'success');
+            this.renderShoppingLists();
+
+        } catch (error) {
+            console.error('Error importing shopping list:', error);
+            this.showToast('Error al importar la lista: ' + error.message, 'error');
+
+        } finally {
+            // Reset input so the same file can be imported again
+            e.target.value = '';
+        }
+    }
+
+    /**
+     * Parse shopping list from TXT format (legacy)
+     * @param {string} text - TXT file content
+     * @returns {Object} Shopping list object
+     */
+    parseShoppingListFromTXT(text) {
+        const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+
+        if (lines.length < 2) {
+            throw new Error('Archivo vacío o formato incorrecto');
+        }
+
+        // First line is the list name
+        const listName = lines[0];
+
+        // Skip separator line if present
+        let startIndex = 1;
+        if (lines[1].startsWith('---')) {
+            startIndex = 2;
+        }
+
+        // Create new list
+        const newList = this.shoppingListManager.createList(listName);
+
+        // Parse items
+        for (let i = startIndex; i < lines.length; i++) {
+            const line = lines[i];
+            if (!line) continue;
+
+            // Remove completed mark if present
+            const cleanLine = line.replace(/^✓\s*/, '');
+
+            // Split by " - " to separate name and quantity
+            const parts = cleanLine.split(' - ');
+            const name = parts[0].trim();
+            const quantity = parts.length > 1 ? parts.slice(1).join(' - ').trim() : '';
+
+            if (name) {
+                this.shoppingListManager.addItem(newList.id, {
+                    name: name,
+                    quantity: quantity
+                });
+            }
+        }
+
+        return newList;
     }
 
     /**

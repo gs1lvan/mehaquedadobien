@@ -125,6 +125,79 @@ class RecipeContentManager {
             this.clearFilters();
         });
 
+        // Horizontal Filters (sync with sidebar filters)
+        const searchInputH = document.getElementById('search-input-h');
+        if (searchInputH) {
+            searchInputH.addEventListener('input', (e) => {
+                document.getElementById('search-input').value = e.target.value;
+                this.filters.search = e.target.value.toLowerCase();
+                this.applyFilters();
+            });
+        }
+
+        const filterCategoryH = document.getElementById('filter-category-h');
+        if (filterCategoryH) {
+            filterCategoryH.addEventListener('change', (e) => {
+                document.getElementById('filter-category').value = e.target.value;
+                this.filters.category = e.target.value;
+                this.applyFilters();
+            });
+        }
+
+        const filterAuthorH = document.getElementById('filter-author-h');
+        if (filterAuthorH) {
+            filterAuthorH.addEventListener('change', (e) => {
+                document.getElementById('filter-author').value = e.target.value;
+                this.filters.author = e.target.value;
+                this.applyFilters();
+            });
+        }
+
+        const filterNoAuthorH = document.getElementById('filter-no-author-h');
+        if (filterNoAuthorH) {
+            filterNoAuthorH.addEventListener('change', (e) => {
+                document.getElementById('filter-no-author').checked = e.target.checked;
+                this.filters.noAuthor = e.target.checked;
+                this.applyFilters();
+            });
+        }
+
+        const filterNoImagesH = document.getElementById('filter-no-images-h');
+        if (filterNoImagesH) {
+            filterNoImagesH.addEventListener('change', (e) => {
+                document.getElementById('filter-no-images').checked = e.target.checked;
+                this.filters.noImages = e.target.checked;
+                this.applyFilters();
+            });
+        }
+
+        const filterCaravanH = document.getElementById('filter-caravan-h');
+        if (filterCaravanH) {
+            filterCaravanH.addEventListener('change', (e) => {
+                document.getElementById('filter-caravan').checked = e.target.checked;
+                this.filters.caravan = e.target.checked;
+                this.applyFilters();
+            });
+        }
+
+        const filterHospitalH = document.getElementById('filter-hospital-h');
+        if (filterHospitalH) {
+            filterHospitalH.addEventListener('change', (e) => {
+                document.getElementById('filter-hospital').checked = e.target.checked;
+                this.filters.hospital = e.target.checked;
+                this.applyFilters();
+            });
+        }
+
+        const filterMenuH = document.getElementById('filter-menu-h');
+        if (filterMenuH) {
+            filterMenuH.addEventListener('change', (e) => {
+                document.getElementById('filter-menu').checked = e.target.checked;
+                this.filters.menu = e.target.checked;
+                this.applyFilters();
+            });
+        }
+
         // Select all
         document.getElementById('select-all-checkbox').addEventListener('change', (e) => {
             this.selectAll(e.target.checked);
@@ -148,6 +221,11 @@ class RecipeContentManager {
         // Delete selected
         document.getElementById('delete-selected-btn').addEventListener('click', () => {
             this.openDeleteConfirmationModal();
+        });
+
+        // Export selected
+        document.getElementById('export-selected-btn').addEventListener('click', () => {
+            this.exportSelectedRecipes();
         });
 
         // Actions - Header buttons only
@@ -342,6 +420,7 @@ class RecipeContentManager {
         this.renderDashboard();
         this.renderFilters();
         this.renderTable();
+        this.updateDashboardStats(); // Initialize dashboard with all recipes
         this.showEmptyState(false);
     }
 
@@ -427,11 +506,18 @@ class RecipeContentManager {
         const total = this.recipes.length;
         const withAuthor = this.recipes.filter(r => r.author).length;
         const withImages = this.recipes.filter(r => r.images.length > 0).length;
+        const totalImages = this.recipes.reduce((sum, r) => sum + r.images.length, 0);
+        const totalIngredients = this.recipes.reduce((sum, r) => sum + r.ingredients.length, 0);
+        const totalTime = this.recipes.reduce((sum, r) => {
+            const time = this.parseTimeString(r.totalTime);
+            return sum + (parseInt(time.hours) || 0) + (parseInt(time.minutes) || 0) / 60;
+        }, 0);
         const categories = new Set(this.recipes.map(r => r.category)).size;
         const caravan = this.recipes.filter(r => r.caravanFriendly).length;
         const hospital = this.recipes.filter(r => r.hospitalFriendly).length;
         const menu = this.recipes.filter(r => r.menuFriendly).length;
 
+        // Sidebar stats
         document.getElementById('stat-total').textContent = total;
         document.getElementById('stat-categories').textContent = categories;
         document.getElementById('stat-with-author').textContent = total > 0 ? Math.round((withAuthor / total) * 100) + '%' : '0%';
@@ -439,6 +525,19 @@ class RecipeContentManager {
         document.getElementById('stat-caravan').textContent = caravan;
         document.getElementById('stat-hospital').textContent = hospital;
         document.getElementById('stat-menu').textContent = menu;
+
+        // Horizontal dashboard stats
+        const statTotalH = document.getElementById('stat-total-h');
+        const statImagesH = document.getElementById('stat-images-h');
+        const statIngredientsH = document.getElementById('stat-ingredients-h');
+        const statTimeH = document.getElementById('stat-time-h');
+        const statAuthorsH = document.getElementById('stat-authors-h');
+
+        if (statTotalH) statTotalH.textContent = total;
+        if (statImagesH) statImagesH.textContent = totalImages;
+        if (statIngredientsH) statIngredientsH.textContent = totalIngredients;
+        if (statTimeH) statTimeH.textContent = Math.round(totalTime) + 'h';
+        if (statAuthorsH) statAuthorsH.textContent = total > 0 ? Math.round((withAuthor / total) * 100) + '%' : '0%';
 
         // Render incomplete recipes
         this.renderIncompleteRecipes();
@@ -449,49 +548,86 @@ class RecipeContentManager {
             return !r.author || !r.totalTime || r.ingredients.length === 0 || r.images.length === 0;
         });
 
+        // Update sidebar version
         const container = document.getElementById('incomplete-recipes');
         const icon = document.getElementById('incomplete-toggle-icon');
         
-        if (incomplete.length === 0) {
-            container.innerHTML = '<p style="color: var(--color-success);">✓ Todas las recetas están completas</p>';
-            // Keep collapsed if all complete
-            container.style.display = 'none';
-            icon.textContent = '▶';
-            return;
+        if (container && icon) {
+            if (incomplete.length === 0) {
+                container.innerHTML = '<p style="color: var(--color-success);">✓ Todas las recetas están completas</p>';
+                container.style.display = 'none';
+                icon.textContent = '▶';
+            } else {
+                container.style.display = 'block';
+                icon.textContent = '▼';
+
+                let html = `<p style="margin-bottom: var(--spacing-sm);">${incomplete.length} receta${incomplete.length !== 1 ? 's' : ''} incompleta${incomplete.length !== 1 ? 's' : ''}</p>`;
+                html += '<div style="max-height: 200px; overflow-y: auto;">';
+                
+                incomplete.slice(0, 10).forEach(recipe => {
+                    const issues = [];
+                    if (!recipe.author) issues.push('sin autor');
+                    if (!recipe.totalTime) issues.push('sin tiempo');
+                    if (recipe.ingredients.length === 0) issues.push('sin ingredientes');
+                    if (recipe.images.length === 0) issues.push('sin imágenes');
+                    
+                    html += `
+                        <div style="padding: var(--spacing-xs); margin-bottom: var(--spacing-xs); background: var(--color-background); border-radius: 4px; cursor: pointer;" onclick="rcm.editRecipe('${recipe.id}')">
+                            <div style="font-weight: 500;">${this.escapeHtml(recipe.name)}</div>
+                            <div style="font-size: 0.75rem; color: var(--color-danger);">${issues.join(', ')}</div>
+                        </div>
+                    `;
+                });
+                
+                if (incomplete.length > 10) {
+                    html += `<p style="margin-top: var(--spacing-xs); font-style: italic;">... y ${incomplete.length - 10} más</p>`;
+                }
+                
+                html += '</div>';
+                container.innerHTML = html;
+            }
         }
 
-        // Auto-expand if there are incomplete recipes
-        container.style.display = 'block';
-        icon.textContent = '▼';
-
-        let html = `<p style="margin-bottom: var(--spacing-sm);">${incomplete.length} receta${incomplete.length !== 1 ? 's' : ''} incompleta${incomplete.length !== 1 ? 's' : ''}</p>`;
-        html += '<div style="max-height: 200px; overflow-y: auto;">';
+        // Update horizontal version
+        const containerH = document.getElementById('incomplete-recipes-h');
+        const countH = document.getElementById('incomplete-count-h');
         
-        incomplete.slice(0, 10).forEach(recipe => {
-            const issues = [];
-            if (!recipe.author) issues.push('sin autor');
-            if (!recipe.totalTime) issues.push('sin tiempo');
-            if (recipe.ingredients.length === 0) issues.push('sin ingredientes');
-            if (recipe.images.length === 0) issues.push('sin imágenes');
+        if (containerH && countH) {
+            countH.textContent = `(${incomplete.length})`;
             
-            html += `
-                <div style="padding: var(--spacing-xs); margin-bottom: var(--spacing-xs); background: var(--color-background); border-radius: 4px; cursor: pointer;" onclick="rcm.editRecipe('${recipe.id}')">
-                    <div style="font-weight: 500;">${this.escapeHtml(recipe.name)}</div>
-                    <div style="font-size: 0.75rem; color: var(--color-danger);">${issues.join(', ')}</div>
-                </div>
-            `;
-        });
-        
-        if (incomplete.length > 10) {
-            html += `<p style="margin-top: var(--spacing-xs); font-style: italic;">... y ${incomplete.length - 10} más</p>`;
+            if (incomplete.length === 0) {
+                containerH.innerHTML = '<p style="color: var(--color-success); font-size: 0.875rem;">✓ Todas las recetas están completas</p>';
+            } else {
+                let html = '<div class="incomplete-recipes-grid">';
+                
+                incomplete.slice(0, 15).forEach(recipe => {
+                    const issues = [];
+                    if (!recipe.author) issues.push('sin autor');
+                    if (!recipe.totalTime) issues.push('sin tiempo');
+                    if (recipe.ingredients.length === 0) issues.push('sin ingredientes');
+                    if (recipe.images.length === 0) issues.push('sin imágenes');
+                    
+                    html += `
+                        <div class="incomplete-recipe-item" onclick="rcm.editRecipe('${recipe.id}')">
+                            <div class="incomplete-recipe-name">${this.escapeHtml(recipe.name)}</div>
+                            <div class="incomplete-recipe-issues">${issues.join(', ')}</div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                
+                if (incomplete.length > 15) {
+                    html += `<p style="margin-top: var(--spacing-sm); font-style: italic; color: var(--color-text-secondary); font-size: 0.875rem;">... y ${incomplete.length - 15} más</p>`;
+                }
+                
+                containerH.innerHTML = html;
+            }
         }
-        
-        html += '</div>';
-        container.innerHTML = html;
     }
 
     renderFilters() {
-        // Populate category filter
+        // Populate category filter (sidebar)
         const categories = [...new Set(this.recipes.map(r => r.category))].sort();
         const categorySelect = document.getElementById('filter-category');
         categorySelect.innerHTML = '<option value="">Todas</option>';
@@ -502,7 +638,19 @@ class RecipeContentManager {
             categorySelect.appendChild(option);
         });
 
-        // Populate author filter
+        // Populate category filter (horizontal)
+        const categorySelectH = document.getElementById('filter-category-h');
+        if (categorySelectH) {
+            categorySelectH.innerHTML = '<option value="">Todas las categorías</option>';
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                categorySelectH.appendChild(option);
+            });
+        }
+
+        // Populate author filter (sidebar)
         const authors = [...new Set(this.recipes.map(r => r.author).filter(a => a))].sort();
         const authorSelect = document.getElementById('filter-author');
         authorSelect.innerHTML = '<option value="">Todos</option>';
@@ -512,6 +660,18 @@ class RecipeContentManager {
             option.textContent = author;
             authorSelect.appendChild(option);
         });
+
+        // Populate author filter (horizontal)
+        const authorSelectH = document.getElementById('filter-author-h');
+        if (authorSelectH) {
+            authorSelectH.innerHTML = '<option value="">Todos los autores</option>';
+            authors.forEach(author => {
+                const option = document.createElement('option');
+                option.value = author;
+                option.textContent = author;
+                authorSelectH.appendChild(option);
+            });
+        }
     }
 
     renderTable() {
@@ -730,6 +890,33 @@ class RecipeContentManager {
         });
 
         this.renderTable();
+        this.updateDashboardStats(); // Update dashboard with filtered data
+    }
+
+    updateDashboardStats() {
+        // Calculate stats based on filtered recipes
+        const recipes = this.filteredRecipes;
+        const total = recipes.length;
+        const withAuthor = recipes.filter(r => r.author).length;
+        const totalImages = recipes.reduce((sum, r) => sum + r.images.length, 0);
+        const totalIngredients = recipes.reduce((sum, r) => sum + r.ingredients.length, 0);
+        const totalTime = recipes.reduce((sum, r) => {
+            const time = this.parseTimeString(r.totalTime);
+            return sum + (parseInt(time.hours) || 0) + (parseInt(time.minutes) || 0) / 60;
+        }, 0);
+
+        // Update horizontal dashboard stats
+        const statTotalH = document.getElementById('stat-total-h');
+        const statImagesH = document.getElementById('stat-images-h');
+        const statIngredientsH = document.getElementById('stat-ingredients-h');
+        const statTimeH = document.getElementById('stat-time-h');
+        const statAuthorsH = document.getElementById('stat-authors-h');
+
+        if (statTotalH) statTotalH.textContent = total;
+        if (statImagesH) statImagesH.textContent = totalImages;
+        if (statIngredientsH) statIngredientsH.textContent = totalIngredients;
+        if (statTimeH) statTimeH.textContent = Math.round(totalTime) + 'h';
+        if (statAuthorsH) statAuthorsH.textContent = total > 0 ? Math.round((withAuthor / total) * 100) + '%' : '0%';
     }
 
     clearFilters() {
@@ -788,9 +975,10 @@ class RecipeContentManager {
         const count = this.selectedRecipes.size;
         document.getElementById('selected-count').textContent = `${count} seleccionada${count !== 1 ? 's' : ''}`;
         
-        // Enable/disable batch edit and delete buttons
+        // Enable/disable batch edit, delete and export buttons
         document.getElementById('batch-edit-btn').disabled = count === 0;
         document.getElementById('delete-selected-btn').disabled = count === 0;
+        document.getElementById('export-selected-btn').disabled = count === 0;
     }
 
     // ==================== EDITING ====================
@@ -1292,15 +1480,32 @@ class RecipeContentManager {
     }
 
     toggleIncompleteRecipes() {
+        // Toggle sidebar version
         const content = document.getElementById('incomplete-recipes');
         const icon = document.getElementById('incomplete-toggle-icon');
         
-        if (content.style.display === 'none') {
-            content.style.display = 'block';
-            icon.textContent = '▼';
-        } else {
-            content.style.display = 'none';
-            icon.textContent = '▶';
+        if (content && icon) {
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.textContent = '▼';
+            } else {
+                content.style.display = 'none';
+                icon.textContent = '▶';
+            }
+        }
+
+        // Toggle horizontal version
+        const contentH = document.getElementById('incomplete-recipes-h');
+        const iconH = document.getElementById('incomplete-toggle-icon-h');
+        
+        if (contentH && iconH) {
+            if (contentH.style.display === 'none') {
+                contentH.style.display = 'block';
+                iconH.textContent = '▼';
+            } else {
+                contentH.style.display = 'none';
+                iconH.textContent = '▶';
+            }
         }
     }
 
@@ -1395,6 +1600,105 @@ class RecipeContentManager {
         
         URL.revokeObjectURL(url);
         this.showNotification(`XML descargado: ${filename}`, 'success');
+    }
+
+    exportSelectedRecipes() {
+        if (this.selectedRecipes.size === 0) {
+            this.showNotification('No hay recetas seleccionadas', 'warning');
+            return;
+        }
+
+        // Filter recipes to only include selected ones
+        const selectedRecipesList = this.recipes.filter(recipe => 
+            this.selectedRecipes.has(recipe.id)
+        );
+
+        // Generate XML for selected recipes only
+        let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<recipes>\n';
+
+        selectedRecipesList.forEach(recipe => {
+            xml += `  <recipe id="${recipe.id}">\n`;
+            xml += `    <name>${this.escapeXml(recipe.name)}</name>\n`;
+            xml += `    <category>${this.escapeXml(recipe.category)}</category>\n`;
+            xml += `    <totalTime>${this.escapeXml(recipe.totalTime)}</totalTime>\n`;
+            xml += `    <author>${this.escapeXml(recipe.author)}</author>\n`;
+            xml += `    <history>${this.escapeXml(recipe.history)}</history>\n`;
+            xml += `    <preparationMethod>${this.escapeXml(recipe.preparationMethod)}</preparationMethod>\n`;
+            
+            // Ingredients
+            xml += `    <ingredients>\n`;
+            recipe.ingredients.forEach(ing => {
+                xml += `      <ingredient id="${ing.id}">\n`;
+                xml += `        <name>${this.escapeXml(ing.name)}</name>\n`;
+                xml += `        <quantity>${this.escapeXml(ing.quantity)}</quantity>\n`;
+                xml += `        <unit>${this.escapeXml(ing.unit)}</unit>\n`;
+                xml += `      </ingredient>\n`;
+            });
+            xml += `    </ingredients>\n`;
+
+            // Sequences
+            xml += `    <sequences>\n`;
+            recipe.sequences.forEach(seq => {
+                xml += `      <sequence>\n`;
+                xml += `        <duration>${this.escapeXml(seq.duration)}</duration>\n`;
+                xml += `        <description>${this.escapeXml(seq.description)}</description>\n`;
+                xml += `        <ingredientIds>\n`;
+                seq.ingredientIds.forEach(id => {
+                    xml += `          <ingredientId>${this.escapeXml(id)}</ingredientId>\n`;
+                });
+                xml += `        </ingredientIds>\n`;
+                xml += `      </sequence>\n`;
+            });
+            xml += `    </sequences>\n`;
+
+            // Images
+            xml += `    <images>\n`;
+            recipe.images.forEach(img => {
+                xml += `      <image>\n`;
+                xml += `        <name>${this.escapeXml(img.name)}</name>\n`;
+                xml += `        <type>${this.escapeXml(img.type)}</type>\n`;
+                xml += `        <data>${img.data}</data>\n`;
+                xml += `      </image>\n`;
+            });
+            xml += `    </images>\n`;
+
+            // Kitchen Appliances
+            xml += `    <kitchenAppliances>\n`;
+            recipe.appliances.forEach(app => {
+                xml += `      <appliance>${this.escapeXml(app)}</appliance>\n`;
+            });
+            xml += `    </kitchenAppliances>\n`;
+
+            // Flags
+            xml += `    <caravanFriendly value="${recipe.caravanFriendly}"/>\n`;
+            xml += `    <hospitalFriendly value="${recipe.hospitalFriendly}"/>\n`;
+            xml += `    <menuFriendly value="${recipe.menuFriendly}"/>\n`;
+
+            // Timestamps
+            const createdAt = recipe.createdAt instanceof Date ? recipe.createdAt : new Date(recipe.createdAt || Date.now());
+            const updatedAt = recipe.updatedAt instanceof Date ? recipe.updatedAt : new Date(recipe.updatedAt || Date.now());
+            xml += `    <createdAt>${createdAt.toISOString()}</createdAt>\n`;
+            xml += `    <updatedAt>${updatedAt.toISOString()}</updatedAt>\n`;
+
+            xml += `  </recipe>\n`;
+        });
+
+        xml += '</recipes>';
+
+        // Download
+        const blob = new Blob([xml], { type: 'application/xml' });
+        const url = URL.createObjectURL(blob);
+        
+        const now = new Date();
+        const filename = `recetas_seleccionadas_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}.xml`;
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        
+        URL.revokeObjectURL(url);
+        this.showNotification(`${selectedRecipesList.length} recetas exportadas: ${filename}`, 'success');
     }
 
     exportToCSV() {
@@ -1873,6 +2177,14 @@ class RecipeContentManager {
             img.src = image.data;
             img.alt = image.name;
             img.className = 'media-preview-image';
+            img.style.cursor = 'pointer';
+            img.title = 'Click para ampliar';
+            
+            // Add click handler to open image in modal
+            img.addEventListener('click', () => {
+                this.openImageModal(image.data, image.name);
+            });
+            
             container.appendChild(img);
 
             // Actions
@@ -1959,6 +2271,47 @@ class RecipeContentManager {
         recipe.images.splice(index, 1);
         this.renderImagesPreview(recipe);
         this.markUnsavedChanges();
+    }
+
+    openImageModal(imageSrc, imageName) {
+        const modal = document.getElementById('image-preview-modal');
+        if (!modal) return;
+
+        const img = document.getElementById('image-preview-img');
+        const title = document.getElementById('image-preview-title');
+
+        if (img) img.src = imageSrc;
+        if (title) title.textContent = imageName;
+
+        modal.classList.remove('hidden');
+
+        // Close on overlay click
+        const overlay = modal.querySelector('.modal-overlay');
+        if (overlay) {
+            overlay.onclick = () => this.closeImageModal();
+        }
+
+        // Close on X button
+        const closeBtn = document.getElementById('close-image-preview');
+        if (closeBtn) {
+            closeBtn.onclick = () => this.closeImageModal();
+        }
+
+        // Close on ESC key
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                this.closeImageModal();
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+    }
+
+    closeImageModal() {
+        const modal = document.getElementById('image-preview-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
     }
 
     formatFileSize(bytes) {

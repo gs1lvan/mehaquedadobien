@@ -1083,6 +1083,287 @@ class XMLExporter {
             );
         }
     }
+
+    /**
+     * Generate XML string from a menu
+     * Requirements: 1.1, 1.2, 3.1, 3.3, 3.4, 3.5, 5.1, 5.2, 5.3, 5.4, 5.5
+     * @param {Object} menu - Menu to export
+     * @returns {string} XML string
+     */
+    static generateMenuXML(menu) {
+        try {
+            // Validate input
+            if (!menu || typeof menu !== 'object') {
+                throw new ExportError(
+                    'Invalid menu object',
+                    ExportError.INVALID_DATA
+                );
+            }
+
+            // Create XML document
+            const xmlDoc = document.implementation.createDocument(null, 'menu');
+            const root = xmlDoc.documentElement;
+
+            // Add version attribute
+            root.setAttribute('version', '1.0');
+
+            // Add metadata section
+            const metadataElement = xmlDoc.createElement('metadata');
+            
+            const exportDateElement = xmlDoc.createElement('exportDate');
+            exportDateElement.textContent = new Date().toISOString();
+            metadataElement.appendChild(exportDateElement);
+
+            const exportVersionElement = xmlDoc.createElement('exportVersion');
+            exportVersionElement.textContent = '1.0';
+            metadataElement.appendChild(exportVersionElement);
+
+            root.appendChild(metadataElement);
+
+            // Add menu ID
+            const idElement = xmlDoc.createElement('id');
+            idElement.textContent = menu.id ? menu.id.toString() : '';
+            root.appendChild(idElement);
+
+            // Add menu name
+            const nameElement = xmlDoc.createElement('name');
+            nameElement.textContent = menu.name || '';
+            root.appendChild(nameElement);
+
+            // Add items
+            const itemsElement = xmlDoc.createElement('items');
+            if (menu.items && Array.isArray(menu.items)) {
+                menu.items.forEach(item => {
+                    const itemElement = xmlDoc.createElement('item');
+
+                    const itemIdElement = xmlDoc.createElement('id');
+                    itemIdElement.textContent = item.id ? item.id.toString() : '';
+                    itemElement.appendChild(itemIdElement);
+
+                    const itemNameElement = xmlDoc.createElement('name');
+                    itemNameElement.textContent = item.name || '';
+                    itemElement.appendChild(itemNameElement);
+
+                    const lunchElement = xmlDoc.createElement('lunch');
+                    lunchElement.textContent = item.lunch || '';
+                    itemElement.appendChild(lunchElement);
+
+                    const dinnerElement = xmlDoc.createElement('dinner');
+                    dinnerElement.textContent = item.dinner || '';
+                    itemElement.appendChild(dinnerElement);
+
+                    const completedElement = xmlDoc.createElement('completed');
+                    completedElement.textContent = item.completed ? 'true' : 'false';
+                    itemElement.appendChild(completedElement);
+
+                    itemsElement.appendChild(itemElement);
+                });
+            }
+            root.appendChild(itemsElement);
+
+            // Add timestamps
+            const createdAtElement = xmlDoc.createElement('createdAt');
+            createdAtElement.textContent = menu.createdAt || new Date().toISOString();
+            root.appendChild(createdAtElement);
+
+            const updatedAtElement = xmlDoc.createElement('updatedAt');
+            updatedAtElement.textContent = menu.updatedAt || new Date().toISOString();
+            root.appendChild(updatedAtElement);
+
+            // Serialize to string
+            const serializer = new XMLSerializer();
+            let xmlString = serializer.serializeToString(xmlDoc);
+
+            // Add XML declaration
+            xmlString = '<?xml version="1.0" encoding="UTF-8"?>\n' + xmlString;
+
+            return xmlString;
+
+        } catch (error) {
+            console.error('Error generating menu XML:', error);
+            if (error instanceof ExportError) {
+                throw error;
+            }
+            throw new ExportError(
+                'Failed to generate menu XML: ' + error.message,
+                ExportError.GENERATION_FAILED
+            );
+        }
+    }
+
+    /**
+     * Export menu to XML and download
+     * Requirements: 1.1, 1.2, 1.3, 3.1, 3.3, 3.4, 3.5
+     * @param {Object} menu - Menu object to export
+     * @returns {string} XML string
+     */
+    static exportMenu(menu) {
+        try {
+            // Generate XML
+            const xmlString = this.generateMenuXML(menu);
+
+            // Create filename
+            const sanitizedName = menu.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const idPrefix = menu.id ? menu.id.toString().substring(0, 8) : 'menu';
+            const filename = `menu_${sanitizedName}_${idPrefix}.xml`;
+
+            // Download file
+            this.downloadXML(xmlString, filename);
+
+            return xmlString;
+
+        } catch (error) {
+            console.error('Error exporting menu:', error);
+            if (error instanceof ExportError) {
+                throw error;
+            }
+            throw new ExportError(
+                'Failed to export menu: ' + error.message,
+                ExportError.GENERATION_FAILED
+            );
+        }
+    }
+
+    /**
+     * Generate XML string from a shopping list
+     * Requirements: 2.1, 2.2, 3.2, 3.3, 3.4, 3.5, 5.1, 5.2, 5.3, 5.4, 5.5
+     * @param {Object} list - Shopping list to export
+     * @returns {string} XML string
+     */
+    static generateShoppingListXML(list) {
+        try {
+            // Validate input
+            if (!list || typeof list !== 'object') {
+                throw new ExportError(
+                    'Invalid shopping list object',
+                    ExportError.INVALID_DATA
+                );
+            }
+
+            // Create XML document
+            const xmlDoc = document.implementation.createDocument(null, 'shoppingList');
+            const root = xmlDoc.documentElement;
+
+            // Add version attribute
+            root.setAttribute('version', '1.0');
+
+            // Add metadata section
+            const metadataElement = xmlDoc.createElement('metadata');
+            
+            const exportDateElement = xmlDoc.createElement('exportDate');
+            exportDateElement.textContent = new Date().toISOString();
+            metadataElement.appendChild(exportDateElement);
+
+            const exportVersionElement = xmlDoc.createElement('exportVersion');
+            exportVersionElement.textContent = '1.0';
+            metadataElement.appendChild(exportVersionElement);
+
+            root.appendChild(metadataElement);
+
+            // Add list ID
+            const idElement = xmlDoc.createElement('id');
+            idElement.textContent = list.id ? list.id.toString() : '';
+            root.appendChild(idElement);
+
+            // Add list name
+            const nameElement = xmlDoc.createElement('name');
+            nameElement.textContent = list.name || '';
+            root.appendChild(nameElement);
+
+            // Add enabled status
+            const enabledElement = xmlDoc.createElement('enabled');
+            enabledElement.textContent = list.enabled !== undefined ? (list.enabled ? 'true' : 'false') : 'true';
+            root.appendChild(enabledElement);
+
+            // Add items
+            const itemsElement = xmlDoc.createElement('items');
+            if (list.items && Array.isArray(list.items)) {
+                list.items.forEach(item => {
+                    const itemElement = xmlDoc.createElement('item');
+
+                    const itemIdElement = xmlDoc.createElement('id');
+                    itemIdElement.textContent = item.id ? item.id.toString() : '';
+                    itemElement.appendChild(itemIdElement);
+
+                    const itemNameElement = xmlDoc.createElement('name');
+                    itemNameElement.textContent = item.name || '';
+                    itemElement.appendChild(itemNameElement);
+
+                    const quantityElement = xmlDoc.createElement('quantity');
+                    quantityElement.textContent = item.quantity || '';
+                    itemElement.appendChild(quantityElement);
+
+                    const completedElement = xmlDoc.createElement('completed');
+                    completedElement.textContent = item.completed ? 'true' : 'false';
+                    itemElement.appendChild(completedElement);
+
+                    itemsElement.appendChild(itemElement);
+                });
+            }
+            root.appendChild(itemsElement);
+
+            // Add timestamps
+            const createdAtElement = xmlDoc.createElement('createdAt');
+            createdAtElement.textContent = list.createdAt || new Date().toISOString();
+            root.appendChild(createdAtElement);
+
+            const updatedAtElement = xmlDoc.createElement('updatedAt');
+            updatedAtElement.textContent = list.updatedAt || new Date().toISOString();
+            root.appendChild(updatedAtElement);
+
+            // Serialize to string
+            const serializer = new XMLSerializer();
+            let xmlString = serializer.serializeToString(xmlDoc);
+
+            // Add XML declaration
+            xmlString = '<?xml version="1.0" encoding="UTF-8"?>\n' + xmlString;
+
+            return xmlString;
+
+        } catch (error) {
+            console.error('Error generating shopping list XML:', error);
+            if (error instanceof ExportError) {
+                throw error;
+            }
+            throw new ExportError(
+                'Failed to generate shopping list XML: ' + error.message,
+                ExportError.GENERATION_FAILED
+            );
+        }
+    }
+
+    /**
+     * Export shopping list to XML and download
+     * Requirements: 2.1, 2.2, 2.3, 3.2, 3.3, 3.4, 3.5
+     * @param {Object} list - Shopping list object to export
+     * @returns {string} XML string
+     */
+    static exportShoppingList(list) {
+        try {
+            // Generate XML
+            const xmlString = this.generateShoppingListXML(list);
+
+            // Create filename
+            const sanitizedName = list.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const idPrefix = list.id ? list.id.toString().substring(0, 8) : 'list';
+            const filename = `lista_compra_${sanitizedName}_${idPrefix}.xml`;
+
+            // Download file
+            this.downloadXML(xmlString, filename);
+
+            return xmlString;
+
+        } catch (error) {
+            console.error('Error exporting shopping list:', error);
+            if (error instanceof ExportError) {
+                throw error;
+            }
+            throw new ExportError(
+                'Failed to export shopping list: ' + error.message,
+                ExportError.GENERATION_FAILED
+            );
+        }
+    }
 }
 
 /**
@@ -2397,6 +2678,288 @@ class XMLImporter {
         }
 
         return images;
+    }
+
+    /**
+     * Import menu from XML file
+     * Requirements: 1.1, 1.2, 3.1, 3.3, 3.4
+     * @param {File} file - XML file to import
+     * @returns {Promise<Object>} Parsed menu object
+     */
+    static async importMenuFromFile(file) {
+        try {
+            // Validate file
+            this.validateFile(file);
+
+            // Read file content
+            const xmlString = await this.readFileContent(file);
+
+            // Parse XML and return menu object
+            return this.parseMenuXML(xmlString);
+
+        } catch (error) {
+            console.error('[XMLImporter] Error importing menu from file:', error);
+            if (error instanceof ImportError) {
+                throw error;
+            }
+            throw new ImportError(
+                'Error al importar menú: ' + error.message,
+                ImportError.PARSING_FAILED
+            );
+        }
+    }
+
+    /**
+     * Parse menu XML string
+     * Requirements: 1.1, 1.2, 4.1, 4.2, 4.3, 6.1, 6.3, 6.4
+     * @param {string} xmlString - XML content as string
+     * @returns {Object} Parsed menu object
+     */
+    static parseMenuXML(xmlString) {
+        try {
+            // Parse XML
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+
+            // Check for parsing errors
+            const parserError = xmlDoc.querySelector('parsererror');
+            if (parserError) {
+                throw new ImportError(
+                    'XML inválido: ' + parserError.textContent,
+                    ImportError.PARSING_FAILED
+                );
+            }
+
+            // Validate root element
+            const root = xmlDoc.documentElement;
+            if (root.tagName !== 'menu') {
+                throw new ImportError(
+                    'Tipo de archivo XML no reconocido. Se esperaba <menu>',
+                    ImportError.PARSING_FAILED
+                );
+            }
+
+            // Extract menu data
+            const menu = {};
+
+            // ID (required)
+            const idElement = root.querySelector('id');
+            if (!idElement) {
+                throw new ImportError(
+                    'Falta el campo requerido: id',
+                    ImportError.INVALID_DATA
+                );
+            }
+            menu.id = parseInt(idElement.textContent);
+
+            // Name (required)
+            const nameElement = root.querySelector('name');
+            if (!nameElement) {
+                throw new ImportError(
+                    'Falta el campo requerido: name',
+                    ImportError.INVALID_DATA
+                );
+            }
+            menu.name = nameElement.textContent;
+
+            // Items (required)
+            const itemsElement = root.querySelector('items');
+            menu.items = [];
+
+            if (itemsElement) {
+                const itemElements = itemsElement.querySelectorAll('item');
+                itemElements.forEach((itemElement, index) => {
+                    try {
+                        const item = {};
+
+                        // Item ID
+                        const itemIdElement = itemElement.querySelector('id');
+                        item.id = itemIdElement ? parseInt(itemIdElement.textContent) : index + 1;
+
+                        // Item name (day)
+                        const itemNameElement = itemElement.querySelector('name');
+                        item.name = itemNameElement ? itemNameElement.textContent : '';
+
+                        // Lunch
+                        const lunchElement = itemElement.querySelector('lunch');
+                        item.lunch = lunchElement ? lunchElement.textContent : '';
+
+                        // Dinner
+                        const dinnerElement = itemElement.querySelector('dinner');
+                        item.dinner = dinnerElement ? dinnerElement.textContent : '';
+
+                        // Completed (boolean)
+                        const completedElement = itemElement.querySelector('completed');
+                        item.completed = completedElement ? completedElement.textContent === 'true' : false;
+
+                        menu.items.push(item);
+                    } catch (error) {
+                        console.warn(`[XMLImporter] Error parsing menu item ${index + 1}:`, error);
+                    }
+                });
+            }
+
+            // Timestamps (optional, will be updated on import)
+            const createdAtElement = root.querySelector('createdAt');
+            menu.createdAt = createdAtElement ? createdAtElement.textContent : new Date().toISOString();
+
+            const updatedAtElement = root.querySelector('updatedAt');
+            menu.updatedAt = updatedAtElement ? updatedAtElement.textContent : new Date().toISOString();
+
+            console.log('[XMLImporter] Menu parsed successfully:', menu.name);
+            return menu;
+
+        } catch (error) {
+            console.error('[XMLImporter] Error parsing menu XML:', error);
+            if (error instanceof ImportError) {
+                throw error;
+            }
+            throw new ImportError(
+                'Error al parsear XML del menú: ' + error.message,
+                ImportError.PARSING_FAILED
+            );
+        }
+    }
+
+    /**
+     * Import shopping list from XML file
+     * Requirements: 2.1, 2.2, 3.2, 3.3, 3.4
+     * @param {File} file - XML file to import
+     * @returns {Promise<Object>} Parsed shopping list object
+     */
+    static async importShoppingListFromFile(file) {
+        try {
+            // Validate file
+            this.validateFile(file);
+
+            // Read file content
+            const xmlString = await this.readFileContent(file);
+
+            // Parse XML and return list object
+            return this.parseShoppingListXML(xmlString);
+
+        } catch (error) {
+            console.error('[XMLImporter] Error importing shopping list from file:', error);
+            if (error instanceof ImportError) {
+                throw error;
+            }
+            throw new ImportError(
+                'Error al importar lista de compra: ' + error.message,
+                ImportError.PARSING_FAILED
+            );
+        }
+    }
+
+    /**
+     * Parse shopping list XML string
+     * Requirements: 2.1, 2.2, 4.1, 4.2, 4.3, 6.2, 6.3, 6.4, 6.5
+     * @param {string} xmlString - XML content as string
+     * @returns {Object} Parsed shopping list object
+     */
+    static parseShoppingListXML(xmlString) {
+        try {
+            // Parse XML
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+
+            // Check for parsing errors
+            const parserError = xmlDoc.querySelector('parsererror');
+            if (parserError) {
+                throw new ImportError(
+                    'XML inválido: ' + parserError.textContent,
+                    ImportError.PARSING_FAILED
+                );
+            }
+
+            // Validate root element
+            const root = xmlDoc.documentElement;
+            if (root.tagName !== 'shoppingList') {
+                throw new ImportError(
+                    'Tipo de archivo XML no reconocido. Se esperaba <shoppingList>',
+                    ImportError.PARSING_FAILED
+                );
+            }
+
+            // Extract list data
+            const list = {};
+
+            // ID (required)
+            const idElement = root.querySelector('id');
+            if (!idElement) {
+                throw new ImportError(
+                    'Falta el campo requerido: id',
+                    ImportError.INVALID_DATA
+                );
+            }
+            list.id = parseInt(idElement.textContent);
+
+            // Name (required)
+            const nameElement = root.querySelector('name');
+            if (!nameElement) {
+                throw new ImportError(
+                    'Falta el campo requerido: name',
+                    ImportError.INVALID_DATA
+                );
+            }
+            list.name = nameElement.textContent;
+
+            // Enabled (optional, default true)
+            const enabledElement = root.querySelector('enabled');
+            list.enabled = enabledElement ? enabledElement.textContent === 'true' : true;
+
+            // Items (required)
+            const itemsElement = root.querySelector('items');
+            list.items = [];
+
+            if (itemsElement) {
+                const itemElements = itemsElement.querySelectorAll('item');
+                itemElements.forEach((itemElement, index) => {
+                    try {
+                        const item = {};
+
+                        // Item ID
+                        const itemIdElement = itemElement.querySelector('id');
+                        item.id = itemIdElement ? parseInt(itemIdElement.textContent) : index + 1;
+
+                        // Item name
+                        const itemNameElement = itemElement.querySelector('name');
+                        item.name = itemNameElement ? itemNameElement.textContent : '';
+
+                        // Quantity
+                        const quantityElement = itemElement.querySelector('quantity');
+                        item.quantity = quantityElement ? quantityElement.textContent : '';
+
+                        // Completed (boolean)
+                        const completedElement = itemElement.querySelector('completed');
+                        item.completed = completedElement ? completedElement.textContent === 'true' : false;
+
+                        list.items.push(item);
+                    } catch (error) {
+                        console.warn(`[XMLImporter] Error parsing list item ${index + 1}:`, error);
+                    }
+                });
+            }
+
+            // Timestamps (optional, will be updated on import)
+            const createdAtElement = root.querySelector('createdAt');
+            list.createdAt = createdAtElement ? createdAtElement.textContent : new Date().toISOString();
+
+            const updatedAtElement = root.querySelector('updatedAt');
+            list.updatedAt = updatedAtElement ? updatedAtElement.textContent : new Date().toISOString();
+
+            console.log('[XMLImporter] Shopping list parsed successfully:', list.name);
+            return list;
+
+        } catch (error) {
+            console.error('[XMLImporter] Error parsing shopping list XML:', error);
+            if (error instanceof ImportError) {
+                throw error;
+            }
+            throw new ImportError(
+                'Error al parsear XML de la lista: ' + error.message,
+                ImportError.PARSING_FAILED
+            );
+        }
     }
 
 }

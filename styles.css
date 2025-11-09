@@ -507,6 +507,15 @@ main {
     border-bottom: 1px solid var(--color-border-light);
 }
 
+/* Menu filter section */
+#menu-filter-bar {
+    margin-top: var(--spacing-md);
+}
+
+#menu-filter-bar.hidden {
+    display: none;
+}
+
 .filter-title {
     font-size: 0.875rem;
     color: var(--color-text-secondary);
@@ -5347,6 +5356,39 @@ select {
 
 .shopping-list-card:hover {
     box-shadow: var(--shadow-md);
+}
+
+/* Menu Bookmark Button */
+.menu-bookmark-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+    color: var(--color-text-secondary);
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-bookmark-btn:hover {
+    background: var(--color-background-secondary);
+    color: var(--color-primary);
+    transform: scale(1.1);
+}
+
+.menu-bookmark-btn i.fa-solid {
+    color: var(--color-primary);
+}
+
+.menu-bookmark-btn i.fa-regular {
+    color: var(--color-text-secondary);
+}
+
+.menu-bookmark-btn:hover i {
+    color: var(--color-primary);
 }
 
 /* Shopping List Header */

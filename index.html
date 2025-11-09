@@ -87,6 +87,9 @@
                     <button id="settings-btn" class="menu-item" role="menuitem" title="Configuración">
                         Configuración
                     </button>
+                    <button id="help-btn" class="menu-item" role="menuitem" title="Ayuda">
+                        Ayuda
+                    </button>
                 </div>
 
                 <!-- Hidden file input for XML import -->
@@ -151,6 +154,14 @@
                         <button class="filter-chip" data-category="caravana">
                             🚐 Caravana
                         </button>
+                    </div>
+                </section>
+
+                <!-- NEW: Menu filters section -->
+                <section id="menu-filter-bar" class="filter-bar hidden">
+                    <h2 class="filter-title">Filtrar por menú:</h2>
+                    <div class="filter-chips" id="menu-filter-chips">
+                        <!-- Dynamically populated with menu filter chips -->
                     </div>
                 </section>
 
@@ -1321,6 +1332,58 @@
         </div>
     </div>
 
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="help-modal-title">❓ Ayuda</h2>
+                <button id="close-help-modal" class="btn-icon" aria-label="Cerrar modal de ayuda">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Bienvenido a mehaquedadobien 🍳</h3>
+                    <p style="color: var(--color-text-secondary); margin-bottom: var(--spacing-md);">
+                        Tu recetario personal para guardar, organizar y compartir tus recetas favoritas.
+                    </p>
+                </div>
+
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Funciones principales</h3>
+                    <ul style="color: var(--color-text-secondary); line-height: 1.8;">
+                        <li><strong>Recetas:</strong> Crea, edita y organiza tus recetas con ingredientes, secuencias e imágenes</li>
+                        <li><strong>Menús:</strong> Planifica tus comidas semanales y conviértelos en filtros rápidos</li>
+                        <li><strong>Listas de Compra:</strong> Genera listas automáticas desde tus recetas</li>
+                        <li><strong>Filtros:</strong> Filtra por categoría o por menú para encontrar recetas rápidamente</li>
+                        <li><strong>Compartir:</strong> Comparte recetas individuales o exporta todo tu recetario</li>
+                    </ul>
+                </div>
+
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Atajos de teclado</h3>
+                    <div style="display: grid; gap: var(--spacing-xs); color: var(--color-text-secondary);">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span><kbd>Ctrl+S</kbd> / <kbd>Cmd+S</kbd></span>
+                            <span>Guardar receta</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span><kbd>Esc</kbd></span>
+                            <span>Cerrar modal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3 class="settings-section-title">¿Necesitas más ayuda?</h3>
+                    <p style="color: var(--color-text-secondary);">
+                        Visita la documentación completa o contacta con soporte para más información.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Category Selector Modal -->
     <div id="category-selector-modal" class="modal hidden">
         <div class="modal-overlay"></div>
@@ -1478,6 +1541,215 @@
             .menu-item-row + .menu-item-row {
                 /* Hide header in mobile */
             }
+        }
+    </style>
+
+    <!-- Help Modal Styles -->
+    <style>
+        /* Help Modal - Unique Styling */
+        #help-modal .modal-content {
+            max-width: 700px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        #help-modal .modal-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        #help-modal .modal-header h2 {
+            color: white;
+            font-size: 1.8rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        #help-modal .modal-header .btn-icon {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        #help-modal .modal-header .btn-icon:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        #help-modal .modal-body {
+            background: white;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        }
+
+        #help-modal .settings-section {
+            background: linear-gradient(to right, #f8f9fa, #ffffff);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        #help-modal .settings-section:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+        #help-modal .settings-section-title {
+            color: #667eea;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        #help-modal .settings-section-title::before {
+            content: "✨";
+            font-size: 1.4rem;
+        }
+
+        #help-modal .settings-section:nth-child(1) .settings-section-title::before {
+            content: "👋";
+        }
+
+        #help-modal .settings-section:nth-child(2) .settings-section-title::before {
+            content: "🎯";
+        }
+
+        #help-modal .settings-section:nth-child(3) .settings-section-title::before {
+            content: "⌨️";
+        }
+
+        #help-modal .settings-section:nth-child(4) .settings-section-title::before {
+            content: "💡";
+        }
+
+        #help-modal ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        #help-modal ul li {
+            padding: var(--spacing-sm) 0;
+            padding-left: var(--spacing-lg);
+            position: relative;
+            color: var(--color-text);
+            line-height: 1.6;
+        }
+
+        #help-modal ul li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        #help-modal ul li strong {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        #help-modal kbd {
+            background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            color: #495057;
+            font-weight: 600;
+        }
+
+        #help-modal .settings-section > p {
+            color: var(--color-text-secondary);
+            line-height: 1.8;
+        }
+
+        /* Keyboard shortcuts grid */
+        #help-modal .settings-section > div[style*="grid"] > div {
+            background: rgba(102, 126, 234, 0.05);
+            padding: var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            transition: all 0.2s;
+        }
+
+        #help-modal .settings-section > div[style*="grid"] > div:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateX(4px);
+        }
+
+        /* Dark theme support */
+        body.dark-theme #help-modal .modal-content {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+        }
+
+        body.dark-theme #help-modal .modal-body {
+            background: var(--color-background);
+        }
+
+        body.dark-theme #help-modal .settings-section {
+            background: var(--color-background-secondary);
+            border-left-color: #667eea;
+        }
+
+        body.dark-theme #help-modal .settings-section:hover {
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        body.dark-theme #help-modal ul li {
+            color: var(--color-text);
+        }
+
+        body.dark-theme #help-modal kbd {
+            background: var(--color-background-secondary);
+            border-color: var(--color-border);
+            color: var(--color-text);
+        }
+
+        /* Animation */
+        @keyframes helpFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #help-modal .settings-section {
+            animation: helpFadeIn 0.4s ease forwards;
+        }
+
+        #help-modal .settings-section:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        #help-modal .settings-section:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        #help-modal .settings-section:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        #help-modal .settings-section:nth-child(4) {
+            animation-delay: 0.4s;
         }
     </style>
 
