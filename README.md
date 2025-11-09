@@ -601,11 +601,19 @@ El proyecto incluye un **Recipe Content Manager** (CMS) standalone para gestión
 - ✅ **Edición masiva** - Edita múltiples recetas simultáneamente
 - ✅ **Buscar y reemplazar** - Corrige datos en lote
 - ✅ **Filtrado avanzado** - Por categoría, autor, tiempo, flags
-- ✅ **Estadísticas** - Dashboard con métricas del recetario
+- ✅ **Dashboard rediseñado** - Métricas con diseño elegante y borde `#FF5A5F`
+- ✅ **Grid de incompletas** - Vista en grid responsive (mínimo 2 columnas)
 - ✅ **Detección de incompletas** - Identifica recetas sin autor, tiempo, ingredientes o imágenes
 - ✅ **Exportación** - XML y CSV
 - ✅ **Historial** - Deshacer cambios con Ctrl+Z
 - ✅ **Atajos de teclado** - Ctrl+S (guardar), Ctrl+F (buscar), Escape (cerrar)
+- ✅ **CSS separado** - Estilos organizados en `recipe-manager.css`
+- ✅ **Tema oscuro** - Diseño optimizado para tema oscuro
+
+### Archivos
+- `recipe-manager.html` - Interfaz del CMS
+- `recipe-manager.css` - Estilos separados (~850 líneas)
+- `recipe-manager.js` - Lógica del CMS (~700 líneas)
 
 ### Acceso
 Abre `recipe-manager.html` en tu navegador para usar el CMS.

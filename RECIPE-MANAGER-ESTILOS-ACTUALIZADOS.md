@@ -331,3 +331,221 @@ El Recipe Content Manager ahora tiene:
 **Autor**: Kiro AI  
 **Fecha**: 7 de noviembre de 2025  
 **Versión**: 2.0 (Estilos actualizados)
+
+
+---
+
+## 🆕 Actualizaciones Recientes (Noviembre 2025)
+
+### 1. Separación de CSS en Archivo Externo
+
+**Fecha**: 9 de noviembre de 2025
+
+Se extrajo todo el CSS del CMS a un archivo separado para mejor organización y mantenibilidad.
+
+**Antes:**
+```html
+<head>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="modal-triggers.css">
+    <style>
+        /* ~850 líneas de CSS inline */
+    </style>
+</head>
+```
+
+**Después:**
+```html
+<head>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="modal-triggers.css">
+    <link rel="stylesheet" href="recipe-manager.css">
+</head>
+```
+
+**Beneficios:**
+- ✅ HTML más limpio y legible
+- ✅ CSS reutilizable y cacheable
+- ✅ Mejor separación de responsabilidades
+- ✅ Más fácil de mantener y actualizar
+- ✅ Mejor rendimiento (caching del navegador)
+
+### 2. Grid de Recetas Incompletas
+
+Se implementó un grid responsive para el listado de recetas incompletas.
+
+**CSS:**
+```css
+.incomplete-recipes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+```
+
+**Características:**
+- Mínimo 2 columnas en pantallas grandes
+- 1 columna en pantallas pequeñas (< 300px)
+- Auto-fit: Se adapta automáticamente al ancho disponible
+- Gap consistente usando variables del sistema
+
+### 3. Rediseño del Dashboard
+
+Se actualizó el dashboard horizontal con un diseño más sutil y elegante.
+
+**Antes:**
+```css
+.dashboard-horizontal {
+    background: linear-gradient(135deg, #FF385C 0%, #E31C5F 100%);
+}
+
+.dash-stat {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+```
+
+**Después:**
+```css
+.dashboard-horizontal {
+    background: #2D2D2D;
+    border: 2px solid #FF5A5F;
+    box-shadow: 0 2px 8px rgba(255, 90, 95, 0.15);
+}
+
+.dash-stat {
+    background: rgba(255, 90, 95, 0.08);
+    border-left: 3px solid #FF5A5F;
+    color: var(--color-text);
+}
+
+.dash-icon,
+.dash-value {
+    color: #FF5A5F;
+}
+```
+
+**Características del nuevo diseño:**
+- Fondo `#2D2D2D` (ligeramente más claro que el fondo de la página)
+- Borde de `2px` en color `#FF5A5F` (rojo/rosa vibrante)
+- Sombra sutil con tinte del color del borde
+- Stats individuales con fondo semi-transparente
+- Borde izquierdo de `3px` en cada stat
+- Iconos y valores destacados en `#FF5A5F`
+- Hover con efecto de elevación y brillo
+- Mejor integración con el tema oscuro
+
+**Beneficios:**
+- ✅ Más sutil y profesional
+- ✅ Mejor contraste y legibilidad
+- ✅ Acentos vibrantes que destacan la información
+- ✅ Consistente con el tema oscuro
+- ✅ Efectos hover más elegantes
+
+### 4. Corrección de Encoding UTF-8
+
+Se corrigieron problemas de encoding para mostrar correctamente emojis y caracteres especiales.
+
+**Problemas resueltos:**
+- ❌ `ðŸ³` → ✅ `🍳`
+- ❌ `GestiÃ³n` → ✅ `Gestión`
+- ❌ `imÃ¡genes` → ✅ `imágenes`
+
+**Solución:**
+- Uso correcto de `UTF-8` sin BOM
+- Meta charset correctamente configurado
+- Archivos guardados con encoding UTF-8
+
+---
+
+## 📊 Estadísticas del CSS
+
+### Archivo: `recipe-manager.css`
+
+- **Líneas totales**: ~850
+- **Selectores**: ~120
+- **Variables CSS usadas**: ~30
+- **Media queries**: 1 (responsive)
+- **Animaciones**: 2 (spin, slideIn)
+- **Temas**: 2 (light, dark)
+
+### Organización del archivo:
+
+1. **Layout Principal** (líneas 1-70)
+   - Container, header, sidebar, main, footer
+
+2. **Stats Cards** (líneas 71-90)
+   - Grid de estadísticas
+
+3. **Dashboard** (líneas 91-130)
+   - Dashboard horizontal y stats individuales
+
+4. **Recetas Incompletas** (líneas 131-200)
+   - Sección y grid de recetas incompletas
+
+5. **Filtros** (líneas 201-280)
+   - Filtros horizontales y controles
+
+6. **Tabla de Recetas** (líneas 281-380)
+   - Estilos de tabla y columnas
+
+7. **Inputs y Formularios** (líneas 381-420)
+   - Estilos de inputs, labels, checkboxes
+
+8. **Responsive** (líneas 421-460)
+   - Media queries para móvil
+
+9. **Estados** (líneas 461-500)
+   - Loading, hidden, modales
+
+10. **Modales** (líneas 501-600)
+    - Estilos de modales y overlays
+
+11. **Toasts** (líneas 601-680)
+    - Notificaciones y animaciones
+
+12. **Utilidades** (líneas 681-750)
+    - Checkboxes, sortables, kbd, scrollbar
+
+13. **Botones** (líneas 751-800)
+    - Estilos de botones y variantes
+
+14. **Tema Oscuro** (líneas 801-850)
+    - Overrides para dark theme
+
+---
+
+## 🔧 Mantenimiento
+
+### Actualizar estilos del dashboard:
+
+1. Editar `recipe-manager.css`
+2. Buscar la sección `/* Dashboard Horizontal */`
+3. Modificar los estilos según necesidad
+4. Guardar y recargar el navegador
+
+### Agregar nuevos componentes:
+
+1. Agregar HTML en `recipe-manager.html`
+2. Agregar estilos en `recipe-manager.css`
+3. Usar variables CSS existentes
+4. Mantener consistencia con el sistema de diseño
+
+### Testing:
+
+- ✅ Probar en Chrome, Firefox, Safari
+- ✅ Probar en móvil y desktop
+- ✅ Probar tema claro y oscuro
+- ✅ Verificar encoding UTF-8
+- ✅ Validar HTML y CSS
+
+---
+
+## 📚 Referencias
+
+- **Sistema de diseño**: `styles.css`
+- **Componentes modales**: `modal-triggers.css`
+- **Estilos CMS**: `recipe-manager.css`
+- **Documentación técnica**: `SECCIONES-WEB-COMPLETO_TECNICO.md`
+- **Guía de implementación**: `RECIPE-MANAGER-IMPLEMENTACION.md`
