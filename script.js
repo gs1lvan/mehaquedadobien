@@ -768,8 +768,9 @@ class ShoppingListManager {
         const lines = [];
 
         // Add list name as header
-        lines.push(list.name);
-        lines.push('-----------------------------------'); // Fixed separator line
+        lines.push('------------------------------------------------');
+        lines.push('Lista de la compra: ' + list.name);
+        lines.push('------------------------------------------------');
 
         // Filter items based on completed status
         const items = includeCompleted
@@ -785,24 +786,44 @@ class ShoppingListManager {
             return lines.join('\n');
         }
 
-        // Format each item with conditional blank line
+        // Format items, handling recipe groups
+        let inRecipe = false;
         items.forEach((item, index) => {
+            console.log(`[FormatClipboard] Item ${index}:`, item.name);
+            
+            // Check for recipe start
+            if (item.name.startsWith('[RECIPE_START]')) {
+                console.log('[FormatClipboard] Found RECIPE_START');
+                if (lines.length > 3) lines.push(''); // Blank line before new recipe (except first)
+                const recipeName = item.name.replace('[RECIPE_START]', '');
+                lines.push(recipeName);
+                lines.push('------------------------------------------------');
+                inRecipe = true;
+                return;
+            }
+            
+            // Check for recipe end
+            if (item.name === '[RECIPE_END]') {
+                console.log('[FormatClipboard] Found RECIPE_END');
+                lines.push('------------------------------------------------');
+                inRecipe = false;
+                return;
+            }
+            
+            // Format regular items and recipe items
             const quantityText = item.quantity?.trim() || '';
             const quantity = quantityText ? ` - ${quantityText}` : '';
             const completedMark = item.completed ? '✓ ' : '';
-            const itemLine = `${completedMark}${item.name}${quantity}`;
+            
+            // Remove [RECIPE_ITEM] marker if present
+            const itemName = item.name.replace('[RECIPE_ITEM]', '');
+            console.log('[FormatClipboard] Item name after replace:', itemName);
+            const itemLine = `${completedMark}${itemName}${quantity}`;
             lines.push(itemLine);
-
-            // Add blank line after each item except the last one
-            // BUT only if the quantity is 30 characters or more
-            if (index < items.length - 1) {
-                if (quantityText.length >= 30) {
-                    lines.push(''); // Empty string creates a blank line
-                }
-            }
         });
+        
+        console.log('[FormatClipboard] Final lines:', lines);
 
-        // Join with newline character
         return lines.join('\n');
     }
 }
