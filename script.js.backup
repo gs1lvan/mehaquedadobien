@@ -817,7 +817,6 @@ class RecipeApp {
         this.storageManager = new StorageManager();
         this.categoryManager = new CategoryManager();
         this.shoppingListManager = new ShoppingListManager();
-        this.menuManager = new MenuManager();
         this.recipes = [];
         this.activeFilters = new Set(); // Track active category filters
         this.activeTimeFilter = 'all'; // Track active time filter
@@ -844,6 +843,11 @@ class RecipeApp {
             totalImages: 0,
             recipeName: ''
         };
+
+        // Auto-save state
+        this.autoSaveTimer = null;
+        this.autoSaveDelay = 2000; // 2 seconds after user stops typing
+        this.isAutoSaving = false;
 
         // Modal stack management
         this.modalStack = []; // Track opened modals for cascade closing
@@ -3053,9 +3057,7 @@ class RecipeApp {
         let currentSuggestedButton = null;
 
         // Clone and replace cooking buttons to remove old listeners
-        const cookingButtons = cookingButtonsContainer.querySelectorAll('.cooking-action-btn');
-        
-        cookingButtons.forEach(button => {
+        cookingButtonsContainer.querySelectorAll('.cooking-action-btn').forEach(button => {
             const newButton = button.cloneNode(true);
             button.parentNode.replaceChild(newButton, button);
 
@@ -3109,7 +3111,7 @@ class RecipeApp {
             });
         }
 
-
+        console.log('[CookingActions] Cooking action buttons initialized');
     }
 
     /**
@@ -5546,6 +5548,82 @@ class RecipeApp {
     }
 
     /**
+     * Auto-save recipe with debounce
+     * Saves the recipe automatically after user stops editing
+     */
+    scheduleAutoSave() {
+        // Only auto-save when editing an existing recipe
+        if (!this.currentRecipeId) {
+            return;
+        }
+
+        // Clear existing timer
+        if (this.autoSaveTimer) {
+            clearTimeout(this.autoSaveTimer);
+        }
+
+        // Schedule new auto-save
+        this.autoSaveTimer = setTimeout(async () => {
+            await this.performAutoSave();
+        }, this.autoSaveDelay);
+    }
+
+    /**
+     * Perform the actual auto-save operation
+     */
+    async performAutoSave() {
+        // Only auto-save when editing
+        if (!this.currentRecipeId || this.isAutoSaving) {
+            return;
+        }
+
+        try {
+            this.isAutoSaving = true;
+
+            // Get form data
+            const formData = this.getFormData();
+
+            // Validate minimum requirements (at least a name)
+            if (!formData.name || formData.name.trim() === '') {
+                return; // Don't auto-save if no name
+            }
+
+            // Save recipe silently
+            await this.saveRecipe(formData);
+
+            // Update the recipe in memory
+            await this.loadRecipes();
+
+            // Show subtle feedback
+            this.showAutoSaveIndicator();
+
+            console.log('[AutoSave] Recipe auto-saved:', this.currentRecipeId);
+        } catch (error) {
+            console.error('[AutoSave] Error auto-saving recipe:', error);
+            // Don't show error to user for auto-save failures
+        } finally {
+            this.isAutoSaving = false;
+        }
+    }
+
+    /**
+     * Show auto-save indicator
+     */
+    showAutoSaveIndicator() {
+        const formTitle = document.getElementById('form-title');
+        if (!formTitle) return;
+
+        const originalText = formTitle.textContent;
+        formTitle.textContent = '✓ Guardado automáticamente';
+        formTitle.style.color = '#10b981';
+
+        setTimeout(() => {
+            formTitle.textContent = originalText;
+            formTitle.style.color = '';
+        }, 2000);
+    }
+
+    /**
      * Get form data
      * Requirements: 1.2, 3.3, 5.3, 9.2
      * @returns {object} Form data
@@ -7346,11 +7424,11 @@ class RecipeApp {
         chipsContainer.innerHTML = '';
 
         if (!appliances || appliances.length === 0) {
-            section.classList.add('u-hidden');
+            section.style.display = 'none';
             return;
         }
 
-        section.classList.remove('u-hidden');
+        section.style.display = 'block';
 
         // Create ul element with same style as ingredients list
         const ul = document.createElement('ul');
@@ -7388,26 +7466,26 @@ class RecipeApp {
 
         // Show section only if there's author or history
         if (!hasAuthor && !hasHistory) {
-            sectionElement.classList.add('u-hidden');
+            sectionElement.style.display = 'none';
             return;
         }
 
-        sectionElement.classList.remove('u-hidden');
+        sectionElement.style.display = 'block';
 
         // Show author if available
         if (hasAuthor) {
-            authorSection.classList.remove('u-hidden');
+            authorSection.style.display = 'block';
             authorElement.textContent = author;
         } else {
-            authorSection.classList.add('u-hidden');
+            authorSection.style.display = 'none';
         }
 
         // Show history if available
         if (hasHistory) {
-            historySection.classList.remove('u-hidden');
+            historySection.style.display = 'block';
             historyElement.textContent = history;
         } else {
-            historySection.classList.add('u-hidden');
+            historySection.style.display = 'none';
         }
     }
 
@@ -7427,11 +7505,11 @@ class RecipeApp {
         listElement.innerHTML = '';
 
         if (!sequences || sequences.length === 0) {
-            sectionElement.classList.add('u-hidden');
+            sectionElement.style.display = 'none';
             return;
         }
 
-        sectionElement.classList.remove('u-hidden');
+        sectionElement.style.display = 'block';
 
         // Render each sequence
         sequences.forEach((sequence, index) => {
@@ -7935,7 +8013,12 @@ class RecipeApp {
         const imagesGallery = document.getElementById('detail-images-gallery');
         const videosGallery = document.getElementById('detail-videos-gallery');
 
-        if (!sectionElement || !imagesGallery) return;
+        console.log('[Multimedia] Rendering:', { images: images?.length, videos: videos?.length });
+
+        if (!sectionElement || !imagesGallery) {
+            console.warn('[Multimedia] Missing required elements');
+            return;
+        }
 
         // Clear galleries
         imagesGallery.innerHTML = '';
@@ -7947,11 +8030,12 @@ class RecipeApp {
         const hasVideos = videos && videos.length > 0;
 
         if (!hasImages && !hasVideos) {
-            sectionElement.classList.add('u-hidden');
+            sectionElement.style.display = 'none';
             return;
         }
 
-        sectionElement.classList.remove('u-hidden');
+        sectionElement.style.display = 'block';
+        console.log('[Multimedia] Showing section with', images?.length, 'images');
 
         // NUEVO: Render images using gallery for 2+ images
         if (hasImages) {
@@ -8221,13 +8305,7 @@ class RecipeApp {
             };
         }
 
-        // Add all ingredients to shopping list button
-        const addAllIngredientsBtn = document.getElementById('add-all-ingredients-btn');
-        if (addAllIngredientsBtn) {
-            addAllIngredientsBtn.onclick = () => {
-                this.showSelectShoppingListModalForAllIngredients(recipe);
-            };
-        }
+        // Copy ingredients button removed
     }
 
     /**
@@ -10001,7 +10079,7 @@ class RecipeApp {
         container.innerHTML = '';
 
         // Get all menus
-        const menus = this.menuManager.getAllMenus();
+        const menus = this.getMenusFromStorage();
 
         // Show empty state if no menus
         if (menus.length === 0) {
@@ -10507,11 +10585,13 @@ class RecipeApp {
      * Toggle menu enabled/disabled
      */
     toggleMenuEnabled(menuId) {
-        // Toggle using MenuManager (it handles the toggle and save)
-        this.menuManager.toggleMenuEnabled(menuId);
-        const menu = this.menuManager.getMenu(menuId);
+        const menus = this.getMenusFromStorage();
+        const menu = menus.find(m => m.id === menuId);
 
         if (menu) {
+            menu.enabled = menu.enabled === false ? true : false;
+            localStorage.setItem('recetario_menus', JSON.stringify(menus));
+
             const status = menu.enabled ? 'habilitado' : 'deshabilitado';
             this.showToast(`Menú ${status} correctamente`, 'success');
             this.renderMenus();
@@ -10524,10 +10604,15 @@ class RecipeApp {
     moveMenuItemUp(menuId, itemIndex) {
         if (itemIndex === 0) return;
 
-        // Move using MenuManager (it handles the swap and save)
-        const success = this.menuManager.moveItemUp(menuId, itemIndex);
+        const menus = this.getMenusFromStorage();
+        const menu = menus.find(m => m.id === menuId);
 
-        if (success) {
+        if (menu && menu.items) {
+            // Swap items
+            [menu.items[itemIndex - 1], menu.items[itemIndex]] =
+                [menu.items[itemIndex], menu.items[itemIndex - 1]];
+
+            localStorage.setItem('recetario_menus', JSON.stringify(menus));
             this.renderMenus();
         }
     }
@@ -10536,10 +10621,15 @@ class RecipeApp {
      * Move menu item down
      */
     moveMenuItemDown(menuId, itemIndex) {
-        // Move using MenuManager (it handles the swap and save)
-        const success = this.menuManager.moveItemDown(menuId, itemIndex);
+        const menus = this.getMenusFromStorage();
+        const menu = menus.find(m => m.id === menuId);
 
-        if (success) {
+        if (menu && menu.items && itemIndex < menu.items.length - 1) {
+            // Swap items
+            [menu.items[itemIndex], menu.items[itemIndex + 1]] =
+                [menu.items[itemIndex + 1], menu.items[itemIndex]];
+
+            localStorage.setItem('recetario_menus', JSON.stringify(menus));
             this.renderMenus();
         }
     }
@@ -10660,26 +10750,45 @@ class RecipeApp {
      */
     exportMenuToXML(menuId) {
         try {
-            // Export using MenuManager
-            const xml = this.menuManager.exportToXML(menuId);
+            // Find the menu
+            const menu = this.getMenuById(menuId);
 
-            // Create download
-            const blob = new Blob([xml], { type: 'application/xml' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `menu-${menuId}.xml`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            if (!menu) {
+                throw new Error('Menú no encontrado');
+            }
+
+            // Show loading state
+            const exportBtn = document.querySelector(`[onclick*="exportMenu(${menuId})"]`);
+            const originalText = exportBtn?.textContent;
+            if (exportBtn) {
+                exportBtn.disabled = true;
+                exportBtn.textContent = '⏳ Exportando...';
+            }
+
+            // Export menu using XMLExporter
+            XMLExporter.exportMenu(menu);
 
             console.log('Menu exported to XML successfully:', menuId);
+
+            // Show success message
             this.showToast('¡Menú exportado a XML exitosamente!', 'success');
+
+            // Restore button state
+            if (exportBtn) {
+                exportBtn.disabled = false;
+                exportBtn.textContent = originalText;
+            }
 
         } catch (error) {
             console.error('Error exporting menu to XML:', error);
             this.showToast('Error al exportar el menú: ' + error.message, 'error');
+
+            // Restore button state on error
+            const exportBtn = document.querySelector(`[onclick*="exportMenu(${menuId})"]`);
+            if (exportBtn) {
+                exportBtn.disabled = false;
+                exportBtn.textContent = '📤 Exportar';
+            }
         }
     }
 
@@ -10854,7 +10963,7 @@ class RecipeApp {
     }
 
     /**
-     * Handle menu import from file (XML only)
+     * Handle menu import from file (supports XML and TXT)
      * Requirements: 1.3, 1.4, 1.5, 5.1, 5.4, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3, 8.5
      * @param {Event} e - File input change event
      */
@@ -10866,37 +10975,50 @@ class RecipeApp {
             // Show loading state
             this.showToast('Importando menú...', 'info');
 
-            // Only XML format supported
-            if (!file.name.toLowerCase().endsWith('.xml')) {
-                throw new Error('Formato de archivo no soportado. Use .xml');
+            // Detect file format
+            const isXML = file.name.toLowerCase().endsWith('.xml');
+            const isTXT = file.name.toLowerCase().endsWith('.txt');
+
+            if (!isXML && !isTXT) {
+                throw new Error('Formato de archivo no soportado. Use .xml o .txt');
             }
 
-            // Import from XML
-            const newMenu = await XMLImporter.importMenuFromFile(file);
+            let newMenu;
 
-            // Check for ID conflicts
-            const existingMenu = this.getMenuById(newMenu.id);
-            if (existingMenu) {
-                console.log(`Menu ID ${newMenu.id} already exists, generating new ID`);
-                newMenu.id = Date.now();
+            if (isXML) {
+                // Import from XML
+                newMenu = await XMLImporter.importMenuFromFile(file);
+
+                // Check for ID conflicts
+                const existingMenu = this.getMenuById(newMenu.id);
+                if (existingMenu) {
+                    console.log(`Menu ID ${newMenu.id} already exists, generating new ID`);
+                    newMenu.id = Date.now();
+                }
+
+                // Check for name conflicts
+                const menus = this.getMenusFromStorage();
+                const existingMenuWithName = menus.find(m => m.name === newMenu.name);
+                if (existingMenuWithName) {
+                    newMenu.name = newMenu.name + ' - copia';
+                    console.log(`Menu name already exists, renamed to: ${newMenu.name}`);
+                }
+
+                // Update timestamps to import time
+                const now = new Date().toISOString();
+                newMenu.createdAt = now;
+                newMenu.updatedAt = now;
+
+            } else {
+                // Import from TXT (legacy)
+                const text = await this.readFileAsText(file);
+                newMenu = this.parseMenuFromTXT(text);
             }
 
-            // Check for name conflicts
-            const menus = this.menuManager.getAllMenus();
-            const existingMenuWithName = menus.find(m => m.name === newMenu.name);
-            if (existingMenuWithName) {
-                newMenu.name = newMenu.name + ' - copia';
-                console.log(`Menu name already exists, renamed to: ${newMenu.name}`);
-            }
-
-            // Update timestamps to import time
-            const now = new Date().toISOString();
-            newMenu.createdAt = now;
-            newMenu.updatedAt = now;
-
-            // Save menu using MenuManager
-            this.menuManager.menus.push(newMenu);
-            this.menuManager.saveMenus();
+            // Save menu to localStorage
+            const menus = this.getMenusFromStorage();
+            menus.push(newMenu);
+            localStorage.setItem('recetario_menus', JSON.stringify(menus));
 
             this.showToast(`Menú "${newMenu.name}" importado correctamente`, 'success');
             this.renderMenus();
@@ -10926,21 +11048,100 @@ class RecipeApp {
     }
 
     /**
+     * Parse menu from TXT format (legacy)
+     * @param {string} text - TXT file content
+     * @returns {Object} Menu object
+     */
+    parseMenuFromTXT(text) {
+        const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+
+        if (lines.length < 2) {
+            throw new Error('Archivo vacío o formato incorrecto');
+        }
+
+        // First line is the menu name
+        const menuName = lines[0];
+
+        // Skip separator line if present (===)
+        let startIndex = 1;
+        if (lines[1].match(/^=+$/)) {
+            startIndex = 2;
+        }
+
+        // Create new menu
+        const newMenu = {
+            id: Date.now(),
+            name: menuName,
+            items: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            isFilter: false
+        };
+
+        // Parse items: "1. Lunes (Filetes a la plancha)"
+        for (let i = startIndex; i < lines.length; i++) {
+            const line = lines[i];
+            if (!line || line === 'Sin elementos') continue;
+
+            // Remove number prefix: "1. "
+            const withoutNumber = line.replace(/^\d+\.\s*/, '');
+
+            // Extract name and quantity from "Lunes (Filetes a la plancha)"
+            const match = withoutNumber.match(/^(.+?)\s*\((.+)\)$/);
+
+            if (match) {
+                const name = match[1].trim();
+                const quantity = match[2].trim();
+
+                newMenu.items.push({
+                    id: Date.now() + i,
+                    name: name,
+                    lunch: quantity,  // Store in lunch field for compatibility
+                    dinner: '',
+                    completed: false
+                });
+            } else {
+                // No parentheses, just the name
+                newMenu.items.push({
+                    id: Date.now() + i,
+                    name: withoutNumber.trim(),
+                    lunch: '',
+                    dinner: '',
+                    completed: false
+                });
+            }
+        }
+
+        return newMenu;
+    }
+
+    /**
      * Copy menu to clipboard
      */
     copyMenuToClipboard(menuId) {
-        const text = this.menuManager.formatForClipboard(menuId);
+        const menu = this.getMenuById(menuId);
+        if (!menu) return;
 
-        if (!text) {
-            this.showError('No se pudo copiar el menú');
-            return;
+        let text = `${menu.name}\n`;
+        text += `${'='.repeat(menu.name.length)}\n\n`;
+
+        if (menu.items.length > 0) {
+            menu.items.forEach((item, index) => {
+                text += `${index + 1}. ${item.name}`;
+                if (item.quantity) {
+                    text += ` (${item.quantity})`;
+                }
+                text += '\n';
+            });
+        } else {
+            text += 'Sin elementos\n';
         }
 
         navigator.clipboard.writeText(text).then(() => {
             this.showToast('Menú copiado al portapapeles', 'success');
         }).catch(err => {
-            console.error('[Menu] Error copying to clipboard:', err);
-            this.showError('Error al copiar al portapapeles');
+            console.error('Error copying to clipboard:', err);
+            this.showToast('Error al copiar al portapapeles', 'error');
         });
     }
 
@@ -10948,12 +11149,21 @@ class RecipeApp {
      * Duplicate menu
      */
     duplicateMenu(menuId) {
-        const duplicated = this.menuManager.duplicateMenu(menuId);
+        const menu = this.getMenuById(menuId);
+        if (!menu) return;
 
-        if (!duplicated) {
-            this.showError('No se pudo duplicar el menú');
-            return;
-        }
+        const newMenu = {
+            ...menu,
+            id: Date.now(),
+            name: `${menu.name} (copia)`,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            isFilter: false  // Duplicated menus are not filters by default
+        };
+
+        const menus = this.getMenusFromStorage();
+        menus.push(newMenu);
+        localStorage.setItem('recetario_menus', JSON.stringify(menus));
 
         this.showToast('Menú duplicado correctamente', 'success');
         this.renderMenus();
@@ -11135,7 +11345,7 @@ class RecipeApp {
             if (categoryList) categoryList.classList.remove('hidden');
 
             // Get categories with menu recipes
-            const categoriesWithMenuRecipes = this.menuManager.getCategoriesWithMenuRecipes(menuRecipes);
+            const categoriesWithMenuRecipes = this.getCategoriesWithMenuRecipes(menuRecipes);
 
             // Render category badges
             this.renderCategorySelectionBadges(categoriesWithMenuRecipes);
@@ -11144,6 +11354,28 @@ class RecipeApp {
             modal.classList.remove('hidden');
             this.setupCategorySelectorModalListeners();
         }
+    }
+
+    /**
+     * Get categories that have recipes marked as menu
+     */
+    getCategoriesWithMenuRecipes(menuRecipes) {
+        const categoriesMap = new Map();
+
+        menuRecipes.forEach(recipe => {
+            const categoryId = recipe.category || NO_CATEGORY_ID;
+            if (!categoriesMap.has(categoryId)) {
+                categoriesMap.set(categoryId, {
+                    id: categoryId,
+                    label: this.getCategoryLabel(categoryId),
+                    emoji: this.getCategoryEmoji(categoryId),
+                    count: 0
+                });
+            }
+            categoriesMap.get(categoryId).count++;
+        });
+
+        return Array.from(categoriesMap.values());
     }
 
     /**
@@ -11499,25 +11731,34 @@ class RecipeApp {
 
                                     console.log('[Quick Edit] After update:', mealType, '=', mealType === 'lunch' ? item.lunch : item.dinner);
 
-                                    // Save menu using MenuManager
-                                    this.menuManager.updateMenu(menuId, menu);
-                                    console.log('[Quick Edit] Saved using MenuManager');
+                                    // Save menu
+                                    const menus = this.getMenusFromStorage();
+                                    const menuIndex = menus.findIndex(m => m.id === menuId);
+                                    console.log('[Quick Edit] Menu index:', menuIndex);
 
-                                    // Check if we're in menu filter view or menus view
-                                    const recipesView = document.getElementById('recipe-list-view');
-                                    const menusView = document.getElementById('menus-view');
+                                    if (menuIndex !== -1) {
+                                        menus[menuIndex] = menu;
+                                        localStorage.setItem('recetario_menus', JSON.stringify(menus));
+                                        console.log('[Quick Edit] Saved to localStorage');
 
-                                    if (recipesView && !recipesView.classList.contains('hidden')) {
-                                        // We're in recipe list view with menu filter active
-                                        console.log('[Quick Edit] Re-rendering filtered recipes');
-                                        this.renderRecipeList();
-                                    } else if (menusView && !menusView.classList.contains('hidden')) {
-                                        // We're in menus view
-                                        console.log('[Quick Edit] Re-rendering menus');
-                                        this.renderMenus();
+                                        // Check if we're in menu filter view or menus view
+                                        const recipesView = document.getElementById('recipe-list-view');
+                                        const menusView = document.getElementById('menus-view');
+
+                                        if (recipesView && !recipesView.classList.contains('hidden')) {
+                                            // We're in recipe list view with menu filter active
+                                            console.log('[Quick Edit] Re-rendering filtered recipes');
+                                            this.renderRecipeList();
+                                        } else if (menusView && !menusView.classList.contains('hidden')) {
+                                            // We're in menus view
+                                            console.log('[Quick Edit] Re-rendering menus');
+                                            this.renderMenus();
+                                        }
+
+                                        this.showToast('Receta actualizada correctamente', 'success');
+                                    } else {
+                                        console.error('[Quick Edit] Menu index not found!');
                                     }
-
-                                    this.showToast('Receta actualizada correctamente', 'success');
                                 } else {
                                     console.error('[Quick Edit] Item not found in menu!');
                                 }
@@ -11547,15 +11788,16 @@ class RecipeApp {
             return;
         }
 
-        const menu = this.menuManager.getMenu(menuId);
+        const menus = this.getMenusFromStorage();
+        const menu = menus.find(m => m.id === menuId);
 
         // Clear filter if this menu is active
         if (menu && menu.isFilter && this.activeMenuFilter === menuId) {
             this.clearMenuFilter();
         }
 
-        // Delete using MenuManager
-        this.menuManager.deleteMenu(menuId);
+        const filteredMenus = menus.filter(m => m.id !== menuId);
+        localStorage.setItem('recetario_menus', JSON.stringify(filteredMenus));
 
         this.showToast('Menú eliminado correctamente', 'success');
         this.renderMenus();
@@ -11566,14 +11808,19 @@ class RecipeApp {
      * @param {number} menuId - Menu ID to toggle
      */
     toggleMenuAsFilter(menuId) {
-        // Toggle using MenuManager (it handles the toggle and save)
-        this.menuManager.toggleMenuAsFilter(menuId);
-        const menu = this.menuManager.getMenu(menuId);
+        const menus = this.getMenusFromStorage();
+        const menu = menus.find(m => m.id === menuId);
 
         if (!menu) {
             console.error('[Menu Filter] Menu not found:', menuId);
             return;
         }
+
+        // Toggle isFilter property
+        menu.isFilter = !menu.isFilter;
+
+        // Save to localStorage
+        localStorage.setItem('recetario_menus', JSON.stringify(menus));
 
         // If filter was active and we're removing it, clear the filter
         if (!menu.isFilter && this.activeMenuFilter === menuId) {
@@ -11598,7 +11845,8 @@ class RecipeApp {
      * @returns {Array} Array of menu objects
      */
     getMenuFilters() {
-        return this.menuManager.getMenuFilters();
+        const menus = this.getMenusFromStorage();
+        return menus.filter(m => m.isFilter === true);
     }
 
     /**
@@ -11657,7 +11905,22 @@ class RecipeApp {
      * @returns {Array<string>} Array of recipe names (lowercase)
      */
     getRecipeNamesFromMenu(menu) {
-        return this.menuManager.getRecipeNamesFromMenu(menu);
+        const recipeNames = new Set();
+
+        if (!menu || !menu.items) {
+            return [];
+        }
+
+        menu.items.forEach(item => {
+            if (item.lunch && item.lunch.trim() && item.lunch !== 'Sin receta') {
+                recipeNames.add(item.lunch.trim().toLowerCase());
+            }
+            if (item.dinner && item.dinner.trim() && item.dinner !== 'Sin receta') {
+                recipeNames.add(item.dinner.trim().toLowerCase());
+            }
+        });
+
+        return Array.from(recipeNames);
     }
 
     /**
@@ -11666,7 +11929,53 @@ class RecipeApp {
      * @returns {Map} Map of recipe name (lowercase) to array of {day, dayNumber, mealType}
      */
     getRecipeMetadataFromMenu(menu) {
-        return this.menuManager.getRecipeMetadataFromMenu(menu);
+        const metadata = new Map();
+
+        if (!menu || !menu.items) {
+            return metadata;
+        }
+
+        // Day name mapping for ordering
+        const dayOrder = {
+            'lunes': 1, 'martes': 2, 'miércoles': 3, 'miercoles': 3,
+            'jueves': 4, 'viernes': 5, 'sábado': 6, 'sabado': 6, 'domingo': 7
+        };
+
+        menu.items.forEach(item => {
+            const dayName = item.name || '';
+            const dayNameLower = dayName.toLowerCase().trim();
+            const dayNumber = dayOrder[dayNameLower] || 999; // Unknown days go to end
+
+            // Process lunch
+            if (item.lunch && item.lunch.trim() && item.lunch !== 'Sin receta') {
+                const recipeName = item.lunch.trim().toLowerCase();
+                if (!metadata.has(recipeName)) {
+                    metadata.set(recipeName, []);
+                }
+                metadata.get(recipeName).push({
+                    day: dayName,
+                    dayNumber: dayNumber,
+                    mealType: 'lunch',
+                    itemId: item.id  // Add itemId for quick edit
+                });
+            }
+
+            // Process dinner
+            if (item.dinner && item.dinner.trim() && item.dinner !== 'Sin receta') {
+                const recipeName = item.dinner.trim().toLowerCase();
+                if (!metadata.has(recipeName)) {
+                    metadata.set(recipeName, []);
+                }
+                metadata.get(recipeName).push({
+                    day: dayName,
+                    dayNumber: dayNumber,
+                    mealType: 'dinner',
+                    itemId: item.id  // Add itemId for quick edit
+                });
+            }
+        });
+
+        return metadata;
     }
 
     /**
@@ -12095,21 +12404,29 @@ class RecipeApp {
             }
         });
 
-        // Save using MenuManager
-        if (this.currentMenuId) {
-            // Update existing menu
-            const existingMenu = this.menuManager.getMenu(this.currentMenuId);
-            this.menuManager.updateMenu(this.currentMenuId, {
-                name: menuName,
-                items: items,
-                isFilter: existingMenu?.isFilter || false
-            });
-            console.log('[Menus] Menu updated:', this.currentMenuId);
+        // Create menu object
+        const menu = {
+            id: this.currentMenuId || Date.now(),
+            name: menuName,
+            items: items,
+            createdAt: this.currentMenuId ? this.getMenuById(this.currentMenuId)?.createdAt : new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            isFilter: this.currentMenuId ? (this.getMenuById(this.currentMenuId)?.isFilter || false) : false
+        };
+
+        // Save to localStorage
+        const menus = this.getMenusFromStorage();
+        const existingIndex = menus.findIndex(m => m.id === menu.id);
+
+        if (existingIndex >= 0) {
+            menus[existingIndex] = menu;
+            console.log('[Menus] Menu updated:', menu);
         } else {
-            // Create new menu
-            this.menuManager.createMenu(menuName, items);
-            console.log('[Menus] Menu created');
+            menus.push(menu);
+            console.log('[Menus] Menu created:', menu);
         }
+
+        localStorage.setItem('recetario_menus', JSON.stringify(menus));
 
         this.showToast(`Menú "${menuName}" guardado correctamente`, 'success');
 
@@ -12121,12 +12438,26 @@ class RecipeApp {
     }
 
     /**
+     * Get menus from localStorage
+     */
+    getMenusFromStorage() {
+        try {
+            const menusJson = localStorage.getItem('recetario_menus');
+            return menusJson ? JSON.parse(menusJson) : [];
+        } catch (error) {
+            console.error('[Menus] Error loading menus:', error);
+            return [];
+        }
+    }
+
+    /**
      * Get menu by ID
-     * @param {number} menuId - Menu ID
-     * @returns {Object|null} Menu object or null
      */
     getMenuById(menuId) {
-        return this.menuManager.getMenu(menuId);
+        const menus = this.getMenusFromStorage();
+        // Convert to number for comparison to handle both string and number IDs
+        const numericId = Number(menuId);
+        return menus.find(m => Number(m.id) === numericId);
     }
 
     /**
@@ -12254,6 +12585,18 @@ class RecipeApp {
         name.style.margin = '0';
         nameContainer.appendChild(name);
 
+        // Add bookmark button with text (TODO: Implementar funcionalidad de filtro)
+        const bookmarkBtn = document.createElement('button');
+        bookmarkBtn.className = 'menu-bookmark-btn';
+        bookmarkBtn.title = 'Convertir en filtro (próximamente)';
+        bookmarkBtn.style.cssText = 'display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; padding: 0.25rem 0.5rem;';
+        bookmarkBtn.innerHTML = `<i class="fa-regular fa-bookmark"></i><span style="color: var(--color-text-primary);">Convertir en filtro</span>`;
+        bookmarkBtn.onclick = (e) => {
+            e.stopPropagation();
+            this.showToast('Funcionalidad de filtro para listas de compra próximamente', 'info');
+        };
+        nameContainer.appendChild(bookmarkBtn);
+
         // Create right side container (counter + expand icon + actions)
         const rightSide = document.createElement('div');
         rightSide.style.display = 'flex';
@@ -12380,39 +12723,10 @@ class RecipeApp {
             return container;
         }
 
-        let currentRecipeGroup = null;
-        
         list.items.forEach((item, index) => {
-            // Check for recipe markers
-            if (item.name.startsWith('[RECIPE_START]')) {
-                // Create recipe group container
-                currentRecipeGroup = document.createElement('div');
-                currentRecipeGroup.className = 'shopping-recipe-group';
-                
-                // Add recipe title
-                const recipeTitle = document.createElement('div');
-                recipeTitle.className = 'shopping-recipe-title';
-                recipeTitle.textContent = item.name.replace('[RECIPE_START]', '');
-                currentRecipeGroup.appendChild(recipeTitle);
-                
-                container.appendChild(currentRecipeGroup);
-                return;
-            }
-            
-            if (item.name === '[RECIPE_END]') {
-                currentRecipeGroup = null;
-                return;
-            }
-            
             const itemDiv = document.createElement('div');
             itemDiv.className = 'shopping-item';
             itemDiv.dataset.itemId = item.id;
-            
-            // Check if it's a recipe item
-            const isRecipeItem = item.name.startsWith('[RECIPE_ITEM]');
-            if (isRecipeItem) {
-                itemDiv.classList.add('shopping-recipe-item');
-            }
 
             // Bullet point
             const bullet = document.createElement('span');
@@ -12425,7 +12739,7 @@ class RecipeApp {
 
             const itemName = document.createElement('span');
             itemName.className = 'shopping-item-name';
-            itemName.textContent = isRecipeItem ? item.name.replace('[RECIPE_ITEM]', '') : item.name;
+            itemName.textContent = item.name;
 
             itemContent.appendChild(itemName);
 
@@ -12439,51 +12753,10 @@ class RecipeApp {
             itemDiv.appendChild(bullet);
             itemDiv.appendChild(itemContent);
 
-            // Add delete button
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'btn-icon shopping-item-delete';
-            deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
-            deleteBtn.title = 'Eliminar';
-            deleteBtn.onclick = (e) => {
-                e.stopPropagation();
-                this.deleteShoppingItem(list.id, index);
-            };
-            itemDiv.appendChild(deleteBtn);
-
-            // Add to recipe group or main container
-            if (currentRecipeGroup && isRecipeItem) {
-                currentRecipeGroup.appendChild(itemDiv);
-            } else {
-                container.appendChild(itemDiv);
-            }
+            container.appendChild(itemDiv);
         });
 
         return container;
-    }
-
-    /**
-     * Delete item from shopping list
-     * @param {number} listId - List ID
-     * @param {number} index - Index of the item to delete
-     */
-    deleteShoppingItem(listId, index) {
-        const list = this.shoppingListManager.getList(listId);
-        if (!list) return;
-
-        // Save expanded state before re-rendering
-        const wasExpanded = this.isListExpanded(listId);
-
-        // Remove item
-        list.items.splice(index, 1);
-
-        // Save and re-render
-        this.shoppingListManager.saveLists();
-        this.renderShoppingLists();
-
-        // Restore expanded state
-        if (wasExpanded) {
-            this.expandList(listId);
-        }
     }
 
     /**
@@ -13080,7 +13353,7 @@ class RecipeApp {
     }
 
     /**
-     * Handle import shopping list from file (XML only)
+     * Handle import shopping list from file (supports XML and TXT)
      * Requirements: 2.3, 2.4, 2.5, 5.2, 5.4, 7.1, 7.2, 7.3, 8.1, 8.2, 8.4, 8.5
      * @param {Event} e - File input change event
      */
@@ -13092,59 +13365,71 @@ class RecipeApp {
             // Show loading state
             this.showToast('Importando lista...', 'info');
 
-            // Only XML format supported
-            if (!file.name.toLowerCase().endsWith('.xml')) {
-                throw new Error('Formato de archivo no soportado. Use .xml');
+            // Detect file format
+            const isXML = file.name.toLowerCase().endsWith('.xml');
+            const isTXT = file.name.toLowerCase().endsWith('.txt');
+
+            if (!isXML && !isTXT) {
+                throw new Error('Formato de archivo no soportado. Use .xml o .txt');
             }
 
-            // Import from XML
-            const listData = await XMLImporter.importShoppingListFromFile(file);
+            let newList;
 
-            // Check for ID conflicts
-            const existingList = this.shoppingListManager.getList(listData.id);
-            if (existingList) {
-                console.log(`List ID ${listData.id} already exists, generating new ID`);
-                listData.id = Date.now();
-            }
+            if (isXML) {
+                // Import from XML
+                const listData = await XMLImporter.importShoppingListFromFile(file);
 
-            // Check for name conflicts
-            const existingListWithName = this.shoppingListManager.lists.find(l => l.name === listData.name);
-            if (existingListWithName) {
-                listData.name = listData.name + ' - copia';
-                console.log(`List name already exists, renamed to: ${listData.name}`);
-            }
+                // Check for ID conflicts
+                const existingList = this.shoppingListManager.getList(listData.id);
+                if (existingList) {
+                    console.log(`List ID ${listData.id} already exists, generating new ID`);
+                    listData.id = Date.now();
+                }
 
-            // Update timestamps to import time
-            const now = new Date().toISOString();
-            listData.createdAt = now;
-            listData.updatedAt = now;
+                // Check for name conflicts
+                const existingListWithName = this.shoppingListManager.lists.find(l => l.name === listData.name);
+                if (existingListWithName) {
+                    listData.name = listData.name + ' - copia';
+                    console.log(`List name already exists, renamed to: ${listData.name}`);
+                }
 
-            // Create list using ShoppingListManager
-            const newList = this.shoppingListManager.createList(listData.name);
+                // Update timestamps to import time
+                const now = new Date().toISOString();
+                listData.createdAt = now;
+                listData.updatedAt = now;
 
-            // Update list properties
-            newList.id = listData.id;
-            newList.enabled = listData.enabled;
-            newList.createdAt = listData.createdAt;
-            newList.updatedAt = listData.updatedAt;
+                // Create list using ShoppingListManager
+                newList = this.shoppingListManager.createList(listData.name);
 
-            // Add items
-            listData.items.forEach(item => {
-                this.shoppingListManager.addItem(newList.id, {
-                    name: item.name,
-                    quantity: item.quantity
+                // Update list properties
+                newList.id = listData.id;
+                newList.enabled = listData.enabled;
+                newList.createdAt = listData.createdAt;
+                newList.updatedAt = listData.updatedAt;
+
+                // Add items
+                listData.items.forEach(item => {
+                    this.shoppingListManager.addItem(newList.id, {
+                        name: item.name,
+                        quantity: item.quantity
+                    });
+
+                    // Set completed status if needed
+                    if (item.completed) {
+                        const list = this.shoppingListManager.getList(newList.id);
+                        const addedItem = list.items[list.items.length - 1];
+                        addedItem.completed = true;
+                    }
                 });
 
-                // Set completed status if needed
-                if (item.completed) {
-                    const list = this.shoppingListManager.getList(newList.id);
-                    const addedItem = list.items[list.items.length - 1];
-                    addedItem.completed = true;
-                }
-            });
+                // Save updated list
+                this.shoppingListManager.saveLists();
 
-            // Save updated list
-            this.shoppingListManager.saveLists();
+            } else {
+                // Import from TXT (legacy)
+                const text = await this.readFileAsText(file);
+                newList = this.parseShoppingListFromTXT(text);
+            }
 
             this.showToast(`Lista "${newList.name}" importada correctamente`, 'success');
             this.renderShoppingLists();
@@ -13157,6 +13442,54 @@ class RecipeApp {
             // Reset input so the same file can be imported again
             e.target.value = '';
         }
+    }
+
+    /**
+     * Parse shopping list from TXT format (legacy)
+     * @param {string} text - TXT file content
+     * @returns {Object} Shopping list object
+     */
+    parseShoppingListFromTXT(text) {
+        const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+
+        if (lines.length < 2) {
+            throw new Error('Archivo vacío o formato incorrecto');
+        }
+
+        // First line is the list name
+        const listName = lines[0];
+
+        // Skip separator line if present
+        let startIndex = 1;
+        if (lines[1].startsWith('---')) {
+            startIndex = 2;
+        }
+
+        // Create new list
+        const newList = this.shoppingListManager.createList(listName);
+
+        // Parse items
+        for (let i = startIndex; i < lines.length; i++) {
+            const line = lines[i];
+            if (!line) continue;
+
+            // Remove completed mark if present
+            const cleanLine = line.replace(/^✓\s*/, '');
+
+            // Split by " - " to separate name and quantity
+            const parts = cleanLine.split(' - ');
+            const name = parts[0].trim();
+            const quantity = parts.length > 1 ? parts.slice(1).join(' - ').trim() : '';
+
+            if (name) {
+                this.shoppingListManager.addItem(newList.id, {
+                    name: name,
+                    quantity: quantity
+                });
+            }
+        }
+
+        return newList;
     }
 
     /**
@@ -13354,221 +13687,6 @@ class RecipeApp {
 
         this.closeSelectShoppingListModal();
         this.showToast(`"${ingredientName}" añadido a la lista`, 'success');
-    }
-
-    /**
-     * Show modal to select shopping list for all ingredients of a recipe
-     * @param {Recipe} recipe - Recipe object with ingredients
-     */
-    showSelectShoppingListModalForAllIngredients(recipe) {
-        if (!recipe || !recipe.ingredients || recipe.ingredients.length === 0) {
-            this.showToast('Esta receta no tiene ingredientes', 'error');
-            return;
-        }
-
-        const modal = document.getElementById('select-shopping-list-modal');
-        if (!modal) return;
-
-        // Store recipe for later use
-        this.currentRecipeForShoppingList = recipe;
-
-        // Update modal title
-        const modalTitle = modal.querySelector('h2');
-        if (modalTitle) {
-            modalTitle.textContent = `Añadir ${recipe.ingredients.length} ingredientes a lista`;
-        }
-
-        // Get lists container
-        const listsContainer = document.getElementById('shopping-lists-selection');
-        if (!listsContainer) return;
-
-        // Clear previous options
-        listsContainer.innerHTML = '';
-
-        // Get all shopping lists (only enabled ones)
-        const lists = this.shoppingListManager.lists.filter(list => list.enabled !== false);
-
-        if (lists.length === 0) {
-            listsContainer.innerHTML = '<p class="modal-description">No tienes listas de compra habilitadas. Crea una nueva lista o habilita una existente para añadir estos ingredientes.</p>';
-        } else {
-            // Render each list as an option
-            lists.forEach(list => {
-                const option = document.createElement('div');
-                option.className = 'shopping-list-option';
-
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'shopping-list-option-name';
-                nameSpan.textContent = list.name;
-
-                const countSpan = document.createElement('span');
-                countSpan.className = 'shopping-list-option-count';
-                countSpan.textContent = `${list.items.length} elementos`;
-
-                option.appendChild(nameSpan);
-                option.appendChild(countSpan);
-
-                option.addEventListener('click', () => {
-                    this.addAllIngredientsToShoppingList(list.id, recipe);
-                });
-
-                listsContainer.appendChild(option);
-            });
-        }
-
-        // Show modal
-        modal.classList.remove('hidden');
-
-        // Setup close button and overlay
-        const closeBtn = document.getElementById('close-select-list-modal');
-        const overlay = modal.querySelector('.modal-overlay');
-        const createNewBtn = document.getElementById('create-new-list-from-ingredient');
-
-        if (closeBtn) {
-            closeBtn.onclick = () => {
-                this.closeSelectShoppingListModal();
-                this.currentRecipeForShoppingList = null;
-            };
-        }
-
-        if (overlay) {
-            overlay.onclick = () => {
-                this.closeSelectShoppingListModal();
-                this.currentRecipeForShoppingList = null;
-            };
-        }
-
-        if (createNewBtn) {
-            createNewBtn.onclick = () => {
-                this.closeSelectShoppingListModal();
-                this.currentRecipeForShoppingList = null;
-                this.showShoppingListForm();
-            };
-        }
-    }
-
-    /**
-     * Add all ingredients from a recipe to a shopping list
-     * @param {number} listId - Shopping list ID
-     * @param {Recipe} recipe - Recipe object with ingredients
-     */
-    addAllIngredientsToShoppingList(listId, recipe) {
-        if (!recipe || !recipe.ingredients || recipe.ingredients.length === 0) {
-            this.showToast('Esta receta no tiene ingredientes', 'error');
-            return;
-        }
-
-        const list = this.shoppingListManager.getList(listId);
-        if (!list) return;
-
-        const categoryEmoji = recipe.category ? 
-            (this.categoryManager.getCategoryById(recipe.category)?.emoji || '') : '';
-        
-        const recipeMarker = `[RECIPE_START]${categoryEmoji} ${recipe.name}`.trim();
-        
-        // Check if recipe already exists in the list
-        const existingRecipeIndex = list.items.findIndex(item => item.name === recipeMarker);
-        
-        if (existingRecipeIndex !== -1) {
-            // Recipe exists, find which ingredients are missing
-            const existingIngredients = new Set();
-            
-            // Collect existing ingredients for this recipe
-            for (let i = existingRecipeIndex + 1; i < list.items.length; i++) {
-                const item = list.items[i];
-                if (item.name === '[RECIPE_END]') break;
-                if (item.name.startsWith('[RECIPE_ITEM]')) {
-                    existingIngredients.add(item.name.replace('[RECIPE_ITEM]', ''));
-                }
-            }
-            
-            // Find missing ingredients
-            const missingIngredients = [];
-            recipe.ingredients.forEach(ingredient => {
-                if (!existingIngredients.has(ingredient.name)) {
-                    missingIngredients.push(ingredient);
-                }
-            });
-            
-            if (missingIngredients.length === 0) {
-                this.closeSelectShoppingListModal();
-                this.currentRecipeForShoppingList = null;
-                this.showToast('Esta receta ya está completa en la lista', 'info');
-                return;
-            }
-            
-            // Add missing ingredients before the [RECIPE_END] marker
-            const endMarkerIndex = list.items.findIndex((item, idx) => 
-                idx > existingRecipeIndex && item.name === '[RECIPE_END]'
-            );
-            
-            missingIngredients.forEach(ingredient => {
-                let quantityText = '';
-                
-                if (ingredient.quantity && ingredient.quantity > 0) {
-                    quantityText = ingredient.quantity.toString();
-                    if (ingredient.unit) {
-                        quantityText += ` ${ingredient.unit}`;
-                    }
-                } else if (ingredient.unit) {
-                    quantityText = ingredient.unit;
-                } else {
-                    quantityText = '-';
-                }
-                
-                // Insert before the end marker
-                list.items.splice(endMarkerIndex, 0, {
-                    id: Date.now() + Math.random(),
-                    name: `[RECIPE_ITEM]${ingredient.name}`,
-                    quantity: quantityText
-                });
-            });
-            
-            this.shoppingListManager.saveLists();
-            this.renderShoppingLists();
-            this.closeSelectShoppingListModal();
-            this.currentRecipeForShoppingList = null;
-            
-            const ingredientNames = missingIngredients.map(i => i.name).join(', ');
-            this.showToast(`Ya existe esta receta en la lista. Se añadieron ${missingIngredients.length} ingrediente(s) faltante(s): ${ingredientNames}`, 'success');
-            return;
-        }
-        
-        // Recipe doesn't exist, add it completely
-        this.shoppingListManager.addItem(listId, {
-            name: recipeMarker,
-            quantity: ''
-        });
-
-        // Add each ingredient with recipe marker
-        recipe.ingredients.forEach(ingredient => {
-            let quantityText = '';
-            
-            if (ingredient.quantity && ingredient.quantity > 0) {
-                quantityText = ingredient.quantity.toString();
-                if (ingredient.unit) {
-                    quantityText += ` ${ingredient.unit}`;
-                }
-            } else if (ingredient.unit) {
-                quantityText = ingredient.unit;
-            } else {
-                quantityText = '-';
-            }
-
-            this.shoppingListManager.addItem(listId, {
-                name: `[RECIPE_ITEM]${ingredient.name}`,
-                quantity: quantityText
-            });
-        });
-        
-        // Add end marker
-        this.shoppingListManager.addItem(listId, {
-            name: '[RECIPE_END]',
-            quantity: ''
-        });
-
-        this.closeSelectShoppingListModal();
-        this.currentRecipeForShoppingList = null;
-        this.showToast(`${recipe.ingredients.length} ingredientes añadidos a la lista`, 'success');
     }
 
     /**

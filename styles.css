@@ -3561,6 +3561,205 @@ body.dark-theme .recipe-pdf-badge:hover {
     position: relative;
 }
 
+/* ===== Toast Container (NotificationManager) ===== */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+    max-width: 500px;
+    width: calc(100% - 32px);
+}
+
+.toast {
+    background: var(--color-background);
+    color: var(--color-text);
+    padding: 16px 20px;
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: var(--font-weight-medium);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: auto;
+    border-left: 4px solid var(--color-primary);
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast .toast-icon {
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.toast .toast-message {
+    flex: 1;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.toast .toast-close {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.toast .toast-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: var(--color-text);
+}
+
+/* Toast variants */
+.toast-success {
+    background: var(--color-success, #10b981);
+    color: white;
+    border-left-color: #059669;
+}
+
+.toast-success .toast-icon {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.toast-success .toast-close {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.toast-success .toast-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.toast-error {
+    background: var(--color-danger, #ef4444);
+    color: white;
+    border-left-color: #dc2626;
+}
+
+.toast-error .toast-icon {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.toast-error .toast-close {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.toast-error .toast-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.toast-warning {
+    background: var(--color-warning, #f59e0b);
+    color: white;
+    border-left-color: #d97706;
+}
+
+.toast-warning .toast-icon {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.toast-warning .toast-close {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.toast-warning .toast-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.toast-info {
+    background: var(--color-primary, #3b82f6);
+    color: white;
+    border-left-color: #2563eb;
+}
+
+.toast-info .toast-icon {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.toast-info .toast-close {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.toast-info .toast-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+/* Toast on element (for recipe cards, etc.) */
+.toast-on-element {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: var(--color-success, #10b981);
+    color: white;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    font-weight: var(--font-weight-semibold);
+    font-size: 0.875rem;
+    z-index: 10;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.toast-on-element.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.toast-on-element.toast-error {
+    background: var(--color-danger, #ef4444);
+}
+
+/* Mobile optimization for toast container */
+@media (max-width: 768px) {
+    .toast-container {
+        bottom: 80px;
+        max-width: calc(100% - 32px);
+    }
+    
+    .toast {
+        padding: 14px 16px;
+    }
+}
+
 /* ===== Loading States ===== */
 .loading {
     display: inline-block;
@@ -6223,3 +6422,306 @@ st view header */
 body.dark-theme .progress-bar-wrapper {
     background: rgba(255, 255, 255, 0.1);
 }
+
+/* ===== UTILITY CLASSES ===== */
+/* Clases utilitarias para reemplazar estilos inline */
+/* Prefijo: u- (utility) */
+
+/* ===== Display Utilities ===== */
+.u-hidden { display: none !important; }
+.u-block { display: block !important; }
+.u-inline-block { display: inline-block !important; }
+.u-flex { display: flex !important; }
+.u-inline-flex { display: inline-flex !important; }
+.u-grid { display: grid !important; }
+
+/* ===== Flex Direction ===== */
+.u-flex-row { flex-direction: row !important; }
+.u-flex-column { flex-direction: column !important; }
+
+/* ===== Flex Alignment ===== */
+.u-items-center { align-items: center !important; }
+.u-items-start { align-items: flex-start !important; }
+.u-items-end { align-items: flex-end !important; }
+.u-items-stretch { align-items: stretch !important; }
+
+.u-justify-center { justify-content: center !important; }
+.u-justify-start { justify-content: flex-start !important; }
+.u-justify-end { justify-content: flex-end !important; }
+.u-justify-between { justify-content: space-between !important; }
+
+/* ===== Flex Wrap ===== */
+.u-flex-wrap { flex-wrap: wrap !important; }
+.u-flex-nowrap { flex-wrap: nowrap !important; }
+
+/* ===== Margin Top ===== */
+.u-mt-0 { margin-top: 0 !important; }
+.u-mt-xs { margin-top: var(--spacing-xs) !important; }
+.u-mt-sm { margin-top: var(--spacing-sm) !important; }
+.u-mt-md { margin-top: var(--spacing-md) !important; }
+.u-mt-lg { margin-top: var(--spacing-lg) !important; }
+.u-mt-xl { margin-top: var(--spacing-xl) !important; }
+
+/* ===== Margin Bottom ===== */
+.u-mb-0 { margin-bottom: 0 !important; }
+.u-mb-xs { margin-bottom: var(--spacing-xs) !important; }
+.u-mb-sm { margin-bottom: var(--spacing-sm) !important; }
+.u-mb-md { margin-bottom: var(--spacing-md) !important; }
+.u-mb-lg { margin-bottom: var(--spacing-lg) !important; }
+.u-mb-xl { margin-bottom: var(--spacing-xl) !important; }
+.u-mb-24 { margin-bottom: 24px !important; }
+
+/* ===== Margin Left/Right ===== */
+.u-ml-xs { margin-left: var(--spacing-xs) !important; }
+.u-ml-sm { margin-left: var(--spacing-sm) !important; }
+.u-ml-md { margin-left: var(--spacing-md) !important; }
+.u-ml-8 { margin-left: 8px !important; }
+
+.u-mr-xs { margin-right: var(--spacing-xs) !important; }
+.u-mr-sm { margin-right: var(--spacing-sm) !important; }
+.u-mr-md { margin-right: var(--spacing-md) !important; }
+
+/* ===== Gap ===== */
+.u-gap-xs { gap: var(--spacing-xs) !important; }
+.u-gap-sm { gap: var(--spacing-sm) !important; }
+.u-gap-md { gap: var(--spacing-md) !important; }
+.u-gap-lg { gap: var(--spacing-lg) !important; }
+.u-gap-4 { gap: 4px !important; }
+.u-gap-6 { gap: 6px !important; }
+.u-gap-8 { gap: 8px !important; }
+
+/* ===== Padding ===== */
+.u-p-xs { padding: var(--spacing-xs) !important; }
+.u-p-sm { padding: var(--spacing-sm) !important; }
+.u-p-md { padding: var(--spacing-md) !important; }
+.u-p-lg { padding: var(--spacing-lg) !important; }
+.u-p-xl { padding: var(--spacing-xl) !important; }
+.u-p-20 { padding: 20px !important; }
+
+/* ===== Width ===== */
+.u-w-full { width: 100% !important; }
+.u-w-auto { width: auto !important; }
+.u-w-40 { width: 40px !important; }
+
+/* ===== Max Width ===== */
+.u-max-w-600 { max-width: 600px !important; }
+.u-max-w-900 { max-width: 900px !important; }
+
+/* ===== Max Height ===== */
+.u-max-h-90vh { max-height: 90vh !important; }
+.u-max-h-calc { max-height: calc(90vh - 200px) !important; }
+
+/* ===== Position ===== */
+.u-relative { position: relative !important; }
+.u-absolute { position: absolute !important; }
+.u-sticky { position: sticky !important; }
+
+/* ===== Z-Index ===== */
+.u-z-10 { z-index: 10 !important; }
+
+/* ===== Font Size ===== */
+.u-text-xs { font-size: 0.75rem !important; }
+.u-text-sm { font-size: 0.875rem !important; }
+.u-text-base { font-size: 1rem !important; }
+.u-text-lg { font-size: 1.1rem !important; }
+.u-text-xl { font-size: 1.25rem !important; }
+.u-text-2xl { font-size: 2.65rem !important; }
+
+/* ===== Font Weight ===== */
+.u-font-normal { font-weight: var(--font-weight-normal) !important; }
+.u-font-medium { font-weight: var(--font-weight-medium) !important; }
+.u-font-semibold { font-weight: var(--font-weight-semibold) !important; }
+.u-font-bold { font-weight: var(--font-weight-bold) !important; }
+.u-font-600 { font-weight: 600 !important; }
+
+/* ===== Text Alignment ===== */
+.u-text-left { text-align: left !important; }
+.u-text-center { text-align: center !important; }
+.u-text-right { text-align: right !important; }
+
+/* ===== Text Decoration ===== */
+.u-no-underline { text-decoration: none !important; }
+
+/* ===== Color ===== */
+.u-text-inherit { color: inherit !important; }
+.u-text-secondary { color: var(--color-text-secondary) !important; }
+.u-text-warning { color: var(--color-warning) !important; }
+
+/* ===== Overflow ===== */
+.u-overflow-auto { overflow: auto !important; }
+.u-overflow-hidden { overflow: hidden !important; }
+.u-overflow-y-auto { overflow-y: auto !important; }
+.u-overflow-x-auto { overflow-x: auto !important; }
+
+/* ===== Cursor ===== */
+.u-cursor-pointer { cursor: pointer !important; }
+
+/* ===== User Select ===== */
+.u-select-none { user-select: none !important; }
+
+/* ===== Background ===== */
+.u-bg-white { background: white !important; }
+.u-bg-primary { background: var(--color-background) !important; }
+.u-bg-secondary { background: var(--color-background-secondary) !important; }
+
+/* ===== Border ===== */
+.u-border-top { border-top: 1px solid var(--color-border) !important; }
+.u-border-radius-8 { border-radius: 8px !important; }
+
+/* ===== Bottom ===== */
+.u-bottom-0 { bottom: 0 !important; }
+
+/* ===== COMPONENT-SPECIFIC CLASSES ===== */
+
+/* Grid de 2 columnas con gap */
+.grid-2-cols {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: var(--spacing-sm) !important;
+}
+
+.grid-2-cols-md {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: var(--spacing-md) !important;
+}
+
+/* Modal Footer Sticky */
+.modal-footer-sticky {
+    position: sticky !important;
+    bottom: 0 !important;
+    background: var(--color-background) !important;
+    border-top: 1px solid var(--color-border) !important;
+    padding: var(--spacing-md) !important;
+    z-index: 10 !important;
+}
+
+/* Modal Content Sizes */
+.modal-content-md {
+    max-width: 600px !important;
+}
+
+.modal-content-lg {
+    max-width: 900px !important;
+    max-height: 90vh !important;
+}
+
+/* Modal Body Scrollable */
+.modal-body-scrollable {
+    overflow-y: auto !important;
+    max-height: calc(90vh - 200px) !important;
+}
+
+/* Header Link */
+.header-link {
+    text-decoration: none !important;
+    color: inherit !important;
+}
+
+/* Detail Recipe Title */
+.detail-recipe-title {
+    font-size: 2.65rem !important;
+    cursor: pointer !important;
+    position: relative !important;
+}
+
+/* Import Progress Modal Specific Styles */
+.import-progress-modal {
+    z-index: 10000 !important;
+}
+
+.import-progress-overlay {
+    background: rgba(0, 0, 0, 0.7) !important;
+    z-index: 10001 !important;
+}
+
+.import-progress-content {
+    max-width: 500px !important;
+    z-index: 10002 !important;
+    position: relative !important;
+}
+
+.import-progress-header {
+    background: var(--color-primary) !important;
+    color: white !important;
+    border-bottom: none !important;
+}
+
+.import-progress-title {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin: 0 !important;
+}
+
+.loading-spinner {
+    width: 24px !important;
+    height: 24px !important;
+    border: 3px solid rgba(255,255,255,0.3) !important;
+    border-top-color: white !important;
+    border-radius: 50% !important;
+    animation: spin 1s linear infinite !important;
+    display: inline-block !important;
+}
+
+.import-progress-body {
+    padding: var(--spacing-xl) !important;
+}
+
+.import-progress-text {
+    text-align: center !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    margin-bottom: var(--spacing-lg) !important;
+    color: var(--color-text) !important;
+}
+
+.progress-bar-container {
+    width: 100% !important;
+    height: 40px !important;
+    background: var(--color-background-secondary) !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    position: relative !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1) !important;
+    margin-bottom: var(--spacing-md) !important;
+}
+
+.progress-bar-fill {
+    height: 100% !important;
+    width: 0% !important;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark)) !important;
+    transition: width 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: white !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+    box-shadow: 0 2px 8px rgba(255, 56, 92, 0.4) !important;
+    position: relative !important;
+}
+
+.progress-percentage {
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+    position: absolute !important;
+}
+
+.progress-details {
+    text-align: center !important;
+    font-size: 1.1rem !important;
+    color: #000000 !important;
+    min-height: 32px !important;
+    font-weight: 600 !important;
+    padding: 12px !important;
+    background: #f0f0f0 !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    border: 2px solid #e0e0e0 !important;
+}
+
+/* Line height utility */
+.u-line-height-1-8 { line-height: 1.8 !important; }
