@@ -5708,9 +5708,6 @@ select {
     gap: var(--spacing-sm);
     list-style: none;
     padding-left: 0;
-    max-height: 60vh;
-    overflow-y: auto;
-    overflow-x: hidden;
 }
 
 /* Shopping Item */
