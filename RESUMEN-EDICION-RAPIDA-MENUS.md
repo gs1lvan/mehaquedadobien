@@ -380,3 +380,36 @@ getRecipeMetadataFromMenu(menu) {
 
 **Implementado por:** Kiro AI  
 **Fecha:** 9 de noviembre de 2025
+
+
+## 🎨 Mejora Visual: Título del Menú
+
+**Fecha:** 9 de noviembre de 2025
+
+Cuando filtras recetas por menú, ahora aparece el nombre del menú como título destacado:
+
+```
+🍴 Semana 2
+═══════════════════════════════════
+
+📅 LUNES
+☀️ Comida ✏️    🌙 Cena ✏️
+[Receta 1]     [Receta 2]
+
+📅 MARTES
+...
+```
+
+### Características del Título
+- Icono de cubiertos (🍴)
+- Tamaño grande (1.75rem)
+- Borde inferior con color primario
+- Ocupa todo el ancho
+- Espaciado adecuado
+
+### Ubicación en Código
+`script.js` línea ~4290 en `renderRecipesGroupedByDay()`
+
+---
+
+¡Buenas noches! 🌙

@@ -50,11 +50,11 @@
 
 - [x] 6. Ensure XML structure includes all fields for future import compatibility
 
-  - Verify menu XML includes: id, name, items (with id, name, lunch, dinner, completed), createdAt, updatedAt
+  - Verify menu XML includes: id, name, items (with id, name,lunch, dinner, completed), createdAt, updatedAt
   - Verify shopping list XML includes: id, name, enabled, items (with id, name, quantity, completed), createdAt, updatedAt
   - Add version attribute to root elements for schema versioning
   - Ensure timestamps are in ISO 8601 format
-  - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
+  - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_ 
 
 - [x] 7. Validate and test menu export functionality
 
