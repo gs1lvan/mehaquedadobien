@@ -24,14 +24,13 @@
 <body class="dark-theme">
     <div class="rcm-container">
         <!-- Header -->
-        <header class="rcm-header"
-            style="display: flex; flex-direction: row; gap: var(--spacing-md); align-items: center; justify-content: space-between;">
+        <header class="rcm-header u-flex u-flex-row u-gap-md u-items-center u-justify-between">
             <div>
                 <h1>mehaquedadobien Manager 🍳</h1>
-                <p style="color: var(--color-text-secondary); font-size: 0.875rem;">Gestión masiva de recetas XML</p>
+                <p class="u-text-secondary u-text-sm">Gestión masiva de recetas XML</p>
             </div>
             <div class="rcm-header-buttons">
-                <input type="file" id="xml-file-input" accept=".xml" style="display: none;">
+                <input type="file" id="xml-file-input" accept=".xml" class="u-hidden">
                 <button class="modal-trigger modal-trigger--action modal-trigger--primary"
                     onclick="document.getElementById('xml-file-input').click()">
                     <span class="option-icon"><i class="fa-solid fa-folder-open"></i></span>
@@ -99,13 +98,12 @@
                 </div>
 
                 <div class="filter-section">
-                    <h3 style="cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px;"
+                    <h3 class="u-cursor-pointer u-select-none u-flex u-items-center u-gap-8"
                         onclick="rcm.toggleIncompleteRecipes()">
                         <span id="incomplete-toggle-icon">▶</span>
                         ⚠️ Recetas Incompletas
                     </h3>
-                    <div id="incomplete-recipes"
-                        style="font-size: 0.875rem; color: var(--color-text-secondary); display: none; margin-top: 8px;">
+                    <div id="incomplete-recipes" class="u-text-sm u-text-secondary u-hidden u-mt-sm">
                         <p>Carga un XML para ver recetas incompletas</p>
                     </div>
                 </div>
@@ -122,12 +120,12 @@
                         <option value="">Todas</option>
                     </select>
 
-                    <label class="label" style="margin-top: var(--spacing-sm);">Autor</label>
+                    <label class="label u-mt-sm">Autor</label>
                     <select id="filter-author" class="input">
                         <option value="">Todos</option>
                     </select>
 
-                    <div style="margin-top: var(--spacing-sm);">
+                    <div class="u-mt-sm">
                         <label class="checkbox-label">
                             <input type="checkbox" id="filter-no-author"> Sin autor
                         </label>
@@ -155,8 +153,7 @@
                         </label>
                     </div>
 
-                    <button class="modal-trigger modal-trigger--action modal-trigger--secondary" id="clear-filters"
-                        style="margin-top: var(--spacing-sm); width: 100%;">
+                    <button class="modal-trigger modal-trigger--action modal-trigger--secondary u-mt-sm u-w-full" id="clear-filters">
                         <span class="option-text">Limpiar Filtros</span>
                     </button>
                 </div>
@@ -169,9 +166,8 @@
                 <div class="spinner"></div>
             </div>
 
-            <div id="empty-state"
-                style="text-align: center; padding: var(--spacing-xl); color: var(--color-text-secondary);">
-                <i class="fa-solid fa-file-import" style="font-size: 4rem; margin-bottom: var(--spacing-md);"></i>
+            <div id="empty-state" class="u-text-center u-p-xl u-text-secondary">
+                <i class="fa-solid fa-file-import u-text-4xl u-mb-md"></i>
                 <h2>No hay recetas cargadas</h2>
                 <p>Haz clic en "Cargar XML" para comenzar</p>
             </div>
@@ -244,14 +240,12 @@
                 <div class="incomplete-section">
                     <div class="incomplete-header" onclick="rcm.toggleIncompleteRecipes()">
                         <span id="incomplete-toggle-icon-h">▶</span>
-                        <i class="fa-solid fa-triangle-exclamation"
-                            style="color: var(--color-warning); margin-left: 8px;"></i>
-                        <span style="font-weight: 600;">Recetas Incompletas</span>
-                        <span id="incomplete-count-h"
-                            style="margin-left: 8px; color: var(--color-text-secondary);">(0)</span>
+                        <i class="fa-solid fa-triangle-exclamation u-text-warning u-ml-8"></i>
+                        <span class="u-font-600">Recetas Incompletas</span>
+                        <span id="incomplete-count-h" class="u-ml-8 u-text-secondary">(0)</span>
                     </div>
-                    <div id="incomplete-recipes-h" class="incomplete-content" style="display: none;">
-                        <p style="color: var(--color-text-secondary); font-size: 0.875rem;">Carga un XML para ver
+                    <div id="incomplete-recipes-h" class="incomplete-content u-hidden">
+                        <p class="u-text-secondary u-text-sm">Carga un XML para ver
                             recetas incompletas</p>
                     </div>
                 </div>
@@ -283,45 +277,43 @@
                 </div>
 
                 <!-- Acciones de selección -->
-                <div
-                    style="margin-bottom: var(--spacing-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-sm);">
-                    <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
-                        <span id="selected-count" style="font-size: 0.875rem; color: var(--color-text-secondary);">0
+                <div class="u-mb-md u-flex u-justify-between u-items-center u-flex-wrap u-gap-sm">
+                    <div class="u-flex u-items-center u-gap-sm">
+                        <span id="selected-count" class="u-text-sm u-text-secondary">0
                             seleccionadas</span>
-                        <button class="modal-trigger modal-trigger--action modal-trigger--secondary" id="select-all-btn"
-                            style="width: auto;">
+                        <button class="modal-trigger modal-trigger--action modal-trigger--secondary u-w-auto" id="select-all-btn">
                             <span class="option-text">Seleccionar todas</span>
                         </button>
                     </div>
-                    <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
-                        <button class="modal-trigger modal-trigger--action modal-trigger--primary" id="batch-edit-btn"
-                            disabled style="width: auto;">
+                    <div class="u-flex u-gap-sm u-items-center">
+                        <button class="modal-trigger modal-trigger--action modal-trigger--primary u-w-auto" id="batch-edit-btn"
+                            disabled>
                             <span class="option-icon"><i class="fa-solid fa-pen-to-square"></i></span>
                             <span class="option-text">Editar Seleccionadas</span>
                         </button>
-                        <button class="modal-trigger modal-trigger--action modal-trigger--danger"
-                            id="delete-selected-btn" disabled style="width: auto;">
+                        <button class="modal-trigger modal-trigger--action modal-trigger--danger u-w-auto"
+                            id="delete-selected-btn" disabled>
                             <span class="option-icon"><i class="fa-solid fa-trash"></i></span>
                             <span class="option-text">Eliminar Seleccionadas</span>
                         </button>
-                        <button class="modal-trigger modal-trigger--action modal-trigger--primary"
-                            id="export-selected-btn" disabled style="width: auto;">
+                        <button class="modal-trigger modal-trigger--action modal-trigger--primary u-w-auto"
+                            id="export-selected-btn" disabled>
                             <span class="option-icon"><i class="fa-solid fa-file-export"></i></span>
                             <span class="option-text">Exportar Seleccionadas</span>
                         </button>
-                        <button class="modal-trigger modal-trigger--action modal-trigger--success hidden"
-                            id="save-changes-top-btn" onclick="rcm.saveTableChanges()" style="width: auto;">
+                        <button class="modal-trigger modal-trigger--action modal-trigger--success hidden u-w-auto"
+                            id="save-changes-top-btn" onclick="rcm.saveTableChanges()">
                             <span class="option-icon"><i class="fa-solid fa-save"></i></span>
                             <span class="option-text">Guardar Cambios</span>
                         </button>
                     </div>
                 </div>
 
-                <div style="overflow-x: auto;">
+                <div class="u-overflow-x-auto">
                     <table class="recipe-table" id="recipe-table">
                         <thead>
                             <tr>
-                                <th style="width: 40px;"><input type="checkbox" id="select-all-checkbox"></th>
+                                <th class="u-w-40"><input type="checkbox" id="select-all-checkbox"></th>
                                 <th>Acciones</th>
                                 <th class="sortable" data-sort="name">Nombre</th>
                                 <th class="sortable" data-sort="category">Categoría</th>
@@ -338,9 +330,9 @@
                     </table>
                 </div>
 
-                <div style="margin-top: var(--spacing-md); text-align: center;">
-                    <button class="modal-trigger modal-trigger--action modal-trigger--success hidden"
-                        id="save-changes-bottom-btn" onclick="rcm.saveTableChanges()" style="width: auto;">
+                <div class="u-mt-md u-text-center">
+                    <button class="modal-trigger modal-trigger--action modal-trigger--success hidden u-w-auto"
+                        id="save-changes-bottom-btn" onclick="rcm.saveTableChanges()">
                         <span class="option-icon"><i class="fa-solid fa-save"></i></span>
                         <span class="option-text">Guardar Cambios</span>
                     </button>
@@ -351,25 +343,25 @@
     </div>
 
     <!-- Batch Edit Modal -->
-    <div id="batch-edit-modal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 600px;">
+    <div id="batch-edit-modal" class="modal u-hidden">
+        <div class="modal-content modal-content-md">
             <div class="modal-header">
                 <h2>Editar Recetas Seleccionadas</h2>
                 <button class="modal-close" onclick="rcm.closeBatchEditModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <p style="color: var(--color-text-secondary); margin-bottom: var(--spacing-md);">
+                <p class="u-text-secondary u-mb-md">
                     <span id="batch-edit-count">0</span> recetas serán actualizadas
                 </p>
 
-                <div style="margin-bottom: var(--spacing-md);">
+                <div class="u-mb-md">
                     <label class="checkbox-label">
                         <input type="checkbox" id="batch-update-author"> Actualizar Autor
                     </label>
                     <input type="text" id="batch-author" class="input" placeholder="Nombre del autor" disabled>
                 </div>
 
-                <div style="margin-bottom: var(--spacing-md);">
+                <div class="u-mb-md">
                     <label class="checkbox-label">
                         <input type="checkbox" id="batch-update-category"> Actualizar Categoría
                     </label>
@@ -378,7 +370,7 @@
                     </select>
                 </div>
 
-                <div style="margin-bottom: var(--spacing-md);">
+                <div class="u-mb-md">
                     <label class="checkbox-label">
                         <input type="checkbox" id="batch-update-history"> Actualizar Historia
                     </label>
@@ -386,14 +378,14 @@
                         disabled></textarea>
                 </div>
 
-                <div style="margin-bottom: var(--spacing-md);">
+                <div class="u-mb-md">
                     <label class="checkbox-label">
                         <input type="checkbox" id="batch-update-time"> Actualizar Tiempo
                     </label>
                     <input type="text" id="batch-time" class="input" placeholder="Ej: 1h 30min" disabled>
                 </div>
 
-                <div style="margin-bottom: var(--spacing-md);">
+                <div class="u-mb-md">
                     <label class="label">Flags</label>
                     <label class="checkbox-label">
                         <input type="checkbox" id="batch-caravan"> Apto para caravana
@@ -406,7 +398,7 @@
                     </label>
                 </div>
 
-                <div style="margin-bottom: var(--spacing-md);">
+                <div class="u-mb-md">
                     <label class="label">Modo de actualización</label>
                     <label class="checkbox-label">
                         <input type="radio" name="batch-mode" value="overwrite" checked> Sobrescribir todos los valores
@@ -417,12 +409,12 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="modal-trigger modal-trigger--action modal-trigger--secondary"
-                    onclick="rcm.closeBatchEditModal()" style="width: auto;">
+                <button class="modal-trigger modal-trigger--action modal-trigger--secondary u-w-auto"
+                    onclick="rcm.closeBatchEditModal()">
                     <span class="option-text">Cancelar</span>
                 </button>
-                <button class="modal-trigger modal-trigger--action modal-trigger--primary"
-                    onclick="rcm.applyBatchEdit()" style="width: auto;">
+                <button class="modal-trigger modal-trigger--action modal-trigger--primary u-w-auto"
+                    onclick="rcm.applyBatchEdit()">
                     <span class="option-text">Aplicar Cambios</span>
                 </button>
             </div>
@@ -430,14 +422,14 @@
     </div>
 
     <!-- Find and Replace Modal -->
-    <div id="find-replace-modal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 600px;">
+    <div id="find-replace-modal" class="modal u-hidden">
+        <div class="modal-content modal-content-md">
             <div class="modal-header">
                 <h2>Buscar y Reemplazar</h2>
                 <button class="modal-close" onclick="rcm.closeFindReplaceModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <div style="margin-bottom: var(--spacing-md);">
+                <div class="u-mb-md">
                     <label class="label">Campo a buscar</label>
                     <select id="find-field" class="input">
                         <option value="name">Nombre</option>
@@ -448,39 +440,38 @@
                     </select>
                 </div>
 
-                <div style="margin-bottom: var(--spacing-md);">
+                <div class="u-mb-md">
                     <label class="label">Buscar</label>
                     <input type="text" id="find-text" class="input" placeholder="Texto a buscar">
                 </div>
 
-                <div style="margin-bottom: var(--spacing-md);">
+                <div class="u-mb-md">
                     <label class="label">Reemplazar con</label>
                     <input type="text" id="replace-text" class="input" placeholder="Texto de reemplazo">
                 </div>
 
-                <div style="margin-bottom: var(--spacing-md);">
+                <div class="u-mb-md">
                     <label class="checkbox-label">
                         <input type="checkbox" id="find-case-sensitive"> Distinguir mayúsculas/minúsculas
                     </label>
                 </div>
 
-                <div id="find-preview"
-                    style="margin-top: var(--spacing-md); padding: var(--spacing-md); background: var(--color-background); border-radius: var(--border-radius); display: none;">
-                    <p style="font-weight: 600; margin-bottom: var(--spacing-sm);">Vista previa:</p>
-                    <p id="find-preview-text" style="color: var(--color-text-secondary);"></p>
+                <div id="find-preview" class="find-preview">
+                    <p class="find-preview-title">Vista previa:</p>
+                    <p id="find-preview-text" class="find-preview-text"></p>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="modal-trigger modal-trigger--action modal-trigger--secondary"
-                    onclick="rcm.closeFindReplaceModal()" style="width: auto;">
+                <button class="modal-trigger modal-trigger--action modal-trigger--secondary u-w-auto"
+                    onclick="rcm.closeFindReplaceModal()">
                     <span class="option-text">Cancelar</span>
                 </button>
-                <button class="modal-trigger modal-trigger--action modal-trigger--secondary"
-                    onclick="rcm.previewFindReplace()" style="width: auto;">
+                <button class="modal-trigger modal-trigger--action modal-trigger--secondary u-w-auto"
+                    onclick="rcm.previewFindReplace()">
                     <span class="option-text">Vista Previa</span>
                 </button>
-                <button class="modal-trigger modal-trigger--action modal-trigger--primary"
-                    onclick="rcm.applyFindReplace()" style="width: auto;">
+                <button class="modal-trigger modal-trigger--action modal-trigger--primary u-w-auto"
+                    onclick="rcm.applyFindReplace()">
                     <span class="option-text">Reemplazar</span>
                 </button>
             </div>

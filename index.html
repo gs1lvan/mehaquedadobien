@@ -59,7 +59,7 @@
         <header class="recipe-header">
             <div class="header-content">
                 <div class="header-left">
-                    <h1><a href="#" id="home-link" style="text-decoration: none; color: inherit;">🍳 mehaquedadobien</a>
+                    <h1><a href="#" id="home-link" class="header-link">🍳 mehaquedadobien</a>
                     </h1>
                 </div>
 
@@ -94,14 +94,14 @@
                 </div>
 
                 <!-- Hidden file input for XML import -->
-                <input type="file" id="xml-file-input" accept=".xml" style="display: none;">
+                <input type="file" id="xml-file-input" accept=".xml" class="u-hidden">
             </div>
         </header>
 
         <main>
             <!-- Filter toggle button -->
             <div class="filter-toggle-container">
-                <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
+                <div class="u-flex u-gap-sm u-items-center">
                     <button id="toggle-filters-btn" class="btn-toggle-filters">
                         🔍 Filtros
                     </button>
@@ -249,14 +249,12 @@
                     <button id="back-to-list-btn" class="btn-icon" title="Volver a la lista">◀</button>
                     <div class="detail-header-content">
                         <div>
-                            <div
-                                style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-xs); flex-wrap: wrap;">
-                                <span id="detail-category" class="recipe-category" style="display: none;">Sin
+                            <div class="u-flex u-items-center u-gap-sm u-mb-xs u-flex-wrap">
+                                <span id="detail-category" class="recipe-category u-hidden">Sin
                                     categoría</span>
-                                <span id="detail-total-time" class="recipe-total-time" style="display: none;"></span>
+                                <span id="detail-total-time" class="recipe-total-time u-hidden"></span>
                             </div>
-                            <h2 id="detail-recipe-name"
-                                style="font-size: 2.65rem; cursor: pointer; position: relative;">Conejo al ajillo <i
+                            <h2 id="detail-recipe-name" class="detail-recipe-title">Conejo al ajillo <i
                                     class="fa-solid fa-pencil recipe-name-edit-icon"></i>
                                 <div class="recipe-name-tooltip">Editar receta</div>
                             </h2>
@@ -277,12 +275,12 @@
 
                 <div class="detail-content">
                     <!-- Multimedia Gallery -->
-                    <div id="detail-multimedia-section" class="detail-section" style="display: none;">
+                    <div id="detail-multimedia-section" class="detail-section u-hidden">
                         <div id="detail-images-gallery" class="detail-gallery"></div>
                     </div>
 
                     <!-- Kitchen Appliances / Método de Preparación -->
-                    <div id="detail-appliances-section" class="detail-section" style="display: none;">
+                    <div id="detail-appliances-section" class="detail-section u-hidden">
                         <h3 class="detail-section-title">👨‍🍳 Método de Preparación</h3>
                         <div id="detail-appliances-chips" class="kitchen-appliances-chips">
                             <!-- Appliances will be dynamically added here -->
@@ -297,13 +295,13 @@
                         <ul id="detail-ingredients-list" class="detail-ingredients-list">
                             <!-- Ingredients will be dynamically added here -->
                         </ul>
-                        <div id="detail-no-ingredients" class="detail-empty" style="display: none;">
+                        <div id="detail-no-ingredients" class="detail-empty u-hidden">
                             <p>No hay ingredientes definidos</p>
                         </div>
                     </div>
 
                     <!-- Addition Sequences -->
-                    <div id="detail-sequences-section" class="detail-section" style="display: none;">
+                    <div id="detail-sequences-section" class="detail-section u-hidden">
                         <h3 class="detail-section-title">🔢 Secuencias de Adición</h3>
                         <div id="detail-sequences-list" class="detail-sequences-list">
                             <!-- Sequences will be dynamically added here -->
@@ -315,14 +313,14 @@
                         <h3 class="detail-section-title">ℹ️ Información</h3>
 
                         <!-- Additional Information (Author and History) -->
-                        <div id="detail-additional-info-section" style="display: none; margin-bottom: 24px;">
-                            <div id="detail-author-section" class="detail-sequence-item" style="display: none;">
+                        <div id="detail-additional-info-section" class="u-hidden u-mb-24">
+                            <div id="detail-author-section" class="detail-sequence-item u-hidden">
                                 <div class="sequence-header">
                                     <span class="sequence-number">Autor</span>
                                 </div>
                                 <div id="detail-author" class="sequence-description"></div>
                             </div>
-                            <div id="detail-history-section" class="detail-sequence-item" style="display: none;">
+                            <div id="detail-history-section" class="detail-sequence-item u-hidden">
                                 <div class="sequence-header">
                                     <span class="sequence-number">Historia</span>
                                 </div>
@@ -360,7 +358,7 @@
                     <button id="close-form-btn" class="btn-icon" title="Cerrar">✕</button>
                 </div>
 
-                <div class="detail-actions" id="form-actions" style="display: none;">
+                <div class="detail-actions u-hidden" id="form-actions">
                     <button id="save-recipe-btn-top" class="btn-action btn-action-compact btn-save-top"
                         title="Guardar receta">💾 Guardar</button>
                 </div>
@@ -373,7 +371,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="recipe-category-chip">Categoría</label>
-                                <span id="recipe-category-chip" class="recipe-category" style="display: inline-block;"
+                                <span id="recipe-category-chip" class="recipe-category u-inline-block"
                                     data-category="sin-categoria">
                                     <span id="selected-category-display">Sin categoría</span>
                                 </span>
@@ -438,12 +436,11 @@
                                 <!-- Add ingredient form -->
                                 <div class="ingredient-add-form">
                                     <div class="ingredient-inputs">
-                                        <div class="ingredient-input-group" style="position: relative;">
+                                        <div class="ingredient-input-group u-relative">
                                             <label for="ingredient-name">Nombre (libre)</label>
                                             <input type="text" id="ingredient-name" class="form-input ingredient-input"
                                                 placeholder="Ej: Pollo" autocomplete="off">
-                                            <div id="ingredient-autocomplete" class="autocomplete-suggestions"
-                                                style="display: none;"></div>
+                                            <div id="ingredient-autocomplete" class="autocomplete-suggestions u-hidden"></div>
                                         </div>
                                         <div class="ingredient-input-group">
                                             <label for="ingredient-quantity">Cantidad (libre y opcional)</label>
@@ -509,7 +506,7 @@
                             <span class="collapse-icon">▼</span> Secuencias de Adición
                         </h3>
                         <div id="sequences-collapsible-content" class="collapsible-content">
-                            <p class="helper-text" style="margin-bottom: var(--spacing-md);">Define el orden en que se
+                            <p class="helper-text u-mb-md">Define el orden en que se
                                 deben añadir los ingredientes durante la preparación</p>
                             <div id="sequences-container">
                                 <!-- Add sequence form -->
@@ -616,8 +613,7 @@
                                 <div class="media-subsection">
                                     <h4 class="subsection-title">Imágenes</h4>
                                     <div class="media-upload-area">
-                                        <input type="file" id="image-upload" accept="image/*" multiple
-                                            style="display: none;">
+                                        <input type="file" id="image-upload" accept="image/*" multiple class="u-hidden">
                                         <button type="button" id="upload-image-btn" class="btn-upload-media">
                                             📷 Añadir Imágenes
                                         </button>
@@ -658,8 +654,7 @@
                             ✕
                         </button>
                     </div>
-                    <div class="shopping-lists-buttons"
-                        style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm); margin-top: var(--spacing-xs);">
+                    <div class="shopping-lists-buttons grid-2-cols u-mt-xs">
                         <button id="new-shopping-list-btn" class="modal-trigger modal-trigger--option">
                             <span class="option-icon"><i class="fa-solid fa-plus"></i></span>
                             <span class="option-text">Nueva Lista</span>
@@ -668,12 +663,11 @@
                             <span class="option-icon"><i class="fa-solid fa-file-import"></i></span>
                             <span class="option-text">Importar Lista</span>
                         </button>
-                        <input type="file" id="import-shopping-list-input" accept=".txt" style="display: none;">
+                        <input type="file" id="import-shopping-list-input" accept=".txt" class="u-hidden">
                     </div>
                 </div>
 
-                <div id="shopping-lists-container" class="shopping-lists-container"
-                    style="margin-top: var(--spacing-xs);">
+                <div id="shopping-lists-container" class="shopping-lists-container u-mt-xs">
                     <!-- Shopping list cards will be rendered here -->
                 </div>
 
@@ -692,8 +686,7 @@
                             ✕
                         </button>
                     </div>
-                    <div class="shopping-lists-buttons"
-                        style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm); margin-top: var(--spacing-sm);">
+                    <div class="shopping-lists-buttons grid-2-cols u-mt-sm">
                         <button id="new-menu-btn" class="modal-trigger modal-trigger--option">
                             <span class="option-icon"><i class="fa-solid fa-plus"></i></span>
                             <span class="option-text">Nuevo Menú</span>
@@ -702,11 +695,11 @@
                             <span class="option-icon"><i class="fa-solid fa-file-import"></i></span>
                             <span class="option-text">Importar Menú</span>
                         </button>
-                        <input type="file" id="import-menu-input" accept=".txt" style="display: none;">
+                        <input type="file" id="import-menu-input" accept=".txt" class="u-hidden">
                     </div>
                 </div>
 
-                <div id="menus-container" class="shopping-lists-container" style="margin-top: var(--spacing-sm);">
+                <div id="menus-container" class="shopping-lists-container u-mt-sm">
                     <!-- Menu cards will be rendered here -->
                 </div>
 
@@ -981,9 +974,8 @@
             </div>
 
             <!-- Footer sticky con botón Guardar -->
-            <div class="modal-footer"
-                style="position: sticky; bottom: 0; background: var(--color-background); border-top: 1px solid var(--color-border); padding: var(--spacing-md); z-index: 10;">
-                <button id="save-menu-btn" class="btn-primary" style="width: 100%;">
+            <div class="modal-footer modal-footer-sticky">
+                <button id="save-menu-btn" class="btn-primary u-w-full">
                     <i class="fa-solid fa-floppy-disk"></i> Guardar Menú
                 </button>
             </div>
@@ -1129,14 +1121,14 @@
     <!-- ============================================ -->
     <div id="print-preview-modal" class="modal hidden">
         <div class="modal-overlay"></div>
-        <div class="modal-content" style="max-width: 900px; max-height: 90vh;">
+        <div class="modal-content modal-content-lg">
             <div class="modal-header">
                 <h2>Vista Previa - Menú para Imprimir</h2>
                 <button id="close-print-preview-modal" class="btn-icon">✕</button>
             </div>
 
-            <div class="modal-body" style="overflow-y: auto; max-height: calc(90vh - 200px);">
-                <div id="print-menu-preview" style="background: white; padding: 20px; border-radius: 8px;">
+            <div class="modal-body modal-body-scrollable">
+                <div id="print-menu-preview" class="u-bg-white u-p-20 u-border-radius-8">
                     <!-- Print menu content will be copied here -->
                 </div>
             </div>
@@ -1292,21 +1284,21 @@
 
             <div class="modal-body">
                 <!-- Recipe Book Owner and Preferences Section -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                <div class="grid-2-cols-md">
                     <!-- Recipe Book Owner -->
-                    <div class="settings-section" style="margin-bottom: 0;">
+                    <div class="settings-section u-mb-0">
                         <h3 class="settings-section-title">Libro de receta de:</h3>
                         <div class="settings-section-content">
-                            <input type="text" id="recipe-book-owner" class="form-input"
-                                placeholder="Escribe tu nombre..." style="width: 100%;">
+                            <input type="text" id="recipe-book-owner" class="form-input u-w-full"
+                                placeholder="Escribe tu nombre...">
                         </div>
                     </div>
 
                     <!-- Preferences -->
-                    <div class="settings-section" style="margin-bottom: 0;">
+                    <div class="settings-section u-mb-0">
                         <h3 class="settings-section-title">Cocinoteca:</h3>
                         <div class="settings-section-content">
-                            <select id="recipe-preferences" class="form-input" style="width: 100%;">
+                            <select id="recipe-preferences" class="form-input u-w-full">
                                 <option value="" disabled selected>Selecciona una opción...</option>
                                 <option value="cocina-asiatica">Cocina asiática</option>
                                 <option value="cocina-vegana">Cocina vegana</option>
@@ -1318,14 +1310,12 @@
                 </div>
 
                 <!-- Categories and Theme Section (50/50 split) -->
-                <div
-                    style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); margin-top: var(--spacing-md);">
+                <div class="grid-2-cols-md u-mt-md">
                     <!-- Categories Section -->
-                    <div class="settings-section" style="margin-bottom: 0;">
+                    <div class="settings-section u-mb-0">
                         <h3 class="settings-section-title">Categorías</h3>
                         <div class="settings-section-content">
-                            <button id="manage-categories-btn" class="modal-trigger modal-trigger--option"
-                                style="width: 100%;" title="Gestionar categorías">
+                            <button id="manage-categories-btn" class="modal-trigger modal-trigger--option u-w-full" title="Gestionar categorías">
                                 <span class="option-icon"><i class="fa-solid fa-tags"></i></span>
                                 <span class="option-text">Categorías</span>
                             </button>
@@ -1333,11 +1323,10 @@
                     </div>
 
                     <!-- Theme Section -->
-                    <div class="settings-section" style="margin-bottom: 0;">
+                    <div class="settings-section u-mb-0">
                         <h3 class="settings-section-title">Tema</h3>
                         <div class="settings-section-content">
-                            <button id="theme-toggle-btn-modal" class="modal-trigger modal-trigger--option"
-                                style="width: 100%;" title="Cambiar tema"
+                            <button id="theme-toggle-btn-modal" class="modal-trigger modal-trigger--option u-w-full" title="Cambiar tema"
                                 aria-label="Cambiar entre tema claro y oscuro">
                                 <span class="option-icon" id="theme-icon-modal"><i class="fa-solid fa-moon"></i></span>
                                 <span class="option-text" id="theme-text-modal">Modo oscuro</span>
@@ -1347,10 +1336,9 @@
                 </div>
 
                 <!-- Import/Export Section -->
-                <div class="settings-section" style="margin-top: var(--spacing-md);">
+                <div class="settings-section u-mt-md">
                     <h3 class="settings-section-title">Importar y Exportar</h3>
-                    <div class="settings-section-content"
-                        style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm); width: 100%;">
+                    <div class="settings-section-content grid-2-cols u-w-full">
                         <button id="import-xml-btn" class="modal-trigger modal-trigger--option"
                             title="Importar recetas desde XML">
                             <span class="option-icon"><i class="fa-solid fa-file-import"></i></span>
@@ -1379,14 +1367,14 @@
             <div class="modal-body">
                 <div class="settings-section">
                     <h3 class="settings-section-title">Bienvenido a mehaquedadobien 🍳</h3>
-                    <p style="color: var(--color-text-secondary); margin-bottom: var(--spacing-md);">
+                    <p class="u-text-secondary u-mb-md">
                         Tu recetario personal para guardar, organizar y compartir tus recetas favoritas.
                     </p>
                 </div>
 
                 <div class="settings-section">
                     <h3 class="settings-section-title">Funciones principales</h3>
-                    <ul style="color: var(--color-text-secondary); line-height: 1.8;">
+                    <ul class="u-text-secondary u-line-height-1-8">
                         <li><strong>Recetas:</strong> Crea, edita y organiza tus recetas con ingredientes, secuencias e
                             imágenes</li>
                         <li><strong>Menús:</strong> Planifica tus comidas semanales y conviértelos en filtros rápidos
@@ -1400,12 +1388,12 @@
 
                 <div class="settings-section">
                     <h3 class="settings-section-title">Atajos de teclado</h3>
-                    <div style="display: grid; gap: var(--spacing-xs); color: var(--color-text-secondary);">
-                        <div style="display: flex; justify-content: space-between;">
+                    <div class="u-grid u-gap-xs u-text-secondary">
+                        <div class="u-flex u-justify-between">
                             <span><kbd>Ctrl+S</kbd> / <kbd>Cmd+S</kbd></span>
                             <span>Guardar receta</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between;">
+                        <div class="u-flex u-justify-between">
                             <span><kbd>Esc</kbd></span>
                             <span>Cerrar modal</span>
                         </div>
@@ -1414,7 +1402,7 @@
 
                 <div class="settings-section">
                     <h3 class="settings-section-title">¿Necesitas más ayuda?</h3>
-                    <p style="color: var(--color-text-secondary);">
+                    <p class="u-text-secondary">
                         Visita la documentación completa o contacta con soporte para más información.
                     </p>
                 </div>
@@ -1437,7 +1425,7 @@
                 </div>
             </div>
 
-            <div class="modal-footer" id="category-selector-footer" style="display: none;">
+            <div class="modal-footer u-hidden" id="category-selector-footer">
                 <button id="category-confirm-btn" class="btn-secondary">Confirmar</button>
                 <button id="category-view-recipes-btn" class="btn-primary">Ver Recetas →</button>
             </div>
@@ -1445,38 +1433,32 @@
     </div>
 
     <!-- Import Progress Modal -->
-    <div id="import-progress-modal" class="modal hidden" style="z-index: 10000;">
-        <div class="modal-overlay" style="background: rgba(0, 0, 0, 0.7); z-index: 10001;"></div>
-        <div class="modal-content" style="max-width: 500px; z-index: 10002; position: relative;">
-            <div class="modal-header" style="background: var(--color-primary); color: white; border-bottom: none;">
-                <h2 style="display: flex; align-items: center; gap: 12px; margin: 0;">
-                    <span class="loading-spinner"
-                        style="width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; display: inline-block;"></span>
+    <div id="import-progress-modal" class="modal hidden import-progress-modal">
+        <div class="modal-overlay import-progress-overlay"></div>
+        <div class="modal-content import-progress-content">
+            <div class="modal-header import-progress-header">
+                <h2 class="import-progress-title">
+                    <span class="loading-spinner"></span>
                     Importando Recetas
                 </h2>
             </div>
 
-            <div class="modal-body" style="padding: var(--spacing-xl);">
+            <div class="modal-body import-progress-body">
                 <!-- Progress Text -->
-                <div id="import-progress-text"
-                    style="text-align: center; font-size: 1.1rem; font-weight: 600; margin-bottom: var(--spacing-lg); color: var(--color-text);">
+                <div id="import-progress-text" class="import-progress-text">
                     Procesando...
                 </div>
 
                 <!-- Progress Bar Container -->
-                <div
-                    style="width: 100%; height: 40px; background: var(--color-background-secondary); border-radius: 20px; overflow: hidden; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); margin-bottom: var(--spacing-md);">
+                <div class="progress-bar-container">
                     <!-- Progress Bar Fill -->
-                    <div id="import-progress-bar"
-                        style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark)); transition: width 0.3s ease; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1rem; box-shadow: 0 2px 8px rgba(255, 56, 92, 0.4); position: relative;">
-                        <span id="import-progress-percentage"
-                            style="text-shadow: 0 1px 2px rgba(0,0,0,0.3); position: absolute;"></span>
+                    <div id="import-progress-bar" class="progress-bar-fill">
+                        <span id="import-progress-percentage" class="progress-percentage"></span>
                     </div>
                 </div>
 
                 <!-- Progress Details -->
-                <div id="import-progress-details"
-                    style="text-align: center; font-size: 1.1rem; color: #000000; min-height: 32px; font-weight: 600; padding: 12px; background: #f0f0f0; border-radius: 8px; transition: all 0.2s ease; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 2px solid #e0e0e0;">
+                <div id="import-progress-details" class="progress-details">
                     📝 Preparando importación...
                 </div>
             </div>
@@ -1860,10 +1842,17 @@
     <!-- Print Menu Container -->
     <div id="print-menu-container"></div>
 
+    <!-- External libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="categories.js"></script>
-    <script src="models.js"></script>
-    <script src="script.js"></script>
+    
+    <!-- Legacy files (to be removed after full migration) -->
+    <!-- <script src="categories.js"></script> -->
+    <!-- <script src="models.js"></script> -->
+    <!-- <script src="script.js"></script> -->
+    
+    <!-- New modular architecture -->
+    <script type="module" src="main.js"></script>
+    
     <script>
         // Set footer date
         const footerDate = document.getElementById('footer-date');

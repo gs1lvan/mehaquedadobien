@@ -950,3 +950,84 @@ body.dark-theme .recipe-table th {
     border-color: #FF385C;
     background: rgba(255, 56, 92, 0.05);
 }
+
+/* ===== UTILITY CLASSES ===== */
+/* Clases utilitarias para reemplazar estilos inline */
+/* Prefijo: u- (utility) */
+
+/* Display */
+.u-hidden { display: none !important; }
+.u-flex { display: flex !important; }
+.u-grid { display: grid !important; }
+
+/* Flex */
+.u-flex-row { flex-direction: row !important; }
+.u-items-center { align-items: center !important; }
+.u-justify-between { justify-content: space-between !important; }
+.u-flex-wrap { flex-wrap: wrap !important; }
+
+/* Gap */
+.u-gap-sm { gap: var(--spacing-sm) !important; }
+.u-gap-md { gap: var(--spacing-md) !important; }
+.u-gap-8 { gap: 8px !important; }
+
+/* Margin */
+.u-mt-sm { margin-top: var(--spacing-sm) !important; }
+.u-mt-md { margin-top: var(--spacing-md) !important; }
+.u-mt-xl { margin-top: var(--spacing-xl) !important; }
+.u-mb-0 { margin-bottom: 0 !important; }
+.u-mb-md { margin-bottom: var(--spacing-md) !important; }
+.u-ml-8 { margin-left: 8px !important; }
+
+/* Padding */
+.u-p-xl { padding: var(--spacing-xl) !important; }
+
+/* Width */
+.u-w-full { width: 100% !important; }
+.u-w-auto { width: auto !important; }
+.u-w-40 { width: 40px !important; }
+
+/* Text */
+.u-text-center { text-align: center !important; }
+.u-text-secondary { color: var(--color-text-secondary) !important; }
+.u-text-sm { font-size: 0.875rem !important; }
+.u-text-lg { font-size: 1.1rem !important; }
+.u-text-4xl { font-size: 4rem !important; }
+.u-font-600 { font-weight: 600 !important; }
+
+/* Overflow */
+.u-overflow-x-auto { overflow-x: auto !important; }
+
+/* Cursor */
+.u-cursor-pointer { cursor: pointer !important; }
+
+/* User Select */
+.u-select-none { user-select: none !important; }
+
+/* Color */
+.u-text-warning { color: var(--color-warning) !important; }
+
+/* Grid */
+.grid-2-cols {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: var(--spacing-sm) !important;
+}
+
+/* Find Preview Styles */
+.find-preview {
+    margin-top: var(--spacing-md) !important;
+    padding: var(--spacing-md) !important;
+    background: var(--color-background) !important;
+    border-radius: var(--border-radius) !important;
+    display: none !important;
+}
+
+.find-preview-title {
+    font-weight: 600 !important;
+    margin-bottom: var(--spacing-sm) !important;
+}
+
+.find-preview-text {
+    color: var(--color-text-secondary) !important;
+}
