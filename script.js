@@ -4017,7 +4017,7 @@ class RecipeApp {
             if (menu) {
                 const recipeNames = this.getRecipeNamesFromMenu(menu);
                 console.log('[Menu Filter] Filtering by menu:', menu.name, 'Recipe names:', recipeNames);
-                
+
                 filtered = filtered.filter(recipe => {
                     const recipeName = recipe.name.toLowerCase();
                     // Use bidirectional partial matching
@@ -4030,7 +4030,7 @@ class RecipeApp {
                     }
                     return matches;
                 });
-                
+
                 console.log('[Menu Filter] Filtered to', filtered.length, 'recipes');
             }
         }
@@ -4304,41 +4304,62 @@ class RecipeApp {
         `;
         menuTitle.innerHTML = `<i class="fa-solid fa-utensils"></i> ${menu.name}`;
         container.appendChild(menuTitle);
-        
+
         // Get metadata for all recipes in the menu
         const metadata = this.getRecipeMetadataFromMenu(menu);
-        
-        // Group recipes by day
+
+        // ============================================================================
+        // NUEVO: Inicializar con TODOS los días del menú (incluso sin recetas)
+        // Esto permite mostrar placeholders para categorías sin receta
+        // ============================================================================
+        const dayOrder = {
+            'lunes': 1, 'martes': 2, 'miércoles': 3, 'miercoles': 3,
+            'jueves': 4, 'viernes': 5, 'sábado': 6, 'sabado': 6, 'domingo': 7
+        };
+
         const recipesByDay = new Map();
-        
+
+        // Primero: Inicializar con todos los días del menú
+        menu.items.forEach(item => {
+            const dayName = item.name || '';
+            const dayNameLower = dayName.toLowerCase().trim();
+            const dayNumber = dayOrder[dayNameLower] || 999;
+            const dayKey = `${dayNumber}_${dayName}`;
+
+            recipesByDay.set(dayKey, {
+                dayName: dayName,
+                dayNumber: dayNumber,
+                itemId: item.id,
+                lunch: null,  // Objeto receta (si existe)
+                dinner: null,  // Objeto receta (si existe)
+                lunchValue: item.lunch || 'Sin receta',  // Valor crudo del menú
+                dinnerValue: item.dinner || 'Sin receta'  // Valor crudo del menú
+            });
+        });
+
+        // Segundo: Rellenar con las recetas reales que existen
         recipes.forEach(recipe => {
             const recipeMeta = metadata.get(recipe.name.toLowerCase());
             if (recipeMeta && recipeMeta.length > 0) {
                 recipeMeta.forEach(meta => {
                     const dayKey = `${meta.dayNumber}_${meta.day}`;
-                    if (!recipesByDay.has(dayKey)) {
-                        recipesByDay.set(dayKey, {
-                            dayName: meta.day,
-                            dayNumber: meta.dayNumber,
-                            itemId: meta.itemId,  // Store itemId for quick edit
-                            lunch: null,
-                            dinner: null
-                        });
-                    }
-                    
                     const dayData = recipesByDay.get(dayKey);
-                    if (meta.mealType === 'lunch') {
-                        dayData.lunch = recipe;
-                    } else if (meta.mealType === 'dinner') {
-                        dayData.dinner = recipe;
+
+                    if (dayData) {
+                        if (meta.mealType === 'lunch') {
+                            dayData.lunch = recipe;
+                        } else if (meta.mealType === 'dinner') {
+                            dayData.dinner = recipe;
+                        }
                     }
                 });
             }
         });
-        
+        // ============================================================================
+
         // Sort days by day number
         const sortedDays = Array.from(recipesByDay.values()).sort((a, b) => a.dayNumber - b.dayNumber);
-        
+
         // Render each day group
         sortedDays.forEach(dayData => {
             // Create day separator
@@ -4354,39 +4375,120 @@ class RecipeApp {
                 font-size: 1.125rem;
                 font-weight: 600;
             `;
-            
+
             const iconSpan = document.createElement('span');
             iconSpan.innerHTML = '<i class="fa-solid fa-calendar-day"></i>';
             iconSpan.style.cssText = 'color: var(--color-primary); font-size: 1.25rem;';
-            
+
             const dayNameSpan = document.createElement('span');
             dayNameSpan.textContent = dayData.dayName.toUpperCase();
-            
+
             const lineBefore = document.createElement('div');
             lineBefore.style.cssText = 'flex: 0 0 auto; width: 40px; height: 2px; background: var(--color-primary);';
-            
+
             const lineAfter = document.createElement('div');
             lineAfter.style.cssText = 'flex: 1; height: 2px; background: var(--color-border);';
-            
+
             daySeparator.appendChild(lineBefore);
             daySeparator.appendChild(iconSpan);
             daySeparator.appendChild(dayNameSpan);
             daySeparator.appendChild(lineAfter);
-            
+
             container.appendChild(daySeparator);
-            
-            // Create meal type labels container
-            const mealLabelsContainer = document.createElement('div');
-            mealLabelsContainer.style.cssText = `
+
+            // Create meals container (grid for lunch and dinner packages)
+            const mealsContainer = document.createElement('div');
+            mealsContainer.style.cssText = `
                 grid-column: 1 / -1;
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 1rem;
-                margin-bottom: 0.5rem;
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                margin-bottom: 1rem;
             `;
-            
-            // Lunch label
-            if (dayData.lunch) {
+
+            // On desktop (>= 768px), show side by side
+            if (window.innerWidth >= 768) {
+                mealsContainer.style.gridTemplateColumns = 'repeat(auto-fit, minmax(300px, 1fr))';
+            }
+
+            // ============================================================================
+            // HELPER: Detectar estado de comida/cena y crear card apropiada
+            // Estado 1: 'Sin receta' → No mostrar nada
+            // Estado 2: Solo categoría (ej: '🐷 Cerdo') → Mostrar placeholder
+            // Estado 3: Receta completa → Mostrar tarjeta normal
+            // ============================================================================
+            const getMealCard = (mealValue, recipeObj) => {
+                // Estado 3: Tiene receta completa
+                if (recipeObj) {
+                    return this.createRecipeCard(recipeObj);
+                }
+
+                // Estado 1: Sin receta
+                if (!mealValue || mealValue === 'Sin receta' || mealValue.trim() === '') {
+                    return null;  // No mostrar nada
+                }
+
+                // Estado 2: Solo categoría (emoji + nombre de categoría)
+                // Crear placeholder card
+                const placeholderCard = document.createElement('div');
+                placeholderCard.className = 'recipe-card recipe-card-placeholder';
+                placeholderCard.style.cssText = `
+                    border: 2px dashed var(--color-border);
+                    background: var(--color-background-secondary);
+                    padding: 2rem;
+                    border-radius: 12px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 1rem;
+                    min-height: 200px;
+                    opacity: 0.7;
+                    transition: opacity 0.2s;
+                `;
+
+                // Emoji de categoría (primer carácter si es emoji)
+                const categoryEmoji = mealValue.charAt(0);
+                const emojiSpan = document.createElement('div');
+                emojiSpan.style.cssText = 'font-size: 3rem;';
+                emojiSpan.textContent = categoryEmoji;
+
+                // Texto "Receta sin definir"
+                const textSpan = document.createElement('div');
+                textSpan.style.cssText = `
+                    font-size: 1rem;
+                    color: var(--color-text-secondary);
+                    text-align: center;
+                    font-style: italic;
+                `;
+                textSpan.textContent = 'Receta sin definir';
+
+                placeholderCard.appendChild(emojiSpan);
+                placeholderCard.appendChild(textSpan);
+
+                // Hover effect
+                placeholderCard.addEventListener('mouseenter', () => {
+                    placeholderCard.style.opacity = '1';
+                });
+                placeholderCard.addEventListener('mouseleave', () => {
+                    placeholderCard.style.opacity = '0.7';
+                });
+
+                return placeholderCard;
+            };
+            // ============================================================================
+
+            // Lunch package (label + card)
+            const lunchCard = getMealCard(dayData.lunchValue, dayData.lunch);
+            if (lunchCard) {
+                const lunchPackage = document.createElement('div');
+                lunchPackage.style.cssText = `
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
+                `;
+
+                // Lunch label
                 const lunchLabel = document.createElement('div');
                 lunchLabel.style.cssText = `
                     display: flex;
@@ -4397,7 +4499,7 @@ class RecipeApp {
                     color: var(--color-text-secondary);
                 `;
                 lunchLabel.innerHTML = '<i class="fa-solid fa-utensils"></i> Comida';
-                
+
                 // Add quick edit button
                 const lunchEditBtn = document.createElement('button');
                 lunchEditBtn.className = 'btn-icon btn-quick-edit-inline';
@@ -4420,13 +4522,26 @@ class RecipeApp {
                 lunchEditBtn.addEventListener('mouseleave', () => {
                     lunchEditBtn.style.opacity = '0.7';
                 });
-                
+
                 lunchLabel.appendChild(lunchEditBtn);
-                mealLabelsContainer.appendChild(lunchLabel);
+
+                // Assemble lunch package
+                lunchPackage.appendChild(lunchLabel);
+                lunchPackage.appendChild(lunchCard);
+                mealsContainer.appendChild(lunchPackage);
             }
-            
-            // Dinner label
-            if (dayData.dinner) {
+
+            // Dinner package (label + card)
+            const dinnerCard = getMealCard(dayData.dinnerValue, dayData.dinner);
+            if (dinnerCard) {
+                const dinnerPackage = document.createElement('div');
+                dinnerPackage.style.cssText = `
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
+                `;
+
+                // Dinner label
                 const dinnerLabel = document.createElement('div');
                 dinnerLabel.style.cssText = `
                     display: flex;
@@ -4437,7 +4552,7 @@ class RecipeApp {
                     color: var(--color-text-secondary);
                 `;
                 dinnerLabel.innerHTML = '<i class="fa-solid fa-moon"></i> Cena';
-                
+
                 // Add quick edit button
                 const dinnerEditBtn = document.createElement('button');
                 dinnerEditBtn.className = 'btn-icon btn-quick-edit-inline';
@@ -4460,36 +4575,16 @@ class RecipeApp {
                 dinnerEditBtn.addEventListener('mouseleave', () => {
                     dinnerEditBtn.style.opacity = '0.7';
                 });
-                
+
                 dinnerLabel.appendChild(dinnerEditBtn);
-                mealLabelsContainer.appendChild(dinnerLabel);
+
+                // Assemble dinner package
+                dinnerPackage.appendChild(dinnerLabel);
+                dinnerPackage.appendChild(dinnerCard);
+                mealsContainer.appendChild(dinnerPackage);
             }
-            
-            container.appendChild(mealLabelsContainer);
-            
-            // Create cards container for this day
-            const dayCardsContainer = document.createElement('div');
-            dayCardsContainer.style.cssText = `
-                grid-column: 1 / -1;
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 1rem;
-                margin-bottom: 1rem;
-            `;
-            
-            // Add lunch card
-            if (dayData.lunch) {
-                const lunchCard = this.createRecipeCard(dayData.lunch);
-                dayCardsContainer.appendChild(lunchCard);
-            }
-            
-            // Add dinner card
-            if (dayData.dinner) {
-                const dinnerCard = this.createRecipeCard(dayData.dinner);
-                dayCardsContainer.appendChild(dinnerCard);
-            }
-            
-            container.appendChild(dayCardsContainer);
+
+            container.appendChild(mealsContainer);
         });
     }
 
@@ -10048,7 +10143,7 @@ class RecipeApp {
             lineAfter.style.cssText = 'flex: 1; height: 1px; background: var(--color-border);';
             separator.insertBefore(lineBefore, separator.firstChild);
             separator.appendChild(lineAfter);
-            
+
             container.appendChild(separator);
 
             // Render hidden menus
@@ -10124,17 +10219,18 @@ class RecipeApp {
         name.className = 'shopping-list-name';
         name.textContent = menu.name;
         name.style.margin = '0';
-        
-        // Add bookmark icon button
+
+        // Add bookmark icon button with text
         const bookmarkBtn = document.createElement('button');
         bookmarkBtn.className = 'menu-bookmark-btn';
         bookmarkBtn.title = menu.isFilter ? 'Quitar de filtros' : 'Añadir a filtros';
-        bookmarkBtn.innerHTML = `<i class="fa-${menu.isFilter ? 'solid' : 'regular'} fa-bookmark"></i>`;
+        bookmarkBtn.style.cssText = 'display: flex; align-items: center; gap: 0.5rem;';
+        bookmarkBtn.innerHTML = `<i class="fa-${menu.isFilter ? 'solid' : 'regular'} fa-bookmark"></i><span style="font-size: 0.875rem;">Convertir en filtro</span>`;
         bookmarkBtn.onclick = (e) => {
             e.stopPropagation();
             this.toggleMenuAsFilter(menu.id);
         };
-        
+
         nameContainer.appendChild(name);
         nameContainer.appendChild(bookmarkBtn);
 
@@ -10296,10 +10392,10 @@ class RecipeApp {
             // Helper function to get recipe emoji by name
             const getRecipeEmoji = (recipeName) => {
                 if (!recipeName || recipeName === 'Sin receta') return '';
-                
+
                 const recipe = this.recipes.find(r => r.name === recipeName);
                 if (!recipe || !recipe.category) return '';
-                
+
                 const category = PREDEFINED_CATEGORIES.find(cat => cat.id === recipe.category);
                 return category ? category.emoji + ' ' : '';
             };
@@ -10341,7 +10437,7 @@ class RecipeApp {
             dinnerColumn.dataset.mealType = 'dinner';
 
             if (item.dinner && item.dinner !== 'Sin receta') {
-                const emoji = getRecipeEmoji(item.dinner);
+                const emoji = getRecipeEmoji(item.dinner);/*  */
                 dinnerColumn.textContent = emoji + truncateText(item.dinner);
                 dinnerColumn.title = item.dinner + ' (click para cambiar)'; // Show full text on hover
             } else {
@@ -10404,8 +10500,8 @@ class RecipeApp {
      * @param {string} mealType - 'lunch' or 'dinner'
      */
     quickEditMeal(menuId, itemId, mealType) {
-        console.log('[Quick Edit] quickEditMeal called', {menuId, itemId, mealType});
-        
+        console.log('[Quick Edit] quickEditMeal called', { menuId, itemId, mealType });
+
         const menu = this.getMenuById(menuId);
         if (!menu) {
             console.log('[Quick Edit] Menu not found');
@@ -10442,7 +10538,7 @@ class RecipeApp {
     toggleMenuExpanded(menuId) {
         // Use more specific selector to avoid finding filter chips
         const card = document.querySelector(`.shopping-list-card[data-menu-id="${menuId}"]`);
-        
+
         if (!card) return;
 
         const content = card.querySelector('.shopping-list-content');
@@ -10727,11 +10823,11 @@ class RecipeApp {
 
         // Get current date
         const now = new Date();
-        const dateStr = now.toLocaleDateString('es-ES', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
+        const dateStr = now.toLocaleDateString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         });
 
         // Build HTML for print - TABLE FORMAT
@@ -10758,7 +10854,7 @@ class RecipeApp {
                     html += `<th class="print-menu-th-day">${dayEmoji}<br>${dayName}</th>`;
                 }
             });
-            
+
             html += `
                         </tr>
                     </thead>
@@ -10766,27 +10862,27 @@ class RecipeApp {
                         <tr class="print-menu-row-lunch">
                             <td class="print-menu-td-label">☀️ COMIDA</td>
             `;
-            
+
             // Add lunch row
             menu.items.forEach((item) => {
                 if (item && (item.lunch || item.dinner)) {
                     html += `<td class="print-menu-td-meal">${item.lunch || '-'}</td>`;
                 }
             });
-            
+
             html += `
                         </tr>
                         <tr class="print-menu-row-dinner">
                             <td class="print-menu-td-label">🌙 CENA</td>
             `;
-            
+
             // Add dinner row
             menu.items.forEach((item) => {
                 if (item && (item.lunch || item.dinner)) {
                     html += `<td class="print-menu-td-meal">${item.dinner || '-'}</td>`;
                 }
             });
-            
+
             html += `
                         </tr>
                     </tbody>
@@ -10827,18 +10923,18 @@ class RecipeApp {
         const modal = document.getElementById('print-preview-modal');
         const preview = document.getElementById('print-menu-preview');
         const container = document.getElementById('print-menu-container');
-        
+
         if (modal && preview && container) {
             // Copy content to preview
             preview.innerHTML = container.innerHTML;
             modal.classList.remove('hidden');
-            
+
             // Setup event listeners
             const closeBtn = document.getElementById('close-print-preview-modal');
             const cancelBtn = document.getElementById('cancel-print-btn');
             const confirmBtn = document.getElementById('confirm-print-btn');
             const overlay = modal.querySelector('.modal-overlay');
-            
+
             if (closeBtn) closeBtn.onclick = () => this.closePrintPreviewModal();
             if (cancelBtn) cancelBtn.onclick = () => this.closePrintPreviewModal();
             if (confirmBtn) confirmBtn.onclick = () => this.triggerPrint();
@@ -11079,6 +11175,31 @@ class RecipeApp {
     openCategorySelectorForMenu(inputElement) {
         // Store reference to the input element
         this.currentMenuCategoryInput = inputElement;
+
+        // ============================================================================
+        // NUEVO: Detectar si ya tiene categoría y verificar si tiene recetas disponibles
+        // Si tiene categoría pero NO tiene recetas → Abrir modal de categorías (permitir cambiar)
+        // Si tiene categoría Y tiene recetas → Abrir modal de recetas (comportamiento normal)
+        // ============================================================================
+        const currentCategoryId = inputElement.dataset.categoryId;
+
+        if (currentCategoryId) {
+            // Verificar si esta categoría tiene recetas menu-friendly disponibles
+            const recipesInCategory = this.recipes.filter(r =>
+                r.category === currentCategoryId && r.menuFriendly === true
+            );
+
+            if (recipesInCategory.length > 0) {
+                // Tiene recetas → Abrir modal de recetas directamente
+                console.log('[Quick Edit] Category has recipes, opening recipe selector');
+                this.openMenuRecipeSelectorModal(inputElement, currentCategoryId);
+                return;
+            } else {
+                // NO tiene recetas → Continuar para abrir modal de categorías
+                console.log('[Quick Edit] Category has NO recipes, opening category selector to allow change');
+            }
+        }
+        // ============================================================================
 
         // Open the category selector modal (same as recipe form)
         const modal = document.getElementById('category-selector-modal');
@@ -11575,33 +11696,33 @@ class RecipeApp {
                 console.log('[Quick Edit] selectedRecipeId:', this.selectedRecipeId);
                 console.log('[Quick Edit] currentMenuRecipeInput:', this.currentMenuRecipeInput);
                 console.log('[Quick Edit] isQuickEdit?', this.currentMenuRecipeInput?.dataset?.isQuickEdit);
-                
+
                 if (this.selectedRecipeId && this.currentMenuRecipeInput) {
                     const selectedRecipe = recipes.find(r => r.id === this.selectedRecipeId);
                     if (selectedRecipe) {
                         // Check if this is quick edit mode
                         if (this.currentMenuRecipeInput.dataset.isQuickEdit === 'true') {
                             console.log('[Quick Edit] Quick edit mode detected, saving directly');
-                            
+
                             // Quick edit mode - save directly to menu
                             const menuId = parseInt(this.currentMenuRecipeInput.dataset.menuId);
                             const itemId = this.currentMenuRecipeInput.dataset.itemId;
                             const mealType = this.currentMenuRecipeInput.dataset.mealType;
-                            
+
                             console.log('[Quick Edit] menuId:', menuId, 'itemId:', itemId, 'mealType:', mealType);
 
                             const menu = this.getMenuById(menuId);
                             console.log('[Quick Edit] Menu found?', !!menu);
-                            
+
                             if (menu) {
                                 // Convert itemId to string for comparison (IDs are stored as strings)
                                 const item = menu.items.find(i => String(i.id) === String(itemId));
                                 console.log('[Quick Edit] Item found?', !!item);
                                 console.log('[Quick Edit] Item:', item);
-                                
+
                                 if (item) {
                                     console.log('[Quick Edit] Before update:', mealType, '=', mealType === 'lunch' ? item.lunch : item.dinner);
-                                    
+
                                     if (mealType === 'lunch') {
                                         item.lunch = selectedRecipe.name;
                                     } else {
@@ -11614,16 +11735,16 @@ class RecipeApp {
                                     const menus = this.getMenusFromStorage();
                                     const menuIndex = menus.findIndex(m => m.id === menuId);
                                     console.log('[Quick Edit] Menu index:', menuIndex);
-                                    
+
                                     if (menuIndex !== -1) {
                                         menus[menuIndex] = menu;
                                         localStorage.setItem('recetario_menus', JSON.stringify(menus));
                                         console.log('[Quick Edit] Saved to localStorage');
-                                        
+
                                         // Check if we're in menu filter view or menus view
                                         const recipesView = document.getElementById('recipe-list-view');
                                         const menusView = document.getElementById('menus-view');
-                                        
+
                                         if (recipesView && !recipesView.classList.contains('hidden')) {
                                             // We're in recipe list view with menu filter active
                                             console.log('[Quick Edit] Re-rendering filtered recipes');
@@ -11633,7 +11754,7 @@ class RecipeApp {
                                             console.log('[Quick Edit] Re-rendering menus');
                                             this.renderMenus();
                                         }
-                                        
+
                                         this.showToast('Receta actualizada correctamente', 'success');
                                     } else {
                                         console.error('[Quick Edit] Menu index not found!');
@@ -11669,12 +11790,12 @@ class RecipeApp {
 
         const menus = this.getMenusFromStorage();
         const menu = menus.find(m => m.id === menuId);
-        
+
         // Clear filter if this menu is active
         if (menu && menu.isFilter && this.activeMenuFilter === menuId) {
             this.clearMenuFilter();
         }
-        
+
         const filteredMenus = menus.filter(m => m.id !== menuId);
         localStorage.setItem('recetario_menus', JSON.stringify(filteredMenus));
 
@@ -11689,33 +11810,33 @@ class RecipeApp {
     toggleMenuAsFilter(menuId) {
         const menus = this.getMenusFromStorage();
         const menu = menus.find(m => m.id === menuId);
-        
+
         if (!menu) {
             console.error('[Menu Filter] Menu not found:', menuId);
             return;
         }
-        
+
         // Toggle isFilter property
         menu.isFilter = !menu.isFilter;
-        
+
         // Save to localStorage
         localStorage.setItem('recetario_menus', JSON.stringify(menus));
-        
+
         // If filter was active and we're removing it, clear the filter
         if (!menu.isFilter && this.activeMenuFilter === menuId) {
             this.clearMenuFilter();
         }
-        
+
         // Re-render
         this.renderMenus();
         this.renderMenuFilterChips();
-        
+
         // Show toast
-        const message = menu.isFilter 
+        const message = menu.isFilter
             ? `"${menu.name}" añadido a filtros`
             : `"${menu.name}" quitado de filtros`;
         this.showToast(message, 'success');
-        
+
         console.log('[Menu Filter] Toggled filter for menu:', menu.name, 'isFilter:', menu.isFilter);
     }
 
@@ -11734,47 +11855,47 @@ class RecipeApp {
     renderMenuFilterChips() {
         const menuFilterBar = document.getElementById('menu-filter-bar');
         const menuFilterChips = document.getElementById('menu-filter-chips');
-        
+
         if (!menuFilterBar || !menuFilterChips) {
             console.warn('[Menu Filter] Menu filter elements not found');
             return;
         }
-        
+
         // Get menus marked as filters
         const filterMenus = this.getMenuFilters();
-        
+
         console.log('[Menu Filter] Rendering filter chips, found', filterMenus.length, 'filter menus');
-        
+
         // Hide section if no filter menus
         if (filterMenus.length === 0) {
             menuFilterBar.classList.add('hidden');
             return;
         }
-        
+
         // Show section
         menuFilterBar.classList.remove('hidden');
-        
+
         // Clear existing chips
         menuFilterChips.innerHTML = '';
-        
+
         // Create chip for each filter menu
         filterMenus.forEach(menu => {
             const chip = document.createElement('button');
             chip.className = 'filter-chip';
             chip.dataset.menuId = menu.id;
             chip.textContent = `📋 ${menu.name}`;
-            
+
             // Mark as active if this is the active filter
             if (this.activeMenuFilter === menu.id) {
                 chip.classList.add('active');
             }
-            
+
             // Add click handler
             chip.onclick = () => this.handleMenuFilterClick(menu.id);
-            
+
             menuFilterChips.appendChild(chip);
         });
-        
+
         console.log('[Menu Filter] Rendered', filterMenus.length, 'filter chips');
     }
 
@@ -11785,11 +11906,11 @@ class RecipeApp {
      */
     getRecipeNamesFromMenu(menu) {
         const recipeNames = new Set();
-        
+
         if (!menu || !menu.items) {
             return [];
         }
-        
+
         menu.items.forEach(item => {
             if (item.lunch && item.lunch.trim() && item.lunch !== 'Sin receta') {
                 recipeNames.add(item.lunch.trim().toLowerCase());
@@ -11798,7 +11919,7 @@ class RecipeApp {
                 recipeNames.add(item.dinner.trim().toLowerCase());
             }
         });
-        
+
         return Array.from(recipeNames);
     }
 
@@ -11809,22 +11930,22 @@ class RecipeApp {
      */
     getRecipeMetadataFromMenu(menu) {
         const metadata = new Map();
-        
+
         if (!menu || !menu.items) {
             return metadata;
         }
-        
+
         // Day name mapping for ordering
         const dayOrder = {
             'lunes': 1, 'martes': 2, 'miércoles': 3, 'miercoles': 3,
             'jueves': 4, 'viernes': 5, 'sábado': 6, 'sabado': 6, 'domingo': 7
         };
-        
+
         menu.items.forEach(item => {
             const dayName = item.name || '';
             const dayNameLower = dayName.toLowerCase().trim();
             const dayNumber = dayOrder[dayNameLower] || 999; // Unknown days go to end
-            
+
             // Process lunch
             if (item.lunch && item.lunch.trim() && item.lunch !== 'Sin receta') {
                 const recipeName = item.lunch.trim().toLowerCase();
@@ -11838,7 +11959,7 @@ class RecipeApp {
                     itemId: item.id  // Add itemId for quick edit
                 });
             }
-            
+
             // Process dinner
             if (item.dinner && item.dinner.trim() && item.dinner !== 'Sin receta') {
                 const recipeName = item.dinner.trim().toLowerCase();
@@ -11853,7 +11974,7 @@ class RecipeApp {
                 });
             }
         });
-        
+
         return metadata;
     }
 
@@ -11864,7 +11985,7 @@ class RecipeApp {
     handleMenuFilterClick(menuId) {
         console.log('[Menu Filter] Clicked menu filter:', menuId, 'Type:', typeof menuId);
         console.log('[Menu Filter] Current activeMenuFilter:', this.activeMenuFilter);
-        
+
         // Toggle filter
         if (this.activeMenuFilter === menuId) {
             // Deactivate if already active
@@ -11874,15 +11995,15 @@ class RecipeApp {
             // Activate new filter
             console.log('[Menu Filter] Activating filter for menu:', menuId);
             this.activeMenuFilter = menuId;
-            
+
             // Switch to recipe list view and render with filter
             this.goToHome();
             this.renderRecipeList();
         }
-        
+
         // Update chip styling
         this.renderMenuFilterChips();
-        
+
         console.log('[Menu Filter] Active menu filter after click:', this.activeMenuFilter);
     }
 
@@ -12397,7 +12518,7 @@ class RecipeApp {
             lineAfter.style.cssText = 'flex: 1; height: 1px; background: var(--color-border);';
             separator.insertBefore(lineBefore, separator.firstChild);
             separator.appendChild(lineAfter);
-            
+
             container.appendChild(separator);
 
             // Render hidden lists
@@ -12463,6 +12584,18 @@ class RecipeApp {
         name.textContent = list.name;
         name.style.margin = '0';
         nameContainer.appendChild(name);
+
+        // Add bookmark button with text (TODO: Implementar funcionalidad de filtro)
+        const bookmarkBtn = document.createElement('button');
+        bookmarkBtn.className = 'menu-bookmark-btn';
+        bookmarkBtn.title = 'Convertir en filtro (próximamente)';
+        bookmarkBtn.style.cssText = 'display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; padding: 0.25rem 0.5rem;';
+        bookmarkBtn.innerHTML = `<i class="fa-regular fa-bookmark"></i><span style="color: var(--color-text-primary);">Convertir en filtro</span>`;
+        bookmarkBtn.onclick = (e) => {
+            e.stopPropagation();
+            this.showToast('Funcionalidad de filtro para listas de compra próximamente', 'info');
+        };
+        nameContainer.appendChild(bookmarkBtn);
 
         // Create right side container (counter + expand icon + actions)
         const rightSide = document.createElement('div');
@@ -13267,7 +13400,7 @@ class RecipeApp {
 
                 // Create list using ShoppingListManager
                 newList = this.shoppingListManager.createList(listData.name);
-                
+
                 // Update list properties
                 newList.id = listData.id;
                 newList.enabled = listData.enabled;
@@ -13280,7 +13413,7 @@ class RecipeApp {
                         name: item.name,
                         quantity: item.quantity
                     });
-                    
+
                     // Set completed status if needed
                     if (item.completed) {
                         const list = this.shoppingListManager.getList(newList.id);
