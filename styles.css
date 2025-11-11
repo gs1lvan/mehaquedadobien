@@ -5689,8 +5689,8 @@ select {
 
 /* Shopping List Content (Collapsible) */
 .shopping-list-content {
-    max-height: 1000px;
-    overflow: hidden;
+    max-height: 2000px;
+    overflow: visible;
     transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
     opacity: 1;
     margin-top: var(--spacing-md);
