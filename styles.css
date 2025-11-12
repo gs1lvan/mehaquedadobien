@@ -2271,11 +2271,11 @@ body.dark-theme .recipe-pdf-badge:hover {
 
 .sequence-description {
     color: var(--color-text-secondary);
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     line-height: 1.5;
     margin-top: var(--spacing-xs);
     margin-left: var(--spacing-xs);
-    padding: var(--spacing-sm);
+    padding: var(--spacing-xs);
 }
 
 .sequence-edit-form {
@@ -7029,6 +7029,7 @@ body.dark-theme .progress-bar-wrapper {
     0% {
         transform: rotate(0deg);
     }
+
     100% {
         transform: rotate(360deg);
     }
@@ -7039,6 +7040,7 @@ body.dark-theme .progress-bar-wrapper {
         opacity: 0;
         transform: translateY(-5px);
     }
+
     100% {
         opacity: 1;
         transform: translateY(0);
@@ -7304,20 +7306,20 @@ body.dark-theme .progress-bar-wrapper {
     font-weight: 600;
 }
 
-#help-modal .settings-section > p {
+#help-modal .settings-section>p {
     color: var(--color-text-secondary);
     line-height: 1.8;
 }
 
 /* Keyboard shortcuts grid */
-#help-modal .settings-section > div[style*="grid"] > div {
+#help-modal .settings-section>div[style*="grid"]>div {
     background: rgba(102, 126, 234, 0.05);
     padding: var(--spacing-sm);
     border-radius: var(--radius-sm);
     transition: all 0.2s;
 }
 
-#help-modal .settings-section > div[style*="grid"] > div:hover {
+#help-modal .settings-section>div[style*="grid"]>div:hover {
     background: rgba(102, 126, 234, 0.1);
     transform: translateX(4px);
 }
@@ -7356,6 +7358,7 @@ body.dark-theme #help-modal kbd {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
