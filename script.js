@@ -5577,6 +5577,7 @@ class RecipeApp {
 
             // Reload recipes and close form
             await this.loadRecipes();
+            this.renderFilterChips(); // Update category filters dynamically
             this.renderRecipeList();
             this.closeRecipeForm();
         } catch (error) {
@@ -8497,6 +8498,7 @@ class RecipeApp {
 
             // Close detail view and show the list (Requirement 8.3)
             this.closeRecipeDetail();
+            this.renderFilterChips(); // Update category filters dynamically
             this.renderRecipeList();
 
         } catch (error) {
