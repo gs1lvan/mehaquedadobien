@@ -394,14 +394,27 @@ class MenuManager {
     getRecipeNamesFromMenu(menu) {
         const recipeNames = new Set();
 
+        // Helper to check if a value is a category placeholder (starts with emoji)
+        const isCategoryPlaceholder = (value) => {
+            if (!value) return false;
+            const firstChar = value.charAt(0);
+            // Check if first character is an emoji (Unicode range for emojis)
+            const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
+            return emojiRegex.test(firstChar) && value.split(' ').length <= 3;
+        };
+
         menu.items.forEach(item => {
-            // Add lunch recipe if not default
-            if (item.lunch && item.lunch !== MenuManager.DEFAULT_RECIPE) {
+            // Add lunch recipe if not default and not a category placeholder
+            if (item.lunch && 
+                item.lunch !== MenuManager.DEFAULT_RECIPE && 
+                !isCategoryPlaceholder(item.lunch)) {
                 recipeNames.add(item.lunch.toLowerCase().trim());
             }
 
-            // Add dinner recipe if not default
-            if (item.dinner && item.dinner !== MenuManager.DEFAULT_RECIPE) {
+            // Add dinner recipe if not default and not a category placeholder
+            if (item.dinner && 
+                item.dinner !== MenuManager.DEFAULT_RECIPE && 
+                !isCategoryPlaceholder(item.dinner)) {
                 recipeNames.add(item.dinner.toLowerCase().trim());
             }
         });
@@ -417,12 +430,23 @@ class MenuManager {
     getRecipeMetadataFromMenu(menu) {
         const metadata = new Map();
 
+        // Helper to check if a value is a category placeholder (starts with emoji)
+        const isCategoryPlaceholder = (value) => {
+            if (!value) return false;
+            const firstChar = value.charAt(0);
+            // Check if first character is an emoji (Unicode range for emojis)
+            const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
+            return emojiRegex.test(firstChar) && value.split(' ').length <= 3;
+        };
+
         menu.items.forEach((item, index) => {
             const dayNumber = index + 1;
             const day = item.name || MenuManager.DEFAULT_DAY_NAME;
 
-            // Process lunch
-            if (item.lunch && item.lunch !== MenuManager.DEFAULT_RECIPE) {
+            // Process lunch (skip category placeholders)
+            if (item.lunch && 
+                item.lunch !== MenuManager.DEFAULT_RECIPE && 
+                !isCategoryPlaceholder(item.lunch)) {
                 const lunchName = item.lunch.toLowerCase().trim();
                 if (!metadata.has(lunchName)) {
                     metadata.set(lunchName, []);
@@ -430,12 +454,15 @@ class MenuManager {
                 metadata.get(lunchName).push({
                     day: day,
                     dayNumber: dayNumber,
+                    itemId: item.id,  // Add item.id for unique identification
                     mealType: 'lunch'
                 });
             }
 
-            // Process dinner
-            if (item.dinner && item.dinner !== MenuManager.DEFAULT_RECIPE) {
+            // Process dinner (skip category placeholders)
+            if (item.dinner && 
+                item.dinner !== MenuManager.DEFAULT_RECIPE && 
+                !isCategoryPlaceholder(item.dinner)) {
                 const dinnerName = item.dinner.toLowerCase().trim();
                 if (!metadata.has(dinnerName)) {
                     metadata.set(dinnerName, []);
@@ -443,6 +470,7 @@ class MenuManager {
                 metadata.get(dinnerName).push({
                     day: day,
                     dayNumber: dayNumber,
+                    itemId: item.id,  // Add item.id for unique identification
                     mealType: 'dinner'
                 });
             }

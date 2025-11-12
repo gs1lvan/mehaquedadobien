@@ -96,8 +96,33 @@ Cuando añades un ingrediente desde una receta a una lista de compra, el sistema
 
 ## 🎨 Última Actualización
 
+**Fecha:** 12 de noviembre de 2025  
+**Cambio:** Mejoras en listas de compras y correcciones de visualización - Se han implementado múltiples mejoras y correcciones:
+- ✅ **Añadir recetas completas a listas:** Nuevo botón 🛒 junto al título "🥘 Ingredientes" en vista de detalle
+- ✅ **Agrupación visual de recetas:** Los ingredientes de una receta se agrupan en un contenedor visual con borde
+- ✅ **Detección de duplicados:** Si una receta ya existe en la lista, solo se añaden los ingredientes faltantes
+- ✅ **Eliminación individual:** Botón 🗑️ en cada ingrediente para eliminar items específicos
+- ✅ **Formato mejorado al copiar:** Elimina marcadores internos y usa separadores limpios `------------------------------------------------`
+- ✅ **Corrección de visibilidad:** Secciones de detalle (secuencias, galería, métodos, autor) ahora visibles usando `classList` en lugar de `style.display`
+- ✅ **Scroll optimizado:** Listas de compras ahora se expanden correctamente (max-height: 2000px, overflow: visible)
+- ✅ **Eliminación de código muerto:** Removido código de auto-save no utilizado (81 líneas)
+- 💡 **Reducción total:** 394 líneas eliminadas en el día (2.8% del código)
+
+**Fecha:** 9 de noviembre de 2025  
+**Cambio anterior:** Quick Edit en Menús - Se ha implementado edición rápida de comidas/cenas en menús desde dos ubicaciones:
+- ✅ **Edición desde vista de menús:** Click directo en celdas de comida/cena para editar sin abrir formulario completo
+- ✅ **Edición desde vista filtrada:** Botones ✏️ al lado de "Comida" y "Cena" cuando filtras recetas por menú
+- ✅ **Flujo simplificado:** Selecciona categoría → selecciona receta → guarda automáticamente
+- ✅ **Sin duplicación de código:** Reutiliza el sistema existente de edición de menús con flag `isQuickEdit`
+- ✅ **Actualización inmediata:** La vista se actualiza automáticamente tras el cambio
+- ✅ **Feedback visual:** Celdas con estilo clickeable (hover, animación) y toast de confirmación
+- ✅ **Doble click rápido:** Doble click en receta para confirmar sin botón
+- 💡 **Reducción de código:** ~276 líneas de código duplicado eliminadas
+- 📍 **Ubicaciones:** Vista de Menús (celdas clickeables) + Vista de Recetas Filtradas (botones ✏️)
+- 📚 **Documentación:** Ver `RESUMEN-EDICION-RAPIDA-MENUS.md` para detalles técnicos completos
+
 **Fecha:** 7 de noviembre de 2025  
-**Cambio:** Recipe Content Manager completado - Se ha implementado un CMS completo para gestión masiva de recetas:
+**Cambio anterior:** Recipe Content Manager completado - Se ha implementado un CMS completo para gestión masiva de recetas:
 - ✅ **Sistema completo de gestión**: Edición individual, en lote, buscar y reemplazar
 - ✅ **Dashboard con estadísticas**: Total de recetas, categorías, porcentajes, recetas incompletas
 - ✅ **Búsqueda y filtrado avanzado**: Por nombre, categoría, autor, flags, estado

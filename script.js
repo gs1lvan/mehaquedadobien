@@ -4339,11 +4339,11 @@ class RecipeApp {
         const recipesByDay = new Map();
 
         // Primero: Inicializar con todos los días del menú
-        menu.items.forEach(item => {
+        menu.items.forEach((item, index) => {
             const dayName = item.name || '';
-            const dayNameLower = dayName.toLowerCase().trim();
-            const dayNumber = dayOrder[dayNameLower] || 999;
-            const dayKey = `${dayNumber}_${dayName}`;
+            const dayNumber = index + 1;  // Use index + 1 to match metadata
+            // Use item.id as key for unique identification
+            const dayKey = item.id;
 
             recipesByDay.set(dayKey, {
                 dayName: dayName,
@@ -4357,22 +4357,46 @@ class RecipeApp {
         });
 
         // Segundo: Rellenar con las recetas reales que existen
+        console.log('[Menu Filter] === MATCHING RECIPES ===');
+        console.log('[Menu Filter] Total recipes to match:', recipes.length);
+        console.log('[Menu Filter] Metadata size:', metadata.size);
+        console.log('[Menu Filter] Metadata keys:', Array.from(metadata.keys()));
+        
         recipes.forEach(recipe => {
-            const recipeMeta = metadata.get(recipe.name.toLowerCase());
+            const normalizedName = recipe.name.toLowerCase().trim();
+            console.log('[Menu Filter] Looking for:', recipe.name, '→ normalized:', normalizedName);
+            
+            const recipeMeta = metadata.get(normalizedName);
             if (recipeMeta && recipeMeta.length > 0) {
+                console.log('[Menu Filter] ✓ Found metadata for:', recipe.name, '→', recipeMeta.length, 'entries');
                 recipeMeta.forEach(meta => {
-                    const dayKey = `${meta.dayNumber}_${meta.day}`;
+                    // Use item.id as key instead of dayNumber_day
+                    const dayKey = meta.itemId;
+                    console.log('[Menu Filter]   Trying dayKey (itemId):', dayKey);
                     const dayData = recipesByDay.get(dayKey);
 
                     if (dayData) {
+                        console.log('[Menu Filter]   ✓ Found dayData for:', meta.day);
                         if (meta.mealType === 'lunch') {
                             dayData.lunch = recipe;
+                            console.log('[Menu Filter]   ✓ Assigned to lunch');
                         } else if (meta.mealType === 'dinner') {
                             dayData.dinner = recipe;
+                            console.log('[Menu Filter]   ✓ Assigned to dinner');
                         }
+                    } else {
+                        console.warn('[Menu Filter]   ✗ dayData NOT found for dayKey:', dayKey);
+                        console.warn('[Menu Filter]   Available dayKeys:', Array.from(recipesByDay.keys()));
                     }
                 });
+            } else {
+                console.warn('[Menu Filter] ✗ NO metadata for:', recipe.name, '(normalized:', normalizedName + ')');
             }
+        });
+        
+        console.log('[Menu Filter] === FINAL STATE ===');
+        recipesByDay.forEach((dayData, key) => {
+            console.log('[Menu Filter] Day:', dayData.dayName, 'Lunch:', dayData.lunch?.name || 'null', 'Dinner:', dayData.dinner?.name || 'null');
         });
         // ============================================================================
 
@@ -4439,6 +4463,7 @@ class RecipeApp {
             const getMealCard = (mealValue, recipeObj) => {
                 // Estado 3: Tiene receta completa
                 if (recipeObj) {
+                    console.log('[Menu Filter] Creating card for recipe:', recipeObj.name, 'Images:', recipeObj.images?.length || 0);
                     return this.createRecipeCard(recipeObj);
                 }
 
@@ -4466,16 +4491,30 @@ class RecipeApp {
                     transition: opacity 0.2s;
                 `;
 
-                // Emoji de categoría (primer carácter si es emoji)
-                const categoryEmoji = mealValue.charAt(0);
+                // Parse the category value (e.g., "🐷 Cerdo")
+                const parts = mealValue.split(' ');
+                const categoryEmoji = parts[0] || '🍽️';
+                const categoryName = parts.slice(1).join(' ') || 'Categoría';
+
+                // Emoji de categoría
                 const emojiSpan = document.createElement('div');
                 emojiSpan.style.cssText = 'font-size: 3rem;';
                 emojiSpan.textContent = categoryEmoji;
 
+                // Nombre de categoría
+                const categorySpan = document.createElement('div');
+                categorySpan.style.cssText = `
+                    font-size: 1.125rem;
+                    color: var(--color-text);
+                    text-align: center;
+                    font-weight: 600;
+                `;
+                categorySpan.textContent = categoryName;
+
                 // Texto "Receta sin definir"
                 const textSpan = document.createElement('div');
                 textSpan.style.cssText = `
-                    font-size: 1rem;
+                    font-size: 0.875rem;
                     color: var(--color-text-secondary);
                     text-align: center;
                     font-style: italic;
@@ -4483,6 +4522,7 @@ class RecipeApp {
                 textSpan.textContent = 'Receta sin definir';
 
                 placeholderCard.appendChild(emojiSpan);
+                placeholderCard.appendChild(categorySpan);
                 placeholderCard.appendChild(textSpan);
 
                 // Hover effect
@@ -10120,9 +10160,11 @@ class RecipeApp {
      * Render a single menu card
      */
     renderMenuCard(menu, isHidden = false) {
+        console.log('[renderMenuCard] Rendering menu:', menu.id, menu.name);
         const card = document.createElement('div');
         card.className = 'shopping-list-card';
         card.dataset.menuId = menu.id;
+        console.log('[renderMenuCard] Card dataset.menuId set to:', card.dataset.menuId);
 
         // Add visual indicator if disabled
         if (menu.enabled === false) {
@@ -10169,10 +10211,12 @@ class RecipeApp {
         bookmarkBtn.title = menu.isFilter ? 'Quitar de filtros' : 'Añadir a filtros';
         bookmarkBtn.style.cssText = 'display: flex; align-items: center; gap: 0.5rem;';
         bookmarkBtn.innerHTML = `<i class="fa-${menu.isFilter ? 'solid' : 'regular'} fa-bookmark"></i><span style="font-size: 0.875rem;">Convertir en filtro</span>`;
-        bookmarkBtn.onclick = (e) => {
+        bookmarkBtn.addEventListener('click', (e) => {
             e.stopPropagation();
+            e.preventDefault();
+            console.log('[Bookmark] Button clicked for menu:', menu.id);
             this.toggleMenuAsFilter(menu.id);
-        };
+        });
 
         nameContainer.appendChild(name);
         nameContainer.appendChild(bookmarkBtn);
@@ -10237,10 +10281,17 @@ class RecipeApp {
 
         // Add event listeners for expand/collapse
         header.addEventListener('click', (e) => {
+            console.log('[Header Click] Clicked on menu:', menu.id, menu.name);
+            console.log('[Header Click] Target:', e.target);
+            console.log('[Header Click] Closest actions:', e.target.closest('.shopping-list-actions'));
+            console.log('[Header Click] Closest bookmark:', e.target.closest('.menu-bookmark-btn'));
+            
             // Don't toggle if clicking on actions or bookmark button
             if (e.target.closest('.shopping-list-actions') || e.target.closest('.menu-bookmark-btn')) {
+                console.log('[Header Click] Ignoring click (actions or bookmark)');
                 return;
             }
+            console.log('[Header Click] Calling toggleMenuExpanded for:', menu.id);
             this.toggleMenuExpanded(menu.id);
         });
 
@@ -10262,6 +10313,7 @@ class RecipeApp {
      * Render menu items with reorder controls
      */
     renderMenuItems(menu) {
+        console.log('[renderMenuItems] Rendering items for menu:', menu.id, menu.name);
         const container = document.createElement('div');
         container.className = 'shopping-list-items';
         container.style.cssText = `
@@ -10349,6 +10401,7 @@ class RecipeApp {
             lunchColumn.dataset.menuId = menu.id;
             lunchColumn.dataset.itemId = item.id;
             lunchColumn.dataset.mealType = 'lunch';
+            console.log('[renderMenuItems] Created lunch column for menu:', menu.id, 'item:', item.id);
 
             // Check if using new format (lunch/dinner) or old format (quantity)
             if (item.lunch && item.lunch !== 'Sin receta') {
@@ -10479,10 +10532,21 @@ class RecipeApp {
      * Toggle menu expanded/collapsed
      */
     toggleMenuExpanded(menuId) {
+        console.log('[toggleMenuExpanded] Called with menuId:', menuId, 'type:', typeof menuId);
+        
         // Use more specific selector to avoid finding filter chips
         const card = document.querySelector(`.shopping-list-card[data-menu-id="${menuId}"]`);
-
-        if (!card) return;
+        
+        console.log('[toggleMenuExpanded] Card found:', !!card);
+        
+        if (!card) {
+            console.warn('[toggleMenuExpanded] Card not found!');
+            console.log('[toggleMenuExpanded] Available menu cards:', 
+                Array.from(document.querySelectorAll('.shopping-list-card[data-menu-id]'))
+                    .map(c => ({ id: c.dataset.menuId, type: typeof c.dataset.menuId }))
+            );
+            return;
+        }
 
         const content = card.querySelector('.shopping-list-content');
         const header = card.querySelector('.shopping-list-header');
@@ -10592,6 +10656,7 @@ class RecipeApp {
         const pdfBtn = document.getElementById('menu-option-pdf');
         const copyBtn = document.getElementById('menu-option-copy');
         const duplicateBtn = document.getElementById('menu-option-duplicate');
+        const toShoppingListBtn = document.getElementById('menu-option-to-shopping-list');
         const deleteBtn = document.getElementById('menu-option-delete');
 
         // Update toggle button text and icon based on menu state
@@ -10652,6 +10717,13 @@ class RecipeApp {
             duplicateBtn.onclick = () => {
                 this.duplicateMenu(menuId);
                 this.closeMenuOptionsModal();
+            };
+        }
+
+        if (toShoppingListBtn) {
+            toShoppingListBtn.onclick = () => {
+                this.closeMenuOptionsModal();
+                this.convertMenuToShoppingList(menuId);
             };
         }
 
@@ -11003,7 +11075,8 @@ class RecipeApp {
             if (recipesInCategory.length > 0) {
                 // Tiene recetas → Abrir modal de recetas directamente
                 console.log('[Quick Edit] Category has recipes, opening recipe selector');
-                this.openMenuRecipeSelectorModal(inputElement, currentCategoryId);
+                const category = this.categoryManager.getCategoryById(currentCategoryId);
+                this.openMenuRecipeSelectorModal(inputElement, recipesInCategory, category);
                 return;
             } else {
                 // NO tiene recetas → Continuar para abrir modal de categorías
@@ -12128,8 +12201,18 @@ class RecipeApp {
             console.log('[Menus] Menu updated:', this.currentMenuId);
         } else {
             // Create new menu
-            this.menuManager.createMenu(menuName, items);
-            console.log('[Menus] Menu created');
+            const newMenu = this.menuManager.createMenu(menuName, items);
+            console.log('[Menus] Menu created with ID:', newMenu.id);
+            
+            // Fix item IDs to be based on menu ID
+            // This ensures consistency between menuId and itemIds
+            newMenu.items.forEach((item, index) => {
+                item.id = newMenu.id + index;
+            });
+            
+            // Update the menu with fixed IDs
+            this.menuManager.updateMenu(newMenu.id, newMenu);
+            console.log('[Menus] Item IDs fixed to match menu ID');
         }
 
         this.showToast(`Menú "${menuName}" guardado correctamente`, 'success');
@@ -13312,7 +13395,6 @@ class RecipeApp {
         // Setup close button and overlay
         const closeBtn = document.getElementById('close-select-list-modal');
         const overlay = modal.querySelector('.modal-overlay');
-        const createNewBtn = document.getElementById('create-new-list-from-ingredient');
 
         if (closeBtn) {
             closeBtn.onclick = () => this.closeSelectShoppingListModal();
@@ -13320,13 +13402,6 @@ class RecipeApp {
 
         if (overlay) {
             overlay.onclick = () => this.closeSelectShoppingListModal();
-        }
-
-        if (createNewBtn) {
-            createNewBtn.onclick = () => {
-                this.closeSelectShoppingListModal();
-                this.showShoppingListForm();
-            };
         }
     }
 
@@ -13338,6 +13413,8 @@ class RecipeApp {
         if (modal) {
             modal.classList.add('hidden');
         }
+        // Clean up menu data if it exists
+        this.currentMenuForShoppingList = null;
     }
 
     /**
@@ -13442,7 +13519,6 @@ class RecipeApp {
         // Setup close button and overlay
         const closeBtn = document.getElementById('close-select-list-modal');
         const overlay = modal.querySelector('.modal-overlay');
-        const createNewBtn = document.getElementById('create-new-list-from-ingredient');
 
         if (closeBtn) {
             closeBtn.onclick = () => {
@@ -13455,14 +13531,6 @@ class RecipeApp {
             overlay.onclick = () => {
                 this.closeSelectShoppingListModal();
                 this.currentRecipeForShoppingList = null;
-            };
-        }
-
-        if (createNewBtn) {
-            createNewBtn.onclick = () => {
-                this.closeSelectShoppingListModal();
-                this.currentRecipeForShoppingList = null;
-                this.showShoppingListForm();
             };
         }
     }
@@ -13590,6 +13658,247 @@ class RecipeApp {
         this.closeSelectShoppingListModal();
         this.currentRecipeForShoppingList = null;
         this.showToast(`${recipe.ingredients.length} ingredientes añadidos a la lista`, 'success');
+    }
+
+    /**
+     * Convert a menu to a shopping list
+     * Shows modal to select which shopping list to add all menu recipes to
+     * @param {number} menuId - Menu ID
+     */
+    convertMenuToShoppingList(menuId) {
+        const menu = this.getMenuById(menuId);
+        if (!menu) {
+            this.showToast('Menú no encontrado', 'error');
+            return;
+        }
+
+        // Collect all unique recipes from the menu
+        const recipeNames = new Set();
+        
+        menu.items.forEach(item => {
+            if (item.lunch && item.lunch.trim() && item.lunch !== '-' && item.lunch !== 'Sin receta') {
+                recipeNames.add(item.lunch.trim());
+            }
+            if (item.dinner && item.dinner.trim() && item.dinner !== '-' && item.dinner !== 'Sin receta') {
+                recipeNames.add(item.dinner.trim());
+            }
+        });
+
+        if (recipeNames.size === 0) {
+            this.showToast('Este menú no tiene recetas', 'info');
+            return;
+        }
+
+        // Store menu data for later use
+        this.currentMenuForShoppingList = {
+            menuId: menuId,
+            menuName: menu.name,
+            recipeNames: Array.from(recipeNames)
+        };
+
+        // Show modal to select shopping list
+        this.showSelectShoppingListModalForMenu();
+    }
+
+    /**
+     * Show modal to select shopping list for menu recipes
+     */
+    showSelectShoppingListModalForMenu() {
+        if (!this.currentMenuForShoppingList) return;
+
+        const { recipeNames } = this.currentMenuForShoppingList;
+        const modal = document.getElementById('select-shopping-list-modal');
+        if (!modal) return;
+
+        // Update modal title
+        const modalTitle = modal.querySelector('h2');
+        if (modalTitle) {
+            modalTitle.textContent = `Añadir ${recipeNames.length} recetas del menú a lista`;
+        }
+
+        // Update modal description
+        const modalDescription = document.getElementById('select-list-modal-description');
+        if (modalDescription) {
+            modalDescription.textContent = 'Selecciona la lista donde quieres añadir estas recetas:';
+        }
+
+        // Hide ingredient display (not needed for menu conversion)
+        const ingredientDisplay = document.getElementById('ingredient-to-add-display');
+        if (ingredientDisplay) {
+            ingredientDisplay.style.display = 'none';
+        }
+
+        // Get lists container
+        const listsContainer = document.getElementById('shopping-lists-selection');
+        if (!listsContainer) return;
+
+        // Clear previous options
+        listsContainer.innerHTML = '';
+
+        // Get all shopping lists (only enabled ones)
+        const lists = this.shoppingListManager.lists.filter(list => list.enabled !== false);
+
+        if (lists.length === 0) {
+            listsContainer.innerHTML = '<p class="modal-description">No tienes listas de compra habilitadas. Crea una nueva lista o habilita una existente para añadir estas recetas.</p>';
+        } else {
+            // Render each list as an option
+            lists.forEach(list => {
+                const option = document.createElement('div');
+                option.className = 'shopping-list-option';
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'shopping-list-option-name';
+                nameSpan.textContent = list.name;
+
+                const countSpan = document.createElement('span');
+                countSpan.className = 'shopping-list-option-count';
+                countSpan.textContent = `${list.items.length} elementos`;
+
+                option.appendChild(nameSpan);
+                option.appendChild(countSpan);
+
+                option.addEventListener('click', () => {
+                    this.addMenuRecipesToShoppingList(list.id);
+                });
+
+                listsContainer.appendChild(option);
+            });
+        }
+
+        // Show modal
+        modal.classList.remove('hidden');
+
+        // Setup close button and overlay (only once)
+        const closeBtn = document.getElementById('close-select-list-modal');
+        const overlay = modal.querySelector('.modal-overlay');
+        const createNewBtn = document.getElementById('create-new-list-from-modal');
+
+        if (closeBtn && !closeBtn.dataset.listenerAdded) {
+            closeBtn.onclick = () => this.closeSelectShoppingListModal();
+            closeBtn.dataset.listenerAdded = 'true';
+        }
+
+        if (overlay && !overlay.dataset.listenerAdded) {
+            overlay.onclick = () => this.closeSelectShoppingListModal();
+            overlay.dataset.listenerAdded = 'true';
+        }
+
+        if (createNewBtn && !createNewBtn.dataset.listenerAdded) {
+            createNewBtn.onclick = () => {
+                this.closeSelectShoppingListModal();
+                this.showShoppingListForm();
+            };
+            createNewBtn.dataset.listenerAdded = 'true';
+        }
+    }
+
+    /**
+     * Add all recipes from a menu to a shopping list
+     * @param {number} listId - Shopping list ID
+     */
+    addMenuRecipesToShoppingList(listId) {
+        if (!this.currentMenuForShoppingList) {
+            this.showToast('Error: datos del menú no encontrados', 'error');
+            return;
+        }
+
+        const { recipeNames } = this.currentMenuForShoppingList;
+        let addedCount = 0;
+        let skippedCount = 0;
+
+        // Process each recipe
+        recipeNames.forEach(recipeName => {
+            const recipe = this.recipes.find(r => r.name === recipeName);
+            
+            if (!recipe) {
+                // Recipe not found in database, add just the name as a reminder
+                this.shoppingListManager.addItem(listId, {
+                    name: `[RECIPE_ITEM]${recipeName}`,
+                    quantity: 'Sin ingredientes'
+                });
+                addedCount++;
+                return;
+            }
+
+            // Recipe found, check if it has ingredients
+            if (!recipe.ingredients || recipe.ingredients.length === 0) {
+                // No ingredients, add just the name as a reminder
+                this.shoppingListManager.addItem(listId, {
+                    name: `[RECIPE_ITEM]${recipeName}`,
+                    quantity: 'Sin ingredientes'
+                });
+                addedCount++;
+                return;
+            }
+
+            // Recipe has ingredients, use the existing logic
+            const list = this.shoppingListManager.getList(listId);
+            if (!list) return;
+
+            const categoryEmoji = recipe.category ? 
+                (this.categoryManager.getCategoryById(recipe.category)?.emoji || '') : '';
+            
+            const recipeMarker = `[RECIPE_START]${categoryEmoji} ${recipe.name}`.trim();
+            
+            // Check if recipe already exists in the list
+            const existingRecipeIndex = list.items.findIndex(item => item.name === recipeMarker);
+            
+            if (existingRecipeIndex !== -1) {
+                // Recipe already exists, skip it
+                skippedCount++;
+                return;
+            }
+            
+            // Recipe doesn't exist, add it completely
+            this.shoppingListManager.addItem(listId, {
+                name: recipeMarker,
+                quantity: ''
+            });
+
+            // Add each ingredient with recipe marker
+            recipe.ingredients.forEach(ingredient => {
+                let quantityText = '';
+                
+                if (ingredient.quantity && ingredient.quantity > 0) {
+                    quantityText = ingredient.quantity.toString();
+                    if (ingredient.unit) {
+                        quantityText += ` ${ingredient.unit}`;
+                    }
+                } else if (ingredient.unit) {
+                    quantityText = ingredient.unit;
+                } else {
+                    quantityText = '-';
+                }
+
+                this.shoppingListManager.addItem(listId, {
+                    name: `[RECIPE_ITEM]${ingredient.name}`,
+                    quantity: quantityText
+                });
+            });
+            
+            // Add end marker
+            this.shoppingListManager.addItem(listId, {
+                name: '[RECIPE_END]',
+                quantity: ''
+            });
+
+            addedCount++;
+        });
+
+        // Save the updated list
+        this.shoppingListManager.saveLists();
+
+        // Close modal and clean up
+        this.closeSelectShoppingListModal();
+
+        // Show appropriate message
+        if (addedCount > 0 && skippedCount > 0) {
+            this.showToast(`${addedCount} recetas añadidas, ${skippedCount} ya existían en la lista`, 'success');
+        } else if (addedCount > 0) {
+            this.showToast(`${addedCount} recetas añadidas a la lista`, 'success');
+        } else if (skippedCount > 0) {
+            this.showToast('Todas las recetas ya existen en la lista', 'info');
+        }
     }
 
     /**
