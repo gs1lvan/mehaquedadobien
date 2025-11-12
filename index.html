@@ -959,12 +959,18 @@
                 <!-- Items Section -->
                 <div class="form-group">
                     <label>Elementos del Menú</label>
-                    <!-- Botón Añadir Elemento (oculto por defecto, se muestra solo en modo edición) -->
-                    <button id="add-menu-item-btn"
-                        class="modal-trigger modal-trigger--action modal-trigger--secondary hidden">
-                        <span class="option-icon"><i class="fa-solid fa-plus"></i></span>
-                        <span class="option-text">Añadir Elemento</span>
-                    </button>
+                    <div class="shopping-list-buttons">
+                        <button id="add-menu-item-btn"
+                            class="modal-trigger modal-trigger--action modal-trigger--secondary">
+                            <span class="option-icon"><i class="fa-solid fa-plus"></i></span>
+                            <span class="option-text">Añadir Elemento</span>
+                        </button>
+                        <button id="save-menu-btn"
+                            class="modal-trigger modal-trigger--action modal-trigger--primary">
+                            <span class="option-icon"><i class="fa-solid fa-floppy-disk"></i></span>
+                            <span class="option-text">Guardar Menú</span>
+                        </button>
+                    </div>
                     <!-- New items container (appears right below the buttons) -->
                     <div id="menu-new-items-container">
                         <!-- New items will be added here -->
@@ -974,13 +980,6 @@
                         <!-- Existing items will be added here -->
                     </div>
                 </div>
-            </div>
-
-            <!-- Footer sticky con botón Guardar -->
-            <div class="modal-footer modal-footer-sticky">
-                <button id="save-menu-btn" class="btn-primary u-w-full">
-                    <i class="fa-solid fa-floppy-disk"></i> Guardar Menú
-                </button>
             </div>
         </div>
     </div>

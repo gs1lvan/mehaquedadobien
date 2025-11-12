@@ -626,7 +626,12 @@ class ShoppingListManager {
             id: Date.now(),
             name: item.name,
             quantity: item.quantity || '',
-            completed: false
+            completed: false,
+            // Source tracking (new fields)
+            sourceType: item.sourceType || 'manual', // 'manual', 'recipe', 'ingredient'
+            sourceRecipeId: item.sourceRecipeId || null,
+            sourceIngredientId: item.sourceIngredientId || null,
+            sourceRecipeName: item.sourceRecipeName || null
         };
 
         list.items.push(newItem);
@@ -840,6 +845,7 @@ class RecipeApp {
         this.shoppingListManager = new ShoppingListManager();
         this.menuManager = new MenuManager();
         this.recipes = [];
+        this.recipeMap = new Map(); // ID → recipe object map for O(1) lookup
         this.activeFilters = new Set(); // Track active category filters
         this.activeTimeFilter = 'all'; // Track active time filter
         this.activeMenuFilter = null; // Track active menu filter
@@ -888,6 +894,9 @@ class RecipeApp {
 
             // Load recipes
             await this.loadRecipes();
+
+            // Load menus with migration support (after recipes are loaded)
+            this.menuManager.loadMenus((name) => this.getRecipeByName(name));
 
             // Setup event listeners
             this.setupEventListeners();
@@ -1104,13 +1113,455 @@ class RecipeApp {
     async loadRecipes() {
         try {
             this.recipes = await this.storageManager.getAllRecipes();
+            
+            // Migrate existing recipes to add IDs to sub-objects
+            let migratedCount = 0;
+            for (const recipe of this.recipes) {
+                // Check if recipe needs migration (no IDs in sub-objects)
+                const needsMigration = 
+                    (recipe.ingredients && recipe.ingredients.length > 0 && !recipe.ingredients[0].id) ||
+                    (recipe.sequences && recipe.sequences.length > 0 && !recipe.sequences[0].id) ||
+                    (recipe.images && recipe.images.length > 0 && !recipe.images[0].id);
+                
+                if (needsMigration) {
+                    this.generateRecipeSubIds(recipe);
+                    await this.storageManager.saveRecipe(recipe);
+                    migratedCount++;
+                }
+            }
+            
+            if (migratedCount > 0) {
+                console.log(`[Migration] Generated IDs for ${migratedCount} recipes`);
+            }
+            
             // Shuffle recipes randomly on load
             this.recipes = this.shuffleArray(this.recipes);
+            // Update recipe map for fast ID lookups
+            this.updateRecipeMap();
             console.log(`Loaded ${this.recipes.length} recipes (shuffled)`);
         } catch (error) {
             console.error('Failed to load recipes:', error);
             this.showError('Error al cargar las recetas: ' + error.message);
             this.recipes = [];
+            this.recipeMap.clear();
+        }
+    }
+
+    /**
+     * Update recipe map for fast ID lookups
+     */
+    updateRecipeMap() {
+        this.recipeMap.clear();
+        this.recipes.forEach(recipe => {
+            if (recipe.id) {
+                this.recipeMap.set(recipe.id, recipe);
+            }
+        });
+        console.log(`Recipe map updated with ${this.recipeMap.size} recipes`);
+    }
+
+    /**
+     * Get recipe by ID (O(1) lookup)
+     * @param {string} id - Recipe ID
+     * @returns {Object|null} Recipe object or null if not found
+     */
+    getRecipeById(id) {
+        if (!id) return null;
+        return this.recipeMap.get(id) || null;
+    }
+
+    /**
+     * Get recipe by name with duplicate handling
+     * @param {string} name - Recipe name
+     * @returns {Object|null} Recipe object or null if not found
+     */
+    getRecipeByName(name) {
+        if (!name) return null;
+        
+        // Find all recipes with matching name
+        const matches = this.recipes.filter(r => r.name === name);
+        
+        if (matches.length === 0) {
+            return null;
+        }
+        
+        if (matches.length === 1) {
+            return matches[0];
+        }
+        
+        // Multiple matches: prefer menu-friendly recipe
+        const menuFriendly = matches.find(r => r.menuFriendly === true);
+        if (menuFriendly) {
+            return menuFriendly;
+        }
+        
+        // No menu-friendly match: return first match
+        console.warn(`Multiple recipes found for name: ${name}, using first match`);
+        return matches[0];
+    }
+
+    /**
+     * Generate unique ID for objects
+     * @param {string} prefix - Optional prefix (e.g., 'recipe', 'ingredient', 'seq', 'img')
+     * @returns {string} Unique ID
+     */
+    generateId(prefix = '') {
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substring(2, 9);
+        return prefix ? `${prefix}-${timestamp}-${random}` : `${timestamp}-${random}`;
+    }
+
+    /**
+     * Generate IDs for recipe sub-objects (ingredients, sequences, images)
+     * @param {Object} recipe - Recipe object
+     * @returns {Object} Recipe with IDs generated
+     */
+    generateRecipeSubIds(recipe) {
+        if (!recipe) return recipe;
+
+        // Generate ingredient IDs
+        if (recipe.ingredients && Array.isArray(recipe.ingredients)) {
+            recipe.ingredients.forEach(ingredient => {
+                if (!ingredient.id) {
+                    ingredient.id = this.generateId('ing');
+                }
+            });
+        }
+
+        // Generate sequence IDs and convert ingredient names to IDs
+        if (recipe.sequences && Array.isArray(recipe.sequences)) {
+            recipe.sequences.forEach(sequence => {
+                if (!sequence.id) {
+                    sequence.id = this.generateId('seq');
+                }
+                
+                // Convert ingredient names to IDs if needed
+                if (sequence.ingredients && Array.isArray(sequence.ingredients)) {
+                    sequence.ingredientIds = sequence.ingredients.map(ingName => {
+                        const ingredient = recipe.ingredients.find(i => i.name === ingName);
+                        return ingredient ? ingredient.id : null;
+                    }).filter(id => id !== null);
+                }
+            });
+        }
+
+        // Generate image IDs
+        if (recipe.images && Array.isArray(recipe.images)) {
+            recipe.images.forEach(image => {
+                if (!image.id) {
+                    image.id = this.generateId('img');
+                }
+            });
+        }
+
+        return recipe;
+    }
+
+    /**
+     * Add all ingredients from a recipe to shopping list
+     * @param {string} recipeId - Recipe ID
+     * @param {number} shoppingListId - Shopping list ID
+     * @returns {boolean} Success status
+     */
+    addRecipeToShoppingList(recipeId, shoppingListId) {
+        const recipe = this.getRecipeById(recipeId);
+        if (!recipe) {
+            console.error('[Shopping] Recipe not found:', recipeId);
+            this.showError('Receta no encontrada');
+            return false;
+        }
+
+        const shoppingList = this.shoppingListManager.getList(shoppingListId);
+        if (!shoppingList) {
+            console.error('[Shopping] Shopping list not found:', shoppingListId);
+            this.showError('Lista de compra no encontrada');
+            return false;
+        }
+
+        if (!recipe.ingredients || recipe.ingredients.length === 0) {
+            this.showError('Esta receta no tiene ingredientes');
+            return false;
+        }
+
+        // Add each ingredient with source tracking
+        recipe.ingredients.forEach(ingredient => {
+            const quantityText = ingredient.quantity + (ingredient.unit ? ' ' + ingredient.unit : '');
+            
+            this.shoppingListManager.addItem(shoppingListId, {
+                name: ingredient.name,
+                quantity: quantityText,
+                sourceType: 'recipe',
+                sourceRecipeId: recipe.id,
+                sourceIngredientId: ingredient.id,
+                sourceRecipeName: recipe.name
+            });
+        });
+
+        this.showSuccess(`${recipe.ingredients.length} ingredientes añadidos de "${recipe.name}"`);
+        console.log(`[Shopping] Added ${recipe.ingredients.length} ingredients from recipe:`, recipe.name);
+        return true;
+    }
+
+    /**
+     * Add single ingredient from recipe to shopping list
+     * @param {string} recipeId - Recipe ID
+     * @param {string} ingredientId - Ingredient ID
+     * @param {number} shoppingListId - Shopping list ID
+     * @returns {boolean} Success status
+     */
+    addIngredientToShoppingList(recipeId, ingredientId, shoppingListId) {
+        const recipe = this.getRecipeById(recipeId);
+        if (!recipe) {
+            console.error('[Shopping] Recipe not found:', recipeId);
+            this.showError('Receta no encontrada');
+            return false;
+        }
+
+        const ingredient = recipe.ingredients.find(i => i.id === ingredientId);
+        if (!ingredient) {
+            console.error('[Shopping] Ingredient not found:', ingredientId);
+            this.showError('Ingrediente no encontrado');
+            return false;
+        }
+
+        const shoppingList = this.shoppingListManager.getList(shoppingListId);
+        if (!shoppingList) {
+            console.error('[Shopping] Shopping list not found:', shoppingListId);
+            this.showError('Lista de compra no encontrada');
+            return false;
+        }
+
+        const quantityText = ingredient.quantity + (ingredient.unit ? ' ' + ingredient.unit : '');
+        
+        this.shoppingListManager.addItem(shoppingListId, {
+            name: ingredient.name,
+            quantity: quantityText,
+            sourceType: 'ingredient',
+            sourceRecipeId: recipe.id,
+            sourceIngredientId: ingredient.id,
+            sourceRecipeName: recipe.name
+        });
+
+        this.showSuccess(`"${ingredient.name}" añadido de "${recipe.name}"`);
+        console.log(`[Shopping] Added ingredient from recipe:`, ingredient.name, 'from', recipe.name);
+        return true;
+    }
+
+    /**
+     * Convert menu to shopping list
+     * @param {number} menuId - Menu ID
+     * @returns {Object|null} New shopping list or null if error
+     */
+    convertMenuToShoppingList(menuId) {
+        const menu = this.menuManager.getMenu(menuId);
+        if (!menu) {
+            console.error('[Menu Conversion] Menu not found:', menuId);
+            this.showError('Menú no encontrado');
+            return null;
+        }
+
+        // Extract all unique recipe IDs from menu
+        const recipeIds = new Set();
+        menu.items.forEach(item => {
+            const lunchId = this.menuManager.getRecipeIdFromMeal(item, 'lunch');
+            const dinnerId = this.menuManager.getRecipeIdFromMeal(item, 'dinner');
+            
+            if (lunchId) recipeIds.add(lunchId);
+            if (dinnerId) recipeIds.add(dinnerId);
+        });
+
+        if (recipeIds.size === 0) {
+            this.showError('Este menú no tiene recetas asignadas');
+            return null;
+        }
+
+        // Create new shopping list
+        const shoppingList = this.shoppingListManager.createList(`Lista de ${menu.name}`);
+
+        // Ingredient consolidation map: name (lowercase) -> {quantity, unit, sources}
+        const ingredientMap = new Map();
+
+        // Process each recipe
+        let recipesProcessed = 0;
+        let recipesNotFound = 0;
+
+        recipeIds.forEach(recipeId => {
+            const recipe = this.getRecipeById(recipeId);
+            if (!recipe) {
+                console.warn('[Menu Conversion] Recipe not found:', recipeId);
+                recipesNotFound++;
+                return;
+            }
+
+            if (!recipe.ingredients || recipe.ingredients.length === 0) {
+                console.warn('[Menu Conversion] Recipe has no ingredients:', recipe.name);
+                return;
+            }
+
+            recipesProcessed++;
+
+            // Add each ingredient
+            recipe.ingredients.forEach(ingredient => {
+                const key = ingredient.name.toLowerCase();
+                
+                if (ingredientMap.has(key)) {
+                    // Consolidate duplicate ingredients
+                    const existing = ingredientMap.get(key);
+                    existing.sources.push({
+                        recipeId: recipe.id,
+                        recipeName: recipe.name,
+                        ingredientId: ingredient.id
+                    });
+                    // TODO: Add quantity consolidation logic if units match
+                } else {
+                    // New ingredient
+                    ingredientMap.set(key, {
+                        name: ingredient.name,
+                        quantity: ingredient.quantity,
+                        unit: ingredient.unit,
+                        sources: [{
+                            recipeId: recipe.id,
+                            recipeName: recipe.name,
+                            ingredientId: ingredient.id
+                        }]
+                    });
+                }
+            });
+        });
+
+        // Convert map to shopping list items
+        ingredientMap.forEach(data => {
+            const quantityText = data.quantity + (data.unit ? ' ' + data.unit : '');
+            const sourceNames = data.sources.map(s => s.recipeName).join(', ');
+            
+            this.shoppingListManager.addItem(shoppingList.id, {
+                name: data.name,
+                quantity: quantityText,
+                sourceType: 'recipe',
+                sourceRecipeId: data.sources[0].recipeId,
+                sourceIngredientId: data.sources[0].ingredientId,
+                sourceRecipeName: sourceNames
+            });
+        });
+
+        console.log(`[Menu Conversion] Converted menu "${menu.name}": ${recipesProcessed} recipes, ${ingredientMap.size} ingredients`);
+        
+        if (recipesNotFound > 0) {
+            this.showToast(`Lista creada con ${ingredientMap.size} ingredientes (${recipesNotFound} recetas no encontradas)`, 'warning');
+        } else {
+            this.showSuccess(`Lista creada con ${ingredientMap.size} ingredientes de ${recipesProcessed} recetas`);
+        }
+
+        return shoppingList;
+    }
+
+    /**
+     * Get recipes from menu for filtering
+     * @param {number} menuId - Menu ID
+     * @returns {Array} Array of recipe objects with menu context
+     */
+    getRecipesFromMenu(menuId) {
+        const menu = this.menuManager.getMenu(menuId);
+        if (!menu) {
+            console.error('[Menu Filter] Menu not found:', menuId);
+            return [];
+        }
+
+        // Extract recipe IDs with context (which day/meal)
+        const recipeContextMap = new Map();
+
+        menu.items.forEach(item => {
+            // Process lunch
+            const lunchId = this.menuManager.getRecipeIdFromMeal(item, 'lunch');
+            if (lunchId) {
+                if (!recipeContextMap.has(lunchId)) {
+                    recipeContextMap.set(lunchId, {
+                        recipeId: lunchId,
+                        appearances: []
+                    });
+                }
+                recipeContextMap.get(lunchId).appearances.push({
+                    day: item.name,
+                    meal: 'lunch'
+                });
+            }
+
+            // Process dinner
+            const dinnerId = this.menuManager.getRecipeIdFromMeal(item, 'dinner');
+            if (dinnerId) {
+                if (!recipeContextMap.has(dinnerId)) {
+                    recipeContextMap.set(dinnerId, {
+                        recipeId: dinnerId,
+                        appearances: []
+                    });
+                }
+                recipeContextMap.get(dinnerId).appearances.push({
+                    day: item.name,
+                    meal: 'dinner'
+                });
+            }
+        });
+
+        // Look up recipes and add context
+        const recipes = [];
+        recipeContextMap.forEach((context, recipeId) => {
+            const recipe = this.getRecipeById(recipeId);
+            if (recipe) {
+                recipes.push({
+                    ...recipe,
+                    menuContext: {
+                        menuId: menu.id,
+                        menuName: menu.name,
+                        appearances: context.appearances
+                    }
+                });
+            } else {
+                // Recipe deleted, add placeholder
+                const recipeName = this.menuManager.getRecipeNameFromMeal(menu.items[0], 'lunch') || 'Receta eliminada';
+                recipes.push({
+                    id: recipeId,
+                    name: recipeName,
+                    deleted: true,
+                    menuContext: {
+                        menuId: menu.id,
+                        menuName: menu.name,
+                        appearances: context.appearances
+                    }
+                });
+            }
+        });
+
+        console.log(`[Menu Filter] Found ${recipes.length} recipes in menu "${menu.name}"`);
+        return recipes;
+    }
+
+    /**
+     * Apply menu filter to recipe list
+     * @param {number} menuId - Menu ID
+     */
+    applyMenuFilter(menuId) {
+        if (!menuId) {
+            // Clear menu filter
+            this.activeMenuFilter = null;
+            this.renderRecipeList();
+            this.renderMenuFilterChips();
+            return;
+        }
+
+        this.activeMenuFilter = menuId;
+        
+        // Get recipes from menu
+        const menuRecipes = this.getRecipesFromMenu(menuId);
+        
+        // Render filtered view
+        this.renderRecipeList(menuRecipes);
+        
+        // Update filter UI
+        this.renderMenuFilterChips();
+        
+        const menu = this.menuManager.getMenu(menuId);
+        if (menu) {
+            this.showToast(`Mostrando ${menuRecipes.length} recetas del menú "${menu.name}"`, 'info');
         }
     }
 
@@ -1659,7 +2110,7 @@ class RecipeApp {
     /**
      * Render category chips in selector modal
      */
-    renderCategorySelectorChips(preSelectCategory = true, isQuickEdit = false) {
+    renderCategorySelectorChips(preSelectCategory = true, isQuickEdit = false, currentRecipeName = '') {
         const container = document.getElementById('category-selector-chips');
         if (!container) {
             console.error('Container category-selector-chips not found');
@@ -1683,10 +2134,26 @@ class RecipeApp {
             // Check if category has recipes (only for quick edit mode)
             let hasRecipes = true;
             if (isQuickEdit) {
+                // Filter menu-friendly recipes in this category
                 const menuRecipes = this.recipes.filter(recipe =>
                     recipe.menuFriendly === true && recipe.category === category.id
                 );
-                hasRecipes = menuRecipes.length > 0;
+                
+                // If we have a current recipe name, check if it belongs to this category
+                // This ensures the current recipe's category is always enabled
+                if (currentRecipeName) {
+                    const currentRecipe = this.recipes.find(recipe => recipe.name === currentRecipeName);
+                    if (currentRecipe && currentRecipe.category === category.id) {
+                        // Current recipe is in this category, so it has at least one recipe
+                        hasRecipes = true;
+                    } else {
+                        // Current recipe is not in this category, check if there are other recipes
+                        hasRecipes = menuRecipes.length > 0;
+                    }
+                } else {
+                    // No current recipe, just check if category has menu-friendly recipes
+                    hasRecipes = menuRecipes.length > 0;
+                }
             }
 
             const chip = document.createElement('button');
@@ -5652,6 +6119,9 @@ class RecipeApp {
                     updatedAt: new Date()
                 });
             }
+
+            // Generate IDs for sub-objects (ingredients, sequences, images)
+            this.generateRecipeSubIds(recipe);
 
             // Save to storage
             const recipeId = await this.storageManager.saveRecipe(recipe);
@@ -10444,15 +10914,40 @@ class RecipeApp {
                 return text;
             };
 
-            // Helper function to get recipe emoji by name
-            const getRecipeEmoji = (recipeName) => {
-                if (!recipeName || recipeName === 'Sin receta') return '';
-
-                const recipe = this.recipes.find(r => r.name === recipeName);
-                if (!recipe || !recipe.category) return '';
-
-                const category = PREDEFINED_CATEGORIES.find(cat => cat.id === recipe.category);
-                return category ? category.emoji + ' ' : '';
+            // Helper function to get recipe display name with emoji
+            const getRecipeDisplay = (item, mealType) => {
+                // Try to get recipe ID first (new format)
+                const recipeId = this.menuManager.getRecipeIdFromMeal(item, mealType);
+                
+                if (recipeId) {
+                    // Look up recipe by ID
+                    const recipe = this.getRecipeById(recipeId);
+                    if (recipe) {
+                        // Recipe found, get emoji and current name
+                        const category = PREDEFINED_CATEGORIES.find(cat => cat.id === recipe.category);
+                        const emoji = category ? category.emoji + ' ' : '';
+                        return { text: emoji + recipe.name, fullText: recipe.name, found: true };
+                    } else {
+                        // Recipe deleted, show cached name with indicator
+                        const cachedName = this.menuManager.getRecipeNameFromMeal(item, mealType);
+                        return { text: cachedName + ' (receta eliminada)', fullText: cachedName, found: false };
+                    }
+                }
+                
+                // Fallback to legacy format (name only)
+                const recipeName = this.menuManager.getRecipeNameFromMeal(item, mealType);
+                if (recipeName && recipeName !== 'Sin receta') {
+                    // Try to find recipe by name for emoji
+                    const recipe = this.getRecipeByName(recipeName);
+                    if (recipe) {
+                        const category = PREDEFINED_CATEGORIES.find(cat => cat.id === recipe.category);
+                        const emoji = category ? category.emoji + ' ' : '';
+                        return { text: emoji + recipeName, fullText: recipeName, found: true };
+                    }
+                    return { text: recipeName, fullText: recipeName, found: true };
+                }
+                
+                return { text: '-', fullText: 'Sin receta', found: false };
             };
 
             // Lunch column
@@ -10463,16 +10958,15 @@ class RecipeApp {
             lunchColumn.dataset.mealType = 'lunch';
             console.log('[renderMenuItems] Created lunch column for menu:', menu.id, 'item:', item.id);
 
-            // Check if using new format (lunch/dinner) or old format (quantity)
-            if (item.lunch && item.lunch !== 'Sin receta') {
-                const emoji = getRecipeEmoji(item.lunch);
-                lunchColumn.textContent = emoji + truncateText(item.lunch);
-                lunchColumn.title = item.lunch + ' (click para cambiar)'; // Show full text on hover
-            } else if (item.quantity && item.quantity !== 'Sin receta') {
-                // Old format - show as lunch
-                const emoji = getRecipeEmoji(item.quantity);
-                lunchColumn.textContent = emoji + truncateText(item.quantity);
-                lunchColumn.title = item.quantity + ' (click para cambiar)';
+            // Get lunch display using ID-based lookup
+            const lunchDisplay = getRecipeDisplay(item, 'lunch');
+            if (lunchDisplay.found || lunchDisplay.text !== '-') {
+                lunchColumn.textContent = truncateText(lunchDisplay.text);
+                lunchColumn.title = lunchDisplay.fullText + ' (click para cambiar)';
+                if (!lunchDisplay.found && lunchDisplay.text.includes('eliminada')) {
+                    lunchColumn.style.color = 'var(--color-text-secondary)';
+                    lunchColumn.style.fontStyle = 'italic';
+                }
             } else {
                 lunchColumn.textContent = '-';
                 lunchColumn.classList.add('menu-meal-empty');
@@ -10492,10 +10986,15 @@ class RecipeApp {
             dinnerColumn.dataset.itemId = item.id;
             dinnerColumn.dataset.mealType = 'dinner';
 
-            if (item.dinner && item.dinner !== 'Sin receta') {
-                const emoji = getRecipeEmoji(item.dinner);/*  */
-                dinnerColumn.textContent = emoji + truncateText(item.dinner);
-                dinnerColumn.title = item.dinner + ' (click para cambiar)'; // Show full text on hover
+            // Get dinner display using ID-based lookup
+            const dinnerDisplay = getRecipeDisplay(item, 'dinner');
+            if (dinnerDisplay.found || dinnerDisplay.text !== '-') {
+                dinnerColumn.textContent = truncateText(dinnerDisplay.text);
+                dinnerColumn.title = dinnerDisplay.fullText + ' (click para cambiar)';
+                if (!dinnerDisplay.found && dinnerDisplay.text.includes('eliminada')) {
+                    dinnerColumn.style.color = 'var(--color-text-secondary)';
+                    dinnerColumn.style.fontStyle = 'italic';
+                }
             } else {
                 dinnerColumn.textContent = '-';
                 dinnerColumn.classList.add('menu-meal-empty');
@@ -10568,15 +11067,19 @@ class RecipeApp {
         const item = menu.items.find(i => i.id === itemId);
         if (!item) return;
 
+        // Get current recipe name
+        const currentRecipeName = mealType === 'lunch' ? (item.lunch || '') : (item.dinner || '');
+
         // Create a temporary input element to use with existing modal system
         const tempInput = document.createElement('input');
         tempInput.type = 'text';
-        tempInput.value = mealType === 'lunch' ? (item.lunch || '') : (item.dinner || '');
+        tempInput.value = currentRecipeName;
         tempInput.dataset.menuId = menuId;
         tempInput.dataset.itemId = itemId;
         tempInput.dataset.mealType = mealType;
         tempInput.dataset.dayName = item.name;
         tempInput.dataset.isQuickEdit = 'true'; // Mark as quick edit
+        tempInput.dataset.currentRecipeName = currentRecipeName; // Store current recipe name
 
         // Store reference for later use
         this.currentQuickEditInput = tempInput;
@@ -11154,9 +11657,12 @@ class RecipeApp {
 
         // Check if this is a quick edit (from menu filter view)
         const isQuickEdit = inputElement.dataset.isQuickEdit === 'true';
+        
+        // Get current recipe name if in quick edit mode
+        const currentRecipeName = isQuickEdit ? (inputElement.dataset.currentRecipeName || '') : '';
 
-        // Render categories in modal (without any pre-selection, with quick edit flag)
-        this.renderCategorySelectorChips(false, isQuickEdit);
+        // Render categories in modal (without any pre-selection, with quick edit flag and current recipe name)
+        this.renderCategorySelectorChips(false, isQuickEdit, currentRecipeName);
 
         // Remove any selected class from all chips (ensure clean state)
         const container = document.getElementById('category-selector-chips');
@@ -11648,13 +12154,11 @@ class RecipeApp {
                                 if (item) {
                                     console.log('[Quick Edit] Before update:', mealType, '=', mealType === 'lunch' ? item.lunch : item.dinner);
 
-                                    if (mealType === 'lunch') {
-                                        item.lunch = selectedRecipe.name;
-                                    } else {
-                                        item.dinner = selectedRecipe.name;
-                                    }
+                                    // Use setRecipeForMeal to update with ID and name
+                                    this.menuManager.setRecipeForMeal(item, mealType, selectedRecipe);
 
                                     console.log('[Quick Edit] After update:', mealType, '=', mealType === 'lunch' ? item.lunch : item.dinner);
+                                    console.log('[Quick Edit] Recipe ID set:', mealType === 'lunch' ? item.lunchId : item.dinnerId);
 
                                     // Save menu using MenuManager
                                     this.menuManager.updateMenu(menuId, menu);
@@ -11876,7 +12380,13 @@ class RecipeApp {
         const newItemsContainer = document.getElementById('menu-new-items-container');
         const existingItemsContainer = document.getElementById('menu-existing-items-container');
 
-        if (!modal || !title || !nameInput || !newItemsContainer || !existingItemsContainer) return;
+        console.log('=== MENU FORM DEBUG ===');
+        console.log('[Menu Form] Opening menu form, menuId:', menuId);
+
+        if (!modal || !title || !nameInput || !newItemsContainer || !existingItemsContainer) {
+            console.error('[Menu Form] Missing required elements');
+            return;
+        }
 
         // Clear form
         nameInput.value = '';
@@ -11886,12 +12396,27 @@ class RecipeApp {
         // Set mode
         this.currentMenuId = menuId;
 
-        // Get add element button
+        // Get buttons
+        console.log('[Menu Form] Searching for buttons...');
         const addElementBtn = document.getElementById('add-menu-item-btn');
-        console.log('[Menu Form] Add element button found:', !!addElementBtn);
+        console.log('[Menu Form] Add button search result:', addElementBtn);
+        const saveBtn = document.getElementById('save-menu-btn');
+        console.log('[Menu Form] Save button search result:', saveBtn);
+        
+        console.log('[Menu Form] Buttons found:');
+        console.log('  - Add Element Button:', !!addElementBtn, addElementBtn ? addElementBtn.id : 'NOT FOUND');
+        console.log('  - Save Button:', !!saveBtn, saveBtn ? saveBtn.id : 'NOT FOUND');
+        
         if (addElementBtn) {
-            console.log('[Menu Form] Button classes before:', addElementBtn.className);
-            console.log('[Menu Form] Button display before:', window.getComputedStyle(addElementBtn).display);
+            console.log('[Menu Form] Add button classes:', addElementBtn.className);
+            console.log('[Menu Form] Add button computed display:', window.getComputedStyle(addElementBtn).display);
+            console.log('[Menu Form] Add button computed visibility:', window.getComputedStyle(addElementBtn).visibility);
+        }
+        
+        if (saveBtn) {
+            console.log('[Menu Form] Save button classes:', saveBtn.className);
+            console.log('[Menu Form] Save button computed display:', window.getComputedStyle(saveBtn).display);
+            console.log('[Menu Form] Save button computed visibility:', window.getComputedStyle(saveBtn).visibility);
         }
 
         if (menuId) {
@@ -11902,8 +12427,8 @@ class RecipeApp {
             // Show "Añadir Elemento" button in edit mode
             if (addElementBtn) {
                 addElementBtn.style.removeProperty('display');
-                console.log('[Menu Form] Removed display property');
-                console.log('[Menu Form] Button display after:', window.getComputedStyle(addElementBtn).display);
+                console.log('[Menu Form] Add button - removed display property');
+                console.log('[Menu Form] Add button - new display:', window.getComputedStyle(addElementBtn).display);
             }
 
             // Load menu data
@@ -11921,6 +12446,13 @@ class RecipeApp {
                     this.addMenuItemInput(null, false);
                 }
             }
+            
+            // Show save button in edit mode
+            if (saveBtn) {
+                saveBtn.style.removeProperty('display');
+                console.log('[Menu Form] Save button - removed display property (EDIT mode)');
+                console.log('[Menu Form] Save button - new display:', window.getComputedStyle(saveBtn).display);
+            }
         } else {
             // Create mode
             title.textContent = 'Nuevo Menú';
@@ -11929,8 +12461,8 @@ class RecipeApp {
             // Hide "Añadir Elemento" button in create mode
             if (addElementBtn) {
                 addElementBtn.style.setProperty('display', 'none', 'important');
-                console.log('[Menu Form] Set display to none with !important');
-                console.log('[Menu Form] Button display after:', window.getComputedStyle(addElementBtn).display);
+                console.log('[Menu Form] Add button - set display to none !important');
+                console.log('[Menu Form] Add button - new display:', window.getComputedStyle(addElementBtn).display);
             }
 
             // Add 7 days automatically (Monday to Sunday)
@@ -11939,23 +12471,39 @@ class RecipeApp {
                 this.addMenuItemInput({ name: day, lunch: '', dinner: '' }, false);
             });
 
-            // Hide save button initially (will show when first recipe is selected)
-            const saveBtn = document.getElementById('save-menu-btn');
+            // KEEP save button visible in create mode (changed behavior)
             if (saveBtn) {
-                saveBtn.style.display = 'none';
+                saveBtn.style.removeProperty('display');
+                console.log('[Menu Form] Save button - VISIBLE in CREATE mode (new behavior)');
+                console.log('[Menu Form] Save button - new display:', window.getComputedStyle(saveBtn).display);
             }
         }
 
         // Show modal
         modal.classList.remove('hidden');
-
-        // Check if save button should be visible (for edit mode)
-        if (menuId) {
-            const saveBtn = document.getElementById('save-menu-btn');
-            if (saveBtn) {
-                saveBtn.style.display = '';
+        
+        // Final check after modal is shown
+        setTimeout(() => {
+            const finalSaveBtn = document.getElementById('save-menu-btn');
+            const finalAddBtn = document.getElementById('add-menu-item-btn');
+            console.log('[Menu Form] FINAL CHECK after modal shown:');
+            console.log('  - Save button exists?', !!finalSaveBtn);
+            console.log('  - Add button exists?', !!finalAddBtn);
+            if (finalSaveBtn) {
+                console.log('  - Save button display:', window.getComputedStyle(finalSaveBtn).display);
+                console.log('  - Save button visibility:', window.getComputedStyle(finalSaveBtn).visibility);
+                console.log('  - Save button opacity:', window.getComputedStyle(finalSaveBtn).opacity);
+                console.log('  - Save button classes:', finalSaveBtn.className);
             }
-        }
+            if (finalAddBtn) {
+                console.log('  - Add button display:', window.getComputedStyle(finalAddBtn).display);
+                console.log('  - Add button visibility:', window.getComputedStyle(finalAddBtn).visibility);
+                console.log('  - Add button classes:', finalAddBtn.className);
+            }
+        }, 100);
+        
+        console.log('[Menu Form] Modal opened');
+        console.log('=== END MENU FORM DEBUG ===');
     }
 
     /**
@@ -12055,7 +12603,12 @@ class RecipeApp {
         lunchInput.value = item ? (item.lunch || item.quantity || '') : '';
         lunchInput.dataset.itemId = item ? item.id : Date.now();
         lunchInput.dataset.mealType = 'lunch';
-        lunchInput.dataset.isQuickEdit = 'true'; // Mark as quick edit to filter categories
+        // Only mark as quick edit if this is an existing menu being edited
+        lunchInput.dataset.isQuickEdit = isExisting ? 'true' : 'false';
+        // Add menuId for quick edit mode
+        if (isExisting && this.currentMenuId) {
+            lunchInput.dataset.menuId = this.currentMenuId;
+        }
 
         // Click handler to open category selector for lunch
         lunchInput.addEventListener('click', () => {
@@ -12077,7 +12630,12 @@ class RecipeApp {
         dinnerInput.value = item && item.dinner ? item.dinner : '';
         dinnerInput.dataset.itemId = item ? item.id : Date.now();
         dinnerInput.dataset.mealType = 'dinner';
-        dinnerInput.dataset.isQuickEdit = 'true'; // Mark as quick edit to filter categories
+        // Only mark as quick edit if this is an existing menu being edited
+        dinnerInput.dataset.isQuickEdit = isExisting ? 'true' : 'false';
+        // Add menuId for quick edit mode
+        if (isExisting && this.currentMenuId) {
+            dinnerInput.dataset.menuId = this.currentMenuId;
+        }
 
         // Click handler to open category selector for dinner
         dinnerInput.addEventListener('click', () => {
@@ -12150,8 +12708,10 @@ class RecipeApp {
             }
         });
 
-        // Show or hide save button
-        saveBtn.style.display = hasRecipe ? '' : 'none';
+        // CHANGED: Always show save button (like shopping list modal)
+        // Users should be able to save even without recipes selected
+        saveBtn.style.removeProperty('display');
+        console.log('[Menu Form] Save button always visible (hasRecipe:', hasRecipe, ')');
     }
 
     /**
@@ -12219,23 +12779,29 @@ class RecipeApp {
             let lunchValue = '';
             let dinnerValue = '';
 
-            // Get lunch value (from input or select)
+            // Get lunch value and ID (from input or select)
+            let lunchId = null;
             if (lunchElement) {
                 if (lunchElement.tagName === 'SELECT') {
                     const selectedOption = lunchElement.options[lunchElement.selectedIndex];
                     lunchValue = selectedOption?.dataset.recipeName || selectedOption?.textContent || '';
+                    lunchId = lunchElement.dataset.recipeId || null;
                 } else {
                     lunchValue = lunchElement.value || '';
+                    lunchId = lunchElement.dataset.recipeId || null;
                 }
             }
 
-            // Get dinner value (from input or select)
+            // Get dinner value and ID (from input or select)
+            let dinnerId = null;
             if (dinnerElement) {
                 if (dinnerElement.tagName === 'SELECT') {
                     const selectedOption = dinnerElement.options[dinnerElement.selectedIndex];
                     dinnerValue = selectedOption?.dataset.recipeName || selectedOption?.textContent || '';
+                    dinnerId = dinnerElement.dataset.recipeId || null;
                 } else {
                     dinnerValue = dinnerElement.value || '';
+                    dinnerId = dinnerElement.dataset.recipeId || null;
                 }
             }
 
@@ -12244,13 +12810,20 @@ class RecipeApp {
             const hasDinner = dinnerValue && dinnerValue.trim() !== '' && dinnerValue !== DEFAULT_RECIPE;
 
             if (hasLunch || hasDinner) {
-                items.push({
+                const menuItem = {
                     id: itemIdCounter++, // Guaranteed unique IDs
                     name: dayValue || DEFAULT_DAY,
+                    // Legacy format (for compatibility)
                     lunch: lunchValue || DEFAULT_RECIPE,
                     dinner: dinnerValue || DEFAULT_RECIPE,
+                    // New ID-based format
+                    lunchId: lunchId,
+                    lunchName: lunchValue || DEFAULT_RECIPE,
+                    dinnerId: dinnerId,
+                    dinnerName: dinnerValue || DEFAULT_RECIPE,
                     completed: false // Inherited from shopping list structure, not used for menus
-                });
+                };
+                items.push(menuItem);
             }
         });
 

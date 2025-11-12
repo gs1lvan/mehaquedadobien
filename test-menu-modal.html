@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Menu Modal</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="modal-triggers.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <button onclick="document.getElementById('menu-modal').classList.remove('hidden')">Abrir Modal de Menú</button>
+
+    <!-- Menu Modal -->
+    <div id="menu-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="menu-modal-title">Nuevo Menú</h2>
+                <button id="close-menu-modal" class="btn-icon" onclick="document.getElementById('menu-modal').classList.add('hidden')">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Menu Name -->
+                <div class="form-group">
+                    <label for="menu-name-input">Nombre del menú</label>
+                    <input type="text" id="menu-name-input" class="form-input"
+                        placeholder="Ej: Semanal, Cumpleaños, Dieta blanda...">
+                </div>
+
+                <!-- Items Section -->
+                <div class="form-group">
+                    <label>Elementos del Menú</label>
+                    <div class="shopping-list-buttons">
+                        <button id="add-menu-item-btn"
+                            class="modal-trigger modal-trigger--action modal-trigger--secondary">
+                            <span class="option-icon"><i class="fa-solid fa-plus"></i></span>
+                            <span class="option-text">Añadir Elemento</span>
+                        </button>
+                        <button id="save-menu-btn"
+                            class="modal-trigger modal-trigger--action modal-trigger--primary">
+                            <span class="option-icon"><i class="fa-solid fa-floppy-disk"></i></span>
+                            <span class="option-text">Guardar Menú</span>
+                        </button>
+                    </div>
+                    <!-- New items container (appears right below the buttons) -->
+                    <div id="menu-new-items-container">
+                        <!-- New items will be added here -->
+                    </div>
+                    <!-- Existing items container (appears at the bottom) -->
+                    <div id="menu-existing-items-container">
+                        <!-- Existing items will be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

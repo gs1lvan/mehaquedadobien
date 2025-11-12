@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Check Button</title>
+</head>
+<body>
+    <h1>Verificar Botón</h1>
+    <button onclick="checkButton()">Verificar si existe save-menu-btn</button>
+    <div id="result"></div>
+
+    <script>
+        function checkButton() {
+            const btn = document.getElementById('save-menu-btn');
+            const result = document.getElementById('result');
+            
+            if (btn) {
+                result.innerHTML = `
+                    <p style="color: green;">✅ Botón encontrado!</p>
+                    <p>ID: ${btn.id}</p>
+                    <p>Classes: ${btn.className}</p>
+                    <p>Display: ${window.getComputedStyle(btn).display}</p>
+                    <p>Visibility: ${window.getComputedStyle(btn).visibility}</p>
+                `;
+            } else {
+                result.innerHTML = '<p style="color: red;">❌ Botón NO encontrado</p>';
+            }
+        }
+        
+        // Check on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('Checking for save-menu-btn...');
+                const btn = document.getElementById('save-menu-btn');
+                console.log('Button found:', !!btn, btn);
+            }, 1000);
+        });
+    </script>
+
+    <!-- Include the menu modal from index.html -->
+    <div id="menu-modal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="menu-modal-title">Nuevo Menú</h2>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Elementos del Menú</label>
+                    <div class="shopping-list-buttons">
+                        <button id="add-menu-item-btn">Añadir Elemento</button>
+                        <button id="save-menu-btn">Guardar Menú</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -15,7 +15,8 @@ class MenuManager {
         this.currentMenuId = null;
         this.storageKey = 'recetario_menus';
         this.idCounter = 0;
-        this.loadMenus();
+        // Note: loadMenus() should be called manually after recipes are loaded
+        // to enable migration from name-based to ID-based format
     }
 
     /**
@@ -42,8 +43,9 @@ class MenuManager {
 
     /**
      * Load menus from localStorage
+     * @param {Function} getRecipeByName - Optional function to get recipe by name for migration
      */
-    loadMenus() {
+    loadMenus(getRecipeByName = null) {
         try {
             const stored = localStorage.getItem(this.storageKey);
             if (stored) {
@@ -57,7 +59,40 @@ class MenuManager {
                     if (menu.isFilter === undefined) {
                         menu.isFilter = false;
                     }
+                    
+                    // Add _migrated flag if not present
+                    if (menu._migrated === undefined) {
+                        menu._migrated = false;
+                    }
                 });
+
+                // Migrate legacy menu items to ID-based format
+                if (getRecipeByName) {
+                    let migratedCount = 0;
+                    this.menus.forEach(menu => {
+                        // Skip if already migrated
+                        if (menu._migrated) {
+                            return;
+                        }
+                        
+                        // Migrate each item
+                        if (menu.items && Array.isArray(menu.items)) {
+                            menu.items.forEach(item => {
+                                this.migrateLegacyMenuItem(item, getRecipeByName);
+                            });
+                        }
+                        
+                        // Mark as migrated
+                        menu._migrated = true;
+                        migratedCount++;
+                    });
+                    
+                    if (migratedCount > 0) {
+                        console.log(`[MenuManager] Migrated ${migratedCount} menus to ID-based format`);
+                        // Save migrated menus
+                        this.saveMenus();
+                    }
+                }
 
                 console.log('[MenuManager] Loaded menus:', this.menus.length);
             }
@@ -677,6 +712,98 @@ class MenuManager {
         }
 
         return menu;
+    }
+
+    /**
+     * Get recipe ID from menu item meal
+     * @param {Object} item - Menu item
+     * @param {string} mealType - 'lunch' or 'dinner'
+     * @returns {string|null} Recipe ID or null
+     */
+    getRecipeIdFromMeal(item, mealType) {
+        if (!item) return null;
+        
+        const idField = mealType === 'lunch' ? 'lunchId' : 'dinnerId';
+        return item[idField] || null;
+    }
+
+    /**
+     * Get recipe name from menu item meal (with fallback to legacy format)
+     * @param {Object} item - Menu item
+     * @param {string} mealType - 'lunch' or 'dinner'
+     * @returns {string|null} Recipe name or null
+     */
+    getRecipeNameFromMeal(item, mealType) {
+        if (!item) return null;
+        
+        const nameField = mealType === 'lunch' ? 'lunchName' : 'dinnerName';
+        const legacyField = mealType === 'lunch' ? 'lunch' : 'dinner';
+        
+        return item[nameField] || item[legacyField] || null;
+    }
+
+    /**
+     * Set recipe for menu item meal
+     * @param {Object} item - Menu item
+     * @param {string} mealType - 'lunch' or 'dinner'
+     * @param {Object} recipe - Recipe object with id and name
+     */
+    setRecipeForMeal(item, mealType, recipe) {
+        if (!item || !recipe) return;
+        
+        if (mealType === 'lunch') {
+            item.lunchId = recipe.id;
+            item.lunchName = recipe.name;
+            // Keep legacy field for compatibility
+            item.lunch = recipe.name;
+        } else {
+            item.dinnerId = recipe.id;
+            item.dinnerName = recipe.name;
+            // Keep legacy field for compatibility
+            item.dinner = recipe.name;
+        }
+    }
+
+    /**
+     * Migrate legacy menu item to new format
+     * @param {Object} item - Menu item with legacy format
+     * @param {Function} getRecipeByName - Function to get recipe by name
+     * @returns {Object} Migrated menu item
+     */
+    migrateLegacyMenuItem(item, getRecipeByName) {
+        if (!item) return item;
+        
+        // Migrate lunch
+        if (item.lunch && !item.lunchId && item.lunch !== MenuManager.DEFAULT_RECIPE) {
+            const recipe = getRecipeByName(item.lunch);
+            if (recipe) {
+                item.lunchId = recipe.id;
+                item.lunchName = recipe.name;
+                console.log(`[MenuManager] Migrated lunch: ${item.lunch} → ID: ${recipe.id}`);
+            } else {
+                // Recipe not found, keep as text-only
+                item.lunchName = item.lunch;
+                item.lunchId = null;
+                console.warn(`[MenuManager] Recipe not found for lunch: ${item.lunch}`);
+            }
+        }
+
+        // Migrate dinner
+        if (item.dinner && !item.dinnerId && item.dinner !== MenuManager.DEFAULT_RECIPE) {
+            const recipe = getRecipeByName(item.dinner);
+            if (recipe) {
+                item.dinnerId = recipe.id;
+                item.dinnerName = recipe.name;
+                console.log(`[MenuManager] Migrated dinner: ${item.dinner} → ID: ${recipe.id}`);
+            } else {
+                // Recipe not found, keep as text-only
+                item.dinnerName = item.dinner;
+                item.dinnerId = null;
+                console.warn(`[MenuManager] Recipe not found for dinner: ${item.dinner}`);
+            }
+        }
+
+        return item;
     }
 }
 
