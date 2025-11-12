@@ -1461,8 +1461,34 @@ class RecipeApp {
         );
         const predefinedCategories = this.categoryManager.getVisiblePredefinedCategories();
 
-        // Custom category chips (first)
-        customCategories.forEach(category => {
+        // Combine all categories
+        const allCategories = [...customCategories, ...predefinedCategories];
+
+        // Separate categories with recipes from empty ones
+        const categoriesWithRecipes = [];
+        const emptyCategories = [];
+
+        allCategories.forEach(category => {
+            // Special categories (caravana, hospital, menu) are always clickable
+            // They filter by flags, not by category assignment
+            const isSpecialCategory = category.isSpecial || 
+                                     category.id === 'caravana' || 
+                                     category.id === 'hospital' || 
+                                     category.id === 'menu';
+            
+            const recipesInCategory = this.recipes.filter(r => r.category === category.id);
+            const hasRecipes = recipesInCategory.length > 0;
+
+            // Special categories always go to "with recipes" group
+            if (hasRecipes || isSpecialCategory) {
+                categoriesWithRecipes.push(category);
+            } else {
+                emptyCategories.push(category);
+            }
+        });
+
+        // Helper function to create chip
+        const createChip = (category, isEmpty = false) => {
             const chip = document.createElement('button');
             chip.className = 'filter-chip';
             if (this.activeFilters.has(category.id)) {
@@ -1471,28 +1497,35 @@ class RecipeApp {
             chip.dataset.category = category.id;
             chip.innerHTML = `${category.emoji} ${category.name}`;
             chip.style.setProperty('--category-color', category.color);
-            filterChipsContainer.appendChild(chip);
+            
+            // If category is empty, make it disabled
+            if (isEmpty) {
+                chip.classList.add('disabled');
+                chip.style.opacity = '0.4';
+                chip.style.cursor = 'not-allowed';
+                chip.disabled = true;
+                chip.title = 'Esta categoría no tiene recetas';
+            }
+            
+            return chip;
+        };
+
+        // Add categories with recipes first
+        categoriesWithRecipes.forEach(category => {
+            filterChipsContainer.appendChild(createChip(category, false));
         });
 
-        // Separator (only if there are custom categories)
-        if (customCategories.length > 0) {
+        // Add separator if there are empty categories
+        if (emptyCategories.length > 0 && categoriesWithRecipes.length > 0) {
             const separator = document.createElement('span');
             separator.className = 'filter-separator';
             separator.textContent = '|';
             filterChipsContainer.appendChild(separator);
         }
 
-        // Predefined category chips (after separator)
-        predefinedCategories.forEach(category => {
-            const chip = document.createElement('button');
-            chip.className = 'filter-chip';
-            if (this.activeFilters.has(category.id)) {
-                chip.classList.add('active');
-            }
-            chip.dataset.category = category.id;
-            chip.innerHTML = `${category.emoji} ${category.name}`;
-            chip.style.setProperty('--category-color', category.color);
-            filterChipsContainer.appendChild(chip);
+        // Add empty categories at the end
+        emptyCategories.forEach(category => {
+            filterChipsContainer.appendChild(createChip(category, true));
         });
 
         // Re-attach event listeners
@@ -1594,8 +1627,8 @@ class RecipeApp {
         const modal = document.getElementById('category-selector-modal');
         if (!modal) return;
 
-        // Render categories in modal
-        this.renderCategorySelectorChips();
+        // Render categories in modal (show all categories for recipe form)
+        this.renderCategorySelectorChips(true, false);
 
         // Hide footer for recipe form context
         const footer = document.getElementById('category-selector-footer');
@@ -1626,7 +1659,7 @@ class RecipeApp {
     /**
      * Render category chips in selector modal
      */
-    renderCategorySelectorChips(preSelectCategory = true) {
+    renderCategorySelectorChips(preSelectCategory = true, isQuickEdit = false) {
         const container = document.getElementById('category-selector-chips');
         if (!container) {
             console.error('Container category-selector-chips not found');
@@ -1647,19 +1680,44 @@ class RecipeApp {
             .filter(cat => !cat.isSpecial);
 
         categories.forEach(category => {
+            // Check if category has recipes (only for quick edit mode)
+            let hasRecipes = true;
+            if (isQuickEdit) {
+                const menuRecipes = this.recipes.filter(recipe =>
+                    recipe.menuFriendly === true && recipe.category === category.id
+                );
+                hasRecipes = menuRecipes.length > 0;
+            }
+
             const chip = document.createElement('button');
             chip.className = 'category-selector-chip';
+            
             // Only pre-select if preSelectCategory is true and matches current value
             if (preSelectCategory && category.id === currentValue) {
                 chip.classList.add('selected');
             }
+            
+            // If in quick edit mode and category has no recipes, make it disabled
+            if (isQuickEdit && !hasRecipes) {
+                chip.classList.add('disabled');
+                chip.style.opacity = '0.4';
+                chip.style.cursor = 'not-allowed';
+                chip.disabled = true;
+            }
+            
             chip.innerHTML = `
                 <span class="emoji">${category.emoji}</span>
                 <span class="name">${category.name}</span>
             `;
+            
             chip.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
+
+                // Prevent selection if disabled
+                if (isQuickEdit && !hasRecipes) {
+                    return;
+                }
 
                 // Remove selected class from all chips
                 container.querySelectorAll('.category-selector-chip').forEach(c => c.classList.remove('selected'));
@@ -11092,8 +11150,11 @@ class RecipeApp {
         // Clear any pending selection
         this.pendingMenuInput = null;
 
-        // Render categories in modal (without any pre-selection)
-        this.renderCategorySelectorChips(false);
+        // Check if this is a quick edit (from menu filter view)
+        const isQuickEdit = inputElement.dataset.isQuickEdit === 'true';
+
+        // Render categories in modal (without any pre-selection, with quick edit flag)
+        this.renderCategorySelectorChips(false, isQuickEdit);
 
         // Remove any selected class from all chips (ensure clean state)
         const container = document.getElementById('category-selector-chips');
@@ -11992,6 +12053,7 @@ class RecipeApp {
         lunchInput.value = item ? (item.lunch || item.quantity || '') : '';
         lunchInput.dataset.itemId = item ? item.id : Date.now();
         lunchInput.dataset.mealType = 'lunch';
+        lunchInput.dataset.isQuickEdit = 'true'; // Mark as quick edit to filter categories
 
         // Click handler to open category selector for lunch
         lunchInput.addEventListener('click', () => {
@@ -12013,6 +12075,7 @@ class RecipeApp {
         dinnerInput.value = item && item.dinner ? item.dinner : '';
         dinnerInput.dataset.itemId = item ? item.id : Date.now();
         dinnerInput.dataset.mealType = 'dinner';
+        dinnerInput.dataset.isQuickEdit = 'true'; // Mark as quick edit to filter categories
 
         // Click handler to open category selector for dinner
         dinnerInput.addEventListener('click', () => {
