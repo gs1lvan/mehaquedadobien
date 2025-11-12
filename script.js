@@ -3536,6 +3536,14 @@ class RecipeApp {
                     nameInput.blur();
                 }
             });
+
+            // Clear default text on focus
+            nameInput.addEventListener('focus', () => {
+                const text = nameInput.textContent.trim();
+                if (text === 'Nueva Receta' || text === 'Editar Receta') {
+                    nameInput.textContent = '';
+                }
+            });
         }
 
         // Ingredient management event listeners
