@@ -1,0 +1,289 @@
+/* ===================================================================
+   UTILITY CLASSES - Clases de utilidad para reemplazar estilos inline
+   ===================================================================
+   
+   Este archivo contiene clases CSS reutilizables para reemplazar
+   estilos inline en JavaScript, mejorando el mantenimiento y rendimiento.
+   
+   =================================================================== */
+
+/* ===================================================================
+   DISPLAY UTILITIES
+   =================================================================== */
+
+.u-display-none {
+    display: none !important;
+}
+
+.u-display-block {
+    display: block !important;
+}
+
+.u-display-inline-block {
+    display: inline-block !important;
+}
+
+.u-display-flex {
+    display: flex !important;
+}
+
+.u-display-grid {
+    display: grid !important;
+}
+
+/* ===================================================================
+   CURSOR UTILITIES
+   =================================================================== */
+
+.u-cursor-pointer {
+    cursor: pointer !important;
+}
+
+.u-cursor-not-allowed {
+    cursor: not-allowed !important;
+}
+
+.u-cursor-default {
+    cursor: default !important;
+}
+
+/* ===================================================================
+   OPACITY UTILITIES
+   =================================================================== */
+
+.u-opacity-04 {
+    opacity: 0.4 !important;
+}
+
+.u-opacity-05 {
+    opacity: 0.5 !important;
+}
+
+.u-opacity-06 {
+    opacity: 0.6 !important;
+}
+
+.u-opacity-1 {
+    opacity: 1 !important;
+}
+
+/* ===================================================================
+   BACKGROUND UTILITIES
+   =================================================================== */
+
+.u-bg-secondary {
+    background-color: var(--color-background-secondary) !important;
+}
+
+.u-bg-transparent {
+    background-color: transparent !important;
+}
+
+/* ===================================================================
+   MENU ITEM UTILITIES
+   =================================================================== */
+
+.menu-item-separator {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+}
+
+.menu-item-readonly {
+    background-color: var(--color-background-secondary);
+    cursor: default;
+}
+
+/* ===================================================================
+   DAY SEPARATOR (for menu filter view)
+   =================================================================== */
+
+.day-separator {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0 1rem 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--color-text);
+}
+
+.day-separator-icon {
+    color: var(--color-primary);
+    font-size: 1.25rem;
+}
+
+.day-separator-line-before {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 2px;
+    background: var(--color-primary);
+}
+
+.day-separator-line-after {
+    flex: 1;
+    height: 2px;
+    background: var(--color-border);
+}
+
+/* ===================================================================
+   MEALS CONTAINER (for menu filter view)
+   =================================================================== */
+
+.meals-container {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* Responsive: side by side on desktop */
+@media (min-width: 768px) {
+    .meals-container {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+}
+
+/* ===================================================================
+   MENU TITLE (for menu filter view)
+   =================================================================== */
+
+.menu-filter-title {
+    grid-column: 1 / -1;
+    margin: 0 0 2rem 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-text);
+    text-align: center;
+}
+
+/* ===================================================================
+   RECIPE CARD PLACEHOLDER (for empty meal slots)
+   =================================================================== */
+
+.recipe-card-placeholder {
+    border: 2px dashed var(--color-border);
+    background: var(--color-background-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    border-radius: var(--radius-md);
+    padding: 2rem;
+    text-align: center;
+    color: var(--color-text-secondary);
+}
+
+.recipe-card-placeholder-emoji {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.recipe-card-placeholder-text {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* ===================================================================
+   CATEGORY CHIP DISABLED STATE
+   =================================================================== */
+
+.category-chip.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ===================================================================
+   AUTOCOMPLETE UTILITIES
+   =================================================================== */
+
+.autocomplete-visible {
+    display: block !important;
+}
+
+.autocomplete-hidden {
+    display: none !important;
+}
+
+/* ===================================================================
+   CATEGORY BADGE (with dynamic color)
+   =================================================================== */
+
+.category-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    /* Background color set via inline style or CSS variable */
+}
+
+/* ===================================================================
+   COLOR CHIP (for color picker)
+   =================================================================== */
+
+.color-chip {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    /* Background color set via inline style */
+}
+
+.color-chip:hover {
+    transform: scale(1.1);
+    border-color: var(--color-text);
+}
+
+.color-chip.selected {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-background), 0 0 0 4px var(--color-primary);
+}
+
+/* ===================================================================
+   HIDDEN UTILITIES (for conditional visibility)
+   =================================================================== */
+
+.u-hide {
+    display: none !important;
+}
+
+.u-show {
+    display: block !important;
+}
+
+.u-show-flex {
+    display: flex !important;
+}
+
+.u-show-grid {
+    display: grid !important;
+}
+
+/* ===================================================================
+   RESPONSIVE UTILITIES
+   =================================================================== */
+
+@media (max-width: 767px) {
+    .u-hide-mobile {
+        display: none !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .u-hide-desktop {
+        display: none !important;
+    }
+}
+
+/* ===================================================================
+   END OF FILE
+   =================================================================== */
