@@ -795,7 +795,7 @@ class ShoppingListManager {
         let inRecipe = false;
         items.forEach((item, index) => {
             console.log(`[FormatClipboard] Item ${index}:`, item.name);
-            
+
             // Check for recipe start
             if (item.name.startsWith('[RECIPE_START]')) {
                 console.log('[FormatClipboard] Found RECIPE_START');
@@ -806,7 +806,7 @@ class ShoppingListManager {
                 inRecipe = true;
                 return;
             }
-            
+
             // Check for recipe end
             if (item.name === '[RECIPE_END]') {
                 console.log('[FormatClipboard] Found RECIPE_END');
@@ -814,19 +814,19 @@ class ShoppingListManager {
                 inRecipe = false;
                 return;
             }
-            
+
             // Format regular items and recipe items
             const quantityText = item.quantity?.trim() || '';
             const quantity = quantityText ? ` - ${quantityText}` : '';
             const completedMark = item.completed ? '✓ ' : '';
-            
+
             // Remove [RECIPE_ITEM] marker if present
             const itemName = item.name.replace('[RECIPE_ITEM]', '');
             console.log('[FormatClipboard] Item name after replace:', itemName);
             const itemLine = `${completedMark}${itemName}${quantity}`;
             lines.push(itemLine);
         });
-        
+
         console.log('[FormatClipboard] Final lines:', lines);
 
         return lines.join('\n');
@@ -1113,27 +1113,27 @@ class RecipeApp {
     async loadRecipes() {
         try {
             this.recipes = await this.storageManager.getAllRecipes();
-            
+
             // Migrate existing recipes to add IDs to sub-objects
             let migratedCount = 0;
             for (const recipe of this.recipes) {
                 // Check if recipe needs migration (no IDs in sub-objects)
-                const needsMigration = 
+                const needsMigration =
                     (recipe.ingredients && recipe.ingredients.length > 0 && !recipe.ingredients[0].id) ||
                     (recipe.sequences && recipe.sequences.length > 0 && !recipe.sequences[0].id) ||
                     (recipe.images && recipe.images.length > 0 && !recipe.images[0].id);
-                
+
                 if (needsMigration) {
                     this.generateRecipeSubIds(recipe);
                     await this.storageManager.saveRecipe(recipe);
                     migratedCount++;
                 }
             }
-            
+
             if (migratedCount > 0) {
                 console.log(`[Migration] Generated IDs for ${migratedCount} recipes`);
             }
-            
+
             // Shuffle recipes randomly on load
             this.recipes = this.shuffleArray(this.recipes);
             // Update recipe map for fast ID lookups
@@ -1177,24 +1177,24 @@ class RecipeApp {
      */
     getRecipeByName(name) {
         if (!name) return null;
-        
+
         // Find all recipes with matching name
         const matches = this.recipes.filter(r => r.name === name);
-        
+
         if (matches.length === 0) {
             return null;
         }
-        
+
         if (matches.length === 1) {
             return matches[0];
         }
-        
+
         // Multiple matches: prefer menu-friendly recipe
         const menuFriendly = matches.find(r => r.menuFriendly === true);
         if (menuFriendly) {
             return menuFriendly;
         }
-        
+
         // No menu-friendly match: return first match
         console.warn(`Multiple recipes found for name: ${name}, using first match`);
         return matches[0];
@@ -1234,7 +1234,7 @@ class RecipeApp {
                 if (!sequence.id) {
                     sequence.id = this.generateId('seq');
                 }
-                
+
                 // Convert ingredient names to IDs if needed
                 if (sequence.ingredients && Array.isArray(sequence.ingredients)) {
                     sequence.ingredientIds = sequence.ingredients.map(ingName => {
@@ -1286,7 +1286,7 @@ class RecipeApp {
         // Add each ingredient with source tracking
         recipe.ingredients.forEach(ingredient => {
             const quantityText = ingredient.quantity + (ingredient.unit ? ' ' + ingredient.unit : '');
-            
+
             this.shoppingListManager.addItem(shoppingListId, {
                 name: ingredient.name,
                 quantity: quantityText,
@@ -1332,7 +1332,7 @@ class RecipeApp {
         }
 
         const quantityText = ingredient.quantity + (ingredient.unit ? ' ' + ingredient.unit : '');
-        
+
         this.shoppingListManager.addItem(shoppingListId, {
             name: ingredient.name,
             quantity: quantityText,
@@ -1365,7 +1365,7 @@ class RecipeApp {
         menu.items.forEach(item => {
             const lunchId = this.menuManager.getRecipeIdFromMeal(item, 'lunch');
             const dinnerId = this.menuManager.getRecipeIdFromMeal(item, 'dinner');
-            
+
             if (lunchId) recipeIds.add(lunchId);
             if (dinnerId) recipeIds.add(dinnerId);
         });
@@ -1403,7 +1403,7 @@ class RecipeApp {
             // Add each ingredient
             recipe.ingredients.forEach(ingredient => {
                 const key = ingredient.name.toLowerCase();
-                
+
                 if (ingredientMap.has(key)) {
                     // Consolidate duplicate ingredients
                     const existing = ingredientMap.get(key);
@@ -1433,7 +1433,7 @@ class RecipeApp {
         ingredientMap.forEach(data => {
             const quantityText = data.quantity + (data.unit ? ' ' + data.unit : '');
             const sourceNames = data.sources.map(s => s.recipeName).join(', ');
-            
+
             this.shoppingListManager.addItem(shoppingList.id, {
                 name: data.name,
                 quantity: quantityText,
@@ -1445,7 +1445,7 @@ class RecipeApp {
         });
 
         console.log(`[Menu Conversion] Converted menu "${menu.name}": ${recipesProcessed} recipes, ${ingredientMap.size} ingredients`);
-        
+
         if (recipesNotFound > 0) {
             this.showToast(`Lista creada con ${ingredientMap.size} ingredientes (${recipesNotFound} recetas no encontradas)`, 'warning');
         } else {
@@ -1549,16 +1549,16 @@ class RecipeApp {
         }
 
         this.activeMenuFilter = menuId;
-        
+
         // Get recipes from menu
         const menuRecipes = this.getRecipesFromMenu(menuId);
-        
+
         // Render filtered view
         this.renderRecipeList(menuRecipes);
-        
+
         // Update filter UI
         this.renderMenuFilterChips();
-        
+
         const menu = this.menuManager.getMenu(menuId);
         if (menu) {
             this.showToast(`Mostrando ${menuRecipes.length} recetas del menú "${menu.name}"`, 'info');
@@ -1922,11 +1922,11 @@ class RecipeApp {
         allCategories.forEach(category => {
             // Special categories (caravana, hospital, menu) are always clickable
             // They filter by flags, not by category assignment
-            const isSpecialCategory = category.isSpecial || 
-                                     category.id === 'caravana' || 
-                                     category.id === 'hospital' || 
-                                     category.id === 'menu';
-            
+            const isSpecialCategory = category.isSpecial ||
+                category.id === 'caravana' ||
+                category.id === 'hospital' ||
+                category.id === 'menu';
+
             const recipesInCategory = this.recipes.filter(r => r.category === category.id);
             const hasRecipes = recipesInCategory.length > 0;
 
@@ -1948,7 +1948,7 @@ class RecipeApp {
             chip.dataset.category = category.id;
             chip.innerHTML = `${category.emoji} ${category.name}`;
             chip.style.setProperty('--category-color', category.color);
-            
+
             // If category is empty, make it disabled
             if (isEmpty) {
                 chip.classList.add('disabled');
@@ -1957,7 +1957,7 @@ class RecipeApp {
                 chip.disabled = true;
                 chip.title = 'Esta categoría no tiene recetas';
             }
-            
+
             return chip;
         };
 
@@ -2138,7 +2138,7 @@ class RecipeApp {
                 const menuRecipes = this.recipes.filter(recipe =>
                     recipe.menuFriendly === true && recipe.category === category.id
                 );
-                
+
                 // If we have a current recipe name, check if it belongs to this category
                 // This ensures the current recipe's category is always enabled
                 if (currentRecipeName) {
@@ -2158,12 +2158,12 @@ class RecipeApp {
 
             const chip = document.createElement('button');
             chip.className = 'category-selector-chip';
-            
+
             // Only pre-select if preSelectCategory is true and matches current value
             if (preSelectCategory && category.id === currentValue) {
                 chip.classList.add('selected');
             }
-            
+
             // If in quick edit mode and category has no recipes, make it disabled
             if (isQuickEdit && !hasRecipes) {
                 chip.classList.add('disabled');
@@ -2171,12 +2171,12 @@ class RecipeApp {
                 chip.style.cursor = 'not-allowed';
                 chip.disabled = true;
             }
-            
+
             chip.innerHTML = `
                 <span class="emoji">${category.emoji}</span>
                 <span class="name">${category.name}</span>
             `;
-            
+
             chip.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -3600,7 +3600,7 @@ class RecipeApp {
 
         // Clone and replace cooking buttons to remove old listeners
         const cookingButtons = cookingButtonsContainer.querySelectorAll('.cooking-action-btn');
-        
+
         cookingButtons.forEach(button => {
             const newButton = button.cloneNode(true);
             button.parentNode.replaceChild(newButton, button);
@@ -4886,11 +4886,11 @@ class RecipeApp {
         console.log('[Menu Filter] Total recipes to match:', recipes.length);
         console.log('[Menu Filter] Metadata size:', metadata.size);
         console.log('[Menu Filter] Metadata keys:', Array.from(metadata.keys()));
-        
+
         recipes.forEach(recipe => {
             const normalizedName = recipe.name.toLowerCase().trim();
             console.log('[Menu Filter] Looking for:', recipe.name, '→ normalized:', normalizedName);
-            
+
             const recipeMeta = metadata.get(normalizedName);
             if (recipeMeta && recipeMeta.length > 0) {
                 console.log('[Menu Filter] ✓ Found metadata for:', recipe.name, '→', recipeMeta.length, 'entries');
@@ -4918,7 +4918,7 @@ class RecipeApp {
                 console.warn('[Menu Filter] ✗ NO metadata for:', recipe.name, '(normalized:', normalizedName + ')');
             }
         });
-        
+
         console.log('[Menu Filter] === FINAL STATE ===');
         recipesByDay.forEach((dayData, key) => {
             console.log('[Menu Filter] Day:', dayData.dayName, 'Lunch:', dayData.lunch?.name || 'null', 'Dinner:', dayData.dinner?.name || 'null');
@@ -10815,7 +10815,7 @@ class RecipeApp {
             console.log('[Header Click] Target:', e.target);
             console.log('[Header Click] Closest actions:', e.target.closest('.shopping-list-actions'));
             console.log('[Header Click] Closest bookmark:', e.target.closest('.menu-bookmark-btn'));
-            
+
             // Don't toggle if clicking on actions or bookmark button
             if (e.target.closest('.shopping-list-actions') || e.target.closest('.menu-bookmark-btn')) {
                 console.log('[Header Click] Ignoring click (actions or bookmark)');
@@ -10918,7 +10918,7 @@ class RecipeApp {
             const getRecipeDisplay = (item, mealType) => {
                 // Try to get recipe ID first (new format)
                 const recipeId = this.menuManager.getRecipeIdFromMeal(item, mealType);
-                
+
                 if (recipeId) {
                     // Look up recipe by ID
                     const recipe = this.getRecipeById(recipeId);
@@ -10933,7 +10933,7 @@ class RecipeApp {
                         return { text: cachedName + ' (receta eliminada)', fullText: cachedName, found: false };
                     }
                 }
-                
+
                 // Fallback to legacy format (name only)
                 const recipeName = this.menuManager.getRecipeNameFromMeal(item, mealType);
                 if (recipeName && recipeName !== 'Sin receta') {
@@ -10946,7 +10946,7 @@ class RecipeApp {
                     }
                     return { text: recipeName, fullText: recipeName, found: true };
                 }
-                
+
                 return { text: '-', fullText: 'Sin receta', found: false };
             };
 
@@ -11096,15 +11096,15 @@ class RecipeApp {
      */
     toggleMenuExpanded(menuId) {
         console.log('[toggleMenuExpanded] Called with menuId:', menuId, 'type:', typeof menuId);
-        
+
         // Use more specific selector to avoid finding filter chips
         const card = document.querySelector(`.shopping-list-card[data-menu-id="${menuId}"]`);
-        
+
         console.log('[toggleMenuExpanded] Card found:', !!card);
-        
+
         if (!card) {
             console.warn('[toggleMenuExpanded] Card not found!');
-            console.log('[toggleMenuExpanded] Available menu cards:', 
+            console.log('[toggleMenuExpanded] Available menu cards:',
                 Array.from(document.querySelectorAll('.shopping-list-card[data-menu-id]'))
                     .map(c => ({ id: c.dataset.menuId, type: typeof c.dataset.menuId }))
             );
@@ -11657,7 +11657,7 @@ class RecipeApp {
 
         // Check if this is a quick edit (from menu filter view)
         const isQuickEdit = inputElement.dataset.isQuickEdit === 'true';
-        
+
         // Get current recipe name if in quick edit mode
         const currentRecipeName = isQuickEdit ? (inputElement.dataset.currentRecipeName || '') : '';
 
@@ -12402,17 +12402,17 @@ class RecipeApp {
         console.log('[Menu Form] Add button search result:', addElementBtn);
         const saveBtn = document.getElementById('save-menu-btn');
         console.log('[Menu Form] Save button search result:', saveBtn);
-        
+
         console.log('[Menu Form] Buttons found:');
         console.log('  - Add Element Button:', !!addElementBtn, addElementBtn ? addElementBtn.id : 'NOT FOUND');
         console.log('  - Save Button:', !!saveBtn, saveBtn ? saveBtn.id : 'NOT FOUND');
-        
+
         if (addElementBtn) {
             console.log('[Menu Form] Add button classes:', addElementBtn.className);
             console.log('[Menu Form] Add button computed display:', window.getComputedStyle(addElementBtn).display);
             console.log('[Menu Form] Add button computed visibility:', window.getComputedStyle(addElementBtn).visibility);
         }
-        
+
         if (saveBtn) {
             console.log('[Menu Form] Save button classes:', saveBtn.className);
             console.log('[Menu Form] Save button computed display:', window.getComputedStyle(saveBtn).display);
@@ -12446,7 +12446,7 @@ class RecipeApp {
                     this.addMenuItemInput(null, false);
                 }
             }
-            
+
             // Show save button in edit mode
             if (saveBtn) {
                 saveBtn.style.removeProperty('display');
@@ -12481,7 +12481,7 @@ class RecipeApp {
 
         // Show modal
         modal.classList.remove('hidden');
-        
+
         // Final check after modal is shown
         setTimeout(() => {
             const finalSaveBtn = document.getElementById('save-menu-btn');
@@ -12501,7 +12501,7 @@ class RecipeApp {
                 console.log('  - Add button classes:', finalAddBtn.className);
             }
         }, 100);
-        
+
         console.log('[Menu Form] Modal opened');
         console.log('=== END MENU FORM DEBUG ===');
     }
@@ -12841,13 +12841,13 @@ class RecipeApp {
             // Create new menu
             const newMenu = this.menuManager.createMenu(menuName, items);
             console.log('[Menus] Menu created with ID:', newMenu.id);
-            
+
             // Fix item IDs to be based on menu ID
             // This ensures consistency between menuId and itemIds
             newMenu.items.forEach((item, index) => {
                 item.id = newMenu.id + index;
             });
-            
+
             // Update the menu with fixed IDs
             this.menuManager.updateMenu(newMenu.id, newMenu);
             console.log('[Menus] Item IDs fixed to match menu ID');
@@ -13123,33 +13123,33 @@ class RecipeApp {
         }
 
         let currentRecipeGroup = null;
-        
+
         list.items.forEach((item, index) => {
             // Check for recipe markers
             if (item.name.startsWith('[RECIPE_START]')) {
                 // Create recipe group container
                 currentRecipeGroup = document.createElement('div');
                 currentRecipeGroup.className = 'shopping-recipe-group';
-                
+
                 // Add recipe title
                 const recipeTitle = document.createElement('div');
                 recipeTitle.className = 'shopping-recipe-title';
                 recipeTitle.textContent = item.name.replace('[RECIPE_START]', '');
                 currentRecipeGroup.appendChild(recipeTitle);
-                
+
                 container.appendChild(currentRecipeGroup);
                 return;
             }
-            
+
             if (item.name === '[RECIPE_END]') {
                 currentRecipeGroup = null;
                 return;
             }
-            
+
             const itemDiv = document.createElement('div');
             itemDiv.className = 'shopping-item';
             itemDiv.dataset.itemId = item.id;
-            
+
             // Check if it's a recipe item
             const isRecipeItem = item.name.startsWith('[RECIPE_ITEM]');
             if (isRecipeItem) {
@@ -14187,18 +14187,18 @@ class RecipeApp {
         const list = this.shoppingListManager.getList(listId);
         if (!list) return;
 
-        const categoryEmoji = recipe.category ? 
+        const categoryEmoji = recipe.category ?
             (this.categoryManager.getCategoryById(recipe.category)?.emoji || '') : '';
-        
+
         const recipeMarker = `[RECIPE_START]${categoryEmoji} ${recipe.name}`.trim();
-        
+
         // Check if recipe already exists in the list
         const existingRecipeIndex = list.items.findIndex(item => item.name === recipeMarker);
-        
+
         if (existingRecipeIndex !== -1) {
             // Recipe exists, find which ingredients are missing
             const existingIngredients = new Set();
-            
+
             // Collect existing ingredients for this recipe
             for (let i = existingRecipeIndex + 1; i < list.items.length; i++) {
                 const item = list.items[i];
@@ -14207,7 +14207,7 @@ class RecipeApp {
                     existingIngredients.add(item.name.replace('[RECIPE_ITEM]', ''));
                 }
             }
-            
+
             // Find missing ingredients
             const missingIngredients = [];
             recipe.ingredients.forEach(ingredient => {
@@ -14215,22 +14215,22 @@ class RecipeApp {
                     missingIngredients.push(ingredient);
                 }
             });
-            
+
             if (missingIngredients.length === 0) {
                 this.closeSelectShoppingListModal();
                 this.currentRecipeForShoppingList = null;
                 this.showToast('Esta receta ya está completa en la lista', 'info');
                 return;
             }
-            
+
             // Add missing ingredients before the [RECIPE_END] marker
-            const endMarkerIndex = list.items.findIndex((item, idx) => 
+            const endMarkerIndex = list.items.findIndex((item, idx) =>
                 idx > existingRecipeIndex && item.name === '[RECIPE_END]'
             );
-            
+
             missingIngredients.forEach(ingredient => {
                 let quantityText = '';
-                
+
                 if (ingredient.quantity && ingredient.quantity > 0) {
                     quantityText = ingredient.quantity.toString();
                     if (ingredient.unit) {
@@ -14241,7 +14241,7 @@ class RecipeApp {
                 } else {
                     quantityText = '-';
                 }
-                
+
                 // Insert before the end marker
                 list.items.splice(endMarkerIndex, 0, {
                     id: Date.now() + Math.random(),
@@ -14249,17 +14249,17 @@ class RecipeApp {
                     quantity: quantityText
                 });
             });
-            
+
             this.shoppingListManager.saveLists();
             this.renderShoppingLists();
             this.closeSelectShoppingListModal();
             this.currentRecipeForShoppingList = null;
-            
+
             const ingredientNames = missingIngredients.map(i => i.name).join(', ');
             this.showToast(`Ya existe esta receta en la lista. Se añadieron ${missingIngredients.length} ingrediente(s) faltante(s): ${ingredientNames}`, 'success');
             return;
         }
-        
+
         // Recipe doesn't exist, add it completely
         this.shoppingListManager.addItem(listId, {
             name: recipeMarker,
@@ -14269,7 +14269,7 @@ class RecipeApp {
         // Add each ingredient with recipe marker
         recipe.ingredients.forEach(ingredient => {
             let quantityText = '';
-            
+
             if (ingredient.quantity && ingredient.quantity > 0) {
                 quantityText = ingredient.quantity.toString();
                 if (ingredient.unit) {
@@ -14286,7 +14286,7 @@ class RecipeApp {
                 quantity: quantityText
             });
         });
-        
+
         // Add end marker
         this.shoppingListManager.addItem(listId, {
             name: '[RECIPE_END]',
@@ -14312,7 +14312,7 @@ class RecipeApp {
 
         // Collect all unique recipes from the menu
         const recipeNames = new Set();
-        
+
         menu.items.forEach(item => {
             if (item.lunch && item.lunch.trim() && item.lunch !== '-' && item.lunch !== 'Sin receta') {
                 recipeNames.add(item.lunch.trim());
@@ -14447,7 +14447,7 @@ class RecipeApp {
         // Process each recipe
         recipeNames.forEach(recipeName => {
             const recipe = this.recipes.find(r => r.name === recipeName);
-            
+
             if (!recipe) {
                 // Recipe not found in database, add just the name as a reminder
                 this.shoppingListManager.addItem(listId, {
@@ -14473,20 +14473,20 @@ class RecipeApp {
             const list = this.shoppingListManager.getList(listId);
             if (!list) return;
 
-            const categoryEmoji = recipe.category ? 
+            const categoryEmoji = recipe.category ?
                 (this.categoryManager.getCategoryById(recipe.category)?.emoji || '') : '';
-            
+
             const recipeMarker = `[RECIPE_START]${categoryEmoji} ${recipe.name}`.trim();
-            
+
             // Check if recipe already exists in the list
             const existingRecipeIndex = list.items.findIndex(item => item.name === recipeMarker);
-            
+
             if (existingRecipeIndex !== -1) {
                 // Recipe already exists, skip it
                 skippedCount++;
                 return;
             }
-            
+
             // Recipe doesn't exist, add it completely
             this.shoppingListManager.addItem(listId, {
                 name: recipeMarker,
@@ -14496,7 +14496,7 @@ class RecipeApp {
             // Add each ingredient with recipe marker
             recipe.ingredients.forEach(ingredient => {
                 let quantityText = '';
-                
+
                 if (ingredient.quantity && ingredient.quantity > 0) {
                     quantityText = ingredient.quantity.toString();
                     if (ingredient.unit) {
@@ -14513,7 +14513,7 @@ class RecipeApp {
                     quantity: quantityText
                 });
             });
-            
+
             // Add end marker
             this.shoppingListManager.addItem(listId, {
                 name: '[RECIPE_END]',
