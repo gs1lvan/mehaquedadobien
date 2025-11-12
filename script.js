@@ -7747,9 +7747,9 @@ class RecipeApp {
             if (recipe.category) {
                 categoryElement.dataset.category = recipe.category;
                 categoryElement.textContent = this.getCategoryLabel(recipe.category);
-                categoryElement.style.display = 'inline-block';
+                categoryElement.classList.remove('u-hidden');
             } else {
-                categoryElement.style.display = 'none';
+                categoryElement.classList.add('u-hidden');
             }
         }
 
@@ -7758,9 +7758,9 @@ class RecipeApp {
         if (totalTimeElement) {
             if (recipe.totalTime && recipe.totalTime.trim() !== '') {
                 totalTimeElement.textContent = `⏱️ ${recipe.totalTime}`;
-                totalTimeElement.style.display = 'inline-block';
+                totalTimeElement.classList.remove('u-hidden');
             } else {
-                totalTimeElement.style.display = 'none';
+                totalTimeElement.classList.add('u-hidden');
             }
         }
 
