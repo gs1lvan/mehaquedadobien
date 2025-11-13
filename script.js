@@ -1616,7 +1616,7 @@ class RecipeApp {
         // Recipe search input
         const searchInput = document.getElementById('recipe-search-input');
         const clearSearchBtn = document.getElementById('clear-search-btn');
-        
+
         if (searchInput) {
             let searchTimeout = null;
             let selectedIndex = -1;
@@ -1639,7 +1639,7 @@ class RecipeApp {
             searchInput.addEventListener('keydown', (e) => {
                 const autocomplete = document.getElementById('search-autocomplete');
                 const items = autocomplete.querySelectorAll('.autocomplete-item');
-                
+
                 if (items.length === 0) return;
 
                 if (e.key === 'ArrowDown') {
@@ -1788,6 +1788,14 @@ class RecipeApp {
         if (markAllMenuBtn) {
             markAllMenuBtn.addEventListener('click', () => {
                 this.handleMarkAllAsMenu();
+            });
+        }
+
+        // Delete all recipes
+        const deleteAllRecipesBtn = document.getElementById('delete-all-recipes-btn');
+        if (deleteAllRecipesBtn) {
+            deleteAllRecipesBtn.addEventListener('click', () => {
+                this.handleDeleteAllRecipes();
             });
         }
 
@@ -2764,6 +2772,120 @@ class RecipeApp {
             if (menuBtn) {
                 menuBtn.setAttribute('aria-expanded', 'false');
             }
+        }
+    }
+
+    /**
+     * Handle mark all recipes as menu-friendly
+     */
+    async handleMarkAllAsMenu() {
+        // Confirmation
+        const totalRecipes = this.recipes.length;
+        const confirmMessage = `¿Estás seguro de marcar todas las recetas (${totalRecipes}) como aptas para menú?\n\nEsta operación no se puede deshacer.`;
+
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        // Show progress message
+        this.showToast('Procesando recetas...', 'info');
+
+        try {
+            let updatedCount = 0;
+
+            // Process all recipes
+            for (const recipe of this.recipes) {
+                // Create updated recipe with menuFriendly = true
+                const updatedRecipe = new Recipe({
+                    ...recipe.toJSON(),
+                    menuFriendly: true,
+                    updatedAt: new Date()
+                });
+
+                // Save to database
+                await this.storageManager.saveRecipe(updatedRecipe);
+                updatedCount++;
+
+                console.log(`[Bulk Operations] Updated recipe ${updatedCount}/${totalRecipes}: ${recipe.name} - menuFriendly: ${updatedRecipe.menuFriendly}`);
+
+                // Small delay to prevent overwhelming the database
+                if (updatedCount % 10 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+            }
+
+            console.log('[Bulk Operations] All recipes updated, reloading page...');
+
+            // Reload page immediately to ensure everything is in sync
+            location.reload();
+
+        } catch (error) {
+            console.error('[Bulk Operations] Error marking recipes as menu:', error);
+            this.showError('Error al marcar las recetas: ' + error.message);
+        }
+    }
+
+    /**
+     * Handle delete all recipes
+     */
+    async handleDeleteAllRecipes() {
+        // Double confirmation for safety
+        const totalRecipes = this.recipes.length;
+
+        if (totalRecipes === 0) {
+            this.showToast('No hay recetas para eliminar', 'info');
+            return;
+        }
+
+        const firstConfirm = confirm(
+            `⚠️ ADVERTENCIA ⚠️\n\n` +
+            `Estás a punto de eliminar TODAS las recetas (${totalRecipes}).\n\n` +
+            `Esta acción NO se puede deshacer.\n\n` +
+            `¿Estás seguro de que quieres continuar?`
+        );
+
+        if (!firstConfirm) {
+            return;
+        }
+
+        // Second confirmation
+        const secondConfirm = confirm(
+            `⚠️ ÚLTIMA CONFIRMACIÓN ⚠️\n\n` +
+            `Se eliminarán ${totalRecipes} recetas de forma permanente.\n\n` +
+            `¿Realmente deseas eliminar TODAS las recetas?`
+        );
+
+        if (!secondConfirm) {
+            return;
+        }
+
+        // Show progress message
+        this.showToast('Eliminando todas las recetas...', 'info');
+
+        try {
+            let deletedCount = 0;
+
+            // Delete all recipes
+            for (const recipe of this.recipes) {
+                await this.storageManager.deleteRecipe(recipe.id);
+                deletedCount++;
+
+                console.log(`[Bulk Operations] Deleted recipe ${deletedCount}/${totalRecipes}: ${recipe.name}`);
+
+                // Small delay to prevent overwhelming the database
+                if (deletedCount % 10 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+            }
+
+            console.log('[Bulk Operations] All recipes deleted, reloading page...');
+
+            // Reload page immediately to ensure everything is in sync
+            location.reload();
+
+        } catch (error) {
+            console.error('[Bulk Operations] Error deleting recipes:', error);
+            this.showError('Error al eliminar las recetas: ' + error.message);
         }
     }
 
@@ -4428,7 +4550,7 @@ class RecipeApp {
      */
     handleRecipeSearch(query) {
         this.searchQuery = query.trim();
-        
+
         // Show/hide clear button
         const clearBtn = document.getElementById('clear-search-btn');
         if (clearBtn) {
@@ -4448,7 +4570,7 @@ class RecipeApp {
      */
     clearRecipeSearch() {
         this.searchQuery = '';
-        
+
         // Clear input
         const searchInput = document.getElementById('recipe-search-input');
         if (searchInput) {
@@ -4522,12 +4644,12 @@ class RecipeApp {
             matches.forEach(recipe => {
                 const item = document.createElement('div');
                 item.className = 'autocomplete-item';
-                
+
                 // Highlight matching text
                 const recipeName = recipe.name;
                 const lowerName = recipeName.toLowerCase();
                 const index = lowerName.indexOf(trimmedQuery);
-                
+
                 if (index >= 0) {
                     const before = recipeName.substring(0, index);
                     const match = recipeName.substring(index, index + trimmedQuery.length);
@@ -9372,7 +9494,7 @@ class RecipeApp {
         if (cmsBtn) {
             cmsBtn.onclick = () => {
                 this.closeRecipeOptionsModal();
-                window.open('cms/recipe-manager.html', '_blank');
+                window.open('recipe-manager.html', '_blank');
             };
         }
 
@@ -10841,10 +10963,12 @@ class RecipeApp {
         const filterToggleContainer = document.querySelector('.filter-toggle-container');
         const filtersContainer = document.getElementById('filters-container');
         const recipeCounter = document.getElementById('recipe-counter');
+        const searchContainer = document.querySelector('.recipe-search-container');
 
         if (filterToggleContainer) filterToggleContainer.classList.add('hidden');
         if (filtersContainer) filtersContainer.classList.add('hidden');
         if (recipeCounter) recipeCounter.classList.add('hidden');
+        if (searchContainer) searchContainer.classList.add('hidden');
 
         // Update current view
         this.currentView = 'shopping-lists';
@@ -10889,10 +11013,12 @@ class RecipeApp {
         const filterToggleContainer = document.querySelector('.filter-toggle-container');
         const filtersContainer = document.getElementById('filters-container');
         const recipeCounter = document.getElementById('recipe-counter');
+        const searchContainer = document.querySelector('.recipe-search-container');
 
         if (filterToggleContainer) filterToggleContainer.classList.add('hidden');
         if (filtersContainer) filtersContainer.classList.add('hidden');
         if (recipeCounter) recipeCounter.classList.add('hidden');
+        if (searchContainer) searchContainer.classList.add('hidden');
 
         // Clear shopping lists container to prevent any cross-contamination
         const shoppingListsContainer = document.getElementById('shopping-lists-container');
