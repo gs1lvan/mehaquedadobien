@@ -3521,11 +3521,25 @@ class RecipeApp {
         // Name field validation (real-time) - now using contenteditable h2
         const nameInput = document.getElementById('recipe-name');
         if (nameInput) {
+            // Debounce timer for validation
+            let validationTimeout = null;
+
             nameInput.addEventListener('input', () => {
-                this.validateNameField();
+                // Clear previous timeout
+                if (validationTimeout) {
+                    clearTimeout(validationTimeout);
+                }
+                // Wait 500ms after user stops typing before validating
+                validationTimeout = setTimeout(() => {
+                    this.validateNameField();
+                }, 500);
             });
 
             nameInput.addEventListener('blur', () => {
+                // Clear timeout and validate immediately on blur
+                if (validationTimeout) {
+                    clearTimeout(validationTimeout);
+                }
                 this.validateNameField();
             });
 
@@ -5899,10 +5913,11 @@ class RecipeApp {
     /**
      * Validate name field with comprehensive checks
      * Requirements: 1.3
-     * @returns {boolean} True if valid
+     * @returns {Promise<boolean>} True if valid
      */
-    validateNameField() {
+    async validateNameField() {
         const nameInput = document.getElementById('recipe-name');
+        const validationMessage = document.getElementById('recipe-name-validation');
 
         if (!nameInput) {
             console.error('[Validation] Name input element not found');
@@ -5910,35 +5925,66 @@ class RecipeApp {
         }
 
         const name = nameInput.textContent.trim();
+        const capitalizedName = this.capitalizeFirstLetter(name);
+
+        // Helper function to show error
+        const showError = (message) => {
+            nameInput.style.borderColor = 'var(--color-danger)';
+            if (validationMessage) {
+                validationMessage.textContent = message;
+                validationMessage.classList.remove('u-hidden');
+                validationMessage.style.color = 'var(--color-danger)';
+            }
+            return false;
+        };
+
+        // Helper function to clear error
+        const clearError = () => {
+            nameInput.style.borderColor = '';
+            if (validationMessage) {
+                validationMessage.classList.add('u-hidden');
+            }
+            return true;
+        };
 
         // Check minimum length
         if (name.length > 0 && name.length < 3) {
-            nameInput.style.borderColor = 'var(--color-danger)';
             console.warn('[Validation] Recipe name too short:', name.length);
-            return false;
+            return showError('El nombre debe tener al menos 3 caracteres');
         }
 
         // Check maximum length
         if (name.length > 100) {
-            nameInput.style.borderColor = 'var(--color-danger)';
             console.warn('[Validation] Recipe name too long:', name.length);
-            return false;
+            return showError('El nombre no puede tener más de 100 caracteres');
         }
 
-        // Check for invalid characters (optional - only allow alphanumeric, spaces, and common punctuation)
+        // Check for invalid characters
         if (name.length > 0) {
             const validNamePattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s\-.,()&]+$/;
             if (!validNamePattern.test(name)) {
-                nameInput.style.borderColor = 'var(--color-danger)';
                 console.warn('[Validation] Recipe name contains invalid characters');
-                return false;
+                return showError('El nombre contiene caracteres no válidos');
+            }
+        }
+
+        // Check for duplicate names (only if name is not empty and not default)
+        if (name.length > 0 && name !== 'Nueva Receta' && name !== 'Editar Receta') {
+            try {
+                const existingRecipe = await this.storageManager.getRecipeByName(capitalizedName);
+                if (existingRecipe && existingRecipe.id !== this.currentRecipeId) {
+                    console.warn('[Validation] Recipe name already exists:', capitalizedName);
+                    return showError('⚠️ Ya existe una receta con este nombre');
+                }
+            } catch (error) {
+                console.error('[Validation] Error checking duplicate name:', error);
+                // Don't block on error, just log it
             }
         }
 
         // Valid
-        nameInput.style.borderColor = '';
         console.log('[Validation] Recipe name is valid:', name);
-        return true;
+        return clearError();
     }
 
     /**
@@ -5981,7 +6027,8 @@ class RecipeApp {
         }
 
         // Validate name field (should pass now with auto-generated name)
-        if (!this.validateNameField()) {
+        const isNameValid = await this.validateNameField();
+        if (!isNameValid) {
             // Scroll to name field
             document.getElementById('recipe-name')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
@@ -6077,6 +6124,12 @@ class RecipeApp {
         try {
             // Capitalize first letter of recipe name
             const capitalizedName = this.capitalizeFirstLetter(formData.name.trim());
+
+            // Check for duplicate recipe name
+            const existingRecipeWithName = await this.storageManager.getRecipeByName(capitalizedName);
+            if (existingRecipeWithName && existingRecipeWithName.id !== this.currentRecipeId) {
+                throw new Error('Ya existe una receta con este nombre. Por favor, elige un nombre diferente.');
+            }
 
             // Create or update recipe
             let recipe;

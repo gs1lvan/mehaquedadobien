@@ -1316,6 +1316,17 @@ body.dark-theme .recipe-pdf-badge:hover {
     }
 }
 
+/* Validation message for recipe name */
+.validation-message {
+    margin-top: var(--spacing-xs);
+    margin-bottom: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.9rem;
+    border-radius: var(--border-radius);
+    background: rgba(255, 56, 92, 0.1);
+    color: var(--color-danger);
+}
+
 .recipe-form-content {
     max-width: 800px;
     margin: 0 auto;

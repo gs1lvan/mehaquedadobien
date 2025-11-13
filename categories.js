@@ -18,6 +18,7 @@ const PREDEFINED_CATEGORIES = [
     { id: 'legumbres', name: 'Legumbres', emoji: '🫘', color: '#8D6E63', isPredefined: true },
     { id: 'marisco', name: 'Marisco', emoji: '🦐', color: '#FF6B9D', isPredefined: true },
     { id: 'pescado', name: 'Pescado', emoji: '🐟', color: '#0073CF', isPredefined: true },
+     { id: 'bebida', name: 'bebida', emoji: '🍹', color: '#0073CF', isPredefined: true },
     { id: 'pollo', name: 'Pollo', emoji: '🐔', color: '#FFA500', isPredefined: true },
     { id: 'postres', name: 'Postres', emoji: '🍰', color: '#FFB6C1', isPredefined: true },
     { id: 'salsas', name: 'Salsas', emoji: '🍅', color: '#E53935', isPredefined: true },

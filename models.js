@@ -540,6 +540,21 @@ class StorageManager {
     }
 
     /**
+     * Get a recipe by name
+     * @param {string} name - Recipe name
+     * @returns {Promise<Recipe|null>}
+     */
+    async getRecipeByName(name) {
+        try {
+            const recipes = await this.getAllRecipes();
+            return recipes.find(r => r.name.toLowerCase() === name.toLowerCase()) || null;
+        } catch (error) {
+            console.error('[Storage] Error al buscar receta por nombre:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Get all recipes
      * Requirements: 13.1, 13.2, 13.3
      * @returns {Promise<Recipe[]>}
