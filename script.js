@@ -849,6 +849,7 @@ class RecipeApp {
         this.activeFilters = new Set(); // Track active category filters
         this.activeTimeFilter = 'all'; // Track active time filter
         this.activeMenuFilter = null; // Track active menu filter
+        this.searchQuery = ''; // Track search query
         this.currentView = 'list'; // 'list', 'detail', 'form'
         this.viewMode = localStorage.getItem('viewMode') || 'grid'; // 'grid' or 'list'
         this.sortBy = 'date'; // 'name' or 'date'
@@ -1612,6 +1613,71 @@ class RecipeApp {
             });
         }
 
+        // Recipe search input
+        const searchInput = document.getElementById('recipe-search-input');
+        const clearSearchBtn = document.getElementById('clear-search-btn');
+        
+        if (searchInput) {
+            let searchTimeout = null;
+            let selectedIndex = -1;
+
+            searchInput.addEventListener('input', (e) => {
+                selectedIndex = -1;
+                // Clear previous timeout
+                if (searchTimeout) {
+                    clearTimeout(searchTimeout);
+                }
+                // Show autocomplete immediately
+                this.showAutocomplete(e.target.value);
+                // Wait 300ms after user stops typing to filter
+                searchTimeout = setTimeout(() => {
+                    this.handleRecipeSearch(e.target.value);
+                }, 300);
+            });
+
+            // Handle keyboard navigation
+            searchInput.addEventListener('keydown', (e) => {
+                const autocomplete = document.getElementById('search-autocomplete');
+                const items = autocomplete.querySelectorAll('.autocomplete-item');
+                
+                if (items.length === 0) return;
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                    this.updateAutocompleteSelection(items, selectedIndex);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedIndex = Math.max(selectedIndex - 1, -1);
+                    this.updateAutocompleteSelection(items, selectedIndex);
+                } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                    e.preventDefault();
+                    items[selectedIndex].click();
+                } else if (e.key === 'Escape') {
+                    this.hideAutocomplete();
+                    selectedIndex = -1;
+                }
+            });
+
+            // Hide autocomplete when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !document.getElementById('search-autocomplete').contains(e.target)) {
+                    this.hideAutocomplete();
+                }
+            });
+
+            // Hide autocomplete on blur (with delay to allow click)
+            searchInput.addEventListener('blur', () => {
+                setTimeout(() => this.hideAutocomplete(), 200);
+            });
+        }
+
+        if (clearSearchBtn) {
+            clearSearchBtn.addEventListener('click', () => {
+                this.clearRecipeSearch();
+            });
+        }
+
         // View toggle buttons
         const viewGridBtn = document.getElementById('view-grid-btn');
         const viewListBtn = document.getElementById('view-list-btn');
@@ -1714,6 +1780,14 @@ class RecipeApp {
                 console.log('🔴 Computed styles:', modalBody ? window.getComputedStyle(modalBody).paddingBottom : 'N/A');
                 this.showCategoryModal(true); // true = opened from settings
                 closeMenu();
+            });
+        }
+
+        // Mark all recipes as menu-friendly
+        const markAllMenuBtn = document.getElementById('mark-all-menu-btn');
+        if (markAllMenuBtn) {
+            markAllMenuBtn.addEventListener('click', () => {
+                this.handleMarkAllAsMenu();
             });
         }
 
@@ -4349,6 +4423,184 @@ class RecipeApp {
     }
 
     /**
+     * Handle recipe search input
+     * @param {string} query - Search query
+     */
+    handleRecipeSearch(query) {
+        this.searchQuery = query.trim();
+        
+        // Show/hide clear button
+        const clearBtn = document.getElementById('clear-search-btn');
+        if (clearBtn) {
+            if (this.searchQuery) {
+                clearBtn.classList.remove('u-hidden');
+            } else {
+                clearBtn.classList.add('u-hidden');
+            }
+        }
+
+        // Re-render recipes with search filter
+        this.renderRecipeList();
+    }
+
+    /**
+     * Clear recipe search
+     */
+    clearRecipeSearch() {
+        this.searchQuery = '';
+        
+        // Clear input
+        const searchInput = document.getElementById('recipe-search-input');
+        if (searchInput) {
+            searchInput.value = '';
+        }
+
+        // Hide clear button
+        const clearBtn = document.getElementById('clear-search-btn');
+        if (clearBtn) {
+            clearBtn.classList.add('u-hidden');
+        }
+
+        // Hide autocomplete
+        this.hideAutocomplete();
+
+        // Re-render recipes
+        this.renderRecipeList();
+    }
+
+    /**
+     * Show autocomplete suggestions
+     * @param {string} query - Search query
+     */
+    showAutocomplete(query) {
+        const autocomplete = document.getElementById('search-autocomplete');
+        if (!autocomplete) return;
+
+        const trimmedQuery = query.trim().toLowerCase();
+
+        // Hide if query is empty
+        if (!trimmedQuery) {
+            this.hideAutocomplete();
+            return;
+        }
+
+        // Get matching recipes
+        const matches = this.recipes
+            .filter(recipe => {
+                // Filter out recipes from hidden categories
+                if (recipe.category && this.categoryManager.isCategoryHidden(recipe.category)) {
+                    return false;
+                }
+                return recipe.name.toLowerCase().includes(trimmedQuery);
+            })
+            .sort((a, b) => {
+                // Sort by relevance: exact match first, then starts with, then contains
+                const aName = a.name.toLowerCase();
+                const bName = b.name.toLowerCase();
+                const aExact = aName === trimmedQuery;
+                const bExact = bName === trimmedQuery;
+                const aStarts = aName.startsWith(trimmedQuery);
+                const bStarts = bName.startsWith(trimmedQuery);
+
+                if (aExact && !bExact) return -1;
+                if (!aExact && bExact) return 1;
+                if (aStarts && !bStarts) return -1;
+                if (!aStarts && bStarts) return 1;
+                return a.name.localeCompare(b.name);
+            })
+            .slice(0, 8); // Limit to 8 results
+
+        // Clear previous content
+        autocomplete.innerHTML = '';
+
+        if (matches.length === 0) {
+            const noResults = document.createElement('div');
+            noResults.className = 'autocomplete-no-results';
+            noResults.textContent = 'No se encontraron recetas';
+            autocomplete.appendChild(noResults);
+        } else {
+            matches.forEach(recipe => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+                
+                // Highlight matching text
+                const recipeName = recipe.name;
+                const lowerName = recipeName.toLowerCase();
+                const index = lowerName.indexOf(trimmedQuery);
+                
+                if (index >= 0) {
+                    const before = recipeName.substring(0, index);
+                    const match = recipeName.substring(index, index + trimmedQuery.length);
+                    const after = recipeName.substring(index + trimmedQuery.length);
+                    item.innerHTML = `${this.escapeHtml(before)}<mark>${this.escapeHtml(match)}</mark>${this.escapeHtml(after)}`;
+                } else {
+                    item.textContent = recipeName;
+                }
+
+                item.addEventListener('click', () => {
+                    this.selectAutocompleteItem(recipe.name);
+                });
+
+                autocomplete.appendChild(item);
+            });
+        }
+
+        // Show autocomplete
+        autocomplete.classList.remove('u-hidden');
+    }
+
+    /**
+     * Hide autocomplete dropdown
+     */
+    hideAutocomplete() {
+        const autocomplete = document.getElementById('search-autocomplete');
+        if (autocomplete) {
+            autocomplete.classList.add('u-hidden');
+        }
+    }
+
+    /**
+     * Update autocomplete selection (keyboard navigation)
+     * @param {NodeList} items - Autocomplete items
+     * @param {number} selectedIndex - Selected index
+     */
+    updateAutocompleteSelection(items, selectedIndex) {
+        items.forEach((item, index) => {
+            if (index === selectedIndex) {
+                item.classList.add('selected');
+                item.scrollIntoView({ block: 'nearest' });
+            } else {
+                item.classList.remove('selected');
+            }
+        });
+    }
+
+    /**
+     * Select an autocomplete item
+     * @param {string} recipeName - Recipe name
+     */
+    selectAutocompleteItem(recipeName) {
+        const searchInput = document.getElementById('recipe-search-input');
+        if (searchInput) {
+            searchInput.value = recipeName;
+        }
+
+        this.handleRecipeSearch(recipeName);
+        this.hideAutocomplete();
+    }
+
+    /**
+     * Escape HTML to prevent XSS
+     * @param {string} text - Text to escape
+     * @returns {string} Escaped text
+     */
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    /**
      * Handle filter chip click - implements multiple filter logic
      * Requirements: 10.2, 10.3, 10.4, 10.5
      */
@@ -4599,6 +4851,14 @@ class RecipeApp {
 
                 console.log('[Menu Filter] Filtered to', filtered.length, 'recipes');
             }
+        }
+
+        // Apply search filter
+        if (this.searchQuery && this.searchQuery.trim() !== '') {
+            const query = this.searchQuery.toLowerCase().trim();
+            filtered = filtered.filter(recipe => {
+                return recipe.name.toLowerCase().includes(query);
+            });
         }
 
         // TEMPORALMENTE OCULTO - Apply time filter (2025-11-04)
@@ -5640,6 +5900,12 @@ class RecipeApp {
             timeFilterBar.classList.add('hidden');
         }
 
+        // Hide search bar
+        const searchContainer = document.querySelector('.recipe-search-container');
+        if (searchContainer) {
+            searchContainer.classList.add('hidden');
+        }
+
         // Show form view
         const formView = document.getElementById('recipe-form-view');
         if (formView) {
@@ -5769,6 +6035,12 @@ class RecipeApp {
         if (recipeCounter) {
             recipeCounter.style.display = 'inline-block';
             recipeCounter.classList.remove('hidden');
+        }
+
+        // Show search bar
+        const searchContainer = document.querySelector('.recipe-search-container');
+        if (searchContainer) {
+            searchContainer.classList.remove('hidden');
         }
 
         // Menu is always visible
@@ -7748,6 +8020,12 @@ class RecipeApp {
             timeFilterBar.classList.add('hidden');
         }
 
+        // Hide search bar
+        const searchContainer = document.querySelector('.recipe-search-container');
+        if (searchContainer) {
+            searchContainer.classList.add('hidden');
+        }
+
         // Hide recipe counter
         const recipeCounter = document.getElementById('recipe-counter');
         if (recipeCounter) {
@@ -9094,7 +9372,7 @@ class RecipeApp {
         if (cmsBtn) {
             cmsBtn.onclick = () => {
                 this.closeRecipeOptionsModal();
-                window.open('recipe-manager.html', '_blank');
+                window.open('cms/recipe-manager.html', '_blank');
             };
         }
 
@@ -9296,6 +9574,12 @@ class RecipeApp {
             toggleBtn.textContent = '🔍 Filtros';
         }
 
+        // Show search bar
+        const searchContainer = document.querySelector('.recipe-search-container');
+        if (searchContainer) {
+            searchContainer.classList.remove('hidden');
+        }
+
         // Menu is always visible
 
         // Reset form if we were in form view
@@ -9350,6 +9634,12 @@ class RecipeApp {
         if (recipeCounter) {
             recipeCounter.style.display = 'inline-block';
             recipeCounter.classList.remove('hidden');
+        }
+
+        // Show search bar
+        const searchContainer = document.querySelector('.recipe-search-container');
+        if (searchContainer) {
+            searchContainer.classList.remove('hidden');
         }
 
         // Update current view state

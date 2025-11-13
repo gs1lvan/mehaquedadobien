@@ -198,6 +198,16 @@
             </div>
             <!-- End filters container -->
 
+            <!-- Recipe search bar -->
+            <div class="recipe-search-container">
+                <div class="recipe-search-wrapper">
+                    <input type="text" id="recipe-search-input" class="recipe-search-input"
+                        placeholder="Buscar recetas por nombre..." autocomplete="off">
+                    <button id="clear-search-btn" class="btn-clear-search u-hidden" title="Limpiar búsqueda">✕</button>
+                    <div id="search-autocomplete" class="search-autocomplete u-hidden"></div>
+                </div>
+            </div>
+
             <!-- Recipe counter -->
             <div id="recipe-counter" class="recipe-counter">
                 <span id="recipe-count-text">0 recetas</span>
@@ -1287,6 +1297,18 @@
                                 <span class="option-text" id="theme-text-modal">Modo oscuro</span>
                             </button>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Bulk Operations Section -->
+                <div class="settings-section u-mt-md">
+                    <h3 class="settings-section-title">Operaciones Masivas</h3>
+                    <div class="settings-section-content">
+                        <button id="mark-all-menu-btn" class="modal-trigger modal-trigger--option u-w-full"
+                            title="Marcar todas las recetas como aptas para menú">
+                            <span class="option-icon"><i class="fa-solid fa-utensils"></i></span>
+                            <span class="option-text">Marcar todas como menú</span>
+                        </button>
                     </div>
                 </div>
 
