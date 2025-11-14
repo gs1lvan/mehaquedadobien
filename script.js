@@ -9169,20 +9169,23 @@ class RecipeApp {
      * @param {Ingredient[]} ingredients - Ingredients to display
      */
     renderDetailIngredients(ingredients) {
+        const sectionElement = document.getElementById('detail-ingredients-section');
         const listElement = document.getElementById('detail-ingredients-list');
         const emptyElement = document.getElementById('detail-no-ingredients');
 
-        if (!listElement || !emptyElement) return;
+        if (!listElement || !emptyElement || !sectionElement) return;
 
         // Clear list
         listElement.innerHTML = '';
 
         if (!ingredients || ingredients.length === 0) {
-            listElement.style.display = 'none';
-            emptyElement.style.display = 'block';
+            // Hide entire section when empty
+            sectionElement.classList.add('u-hidden');
             return;
         }
 
+        // Show section when has ingredients
+        sectionElement.classList.remove('u-hidden');
         listElement.style.display = 'grid';
         emptyElement.style.display = 'none';
 
@@ -9926,27 +9929,37 @@ class RecipeApp {
         const updatedAtElement = document.getElementById('detail-updated-at');
         const recipeIdElement = document.getElementById('detail-recipe-id');
 
-        if (createdAtElement) {
-            createdAtElement.textContent = recipe.createdAt.toLocaleString('es-ES', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+        if (createdAtElement && recipe.createdAt) {
+            try {
+                const createdDate = new Date(recipe.createdAt);
+                createdAtElement.textContent = createdDate.toLocaleString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (error) {
+                createdAtElement.textContent = '-';
+            }
         }
 
-        if (updatedAtElement) {
-            updatedAtElement.textContent = recipe.updatedAt.toLocaleString('es-ES', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+        if (updatedAtElement && recipe.updatedAt) {
+            try {
+                const updatedDate = new Date(recipe.updatedAt);
+                updatedAtElement.textContent = updatedDate.toLocaleString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (error) {
+                updatedAtElement.textContent = '-';
+            }
         }
 
-        if (recipeIdElement) {
+        if (recipeIdElement && recipe.id) {
             recipeIdElement.textContent = recipe.id;
         }
     }

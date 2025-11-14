@@ -3554,11 +3554,15 @@ body.dark-theme .recipe-pdf-badge:hover {
 }
 
 .detail-metadata {
-    display: none !important;
+    padding: var(--spacing-md);
+    background: var(--color-background-secondary);
+    border-radius: var(--radius-md);
 }
 
 .metadata-grid {
-    display: none !important;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
 }
 
 .metadata-item {
