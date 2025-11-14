@@ -1007,7 +1007,7 @@ main {
 .recipe-search-input {
     width: 100%;
     padding: var(--spacing-sm) var(--spacing-md);
-    padding-right: 40px;
+    padding-right: 80px;
     font-size: 0.8755rem;
     border: 2px solid var(--color-border);
     border-radius: var(--radius-sm);
@@ -1028,7 +1028,7 @@ main {
 
 .btn-clear-search {
     position: absolute;
-    right: 8px;
+    right: 44px;
     top: 50%;
     transform: translateY(-50%);
     background: transparent;
@@ -1044,6 +1044,67 @@ main {
 .btn-clear-search:hover {
     background: var(--color-background-secondary);
     color: var(--color-text);
+}
+
+.btn-toggle-advanced-search {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+}
+
+.btn-toggle-advanced-search:hover {
+    background: var(--color-background-secondary);
+    color: var(--color-primary);
+}
+
+.btn-toggle-advanced-search.active {
+    color: var(--color-primary);
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* Advanced search container */
+.advanced-search-container {
+    position: relative;
+    max-width: 600px;
+    margin: var(--spacing-sm) auto 0;
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+}
+
+.ingredient-search-input {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    padding-right: 40px;
+    font-size: 0.875rem;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-background-secondary);
+    color: var(--color-text);
+    transition: all 0.2s ease;
+}
+
+.ingredient-search-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.1);
+    background: var(--color-background);
+}
+
+.ingredient-search-input::placeholder {
+    color: var(--color-text-secondary);
+}
+
+.advanced-search-container .btn-clear-search {
+    right: 8px;
 }
 
 /* Search autocomplete dropdown */

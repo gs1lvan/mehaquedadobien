@@ -981,6 +981,7 @@ class RecipeApp {
         this.activeMenuFilter = null; // Track active menu filter
         this.activeCollectionFilter = null; // Track active collection filter
         this.searchQuery = ''; // Track search query
+        this.ingredientSearchQuery = ''; // Track ingredient search query
         this.currentView = 'list'; // 'list', 'detail', 'form'
         this.viewMode = localStorage.getItem('viewMode') || 'grid'; // 'grid' or 'list'
         this.sortBy = 'date'; // 'name' or 'date'
@@ -1811,6 +1812,39 @@ class RecipeApp {
         if (clearSearchBtn) {
             clearSearchBtn.addEventListener('click', () => {
                 this.clearRecipeSearch();
+            });
+        }
+
+        // Advanced search toggle button
+        const toggleAdvancedSearchBtn = document.getElementById('toggle-advanced-search-btn');
+        if (toggleAdvancedSearchBtn) {
+            toggleAdvancedSearchBtn.addEventListener('click', () => {
+                this.toggleAdvancedSearch();
+            });
+        }
+
+        // Ingredient search input
+        const ingredientSearchInput = document.getElementById('ingredient-search-input');
+        const clearIngredientSearchBtn = document.getElementById('clear-ingredient-search-btn');
+
+        if (ingredientSearchInput) {
+            let ingredientSearchTimeout = null;
+
+            ingredientSearchInput.addEventListener('input', (e) => {
+                // Clear previous timeout
+                if (ingredientSearchTimeout) {
+                    clearTimeout(ingredientSearchTimeout);
+                }
+                // Wait 300ms after user stops typing to filter
+                ingredientSearchTimeout = setTimeout(() => {
+                    this.handleIngredientSearch(e.target.value);
+                }, 300);
+            });
+        }
+
+        if (clearIngredientSearchBtn) {
+            clearIngredientSearchBtn.addEventListener('click', () => {
+                this.clearIngredientSearch();
             });
         }
 
@@ -5338,6 +5372,67 @@ class RecipeApp {
     }
 
     /**
+     * Toggle advanced search visibility
+     */
+    toggleAdvancedSearch() {
+        const container = document.getElementById('advanced-search-container');
+        const toggleBtn = document.getElementById('toggle-advanced-search-btn');
+        
+        if (!container || !toggleBtn) return;
+
+        if (container.classList.contains('u-hidden')) {
+            container.classList.remove('u-hidden');
+            toggleBtn.classList.add('active');
+        } else {
+            container.classList.add('u-hidden');
+            toggleBtn.classList.remove('active');
+        }
+    }
+
+    /**
+     * Handle ingredient search input
+     * @param {string} query - Search query
+     */
+    handleIngredientSearch(query) {
+        this.ingredientSearchQuery = query.trim();
+
+        // Show/hide clear button
+        const clearBtn = document.getElementById('clear-ingredient-search-btn');
+        if (clearBtn) {
+            if (this.ingredientSearchQuery) {
+                clearBtn.classList.remove('u-hidden');
+            } else {
+                clearBtn.classList.add('u-hidden');
+            }
+        }
+
+        // Re-render recipes with ingredient filter
+        this.renderRecipeList();
+    }
+
+    /**
+     * Clear ingredient search
+     */
+    clearIngredientSearch() {
+        this.ingredientSearchQuery = '';
+
+        // Clear input
+        const ingredientSearchInput = document.getElementById('ingredient-search-input');
+        if (ingredientSearchInput) {
+            ingredientSearchInput.value = '';
+        }
+
+        // Hide clear button
+        const clearBtn = document.getElementById('clear-ingredient-search-btn');
+        if (clearBtn) {
+            clearBtn.classList.add('u-hidden');
+        }
+
+        // Re-render recipes
+        this.renderRecipeList();
+    }
+
+    /**
      * Show autocomplete suggestions
      * @param {string} query - Search query
      */
@@ -5742,6 +5837,23 @@ class RecipeApp {
                 
                 // Recipe must contain ALL search terms (AND logic)
                 return searchTerms.every(term => recipeName.includes(term));
+            });
+        }
+
+        // Apply ingredient search filter (supports multiple ingredients with AND logic)
+        if (this.ingredientSearchQuery && this.ingredientSearchQuery.trim() !== '') {
+            const query = this.ingredientSearchQuery.toLowerCase().trim();
+            
+            // Split by spaces to get individual ingredient terms
+            const ingredientTerms = query.split(/\s+/).filter(term => term.length > 0);
+            
+            filtered = filtered.filter(recipe => {
+                // Get all ingredient names from the recipe
+                const recipeIngredients = recipe.ingredients || [];
+                const ingredientNames = recipeIngredients.map(ing => ing.name.toLowerCase()).join(' ');
+                
+                // Recipe must contain ALL ingredient terms (AND logic)
+                return ingredientTerms.every(term => ingredientNames.includes(term));
             });
         }
 

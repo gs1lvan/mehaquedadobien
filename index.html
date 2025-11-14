@@ -212,7 +212,17 @@
                     <input type="text" id="recipe-search-input" class="recipe-search-input"
                         placeholder="Buscar recetas (ej: pollo tomate)..." autocomplete="off">
                     <button id="clear-search-btn" class="btn-clear-search u-hidden" title="Limpiar búsqueda">✕</button>
+                    <button id="toggle-advanced-search-btn" class="btn-toggle-advanced-search" title="Búsqueda avanzada">
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
                     <div id="search-autocomplete" class="search-autocomplete u-hidden"></div>
+                </div>
+                
+                <!-- Advanced search (ingredients) -->
+                <div id="advanced-search-container" class="advanced-search-container u-hidden">
+                    <input type="text" id="ingredient-search-input" class="ingredient-search-input"
+                        placeholder="Buscar por ingredientes (ej: cebolla ajo)..." autocomplete="off">
+                    <button id="clear-ingredient-search-btn" class="btn-clear-search u-hidden" title="Limpiar búsqueda de ingredientes">✕</button>
                 </div>
             </div>
 
