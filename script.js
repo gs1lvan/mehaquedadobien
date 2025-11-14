@@ -5730,11 +5730,18 @@ class RecipeApp {
             }
         }
 
-        // Apply search filter
+        // Apply search filter (supports multiple words with AND logic)
         if (this.searchQuery && this.searchQuery.trim() !== '') {
             const query = this.searchQuery.toLowerCase().trim();
+            
+            // Split by spaces to get individual search terms
+            const searchTerms = query.split(/\s+/).filter(term => term.length > 0);
+            
             filtered = filtered.filter(recipe => {
-                return recipe.name.toLowerCase().includes(query);
+                const recipeName = recipe.name.toLowerCase();
+                
+                // Recipe must contain ALL search terms (AND logic)
+                return searchTerms.every(term => recipeName.includes(term));
             });
         }
 
