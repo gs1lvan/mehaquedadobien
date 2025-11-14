@@ -198,8 +198,16 @@
             </div>
             <!-- End filters container -->
 
+            <!-- Collection title (shown when viewing a collection) -->
+            <div id="collection-title-container" class="collection-title-container u-hidden">
+                <h2 id="collection-title" class="collection-title"></h2>
+                <button id="clear-collection-btn" class="btn-clear-collection" title="Volver a todas las recetas">
+                    ✕ Cerrar conjunto
+                </button>
+            </div>
+
             <!-- Recipe search bar -->
-            <div class="recipe-search-container">
+            <div id="recipe-search-container" class="recipe-search-container">
                 <div class="recipe-search-wrapper">
                     <input type="text" id="recipe-search-input" class="recipe-search-input"
                         placeholder="Buscar recetas por nombre..." autocomplete="off">
@@ -1247,34 +1255,35 @@
             </div>
 
             <div class="modal-body">
-                <!-- Recipe Book Owner and Preferences Section -->
-                <div class="grid-2-cols-md">
-                    <!-- Recipe Book Owner -->
-                    <div class="settings-section u-mb-0">
-                        <h3 class="settings-section-title">Libro de receta de:</h3>
-                        <div class="settings-section-content">
-                            <input type="text" id="recipe-book-owner" class="form-input u-w-full"
-                                placeholder="Escribe tu nombre...">
-                        </div>
+                <!-- Recipe Book Owner Section -->
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Libro de receta de:</h3>
+                    <div class="settings-section-content">
+                        <input type="text" id="recipe-book-owner" class="form-input u-w-full"
+                            placeholder="Escribe tu nombre...">
                     </div>
+                </div>
 
-                    <!-- Preferences -->
-                    <div class="settings-section u-mb-0">
-                        <h3 class="settings-section-title">Cocinoteca:</h3>
-                        <div class="settings-section-content">
-                            <select id="recipe-preferences" class="form-input u-w-full">
-                                <option value="" disabled selected>Selecciona una opción...</option>
-                                <option value="cocina-asiatica">Cocina asiática</option>
-                                <option value="cocina-vegana">Cocina vegana</option>
-                                <option value="no-verduras">No me gustan las verduras</option>
-                                <option value="comida-hospital">Cómo meter comida en el hospital</option>
-                            </select>
+                <!-- Cocinoteca: Recipe Collections -->
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Cocinoteca</h3>
+                    <div class="settings-section-content">
+                        <!-- Two action buttons -->
+                        <div class="cocinoteca-actions">
+                            <button id="save-view-btn" class="modal-trigger modal-trigger--option u-w-full">
+                                <span class="option-icon"><i class="fa-solid fa-floppy-disk"></i></span>
+                                <span class="option-text">Guardar esta vista</span>
+                            </button>
+                            <button id="open-collections-btn" class="modal-trigger modal-trigger--option u-w-full">
+                                <span class="option-icon"><i class="fa-solid fa-book-open"></i></span>
+                                <span class="option-text">Abrir colecciones</span>
+                            </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Categories and Theme Section (50/50 split) -->
-                <div class="grid-2-cols-md u-mt-md">
+                <div class="grid-2-cols-md">
                     <!-- Categories Section -->
                     <div class="settings-section u-mb-0">
                         <h3 class="settings-section-title">Categorías</h3>
@@ -1333,6 +1342,69 @@
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Collections Modal -->
+    <div id="view-collections-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2>Colecciones de Recetas</h2>
+                <button id="close-view-collections-modal" class="btn-icon" aria-label="Cerrar modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="view-collections-list" class="view-collections-list">
+                    <!-- Collections will be rendered here -->
+                </div>
+                <div id="view-collections-empty" class="empty-state hidden">
+                    <p>No hay colecciones guardadas</p>
+                    <p class="empty-state-hint">Guarda tu primera colección desde la vista de recetas</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-trigger modal-trigger--action modal-trigger--secondary" id="close-view-collections-btn">
+                    <span class="option-text">Cerrar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Collection Modal -->
+    <div id="edit-collection-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 id="edit-collection-title">Editar Conjunto</h2>
+                <button id="close-edit-collection-modal" class="btn-icon">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="u-mb-md">
+                    <label class="label">Nombre del conjunto</label>
+                    <input type="text" id="edit-collection-name" class="form-input u-w-full" placeholder="Nombre del conjunto">
+                </div>
+                
+                <div class="u-mb-md">
+                    <div class="u-flex u-justify-between u-items-center u-mb-sm">
+                        <label class="label">Recetas en el conjunto (<span id="collection-recipe-count">0</span>)</label>
+                        <button id="add-recipe-to-collection-btn" class="modal-trigger modal-trigger--action modal-trigger--success" style="padding: 4px 12px; font-size: 0.875rem;">
+                            <span class="option-icon"><i class="fa-solid fa-plus"></i></span>
+                            <span class="option-text">Añadir receta</span>
+                        </button>
+                    </div>
+                    <div id="collection-recipes-list" class="collection-recipes-list">
+                        <!-- Recipes will be rendered here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-trigger modal-trigger--action modal-trigger--secondary" id="cancel-edit-collection-btn">
+                    <span class="option-text">Cancelar</span>
+                </button>
+                <button class="modal-trigger modal-trigger--action modal-trigger--primary" id="save-edit-collection-btn">
+                    <span class="option-text">Guardar</span>
+                </button>
             </div>
         </div>
     </div>

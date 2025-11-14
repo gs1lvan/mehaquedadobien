@@ -471,6 +471,135 @@ class CategoryManager {
 // ===== Shopping List Management =====
 
 /**
+ * CollectionManager - Manages recipe collections (Cocinoteca)
+ */
+class CollectionManager {
+    constructor() {
+        this.collections = [];
+        this.storageKey = 'recipe_collections';
+        this.loadCollections();
+    }
+
+    /**
+     * Load collections from localStorage
+     */
+    loadCollections() {
+        try {
+            const stored = localStorage.getItem(this.storageKey);
+            if (stored) {
+                this.collections = JSON.parse(stored);
+                console.log('[CollectionManager] Loaded collections:', this.collections.length);
+            }
+        } catch (error) {
+            console.error('[CollectionManager] Error loading collections:', error);
+            this.collections = [];
+        }
+    }
+
+    /**
+     * Save collections to localStorage
+     */
+    saveCollections() {
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(this.collections));
+            console.log('[CollectionManager] Saved collections:', this.collections.length);
+        } catch (error) {
+            console.error('[CollectionManager] Error saving collections:', error);
+            throw new Error('No se pudieron guardar los conjuntos');
+        }
+    }
+
+    /**
+     * Create a new collection
+     * @param {string} name - Collection name
+     * @param {string[]} recipeIds - Array of recipe IDs
+     * @returns {Object} Created collection
+     */
+    createCollection(name, recipeIds) {
+        const collection = {
+            id: this.generateId(),
+            name: name.trim(),
+            recipeIds: [...recipeIds],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+
+        this.collections.push(collection);
+        this.saveCollections();
+        return collection;
+    }
+
+    /**
+     * Get collection by ID
+     * @param {string} id - Collection ID
+     * @returns {Object|null}
+     */
+    getCollection(id) {
+        return this.collections.find(c => c.id === id) || null;
+    }
+
+    /**
+     * Update collection
+     * @param {string} id - Collection ID
+     * @param {Object} updates - Updates to apply
+     */
+    updateCollection(id, updates) {
+        const collection = this.getCollection(id);
+        if (collection) {
+            Object.assign(collection, updates, {
+                updatedAt: new Date().toISOString()
+            });
+            this.saveCollections();
+        }
+    }
+
+    /**
+     * Delete collection
+     * @param {string} id - Collection ID
+     */
+    deleteCollection(id) {
+        this.collections = this.collections.filter(c => c.id !== id);
+        this.saveCollections();
+    }
+
+    /**
+     * Add recipe to collection
+     * @param {string} collectionId - Collection ID
+     * @param {string} recipeId - Recipe ID
+     */
+    addRecipe(collectionId, recipeId) {
+        const collection = this.getCollection(collectionId);
+        if (collection && !collection.recipeIds.includes(recipeId)) {
+            collection.recipeIds.push(recipeId);
+            collection.updatedAt = new Date().toISOString();
+            this.saveCollections();
+        }
+    }
+
+    /**
+     * Remove recipe from collection
+     * @param {string} collectionId - Collection ID
+     * @param {string} recipeId - Recipe ID
+     */
+    removeRecipe(collectionId, recipeId) {
+        const collection = this.getCollection(collectionId);
+        if (collection) {
+            collection.recipeIds = collection.recipeIds.filter(id => id !== recipeId);
+            collection.updatedAt = new Date().toISOString();
+            this.saveCollections();
+        }
+    }
+
+    /**
+     * Generate unique ID
+     * @returns {string}
+     */
+    generateId() {
+        return 'col_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+}
+
+/**
  * ShoppingListManager - Manages shopping lists and their items
  */
 class ShoppingListManager {
@@ -842,6 +971,7 @@ class RecipeApp {
     constructor() {
         this.storageManager = new StorageManager();
         this.categoryManager = new CategoryManager();
+        this.collectionManager = new CollectionManager();
         this.shoppingListManager = new ShoppingListManager();
         this.menuManager = new MenuManager();
         this.recipes = [];
@@ -849,6 +979,7 @@ class RecipeApp {
         this.activeFilters = new Set(); // Track active category filters
         this.activeTimeFilter = 'all'; // Track active time filter
         this.activeMenuFilter = null; // Track active menu filter
+        this.activeCollectionFilter = null; // Track active collection filter
         this.searchQuery = ''; // Track search query
         this.currentView = 'list'; // 'list', 'detail', 'form'
         this.viewMode = localStorage.getItem('viewMode') || 'grid'; // 'grid' or 'list'
@@ -1575,7 +1706,12 @@ class RecipeApp {
         if (homeLink) {
             homeLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.goToHome();
+                // Clear collection view if active
+                if (this.activeCollectionFilter) {
+                    this.clearCollectionView();
+                } else {
+                    this.goToHome();
+                }
             });
         }
 
@@ -1799,6 +1935,36 @@ class RecipeApp {
             });
         }
 
+        // Cocinoteca buttons
+        const saveViewBtn = document.getElementById('save-view-btn');
+        if (saveViewBtn) {
+            saveViewBtn.addEventListener('click', () => {
+                this.saveCurrentViewAsCollection();
+            });
+        }
+
+        const openCollectionsBtn = document.getElementById('open-collections-btn');
+        if (openCollectionsBtn) {
+            openCollectionsBtn.addEventListener('click', () => {
+                this.openViewCollectionsModal();
+            });
+        }
+
+        // View collections modal buttons
+        const closeViewCollectionsModalBtn = document.getElementById('close-view-collections-modal');
+        if (closeViewCollectionsModalBtn) {
+            closeViewCollectionsModalBtn.addEventListener('click', () => {
+                this.closeViewCollectionsModal();
+            });
+        }
+
+        const closeViewCollectionsBtn = document.getElementById('close-view-collections-btn');
+        if (closeViewCollectionsBtn) {
+            closeViewCollectionsBtn.addEventListener('click', () => {
+                this.closeViewCollectionsModal();
+            });
+        }
+
         const shoppingListsBtn = document.getElementById('shopping-lists-btn');
         if (shoppingListsBtn) {
             shoppingListsBtn.addEventListener('click', () => {
@@ -1863,6 +2029,14 @@ class RecipeApp {
             helpBtn.addEventListener('click', () => {
                 this.openHelpModal();
                 closeMenu();
+            });
+        }
+
+        // Clear collection button
+        const clearCollectionBtn = document.getElementById('clear-collection-btn');
+        if (clearCollectionBtn) {
+            clearCollectionBtn.addEventListener('click', () => {
+                this.clearCollectionView();
             });
         }
 
@@ -2710,6 +2884,9 @@ class RecipeApp {
         // Add to modal stack
         this.pushModal('settings-modal');
 
+        // Render collections list
+        this.renderCollectionsList();
+
         // Load recipe book owner name
         const ownerInput = document.getElementById('recipe-book-owner');
         if (ownerInput) {
@@ -2886,6 +3063,576 @@ class RecipeApp {
         } catch (error) {
             console.error('[Bulk Operations] Error deleting recipes:', error);
             this.showError('Error al eliminar las recetas: ' + error.message);
+        }
+    }
+
+    /**
+     * Handle save current view as collection
+     */
+    handleSaveCurrentView() {
+        this.saveCurrentViewAsCollection();
+    }
+
+    /**
+     * Save current view as collection
+     */
+    saveCurrentViewAsCollection() {
+        // Get currently visible recipes (filtered)
+        const visibleRecipes = this.filterRecipes();
+        
+        if (visibleRecipes.length === 0) {
+            this.showToast('No hay recetas para guardar', 'warning');
+            return;
+        }
+
+        // Ask for collection name
+        const name = prompt(`Guardar ${visibleRecipes.length} recetas como conjunto.\n\nNombre del conjunto:`);
+        
+        if (!name || name.trim() === '') {
+            return;
+        }
+
+        try {
+            // Create collection with recipe IDs
+            const recipeIds = visibleRecipes.map(r => r.id);
+            const collection = this.collectionManager.createCollection(name, recipeIds);
+            
+            this.showSuccess(`Conjunto "${collection.name}" guardado con ${recipeIds.length} recetas`);
+            
+            // Render collections list
+            this.renderCollectionsList();
+            
+        } catch (error) {
+            console.error('[Collections] Error saving collection:', error);
+            this.showError('Error al guardar el conjunto: ' + error.message);
+        }
+    }
+
+    /**
+     * Handle collection select change
+     * @param {string} value - Selected value
+     */
+    handleCollectionSelect(value) {
+        if (!value) return;
+
+        if (value === '__save__') {
+            // Save current view
+            this.handleSaveCurrentView();
+        } else {
+            // Apply collection filter
+            this.applyCollectionFilter(value);
+        }
+    }
+
+    /**
+     * Apply collection filter (show only recipes from collection)
+     * @param {string} collectionId - Collection ID
+     */
+    applyCollectionFilter(collectionId) {
+        const collection = this.collectionManager.getCollection(collectionId);
+        if (!collection) {
+            this.showError('Conjunto no encontrado');
+            return;
+        }
+
+        // Close settings modal
+        this.closeSettingsModal();
+
+        // Go to home view
+        this.goToHome();
+
+        // Clear other filters
+        this.activeFilters.clear();
+        this.activeMenuFilter = null;
+        this.searchQuery = '';
+
+        // Set collection filter
+        this.activeCollectionFilter = collectionId;
+
+        // Update UI to show collection title and hide search
+        this.updateCollectionViewUI(collection);
+
+        // Render recipes
+        this.renderRecipeList();
+
+        this.showToast(`Mostrando ${collection.recipeIds.length} recetas del conjunto "${collection.name}"`, 'info');
+    }
+
+    /**
+     * Update UI when viewing a collection
+     */
+    updateCollectionViewUI(collection) {
+        const titleContainer = document.getElementById('collection-title-container');
+        const titleElement = document.getElementById('collection-title');
+        const searchContainer = document.getElementById('recipe-search-container');
+
+        if (titleContainer && titleElement && searchContainer) {
+            // Show collection title with Font Awesome icon
+            titleElement.innerHTML = `
+                <i class="fa-solid fa-book-bookmark"></i> ${this.escapeHtml(collection.name)}
+            `;
+            titleContainer.classList.remove('u-hidden');
+
+            // Hide search bar
+            searchContainer.classList.add('u-hidden');
+        }
+    }
+
+    /**
+     * Clear collection view and return to normal view
+     */
+    clearCollectionView() {
+        const titleContainer = document.getElementById('collection-title-container');
+        const searchContainer = document.getElementById('recipe-search-container');
+
+        // Clear collection filter
+        this.activeCollectionFilter = null;
+
+        // Update UI
+        if (titleContainer && searchContainer) {
+            titleContainer.classList.add('u-hidden');
+            searchContainer.classList.remove('u-hidden');
+        }
+
+        // Re-render recipes
+        this.renderRecipeList();
+
+        this.showToast('Mostrando todas las recetas', 'info');
+    }
+
+    /**
+     * Hide collection title (helper for navigation)
+     */
+    hideCollectionTitle() {
+        const titleContainer = document.getElementById('collection-title-container');
+        if (titleContainer) {
+            titleContainer.classList.add('u-hidden');
+        }
+    }
+
+    /**
+     * Render collections list - Updates modal if open
+     */
+    renderCollectionsList() {
+        // Check if view collections modal is open
+        const modal = document.getElementById('view-collections-modal');
+        if (modal && !modal.classList.contains('hidden')) {
+            // Modal is open, refresh it
+            this.renderViewCollectionsList();
+        }
+    }
+
+    /**
+     * Open view collections modal
+     */
+    openViewCollectionsModal() {
+        const modal = document.getElementById('view-collections-modal');
+        if (!modal) return;
+
+        // Render collections in modal
+        this.renderViewCollectionsList();
+
+        // Show modal
+        modal.classList.remove('hidden');
+        this.pushModal('view-collections-modal');
+    }
+
+    /**
+     * Close view collections modal
+     */
+    closeViewCollectionsModal() {
+        const modal = document.getElementById('view-collections-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+            this.popModal();
+        }
+    }
+
+    /**
+     * Render collections in view modal
+     */
+    renderViewCollectionsList() {
+        const container = document.getElementById('view-collections-list');
+        const emptyState = document.getElementById('view-collections-empty');
+        
+        if (!container || !emptyState) return;
+
+        const collections = this.collectionManager.collections;
+
+        if (collections.length === 0) {
+            container.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+            return;
+        }
+
+        container.classList.remove('hidden');
+        emptyState.classList.add('hidden');
+        container.innerHTML = '';
+
+        collections.forEach(collection => {
+            const item = this.renderViewCollectionItem(collection);
+            container.appendChild(item);
+        });
+    }
+
+    /**
+     * Render a single collection item in view modal
+     */
+    renderViewCollectionItem(collection) {
+        const item = document.createElement('div');
+        item.className = 'view-collection-item';
+        item.dataset.collectionId = collection.id;
+
+        // Header with name
+        const header = document.createElement('div');
+        header.className = 'view-collection-header';
+
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'view-collection-name';
+        nameDiv.innerHTML = `<i class="fa-solid fa-book-bookmark"></i> ${this.escapeHtml(collection.name)} (${collection.recipeIds.length} recetas)`;
+
+        header.appendChild(nameDiv);
+
+        // Actions container
+        const actions = document.createElement('div');
+        actions.className = 'view-collection-actions';
+
+        // View button
+        const viewBtn = document.createElement('button');
+        viewBtn.className = 'view-collection-btn primary';
+        viewBtn.innerHTML = '<i class="fa-solid fa-eye"></i> Ver';
+        viewBtn.title = 'Ver recetas del conjunto';
+        viewBtn.addEventListener('click', () => {
+            this.applyCollectionFilter(collection.id);
+            this.closeViewCollectionsModal();
+        });
+
+        // Edit button
+        const editBtn = document.createElement('button');
+        editBtn.className = 'view-collection-btn';
+        editBtn.innerHTML = '<i class="fa-solid fa-pen"></i> Editar';
+        editBtn.title = 'Editar recetas del conjunto';
+        editBtn.addEventListener('click', () => {
+            this.editCollection(collection.id);
+        });
+
+        // Export button
+        const exportBtn = document.createElement('button');
+        exportBtn.className = 'view-collection-btn';
+        exportBtn.innerHTML = '<i class="fa-solid fa-download"></i> Exportar';
+        exportBtn.title = 'Exportar conjunto';
+        exportBtn.addEventListener('click', () => {
+            this.exportCollection(collection.id);
+        });
+
+        // Delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'view-collection-btn danger';
+        deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i> Eliminar';
+        deleteBtn.title = 'Eliminar conjunto';
+        deleteBtn.addEventListener('click', () => {
+            this.deleteCollectionFromModal(collection.id);
+        });
+
+        actions.appendChild(viewBtn);
+        actions.appendChild(editBtn);
+        actions.appendChild(exportBtn);
+        actions.appendChild(deleteBtn);
+
+        item.appendChild(header);
+        item.appendChild(actions);
+
+        return item;
+    }
+
+    /**
+     * Delete collection from modal (with refresh)
+     */
+    deleteCollectionFromModal(collectionId) {
+        const collection = this.collectionManager.getCollection(collectionId);
+        if (!collection) return;
+
+        if (confirm(`¿Eliminar el conjunto "${collection.name}"?`)) {
+            this.collectionManager.deleteCollection(collectionId);
+            this.showSuccess('Conjunto eliminado correctamente');
+            
+            // Refresh modal list
+            this.renderViewCollectionsList();
+            
+            // Clear filter if this collection was active
+            if (this.activeCollectionFilter === collectionId) {
+                this.clearCollectionView();
+            }
+        }
+    }
+
+    /**
+     * Edit collection (manage recipes) - Opens edit modal
+     * @param {string} collectionId - Collection ID
+     */
+    editCollection(collectionId) {
+        const collection = this.collectionManager.getCollection(collectionId);
+        if (!collection) {
+            this.showError('Conjunto no encontrado');
+            return;
+        }
+
+        this.currentEditingCollectionId = collectionId;
+        this.openEditCollectionModal(collection);
+    }
+
+    /**
+     * Open edit collection modal
+     * @param {Object} collection - Collection object
+     */
+    openEditCollectionModal(collection) {
+        const modal = document.getElementById('edit-collection-modal');
+        if (!modal) return;
+
+        // Set collection name
+        const nameInput = document.getElementById('edit-collection-name');
+        if (nameInput) {
+            nameInput.value = collection.name;
+        }
+
+        // Render recipes list
+        this.renderCollectionRecipesList(collection);
+
+        // Show modal
+        modal.classList.remove('hidden');
+        this.pushModal('edit-collection-modal');
+
+        // Setup event listeners
+        this.setupEditCollectionEventListeners();
+    }
+
+    /**
+     * Setup event listeners for edit collection modal
+     */
+    setupEditCollectionEventListeners() {
+        const closeBtn = document.getElementById('close-edit-collection-modal');
+        const cancelBtn = document.getElementById('cancel-edit-collection-btn');
+        const saveBtn = document.getElementById('save-edit-collection-btn');
+        const addRecipeBtn = document.getElementById('add-recipe-to-collection-btn');
+
+        if (closeBtn) {
+            closeBtn.onclick = () => this.closeEditCollectionModal();
+        }
+
+        if (cancelBtn) {
+            cancelBtn.onclick = () => this.closeEditCollectionModal();
+        }
+
+        if (saveBtn) {
+            saveBtn.onclick = () => this.saveEditCollection();
+        }
+
+        if (addRecipeBtn) {
+            addRecipeBtn.onclick = () => this.showAddRecipeToCollectionModal();
+        }
+    }
+
+    /**
+     * Render recipes list in edit collection modal
+     * @param {Object} collection - Collection object
+     */
+    renderCollectionRecipesList(collection) {
+        const container = document.getElementById('collection-recipes-list');
+        const countSpan = document.getElementById('collection-recipe-count');
+        
+        if (!container) return;
+
+        // Get recipes from collection
+        const recipes = collection.recipeIds
+            .map(id => this.recipes.find(r => r.id === id))
+            .filter(r => r !== undefined);
+
+        if (countSpan) {
+            countSpan.textContent = recipes.length;
+        }
+
+        if (recipes.length === 0) {
+            container.innerHTML = '<p class="u-text-secondary u-text-sm u-text-center u-p-md">No hay recetas en este conjunto</p>';
+            return;
+        }
+
+        container.innerHTML = recipes.map(recipe => `
+            <div class="collection-recipe-item" data-recipe-id="${recipe.id}">
+                <span class="collection-recipe-name">${this.escapeHtml(recipe.name)}</span>
+                <button class="collection-recipe-remove" onclick="window.recipeApp.removeRecipeFromCollection('${recipe.id}')" title="Quitar">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    /**
+     * Remove recipe from collection (in edit mode)
+     * @param {string} recipeId - Recipe ID
+     */
+    removeRecipeFromCollection(recipeId) {
+        if (!this.currentEditingCollectionId) return;
+
+        // Use CollectionManager method to remove recipe (saves automatically)
+        this.collectionManager.removeRecipe(this.currentEditingCollectionId, recipeId);
+        
+        // Get updated collection
+        const collection = this.collectionManager.getCollection(this.currentEditingCollectionId);
+        if (!collection) return;
+
+        // Re-render list
+        this.renderCollectionRecipesList(collection);
+        
+        // Update collections list in settings to reflect new count
+        this.renderCollectionsList();
+        
+        // If this collection is currently active, update the banner
+        if (this.activeCollectionFilter === this.currentEditingCollectionId) {
+            this.updateCollectionViewUI(collection);
+        }
+    }
+
+    /**
+     * Show modal to add recipe to collection (reuse quick edit system)
+     */
+    showAddRecipeToCollectionModal() {
+        if (!this.currentEditingCollectionId) return;
+
+        const collection = this.collectionManager.getCollection(this.currentEditingCollectionId);
+        if (!collection) return;
+
+        // Get recipes not in collection
+        const availableRecipes = this.recipes.filter(r => !collection.recipeIds.includes(r.id));
+
+        if (availableRecipes.length === 0) {
+            this.showToast('Todas las recetas ya están en el conjunto', 'info');
+            return;
+        }
+
+        // Create a temporary input element to use the existing quick edit system
+        const tempInput = document.createElement('input');
+        tempInput.type = 'hidden';
+        tempInput.dataset.isCollectionAdd = 'true';
+        tempInput.dataset.collectionId = this.currentEditingCollectionId;
+
+        // Store reference
+        this.currentCollectionAddInput = tempInput;
+        this.pendingMenuInput = tempInput;
+
+        // Open category selector modal
+        this.openMenuCategorySelectorModal(tempInput);
+    }
+
+    /**
+     * Save edit collection
+     */
+    saveEditCollection() {
+        if (!this.currentEditingCollectionId) return;
+
+        const collection = this.collectionManager.getCollection(this.currentEditingCollectionId);
+        if (!collection) return;
+
+        // Get new name
+        const nameInput = document.getElementById('edit-collection-name');
+        const newName = nameInput?.value.trim();
+
+        if (!newName) {
+            this.showError('El nombre del conjunto no puede estar vacío');
+            return;
+        }
+
+        // Update collection
+        this.collectionManager.updateCollection(this.currentEditingCollectionId, {
+            name: newName,
+            recipeIds: collection.recipeIds
+        });
+
+        this.showSuccess('Conjunto actualizado correctamente');
+        this.closeEditCollectionModal();
+        this.renderCollectionsList();
+    }
+
+    /**
+     * Close edit collection modal
+     */
+    closeEditCollectionModal() {
+        const modal = document.getElementById('edit-collection-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+
+        this.popModal();
+        this.currentEditingCollectionId = null;
+    }
+
+    /**
+     * Export collection as XML
+     * @param {string} collectionId - Collection ID
+     */
+    async exportCollection(collectionId) {
+        const collection = this.collectionManager.getCollection(collectionId);
+        if (!collection) {
+            this.showError('Conjunto no encontrado');
+            return;
+        }
+
+        try {
+            // Get recipes from collection
+            const recipes = collection.recipeIds
+                .map(id => this.recipes.find(r => r.id === id))
+                .filter(r => r !== undefined);
+
+            if (recipes.length === 0) {
+                this.showError('No hay recetas válidas en este conjunto');
+                return;
+            }
+
+            // Export as XML
+            const xmlContent = await this.storageManager.exportRecipesToXML(recipes);
+            
+            // Create filename from collection name
+            const sanitizedName = collection.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const filename = `${sanitizedName}.xml`;
+
+            // Download file
+            const blob = new Blob([xmlContent], { type: 'application/xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            this.showSuccess(`Conjunto "${collection.name}" exportado correctamente`);
+
+        } catch (error) {
+            console.error('[Collections] Error exporting collection:', error);
+            this.showError('Error al exportar el conjunto: ' + error.message);
+        }
+    }
+
+    /**
+     * Delete collection
+     * @param {string} collectionId - Collection ID
+     */
+    deleteCollection(collectionId) {
+        const collection = this.collectionManager.getCollection(collectionId);
+        if (!collection) {
+            this.showError('Conjunto no encontrado');
+            return;
+        }
+
+        if (!confirm(`¿Eliminar el conjunto "${collection.name}"?\n\nEsta acción no se puede deshacer.`)) {
+            return;
+        }
+
+        try {
+            this.collectionManager.deleteCollection(collectionId);
+            this.showSuccess(`Conjunto "${collection.name}" eliminado`);
+            this.renderCollectionsList();
+        } catch (error) {
+            console.error('[Collections] Error deleting collection:', error);
+            this.showError('Error al eliminar el conjunto: ' + error.message);
         }
     }
 
@@ -4951,6 +5698,14 @@ class RecipeApp {
             });
         }
 
+        // Apply collection filter
+        if (this.activeCollectionFilter) {
+            const collection = this.collectionManager.getCollection(this.activeCollectionFilter);
+            if (collection) {
+                filtered = filtered.filter(recipe => collection.recipeIds.includes(recipe.id));
+            }
+        }
+
         // Apply menu filter
         if (this.activeMenuFilter) {
             const menu = this.getMenuById(this.activeMenuFilter);
@@ -5994,6 +6749,9 @@ class RecipeApp {
      * @param {string|null} recipeId - Recipe ID for editing, null for creating new
      */
     showRecipeForm(recipeId = null) {
+        // Hide collection title
+        this.hideCollectionTitle();
+
         // Hide all other views
         const listView = document.getElementById('recipe-list-view');
         const detailView = document.getElementById('recipe-detail-view');
@@ -8118,6 +8876,9 @@ class RecipeApp {
             return;
         }
 
+        // Hide collection title
+        this.hideCollectionTitle();
+
         // Menu remains visible in detail view
 
         // Hide list and form views
@@ -9494,7 +10255,7 @@ class RecipeApp {
         if (cmsBtn) {
             cmsBtn.onclick = () => {
                 this.closeRecipeOptionsModal();
-                window.open('recipe-manager.html', '_blank');
+                window.open('cms/recipe-manager.html', '_blank');
             };
         }
 
@@ -9696,10 +10457,18 @@ class RecipeApp {
             toggleBtn.textContent = '🔍 Filtros';
         }
 
-        // Show search bar
+        // Show search bar or collection title based on active filter
         const searchContainer = document.querySelector('.recipe-search-container');
-        if (searchContainer) {
-            searchContainer.classList.remove('hidden');
+        const collectionTitleContainer = document.getElementById('collection-title-container');
+        
+        if (this.activeCollectionFilter) {
+            // Show collection title, hide search
+            if (collectionTitleContainer) collectionTitleContainer.classList.remove('u-hidden');
+            if (searchContainer) searchContainer.classList.add('hidden');
+        } else {
+            // Show search, hide collection title
+            if (searchContainer) searchContainer.classList.remove('hidden');
+            if (collectionTitleContainer) collectionTitleContainer.classList.add('u-hidden');
         }
 
         // Menu is always visible
@@ -10946,6 +11715,9 @@ class RecipeApp {
         // Set flag to prevent restoring expanded state
         this._skipExpandedStateRestore = true;
 
+        // Hide collection title
+        this.hideCollectionTitle();
+
         // Hide other views
         const recipesView = document.getElementById('recipe-list-view');
         const recipeFormView = document.getElementById('recipe-form-view');
@@ -10995,6 +11767,9 @@ class RecipeApp {
 
         // Set flag to prevent restoring expanded state
         this._skipExpandedStateRestore = true;
+
+        // Hide collection title
+        this.hideCollectionTitle();
 
         // Hide other views
         const recipesView = document.getElementById('recipe-list-view');
@@ -12238,6 +13013,13 @@ class RecipeApp {
         const modal = document.getElementById('menu-category-selector-modal');
         if (!modal) return;
 
+        // Check if opening from collection edit modal
+        if (inputElement.dataset.isCollectionAdd === 'true') {
+            modal.classList.add('stacked');
+        } else {
+            modal.classList.remove('stacked');
+        }
+
         // Store reference to the input element
         this.currentRecipeInput = inputElement;
 
@@ -12266,8 +13048,16 @@ class RecipeApp {
             this.setupCategorySelectorModalListeners();
         } else if (selectedCategoryId) {
             // Category already selected - skip category selection and go directly to recipe selection
-            this.convertInputToRecipeSelector(inputElement, menuRecipes);
-            // Don't show the modal at all
+            // Check if this is for collection add (use modal) or normal menu (use dropdown)
+            if (inputElement.dataset.isCollectionAdd === 'true') {
+                // For collections, open the recipe selector modal
+                const category = this.categoryManager.getCategoryById(selectedCategoryId);
+                this.openMenuRecipeSelectorModal(inputElement, menuRecipes, category);
+            } else {
+                // For menus, use dropdown
+                this.convertInputToRecipeSelector(inputElement, menuRecipes);
+            }
+            // Don't show the category modal
             return;
         } else {
             // No category selected - show category selection
@@ -12393,8 +13183,15 @@ class RecipeApp {
             selectedCategoryIds.includes(recipe.category || NO_CATEGORY_ID)
         );
 
-        // Convert input to select dropdown
-        this.convertInputToRecipeSelector(this.currentRecipeInput, menuRecipes);
+        // Check if this is for collection add (use modal) or normal menu (use dropdown)
+        if (this.currentRecipeInput.dataset.isCollectionAdd === 'true') {
+            // For collections, open the recipe selector modal
+            const category = this.categoryManager.getCategoryById(selectedCategoryIds[0]);
+            this.openMenuRecipeSelectorModal(this.currentRecipeInput, menuRecipes, category);
+        } else {
+            // For menus, use dropdown
+            this.convertInputToRecipeSelector(this.currentRecipeInput, menuRecipes);
+        }
 
         // Close modal
         this.closeCategorySelectorModal();
@@ -12466,6 +13263,13 @@ class RecipeApp {
         if (!modal) {
             console.error('Modal menu-recipe-selector-modal not found');
             return;
+        }
+
+        // Check if opening from collection edit modal
+        if (inputElement.dataset.isCollectionAdd === 'true') {
+            modal.classList.add('stacked');
+        } else {
+            modal.classList.remove('stacked');
         }
 
         // Store reference
@@ -12608,8 +13412,35 @@ class RecipeApp {
                 if (this.selectedRecipeId && this.currentMenuRecipeInput) {
                     const selectedRecipe = recipes.find(r => r.id === this.selectedRecipeId);
                     if (selectedRecipe) {
+                        // Check if this is collection add mode
+                        if (this.currentMenuRecipeInput.dataset.isCollectionAdd === 'true') {
+                            console.log('[Collection] Adding recipe to collection');
+                            
+                            const collectionId = this.currentMenuRecipeInput.dataset.collectionId;
+                            
+                            // Use CollectionManager method to add recipe (saves automatically)
+                            this.collectionManager.addRecipe(collectionId, selectedRecipe.id);
+                            
+                            // Get updated collection
+                            const collection = this.collectionManager.getCollection(collectionId);
+                            
+                            if (collection) {
+                                // Re-render collection recipes list
+                                this.renderCollectionRecipesList(collection);
+                                
+                                // Update collections list in settings to reflect new count
+                                this.renderCollectionsList();
+                                
+                                // If this collection is currently active, update the banner
+                                if (this.activeCollectionFilter === collectionId) {
+                                    this.updateCollectionViewUI(collection);
+                                }
+                                
+                                this.showSuccess(`"${selectedRecipe.name}" añadida al conjunto`);
+                            }
+                        }
                         // Check if this is quick edit mode
-                        if (this.currentMenuRecipeInput.dataset.isQuickEdit === 'true') {
+                        else if (this.currentMenuRecipeInput.dataset.isQuickEdit === 'true') {
                             console.log('[Quick Edit] Quick edit mode detected, saving directly');
 
                             // Quick edit mode - save directly to menu
