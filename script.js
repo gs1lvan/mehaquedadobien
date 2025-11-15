@@ -1577,36 +1577,54 @@ class RecipeApp {
         let recipesNotFound = 0;
 
         console.log('🛒 [Menu Conversion] Processing menu items:', menu.items.length);
-        menu.items.forEach(item => {
+        console.log('🛒 [Menu Conversion] Full menu items:', JSON.stringify(menu.items, null, 2));
+
+        menu.items.forEach((item, index) => {
             const dayName = item.name || 'Sin día';
-            console.log('🛒 [Menu Conversion] Processing day:', dayName);
+            console.log(`🛒 [Menu Conversion] Processing day ${index + 1}:`, dayName);
+            console.log(`🛒 [Menu Conversion] Item data:`, {
+                id: item.id,
+                name: item.name,
+                lunch: item.lunch,
+                lunchId: item.lunchId,
+                dinner: item.dinner,
+                dinnerId: item.dinnerId
+            });
 
             // Process lunch
             const lunchId = this.menuManager.getRecipeIdFromMeal(item, 'lunch');
+            console.log(`🛒 [Menu Conversion] Lunch ID for ${dayName}:`, lunchId);
+
             if (lunchId) {
                 const recipe = this.getRecipeById(lunchId);
                 if (recipe && recipe.ingredients && recipe.ingredients.length > 0) {
                     this.shoppingListManager.addRecipeReference(shoppingList.id, lunchId, dayName);
                     recipesAdded++;
-                    console.log('🛒 [Menu Conversion] Added lunch recipe:', recipe.name);
+                    console.log(`🛒 [Menu Conversion] ✅ Added lunch recipe: ${recipe.name} for ${dayName}`);
                 } else if (lunchId) {
-                    console.warn('[Menu Conversion] Recipe not found or has no ingredients:', lunchId);
+                    console.warn(`[Menu Conversion] ❌ Recipe not found or has no ingredients: ${lunchId} for ${dayName}`);
                     recipesNotFound++;
                 }
+            } else {
+                console.log(`🛒 [Menu Conversion] ⚠️ No lunch for ${dayName}`);
             }
 
             // Process dinner
             const dinnerId = this.menuManager.getRecipeIdFromMeal(item, 'dinner');
+            console.log(`🛒 [Menu Conversion] Dinner ID for ${dayName}:`, dinnerId);
+
             if (dinnerId) {
                 const recipe = this.getRecipeById(dinnerId);
                 if (recipe && recipe.ingredients && recipe.ingredients.length > 0) {
                     this.shoppingListManager.addRecipeReference(shoppingList.id, dinnerId, dayName);
                     recipesAdded++;
-                    console.log('🛒 [Menu Conversion] Added dinner recipe:', recipe.name);
+                    console.log(`🛒 [Menu Conversion] ✅ Added dinner recipe: ${recipe.name} for ${dayName}`);
                 } else if (dinnerId) {
-                    console.warn('[Menu Conversion] Recipe not found or has no ingredients:', dinnerId);
+                    console.warn(`[Menu Conversion] ❌ Recipe not found or has no ingredients: ${dinnerId} for ${dayName}`);
                     recipesNotFound++;
                 }
+            } else {
+                console.log(`🛒 [Menu Conversion] ⚠️ No dinner for ${dayName}`);
             }
         });
 
@@ -14181,6 +14199,11 @@ class RecipeApp {
         lunchInput.value = item ? (item.lunch || item.quantity || '') : '';
         lunchInput.dataset.itemId = item ? item.id : Date.now();
         lunchInput.dataset.mealType = 'lunch';
+        // IMPORTANT: Preserve recipe ID if it exists
+        if (item && item.lunchId) {
+            lunchInput.dataset.recipeId = item.lunchId;
+            console.log('🔵 [addMenuItemInput] Set lunchId:', item.lunchId, 'for item:', item.name);
+        }
         // Only mark as quick edit if this is an existing menu being edited
         lunchInput.dataset.isQuickEdit = isExisting ? 'true' : 'false';
         // Add menuId for quick edit mode
@@ -14209,6 +14232,11 @@ class RecipeApp {
         dinnerInput.value = item && item.dinner ? item.dinner : '';
         dinnerInput.dataset.itemId = item ? item.id : Date.now();
         dinnerInput.dataset.mealType = 'dinner';
+        // IMPORTANT: Preserve recipe ID if it exists
+        if (item && item.dinnerId) {
+            dinnerInput.dataset.recipeId = item.dinnerId;
+            console.log('🔵 [addMenuItemInput] Set dinnerId:', item.dinnerId, 'for item:', item.name);
+        }
         // Only mark as quick edit if this is an existing menu being edited
         dinnerInput.dataset.isQuickEdit = isExisting ? 'true' : 'false';
         // Add menuId for quick edit mode
@@ -14717,82 +14745,131 @@ class RecipeApp {
 
         // Render recipe references
         if (hasRecipes) {
+            // Group recipes by day
+            const recipesByDay = new Map();
+
             list.recipes.forEach(recipeRef => {
-                const recipe = this.getRecipeById(recipeRef.recipeId);
-                if (!recipe) {
-                    console.warn('🎨 [Render] Recipe not found:', recipeRef.recipeId);
-                    return;
+                const day = recipeRef.day || 'Sin día';
+                if (!recipesByDay.has(day)) {
+                    recipesByDay.set(day, []);
+                }
+                recipesByDay.get(day).push(recipeRef);
+            });
+
+            // Render each day group
+            recipesByDay.forEach((dayRecipes, day) => {
+                // Add day separator if day is specified
+                if (day && day !== 'Sin día') {
+                    const daySeparator = document.createElement('div');
+                    daySeparator.className = 'shopping-day-separator';
+                    daySeparator.style.cssText = `
+                        display: flex;
+                        align-items: center;
+                        gap: 1rem;
+                        margin: 1.5rem 0 1rem 0;
+                        color: var(--color-primary);
+                        font-weight: 600;
+                        font-size: 1.1rem;
+                    `;
+
+                    const iconSpan = document.createElement('span');
+                    iconSpan.innerHTML = '📅';
+                    iconSpan.style.fontSize = '1.25rem';
+
+                    const dayNameSpan = document.createElement('span');
+                    dayNameSpan.textContent = day.toUpperCase();
+
+                    const lineBefore = document.createElement('div');
+                    lineBefore.style.cssText = 'flex: 0 0 auto; width: 30px; height: 2px; background: var(--color-primary);';
+
+                    const lineAfter = document.createElement('div');
+                    lineAfter.style.cssText = 'flex: 1; height: 2px; background: var(--color-primary);';
+
+                    daySeparator.appendChild(lineBefore);
+                    daySeparator.appendChild(iconSpan);
+                    daySeparator.appendChild(dayNameSpan);
+                    daySeparator.appendChild(lineAfter);
+
+                    container.appendChild(daySeparator);
                 }
 
-                // Create recipe group container
-                const recipeGroup = document.createElement('div');
-                recipeGroup.className = 'shopping-recipe-group';
-                recipeGroup.dataset.recipeRefId = recipeRef.id;
+                // Render recipes for this day
+                dayRecipes.forEach(recipeRef => {
+                    const recipe = this.getRecipeById(recipeRef.recipeId);
+                    if (!recipe) {
+                        console.warn('🎨 [Render] Recipe not found:', recipeRef.recipeId);
+                        return;
+                    }
 
-                // Add inline styles
-                recipeGroup.style.cssText = `
-                    background: var(--color-background-secondary);
-                    border: 1px solid var(--color-border);
-                    border-radius: 12px;
-                    padding: 1rem;
-                    margin-bottom: 1rem;
-                `;
+                    // Create recipe group container
+                    const recipeGroup = document.createElement('div');
+                    recipeGroup.className = 'shopping-recipe-group';
+                    recipeGroup.dataset.recipeRefId = recipeRef.id;
 
-                // Add recipe title with day
-                const recipeTitle = document.createElement('div');
-                recipeTitle.className = 'shopping-recipe-title';
-                const titleText = recipeRef.day ? `${recipe.name} - ${recipeRef.day}` : recipe.name;
+                    // Add inline styles
+                    recipeGroup.style.cssText = `
+                        background: var(--color-background-secondary);
+                        border: 1px solid var(--color-border);
+                        border-radius: 12px;
+                        padding: 1rem;
+                        margin-bottom: 1rem;
+                    `;
 
-                recipeTitle.style.cssText = `
-                    font-weight: 600;
-                    color: var(--color-primary);
-                    margin-bottom: 0.75rem;
-                    padding-bottom: 0.5rem;
-                    border-bottom: 2px solid var(--color-primary);
-                    font-size: 1rem;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                `;
+                    // Add recipe title (without day since it's in the separator)
+                    const recipeTitle = document.createElement('div');
+                    recipeTitle.className = 'shopping-recipe-title';
 
-                // Add title text span
-                const titleSpan = document.createElement('span');
-                titleSpan.textContent = titleText;
-                recipeTitle.appendChild(titleSpan);
+                    recipeTitle.style.cssText = `
+                        font-weight: 600;
+                        color: var(--color-primary);
+                        margin-bottom: 0.75rem;
+                        padding-bottom: 0.5rem;
+                        border-bottom: 2px solid var(--color-primary);
+                        font-size: 1rem;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    `;
 
-                // Add delete recipe button
-                const deleteRecipeBtn = document.createElement('button');
-                deleteRecipeBtn.className = 'btn-icon';
-                deleteRecipeBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
-                deleteRecipeBtn.title = 'Eliminar receta completa';
-                deleteRecipeBtn.style.cssText = 'color: var(--color-text-secondary);';
-                deleteRecipeBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    this.deleteRecipeFromShoppingList(list.id, recipeRef.id);
-                };
-                recipeTitle.appendChild(deleteRecipeBtn);
+                    // Add title text span
+                    const titleSpan = document.createElement('span');
+                    titleSpan.textContent = recipe.name;
+                    recipeTitle.appendChild(titleSpan);
 
-                recipeGroup.appendChild(recipeTitle);
+                    // Add delete recipe button
+                    const deleteRecipeBtn = document.createElement('button');
+                    deleteRecipeBtn.className = 'btn-icon';
+                    deleteRecipeBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+                    deleteRecipeBtn.title = 'Eliminar receta completa';
+                    deleteRecipeBtn.style.cssText = 'color: var(--color-text-secondary);';
+                    deleteRecipeBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        this.deleteRecipeFromShoppingList(list.id, recipeRef.id);
+                    };
+                    recipeTitle.appendChild(deleteRecipeBtn);
 
-                // Render ingredients
-                if (recipe.ingredients && recipe.ingredients.length > 0) {
-                    recipe.ingredients.forEach(ingredient => {
-                        const mod = recipeRef.modifications[ingredient.id] || {};
+                    recipeGroup.appendChild(recipeTitle);
 
-                        // Skip if deleted
-                        if (mod.deleted) return;
+                    // Render ingredients
+                    if (recipe.ingredients && recipe.ingredients.length > 0) {
+                        recipe.ingredients.forEach(ingredient => {
+                            const mod = recipeRef.modifications[ingredient.id] || {};
 
-                        const itemDiv = this.createShoppingIngredientItem(
-                            list.id,
-                            recipeRef.id,
-                            ingredient,
-                            mod
-                        );
-                        recipeGroup.appendChild(itemDiv);
-                    });
-                }
+                            // Skip if deleted
+                            if (mod.deleted) return;
 
-                container.appendChild(recipeGroup);
+                            const itemDiv = this.createShoppingIngredientItem(
+                                list.id,
+                                recipeRef.id,
+                                ingredient,
+                                mod
+                            );
+                            recipeGroup.appendChild(itemDiv);
+                        });
+                    }
+
+                    container.appendChild(recipeGroup);
+                });
             });
         }
 
