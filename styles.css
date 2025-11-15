@@ -6224,10 +6224,32 @@ select {
     padding-left: 0;
 }
 
+/* Shopping Recipe Group - Container with rounded corners */
+.shopping-recipe-group {
+    background: var(--color-background-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.shopping-recipe-title {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 2px solid var(--color-primary);
+    font-size: 1rem;
+}
+
+.shopping-recipe-item {
+    padding-left: var(--spacing-sm);
+}
+
 /* Shopping Item */
 .shopping-item {
     display: flex;
-    align-items: flex-start;
+    /* align-items: flex-start; */
     gap: var(--spacing-sm);
     padding: var(--spacing-xs) var(--spacing-sm);
     line-height: 1.6;
@@ -6620,6 +6642,16 @@ body.dark-theme .badge-separator {
 
 body.dark-theme .shopping-item:hover {
     background: var(--color-background);
+}
+
+body.dark-theme .shopping-recipe-group {
+    background: var(--color-background);
+    border-color: var(--color-border);
+}
+
+body.dark-theme .shopping-recipe-title {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
 }
 
 body.dark-theme .empty-state {

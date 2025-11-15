@@ -16,7 +16,7 @@ const XML_FORMATS = {
         SINGLE: 'recipe',
         MULTIPLE: 'recipes'
     },
-
+    
     /**
      * Basic recipe fields
      */
@@ -30,7 +30,7 @@ const XML_FORMATS = {
         HISTORY: 'history',
         CARAVAN_FRIENDLY: 'caravanFriendly'
     },
-
+    
     /**
      * Ingredients section
      * Compact: <ingredients><i><n><q><u>
@@ -59,7 +59,7 @@ const XML_FORMATS = {
             ORDER: 'order'
         }
     },
-
+    
     /**
      * Addition sequences section
      * Compact: <sequences><s><step><dur><desc><ings><ing>
@@ -96,7 +96,7 @@ const XML_FORMATS = {
             }
         }
     },
-
+    
     /**
      * Kitchen appliances section
      * Compact: <appliances><a>
@@ -112,7 +112,7 @@ const XML_FORMATS = {
             FULL: 'appliance'
         }
     },
-
+    
     /**
      * Multimedia sections
      */
@@ -142,7 +142,7 @@ const XMLSelectorHelpers = {
     multiSelector(names) {
         return names.join(', ');
     },
-
+    
     /**
      * Create selector for compact or full format
      * @param {Object} formatObj - Object with COMPACT and FULL properties
