@@ -59,7 +59,7 @@ class MenuManager {
                     if (menu.isFilter === undefined) {
                         menu.isFilter = false;
                     }
-                    
+
                     // Add _migrated flag if not present
                     if (menu._migrated === undefined) {
                         menu._migrated = false;
@@ -74,19 +74,19 @@ class MenuManager {
                         if (menu._migrated) {
                             return;
                         }
-                        
+
                         // Migrate each item
                         if (menu.items && Array.isArray(menu.items)) {
                             menu.items.forEach(item => {
                                 this.migrateLegacyMenuItem(item, getRecipeByName);
                             });
                         }
-                        
+
                         // Mark as migrated
                         menu._migrated = true;
                         migratedCount++;
                     });
-                    
+
                     if (migratedCount > 0) {
                         console.log(`[MenuManager] Migrated ${migratedCount} menus to ID-based format`);
                         // Save migrated menus
@@ -237,7 +237,7 @@ class MenuManager {
         const duplicatedMenu = {
             id: this.generateId(),
             name: `${originalMenu.name}${MenuManager.COPY_SUFFIX}`,
-            items: originalMenu.items.map(item => ({...item, id: this.generateId()})), // Clone with new IDs
+            items: originalMenu.items.map(item => ({ ...item, id: this.generateId() })), // Clone with new IDs
             enabled: true,
             isFilter: false,
             createdAt: new Date().toISOString(),
@@ -385,8 +385,8 @@ class MenuManager {
         }
 
         // Swap with previous item
-        [menu.items[itemIndex - 1], menu.items[itemIndex]] = 
-        [menu.items[itemIndex], menu.items[itemIndex - 1]];
+        [menu.items[itemIndex - 1], menu.items[itemIndex]] =
+            [menu.items[itemIndex], menu.items[itemIndex - 1]];
 
         menu.updatedAt = new Date().toISOString();
         this.saveMenus();
@@ -411,8 +411,8 @@ class MenuManager {
         if (itemIndex >= menu.items.length - 1) return false;
 
         // Swap with next item
-        [menu.items[itemIndex], menu.items[itemIndex + 1]] = 
-        [menu.items[itemIndex + 1], menu.items[itemIndex]];
+        [menu.items[itemIndex], menu.items[itemIndex + 1]] =
+            [menu.items[itemIndex + 1], menu.items[itemIndex]];
 
         menu.updatedAt = new Date().toISOString();
         this.saveMenus();
@@ -440,15 +440,15 @@ class MenuManager {
 
         menu.items.forEach(item => {
             // Add lunch recipe if not default and not a category placeholder
-            if (item.lunch && 
-                item.lunch !== MenuManager.DEFAULT_RECIPE && 
+            if (item.lunch &&
+                item.lunch !== MenuManager.DEFAULT_RECIPE &&
                 !isCategoryPlaceholder(item.lunch)) {
                 recipeNames.add(item.lunch.toLowerCase().trim());
             }
 
             // Add dinner recipe if not default and not a category placeholder
-            if (item.dinner && 
-                item.dinner !== MenuManager.DEFAULT_RECIPE && 
+            if (item.dinner &&
+                item.dinner !== MenuManager.DEFAULT_RECIPE &&
                 !isCategoryPlaceholder(item.dinner)) {
                 recipeNames.add(item.dinner.toLowerCase().trim());
             }
@@ -479,8 +479,8 @@ class MenuManager {
             const day = item.name || MenuManager.DEFAULT_DAY_NAME;
 
             // Process lunch (skip category placeholders)
-            if (item.lunch && 
-                item.lunch !== MenuManager.DEFAULT_RECIPE && 
+            if (item.lunch &&
+                item.lunch !== MenuManager.DEFAULT_RECIPE &&
                 !isCategoryPlaceholder(item.lunch)) {
                 const lunchName = item.lunch.toLowerCase().trim();
                 if (!metadata.has(lunchName)) {
@@ -495,8 +495,8 @@ class MenuManager {
             }
 
             // Process dinner (skip category placeholders)
-            if (item.dinner && 
-                item.dinner !== MenuManager.DEFAULT_RECIPE && 
+            if (item.dinner &&
+                item.dinner !== MenuManager.DEFAULT_RECIPE &&
                 !isCategoryPlaceholder(item.dinner)) {
                 const dinnerName = item.dinner.toLowerCase().trim();
                 if (!metadata.has(dinnerName)) {
@@ -524,7 +524,7 @@ class MenuManager {
 
         menuRecipes.forEach(recipe => {
             const categoryId = recipe.category || 'sin-categoria';
-            
+
             if (!categoriesMap.has(categoryId)) {
                 categoriesMap.set(categoryId, {
                     id: categoryId,
@@ -569,11 +569,11 @@ class MenuManager {
         menu.items.forEach((item, index) => {
             const dayName = item.name || `Día ${index + 1}`;
             lines.push(`\n${dayName}:`);
-            
+
             if (item.lunch && item.lunch !== MenuManager.DEFAULT_RECIPE) {
                 lines.push(`  Comida: ${item.lunch}`);
             }
-            
+
             if (item.dinner && item.dinner !== MenuManager.DEFAULT_RECIPE) {
                 lines.push(`  Cena: ${item.dinner}`);
             }
@@ -702,7 +702,7 @@ class MenuManager {
                 const colonIndex = line.indexOf(':');
                 const mealType = line.substring(0, colonIndex).trim();
                 const recipeName = line.substring(colonIndex + 1).trim();
-                
+
                 if (mealType.toLowerCase().includes('comida')) {
                     currentDay.lunch = recipeName || MenuManager.DEFAULT_RECIPE;
                 } else if (mealType.toLowerCase().includes('cena')) {
@@ -722,7 +722,7 @@ class MenuManager {
      */
     getRecipeIdFromMeal(item, mealType) {
         if (!item) return null;
-        
+
         const idField = mealType === 'lunch' ? 'lunchId' : 'dinnerId';
         return item[idField] || null;
     }
@@ -735,10 +735,10 @@ class MenuManager {
      */
     getRecipeNameFromMeal(item, mealType) {
         if (!item) return null;
-        
+
         const nameField = mealType === 'lunch' ? 'lunchName' : 'dinnerName';
         const legacyField = mealType === 'lunch' ? 'lunch' : 'dinner';
-        
+
         return item[nameField] || item[legacyField] || null;
     }
 
@@ -750,7 +750,7 @@ class MenuManager {
      */
     setRecipeForMeal(item, mealType, recipe) {
         if (!item || !recipe) return;
-        
+
         if (mealType === 'lunch') {
             item.lunchId = recipe.id;
             item.lunchName = recipe.name;
@@ -772,7 +772,7 @@ class MenuManager {
      */
     migrateLegacyMenuItem(item, getRecipeByName) {
         if (!item) return item;
-        
+
         // Migrate lunch
         if (item.lunch && !item.lunchId && item.lunch !== MenuManager.DEFAULT_RECIPE) {
             const recipe = getRecipeByName(item.lunch);

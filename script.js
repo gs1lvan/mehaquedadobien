@@ -1550,51 +1550,7 @@ class RecipeApp {
      * @param {number} shoppingListId - Shopping list ID
      * @returns {boolean} Success status
      */
-    addIngredientToShoppingList(recipeId, ingredientId, shoppingListId) {
-        const recipe = this.getRecipeById(recipeId);
-        if (!recipe) {
-            console.error('[Shopping] Recipe not found:', recipeId);
-            this.showError('Receta no encontrada');
-            return false;
-        }
 
-        const ingredient = recipe.ingredients.find(i => i.id === ingredientId);
-        if (!ingredient) {
-            console.error('[Shopping] Ingredient not found:', ingredientId);
-            this.showError('Ingrediente no encontrado');
-            return false;
-        }
-
-        const shoppingList = this.shoppingListManager.getList(shoppingListId);
-        if (!shoppingList) {
-            console.error('[Shopping] Shopping list not found:', shoppingListId);
-            this.showError('Lista de compra no encontrada');
-            return false;
-        }
-
-        const quantityText = ingredient.quantity + (ingredient.unit ? ' ' + ingredient.unit : '');
-
-        // Add as manual item (new system)
-        if (!shoppingList.manualItems) shoppingList.manualItems = [];
-
-        shoppingList.manualItems.push({
-            id: Date.now() + Math.random(),
-            name: ingredient.name,
-            quantity: quantityText,
-            completed: false
-        });
-
-        shoppingList.updatedAt = new Date().toISOString();
-        this.shoppingListManager.saveLists();
-
-        this.showSuccess(`"${ingredient.name}" añadido a la lista`);
-        console.log(`[Shopping] Added ingredient as manual item:`, ingredient.name);
-
-        // Re-render to show the new item
-        this.renderShoppingLists();
-
-        return true;
-    }
 
     /**
      * Convert menu to shopping list
@@ -2512,32 +2468,8 @@ class RecipeApp {
 
             console.log(`🎨 [Category: ${category.name}] Total recipes:`, recipesInCategory.length, '| isQuickEdit:', isQuickEdit);
 
-            // For quick edit mode, also check if category has menu-friendly recipes
+            // Use all recipes in category (same criteria as home page)
             let hasRecipes = hasAnyRecipes;
-            if (isQuickEdit && hasAnyRecipes) {
-                // Filter menu-friendly recipes in this category
-                const menuRecipes = this.recipes.filter(recipe =>
-                    recipe.menuFriendly === true && recipe.category === category.id
-                );
-
-                console.log(`🎨 [Category: ${category.name}] Menu-friendly recipes:`, menuRecipes.length);
-
-                // If we have a current recipe name, check if it belongs to this category
-                // This ensures the current recipe's category is always enabled
-                if (currentRecipeName) {
-                    const currentRecipe = this.recipes.find(recipe => recipe.name === currentRecipeName);
-                    if (currentRecipe && currentRecipe.category === category.id) {
-                        // Current recipe is in this category, so it has at least one recipe
-                        hasRecipes = true;
-                    } else {
-                        // Current recipe is not in this category, check if there are other recipes
-                        hasRecipes = menuRecipes.length > 0;
-                    }
-                } else {
-                    // No current recipe, just check if category has menu-friendly recipes
-                    hasRecipes = menuRecipes.length > 0;
-                }
-            }
 
             console.log(`🎨 [Category: ${category.name}] Final hasRecipes:`, hasRecipes);
 
@@ -2603,9 +2535,9 @@ class RecipeApp {
             // Store the input reference for potential recipe selection
             this.pendingMenuInput = this.currentMenuCategoryInput;
 
-            // Check if category has menu-friendly recipes
+            // Check if category has recipes (same criteria as home page)
             const menuRecipes = this.recipes.filter(recipe =>
-                recipe.menuFriendly === true && recipe.category === categoryId
+                recipe.category === categoryId
             );
             const hasRecipes = menuRecipes.length > 0;
 
@@ -12567,8 +12499,21 @@ class RecipeApp {
         const item = menu.items.find(i => i.id === itemId);
         if (!item) return;
 
-        // Get current recipe name
-        const currentRecipeName = mealType === 'lunch' ? (item.lunch || '') : (item.dinner || '');
+        // Get current recipe ID and name
+        const currentRecipeId = this.menuManager.getRecipeIdFromMeal(item, mealType);
+        const currentRecipeName = this.menuManager.getRecipeNameFromMeal(item, mealType) || '';
+
+        console.log('[Quick Edit] Current recipe:', { id: currentRecipeId, name: currentRecipeName });
+
+        // Get category ID from the current recipe if it exists
+        let categoryId = null;
+        if (currentRecipeId) {
+            const recipe = this.getRecipeById(currentRecipeId);
+            if (recipe) {
+                categoryId = recipe.category;
+                console.log('[Quick Edit] Found recipe category:', categoryId);
+            }
+        }
 
         // Create a temporary input element to use with existing modal system
         const tempInput = document.createElement('input');
@@ -12580,6 +12525,10 @@ class RecipeApp {
         tempInput.dataset.dayName = item.name;
         tempInput.dataset.isQuickEdit = 'true'; // Mark as quick edit
         tempInput.dataset.currentRecipeName = currentRecipeName; // Store current recipe name
+
+        // IMPORTANT: Do NOT set categoryId in dataset
+        // This ensures the category selector always opens first, allowing the user to change category
+        console.log('[Quick Edit] Created tempInput WITHOUT categoryId to force category selection');
 
         // Store reference for later use
         this.currentQuickEditInput = tempInput;
@@ -13142,22 +13091,34 @@ class RecipeApp {
         // ============================================================================
         const currentCategoryId = inputElement.dataset.categoryId;
 
+        console.log('[openCategorySelectorForMenu] Input element:', {
+            mealType: inputElement.dataset.mealType,
+            categoryId: currentCategoryId,
+            isQuickEdit: inputElement.dataset.isQuickEdit,
+            currentRecipeName: inputElement.dataset.currentRecipeName
+        });
+
         if (currentCategoryId) {
+            console.log('[openCategorySelectorForMenu] CategoryId found:', currentCategoryId);
             // Verificar si esta categoría tiene recetas menu-friendly disponibles
             const recipesInCategory = this.recipes.filter(r =>
                 r.category === currentCategoryId && r.menuFriendly === true
             );
 
+            console.log('[openCategorySelectorForMenu] Recipes in category:', recipesInCategory.length);
+
             if (recipesInCategory.length > 0) {
                 // Tiene recetas → Abrir modal de recetas directamente
-                console.log('[Quick Edit] Category has recipes, opening recipe selector');
+                console.log('[openCategorySelectorForMenu] Opening recipe selector directly');
                 const category = this.categoryManager.getCategoryById(currentCategoryId);
                 this.openMenuRecipeSelectorModal(inputElement, recipesInCategory, category);
                 return;
             } else {
                 // NO tiene recetas → Continuar para abrir modal de categorías
-                console.log('[Quick Edit] Category has NO recipes, opening category selector to allow change');
+                console.log('[openCategorySelectorForMenu] Category has NO recipes, opening category selector');
             }
+        } else {
+            console.log('[openCategorySelectorForMenu] NO categoryId found, opening category selector');
         }
         // ============================================================================
 
@@ -13287,8 +13248,8 @@ class RecipeApp {
         // Get category filter if one is selected
         const selectedCategoryId = inputElement.dataset.categoryId;
 
-        // Get all recipes marked as menu-friendly, filtered by category if selected
-        let menuRecipes = this.recipes.filter(recipe => recipe.menuFriendly === true);
+        // Get all recipes (same criteria as home page), filtered by category if selected
+        let menuRecipes = this.recipes.slice(); // Copy all recipes
 
         if (selectedCategoryId) {
             // Filter by selected category
