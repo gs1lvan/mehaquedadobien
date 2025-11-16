@@ -1547,6 +1547,28 @@
     <script src="models.js"></script>
     <script src="menu-manager.js"></script>
 
+    <!-- Ingredient Merge Modal -->
+    <div id="ingredient-merge-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="merge-modal-title">Fusionar: Ingrediente</h2>
+                <button id="close-merge-modal" class="btn-icon">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-description">
+                    Marca las recetas cuyas cantidades quieres fusionar con las no marcadas.
+                </p>
+                <div id="merge-recipes-list" class="merge-recipes-list">
+                    <!-- Recetas con checkboxes se añadirán aquí dinámicamente -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="merge-modal-close-btn" class="btn-secondary">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
     <script>
         // Set footer date
