@@ -1344,16 +1344,36 @@ class RecipeApp {
      */
     async autoLoadBaseRecipes() {
         try {
-            // Fetch the base XML file first to check for changes
-            const response = await fetch('data/recetario-base-final.xml');
-            if (!response.ok) {
-                console.warn('[AutoLoad] Base recipe file not found, skipping auto-load');
-                return;
+            // Try to fetch from remote URL first, fallback to local if it fails
+            const remoteUrl = 'https://raw.githubusercontent.com/gs1lvan/mehaquedadobien/main/data/recetario-base-final.xml';
+            const localUrl = 'data/recetario-base-final.xml';
+            
+            let response;
+            let xmlSource = 'remote';
+            
+            try {
+                console.log('[AutoLoad] Attempting to fetch XML from remote URL...');
+                response = await fetch(remoteUrl);
+                if (!response.ok) {
+                    throw new Error(`Remote fetch failed: ${response.status}`);
+                }
+                console.log('[AutoLoad] Successfully fetched XML from remote URL');
+            } catch (remoteError) {
+                console.warn('[AutoLoad] Remote fetch failed, trying local file...', remoteError.message);
+                xmlSource = 'local';
+                response = await fetch(localUrl);
+                if (!response.ok) {
+                    console.warn('[AutoLoad] Local file not found either, skipping auto-load');
+                    return;
+                }
+                console.log('[AutoLoad] Using local XML file');
             }
 
             // Get XML content and calculate hash
             const xmlText = await response.text();
             const xmlHash = this.simpleHash(xmlText);
+            
+            console.log(`[AutoLoad] XML loaded from ${xmlSource}, hash: ${xmlHash}`);
             
             // Check stored hash
             const storedHash = localStorage.getItem('base_recipes_xml_hash');
