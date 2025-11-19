@@ -169,11 +169,13 @@ const PREDEFINED_INGREDIENTS = [
 
 /**
  * CategoryManager - Manages predefined and custom categories
+ * Now extends BaseManager for load/save functionality
  */
-class CategoryManager {
+class CategoryManager extends BaseManager {
     constructor() {
-        this.storageKey = 'recetario_custom_categories';
+        super('recetario_custom_categories', []); // Call BaseManager constructor
         this.hiddenCategoriesKey = 'recetario_hidden_categories';
+        this.hiddenCategoriesManager = new BaseManager(this.hiddenCategoriesKey, []);
         this.predefinedCategories = PREDEFINED_CATEGORIES;
         this.customCategories = [];
         this.hiddenCategories = new Set();
@@ -183,56 +185,35 @@ class CategoryManager {
 
     /**
      * Load custom categories from localStorage
+     * Now uses BaseManager.load()
      */
     loadCustomCategories() {
-        try {
-            const stored = localStorage.getItem(this.storageKey);
-            if (stored) {
-                this.customCategories = JSON.parse(stored);
-            }
-        } catch (error) {
-            console.error('[CategoryManager] Error loading custom categories:', error);
-            this.customCategories = [];
-        }
+        this.customCategories = this.load();
     }
 
     /**
      * Save custom categories to localStorage
+     * Now uses BaseManager.save()
      */
     saveCustomCategories() {
-        try {
-            localStorage.setItem(this.storageKey, JSON.stringify(this.customCategories));
-        } catch (error) {
-            console.error('[CategoryManager] Error saving custom categories:', error);
-            throw new Error('No se pudieron guardar las categorías');
-        }
+        this.save(this.customCategories);
     }
 
     /**
      * Load hidden categories from localStorage
+     * Now uses BaseManager.load()
      */
     loadHiddenCategories() {
-        try {
-            const stored = localStorage.getItem(this.hiddenCategoriesKey);
-            if (stored) {
-                this.hiddenCategories = new Set(JSON.parse(stored));
-            }
-        } catch (error) {
-            console.error('[CategoryManager] Error loading hidden categories:', error);
-            this.hiddenCategories = new Set();
-        }
+        const hiddenArray = this.hiddenCategoriesManager.load();
+        this.hiddenCategories = new Set(hiddenArray);
     }
 
     /**
      * Save hidden categories to localStorage
+     * Now uses BaseManager.save()
      */
     saveHiddenCategories() {
-        try {
-            localStorage.setItem(this.hiddenCategoriesKey, JSON.stringify([...this.hiddenCategories]));
-        } catch (error) {
-            console.error('[CategoryManager] Error saving hidden categories:', error);
-            throw new Error('No se pudieron guardar las categorías ocultas');
-        }
+        this.hiddenCategoriesManager.save([...this.hiddenCategories]);
     }
 
     /**
@@ -472,41 +453,29 @@ class CategoryManager {
 
 /**
  * CollectionManager - Manages recipe collections (Cocinoteca)
+ * Now extends BaseManager for load/save functionality
  */
-class CollectionManager {
+class CollectionManager extends BaseManager {
     constructor() {
+        super('recipe_collections', []); // Call BaseManager constructor
         this.collections = [];
-        this.storageKey = 'recipe_collections';
         this.loadCollections();
     }
 
     /**
      * Load collections from localStorage
+     * Now uses BaseManager.load()
      */
     loadCollections() {
-        try {
-            const stored = localStorage.getItem(this.storageKey);
-            if (stored) {
-                this.collections = JSON.parse(stored);
-                console.log('[CollectionManager] Loaded collections:', this.collections.length);
-            }
-        } catch (error) {
-            console.error('[CollectionManager] Error loading collections:', error);
-            this.collections = [];
-        }
+        this.collections = this.load();
     }
 
     /**
      * Save collections to localStorage
+     * Now uses BaseManager.save()
      */
     saveCollections() {
-        try {
-            localStorage.setItem(this.storageKey, JSON.stringify(this.collections));
-            console.log('[CollectionManager] Saved collections:', this.collections.length);
-        } catch (error) {
-            console.error('[CollectionManager] Error saving collections:', error);
-            throw new Error('No se pudieron guardar los conjuntos');
-        }
+        this.save(this.collections);
     }
 
     /**
@@ -601,55 +570,40 @@ class CollectionManager {
 
 /**
  * ShoppingListManager - Manages shopping lists and their items
+ * Now extends BaseManager for load/save functionality
  */
-class ShoppingListManager {
+class ShoppingListManager extends BaseManager {
     constructor() {
+        super('shopping_lists', []); // Call BaseManager constructor
         this.lists = [];
         this.currentListId = null;
-        this.storageKey = 'shopping_lists';
         this.loadLists();
     }
 
     /**
      * Load shopping lists from localStorage
+     * Now uses BaseManager.load()
      */
     loadLists() {
-        try {
-            const stored = localStorage.getItem(this.storageKey);
-            if (stored) {
-                this.lists = JSON.parse(stored);
+        this.lists = this.load();
 
-                // Ensure all lists have required properties
-                this.lists.forEach(list => {
-                    if (list.enabled === undefined) {
-                        list.enabled = true;
-                    }
-                    // Initialize new format arrays if missing
-                    if (!list.recipes) list.recipes = [];
-                    if (!list.manualItems) list.manualItems = [];
-                });
-
-                console.log('[ShoppingListManager] Loaded lists:', this.lists.length);
+        // Ensure all lists have required properties
+        this.lists.forEach(list => {
+            if (list.enabled === undefined) {
+                list.enabled = true;
             }
-        } catch (error) {
-            console.error('[ShoppingListManager] Error loading lists:', error);
-            this.lists = [];
-        }
+            // Initialize new format arrays if missing
+            if (!list.recipes) list.recipes = [];
+            if (!list.manualItems) list.manualItems = [];
+        });
     }
-
-
 
     /**
      * Save shopping lists to localStorage
+     * Now uses BaseManager.save()
      */
     saveLists() {
-        try {
-            localStorage.setItem(this.storageKey, JSON.stringify(this.lists));
-            console.log('[ShoppingListManager] Saved lists:', this.lists.length);
-        } catch (error) {
-            console.error('[ShoppingListManager] Error saving lists:', error);
-            throw new Error('No se pudieron guardar las listas');
-        }
+        this.save(this.lists);
     }
 
     /**
@@ -1147,6 +1101,9 @@ class RecipeApp {
                 this.showStorageWarning();
             }
 
+            // Auto-load base recipes if storage is empty (first time use)
+            await this.autoLoadBaseRecipes();
+
             // Load recipes
             await this.loadRecipes();
 
@@ -1243,6 +1200,22 @@ class RecipeApp {
     capitalizeFirstLetter(str) {
         if (!str || str.length === 0) return str;
         return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    /**
+     * Simple hash function for strings (used for XML change detection)
+     * @param {string} str - String to hash
+     * @returns {string} Hash string
+     */
+    simpleHash(str) {
+        let hash = 0;
+        if (str.length === 0) return hash.toString();
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32bit integer
+        }
+        return hash.toString();
     }
 
     /**
@@ -1365,6 +1338,132 @@ class RecipeApp {
     /**
      * Load all recipes from storage
      */
+    /**
+     * Auto-load base recipes from data/recetario-base-final.xml if storage is empty
+     * This runs on first app initialization to provide users with starter recipes
+     */
+    async autoLoadBaseRecipes() {
+        try {
+            // Fetch the base XML file first to check for changes
+            const response = await fetch('data/recetario-base-final.xml');
+            if (!response.ok) {
+                console.warn('[AutoLoad] Base recipe file not found, skipping auto-load');
+                return;
+            }
+
+            // Get XML content and calculate hash
+            const xmlText = await response.text();
+            const xmlHash = this.simpleHash(xmlText);
+            
+            // Check stored hash
+            const storedHash = localStorage.getItem('base_recipes_xml_hash');
+            
+            // Check if recipes already exist
+            const existingRecipes = await this.storageManager.getAllRecipes();
+            
+            // Skip if recipes exist AND hash hasn't changed
+            if (existingRecipes && existingRecipes.length > 0 && storedHash === xmlHash) {
+                console.log('[AutoLoad] Recipes already loaded and XML unchanged, skipping auto-load');
+                return;
+            }
+
+            if (storedHash !== xmlHash) {
+                console.log('[AutoLoad] XML file changed, reloading base recipes...');
+            } else {
+                console.log('[AutoLoad] No recipes found, loading base recipes from XML...');
+            }
+
+            // Convert text to blob and then to File object
+            const blob = new Blob([xmlText], { type: 'text/xml' });
+            const file = new File([blob], 'recetario-base-final.xml', { type: 'text/xml' });
+
+            // Get progress modal elements
+            const progressModal = document.getElementById('import-progress-modal');
+            const progressBar = document.getElementById('import-progress-bar');
+            const progressText = document.getElementById('import-progress-text');
+            const progressDetails = document.getElementById('import-progress-details');
+            const progressPercentage = document.getElementById('import-progress-percentage');
+
+            // Progress callback
+            const onProgress = (progress) => {
+                if (progressModal && progressBar && progressText) {
+                    // Show modal if not visible
+                    if (progressModal.classList.contains('hidden')) {
+                        progressModal.classList.remove('hidden');
+                        progressModal.style.display = 'flex';
+                    }
+
+                    // Update progress bar
+                    progressBar.style.width = `${progress.percentage}%`;
+
+                    // Update percentage text inside bar
+                    if (progressPercentage) {
+                        progressPercentage.textContent = `${Math.round(progress.percentage)}%`;
+                    }
+
+                    // Update text
+                    progressText.textContent = `Cargando recetas base: ${progress.current} de ${progress.total}`;
+
+                    // Update recipe name with animation
+                    if (progressDetails && progress.recipeName) {
+                        progressDetails.classList.add('updating');
+                        progressDetails.textContent = `📝 ${progress.recipeName}`;
+                        setTimeout(() => {
+                            progressDetails.classList.remove('updating');
+                        }, 200);
+                    }
+                }
+            };
+
+            // Import using existing XML importer with progress callback
+            const result = await XMLImporter.importFromFile(file, onProgress);
+
+            // Update progress text to show we're finishing up
+            if (progressText) {
+                progressText.textContent = 'Guardando recetas...';
+            }
+            if (progressDetails) {
+                progressDetails.textContent = '💾 Finalizando carga';
+            }
+
+            // Save imported recipes
+            if (result.successful && result.successful.length > 0) {
+                for (const recipe of result.successful) {
+                    await this.storageManager.saveRecipe(recipe);
+                }
+                console.log(`[AutoLoad] Successfully loaded ${result.successful.length} base recipes`);
+                
+                // Store the XML hash to detect future changes
+                localStorage.setItem('base_recipes_xml_hash', xmlHash);
+                console.log('[AutoLoad] Stored XML hash for change detection');
+            }
+
+            // Close progress modal
+            if (progressModal) {
+                progressModal.classList.add('hidden');
+                progressModal.style.display = 'none';
+            }
+
+            // Show success message
+            if (result.successful.length > 0) {
+                this.showToast(`${result.successful.length} recetas base cargadas correctamente`, 'success');
+            }
+
+        } catch (error) {
+            console.error('[AutoLoad] Error loading base recipes:', error);
+            
+            // Close progress modal if open
+            const progressModal = document.getElementById('import-progress-modal');
+            if (progressModal) {
+                progressModal.classList.add('hidden');
+                progressModal.style.display = 'none';
+            }
+            
+            // Don't show error to user - just log it and continue with empty recipe list
+            // The app should still work, user can manually import recipes later
+        }
+    }
+
     async loadRecipes() {
         try {
             this.recipes = await this.storageManager.getAllRecipes();
@@ -2518,8 +2617,9 @@ class RecipeApp {
                 chip.classList.add('selected');
             }
 
-            // If category has no recipes (or no menu-friendly recipes in quick edit), make it disabled
-            if (!hasRecipes) {
+            // If category has no recipes, only disable in quick edit mode (menu editing)
+            // In recipe form mode, allow selecting any category even if empty
+            if (!hasRecipes && isQuickEdit) {
                 chip.classList.add('disabled');
                 chip.style.opacity = '0.4';
                 chip.style.cursor = 'not-allowed';
@@ -2536,8 +2636,8 @@ class RecipeApp {
                 e.preventDefault();
                 e.stopPropagation();
 
-                // Prevent selection if disabled (no recipes)
-                if (!hasRecipes) {
+                // Prevent selection if disabled (no recipes in quick edit mode)
+                if (!hasRecipes && isQuickEdit) {
                     console.log('🎨 [Category Selector] Click blocked on disabled category:', category.name);
                     return;
                 }
@@ -7033,18 +7133,9 @@ class RecipeApp {
      * Close recipe form and return to detail view (if editing) or list view (if creating)
      * Requirements: 6.4
      */
-    closeRecipeForm() {
-        // Confirm if there are unsaved changes
-        const form = document.getElementById('recipe-form');
-        if (form && this.hasUnsavedChanges()) {
-            if (!confirm('¿Descartar los cambios no guardados?')) {
-                return;
-            }
-        }
-
-        // Store the recipe ID before any changes
-        const editingRecipeId = this.currentRecipeId;
-
+    async closeRecipeForm() {
+        // No confirmation - discard changes and close immediately
+        
         // Hide form view
         const formView = document.getElementById('recipe-form-view');
         if (formView) {
@@ -7057,23 +7148,10 @@ class RecipeApp {
             formTitle.classList.remove('editing-mode');
         }
 
-        // If we were editing a recipe, show its detail view
-        if (editingRecipeId) {
-            const recipe = this.recipes.find(r => r.id === editingRecipeId);
-            if (recipe) {
-                // Reset form before showing detail
-                this.resetForm();
-
-                // Show recipe detail (pass the ID, not the object)
-                this.showRecipeDetail(editingRecipeId);
-                return;
-            }
-        }
-
-        // Reset form for new recipe case
+        // Reset form
         this.resetForm();
 
-        // Otherwise, show list view (for new recipes or if recipe not found)
+        // Always show list view (home page)
         const listView = document.getElementById('recipe-list-view');
         if (listView) {
             listView.classList.remove('hidden');
@@ -7434,11 +7512,13 @@ class RecipeApp {
             // Store the ID for highlighting
             this.lastSavedRecipeId = savedRecipeId;
 
-            // Reload recipes and close form
+            // Reload recipes
             await this.loadRecipes();
             this.renderFilterChips(); // Update category filters dynamically
             this.renderRecipeList();
-            this.closeRecipeForm();
+            
+            // Navigate to recipe detail view instead of closing to home
+            this.showRecipeDetail(savedRecipeId);
         } catch (error) {
             console.error('Error saving recipe:', error);
             this.showError('Error al guardar la receta: ' + error.message);
@@ -8638,6 +8718,57 @@ class RecipeApp {
      * Requirements: 5.1, 5.2, 5.3, 5.4, 1.3
      * @param {FileList} files - Files to upload
      */
+    /**
+     * Handle taking photo with camera (Capacitor Camera plugin)
+     * Only works in Android APK
+     */
+    async handleTakePhoto() {
+        try {
+            // Check if Capacitor Camera is available
+            if (typeof Capacitor === 'undefined' || !Capacitor.Plugins || !Capacitor.Plugins.Camera) {
+                console.warn('[Camera] Capacitor Camera plugin not available');
+                this.showToast('La cámara solo está disponible en la app móvil', 'warning');
+                return;
+            }
+
+            const { Camera } = Capacitor.Plugins;
+
+            // Take photo with camera
+            const image = await Camera.getPhoto({
+                quality: 80, // Compress to 80% quality
+                allowEditing: true, // Allow crop/rotate
+                resultType: 'base64', // Get base64 string
+                source: 'CAMERA', // Use camera (not gallery)
+                width: 1920, // Max width
+                height: 1920, // Max height
+                preserveAspectRatio: true
+            });
+
+            console.log('[Camera] Photo taken successfully');
+
+            // Convert to File-like object
+            const base64Data = `data:image/${image.format};base64,${image.base64String}`;
+            const blob = await fetch(base64Data).then(r => r.blob());
+            const file = new File([blob], `photo_${Date.now()}.${image.format}`, { 
+                type: `image/${image.format}` 
+            });
+
+            // Process and add the image
+            await this.handleImageUpload([file]);
+
+        } catch (error) {
+            console.error('[Camera] Error taking photo:', error);
+            
+            // User cancelled
+            if (error.message && error.message.includes('cancel')) {
+                console.log('[Camera] User cancelled photo');
+                return;
+            }
+
+            this.showToast('Error al tomar la foto', 'error');
+        }
+    }
+
     async handleImageUpload(files) {
         const errorMessage = document.getElementById('image-error');
         if (errorMessage) {
@@ -10595,16 +10726,8 @@ class RecipeApp {
      * Go to home (list view) from any view
      */
     goToHome() {
-        // Check if we're in form view with unsaved changes
-        if (this.currentView === 'form') {
-            const form = document.getElementById('recipe-form');
-            if (form && this.hasUnsavedChanges()) {
-                if (!confirm('¿Descartar los cambios no guardados?')) {
-                    return;
-                }
-            }
-        }
-
+        // No confirmation - discard changes and navigate immediately
+        
         // Hide all views
         const detailView = document.getElementById('recipe-detail-view');
         const formView = document.getElementById('recipe-form-view');
@@ -11785,7 +11908,7 @@ class RecipeApp {
                 this.currentView = 'list';
 
                 // Render recipes to ensure they're displayed
-                this.renderRecipes();
+                this.renderRecipeList();
             });
         }
 
@@ -15162,7 +15285,7 @@ class RecipeApp {
         const itemQuantity = document.createElement('span');
         itemQuantity.className = 'ingredient-count-badge';
         itemQuantity.textContent = ` ${quantity}`;
-        
+
         // If ingredient appears multiple times, open merge modal; otherwise edit quantity
         if (count > 1) {
             itemQuantity.title = 'Click para fusionar cantidades';
@@ -15175,13 +15298,13 @@ class RecipeApp {
                 this.editIngredientQuantity(listId, recipeRefId, ingredient.id, quantity);
             };
         }
-        
+
         // Apply semi-transparent style if ingredient is merged
         if (mod.merged) {
             console.log('[Render] Applying merged style to:', ingredient.name, 'in recipe:', recipeRefId);
             itemDiv.style.opacity = '0.5';
         }
-        
+
         itemContent.appendChild(itemQuantity);
 
         itemDiv.appendChild(checkbox);
@@ -15727,7 +15850,7 @@ class RecipeApp {
         recipes.forEach(r => {
             const quantity = r.ingredient.quantity + (r.ingredient.unit ? ' ' + r.ingredient.unit : '');
             const isMerged = r.mod.merged || false;
-            
+
             if (isMerged) {
                 merged.push(quantity);
             } else {
@@ -15784,7 +15907,7 @@ class RecipeApp {
 
         // Re-render shopping lists
         this.renderShoppingLists();
-        
+
         // Restore expanded state
         if (wasExpanded && listId) {
             setTimeout(() => {

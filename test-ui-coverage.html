@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Cobertura UI - mehaquedadobien</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .status.running {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .log-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 500px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        .log-entry.info {
+            color: #4fc3f7;
+        }
+        .log-entry.success {
+            color: #81c784;
+        }
+        .log-entry.warning {
+            color: #ffb74d;
+        }
+        .log-entry.error {
+            color: #e57373;
+        }
+        .log-entry.function {
+            color: #ba68c8;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .function-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        .function-item {
+            padding: 5px;
+            margin: 2px 0;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .function-item.called {
+            background: #d4edda;
+            color: #155724;
+        }
+        .function-item.not-called {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test de Cobertura UI - mehaquedadobien</h1>
+        
+        <div class="controls">
+            <button class="btn-primary" onclick="startTest()">▶️ Iniciar Test Completo</button>
+            <button class="btn-secondary" onclick="clearLog()">🗑️ Limpiar Log</button>
+            <button class="btn-success" onclick="exportReport()">📊 Exportar Reporte</button>
+            <button class="btn-danger" onclick="stopTest()">⏹️ Detener</button>
+        </div>
+
+        <div id="status" class="status">
+            ⏸️ Esperando inicio del test...
+        </div>
+
+        <div class="progress-bar">
+            <div id="progress" class="progress-fill" style="width: 0%">0%</div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-buttons">0</div>
+                <div class="stat-label">Botones Probados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-functions">0</div>
+                <div class="stat-label">Funciones Llamadas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-modals">0</div>
+                <div class="stat-label">Modales Abiertos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-errors">0</div>
+                <div class="stat-label">Errores</div>
+            </div>
+        </div>
+
+        <h2>📋 Log de Ejecución</h2>
+        <div id="log" class="log-container"></div>
+
+        <h2>📊 Funciones Detectadas</h2>
+        <div id="function-list" class="function-list"></div>
+    </div>
+
+    <script>
+        // Estado del test
+        const testState = {
+            running: false,
+            buttonsTested: 0,
+            functionsCalled: new Set(),
+            modalsOpened: 0,
+            errors: 0,
+            allFunctions: new Set(),
+            testSequence: []
+        };
+
+        // Interceptar llamadas a funciones
+        const originalFunctions = {};
+        
+        function setupFunctionInterceptor() {
+            // Interceptar console para detectar logs
+            const originalLog = console.log;
+            const originalError = console.error;
+            const originalWarn = console.warn;
+
+            console.log = function(...args) {
+                const message = args.join(' ');
+                // Detectar llamadas a funciones en logs
+                const funcMatch = message.match(/\[([^\]]+)\]/);
+                if (funcMatch) {
+                    testState.functionsCalled.add(funcMatch[1]);
+                }
+                originalLog.apply(console, args);
+            };
+
+            console.error = function(...args) {
+                testState.errors++;
+                updateStats();
+                originalError.apply(console, args);
+            };
+
+            console.warn = function(...args) {
+                originalWarn.apply(console, args);
+            };
+        }
+
+        // Logging
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            log('Log limpiado', 'info');
+        }
+
+        // Actualizar estadísticas
+        function updateStats() {
+            document.getElementById('stat-buttons').textContent = testState.buttonsTested;
+            document.getElementById('stat-functions').textContent = testState.functionsCalled.size;
+            document.getElementById('stat-modals').textContent = testState.modalsOpened;
+            document.getElementById('stat-errors').textContent = testState.errors;
+        }
+
+        // Actualizar progreso
+        function updateProgress(percent) {
+            const progressBar = document.getElementById('progress');
+            progressBar.style.width = percent + '%';
+            progressBar.textContent = Math.round(percent) + '%';
+        }
+
+        // Definir secuencia de tests
+        function defineTestSequence() {
+            return [
+                {
+                    name: 'Menú Principal',
+                    actions: [
+                        { type: 'click', selector: '#menu-btn', desc: 'Abrir menú' },
+                        { type: 'wait', ms: 500 },
+                        { type: 'click', selector: '#new-recipe-btn', desc: 'Nueva receta' },
+                        { type: 'wait', ms: 500 }
+                    ]
+                },
+                {
+                    name: 'Formulario de Receta',
+                    actions: [
+                        { type: 'click', selector: '#recipe-name', desc: 'Focus nombre' },
+                        { type: 'input', selector: '#recipe-name', value: 'Test Recipe', desc: 'Escribir nombre' },
+                        { type: 'click', selector: '#recipe-category-chip', desc: 'Abrir selector categoría' },
+                        { type: 'wait', ms: 500 },
+                        { type: 'click', selector: '#close-category-selector-modal', desc: 'Cerrar selector' },
+                        { type: 'wait', ms: 300 }
+                    ]
+                },
+                {
+                    name: 'Ingredientes',
+                    actions: [
+                        { type: 'click', selector: '#ingredient-name', desc: 'Focus ingrediente' },
+                        { type: 'input', selector: '#ingredient-name', value: 'Tomate', desc: 'Escribir ingrediente' },
+                        { type: 'input', selector: '#ingredient-quantity', value: '2', desc: 'Cantidad' },
+                        { type: 'click', selector: '#add-ingredient-btn', desc: 'Añadir ingrediente' },
+                        { type: 'wait', ms: 500 }
+                    ]
+                },
+                {
+                    name: 'Secuencias',
+                    actions: [
+                        { type: 'click', selector: '#sequences-section-title', desc: 'Expandir secuencias' },
+                        { type: 'wait', ms: 300 },
+                        { type: 'input', selector: '#sequence-description', value: 'Picar el tomate', desc: 'Descripción secuencia' },
+                        { type: 'click', selector: '#add-sequence-btn', desc: 'Añadir secuencia' },
+                        { type: 'wait', ms: 500 }
+                    ]
+                },
+                {
+                    name: 'Guardar Receta',
+                    actions: [
+                        { type: 'click', selector: '#save-recipe-btn', desc: 'Guardar receta' },
+                        { type: 'wait', ms: 1000 }
+                    ]
+                },
+                {
+                    name: 'Filtros',
+                    actions: [
+                        { type: 'click', selector: '#toggle-filters-btn', desc: 'Toggle filtros' },
+                        { type: 'wait', ms: 300 },
+                        { type: 'click', selector: '.filter-chip[data-category="all"]', desc: 'Filtro todas' },
+                        { type: 'wait', ms: 500 }
+                    ]
+                },
+                {
+                    name: 'Búsqueda',
+                    actions: [
+                        { type: 'input', selector: '#recipe-search-input', value: 'test', desc: 'Buscar receta' },
+                        { type: 'wait', ms: 500 },
+                        { type: 'click', selector: '#clear-search-btn', desc: 'Limpiar búsqueda' },
+                        { type: 'wait', ms: 300 }
+                    ]
+                },
+                {
+                    name: 'Vistas',
+                    actions: [
+                        { type: 'click', selector: '#view-list-btn', desc: 'Vista lista' },
+                        { type: 'wait', ms: 500 },
+                        { type: 'click', selector: '#view-grid-btn', desc: 'Vista grid' },
+                        { type: 'wait', ms: 500 }
+                    ]
+                },
+                {
+                    name: 'Configuración',
+                    actions: [
+                        { type: 'click', selector: '#menu-btn', desc: 'Abrir menú' },
+                        { type: 'wait', ms: 300 },
+                        { type: 'click', selector: '#settings-btn', desc: 'Abrir settings' },
+                        { type: 'wait', ms: 500 },
+                        { type: 'click', selector: '#manage-categories-btn', desc: 'Gestionar categorías' },
+                        { type: 'wait', ms: 500 },
+                        { type: 'click', selector: '#close-category-modal', desc: 'Cerrar modal' },
+                        { type: 'wait', ms: 300 },
+                        { type: 'click', selector: '#close-settings-modal', desc: 'Cerrar settings' },
+                        { type: 'wait', ms: 300 }
+                    ]
+                },
+                {
+                    name: 'Listas de Compra',
+                    actions: [
+                        { type: 'click', selector: '#menu-btn', desc: 'Abrir menú' },
+                        { type: 'wait', ms: 300 },
+                        { type: 'click', selector: '#shopping-lists-btn', desc: 'Abrir listas' },
+                        { type: 'wait', ms: 500 },
+                        { type: 'click', selector: '#close-shopping-lists-btn', desc: 'Cerrar listas' },
+                        { type: 'wait', ms: 300 }
+                    ]
+                },
+                {
+                    name: 'Menús',
+                    actions: [
+                        { type: 'click', selector: '#menu-btn', desc: 'Abrir menú' },
+                        { type: 'wait', ms: 300 },
+                        { type: 'click', selector: '#menus-btn', desc: 'Abrir menús' },
+                        { type: 'wait', ms: 500 },
+                        { type: 'click', selector: '#close-menus-btn', desc: 'Cerrar menús' },
+                        { type: 'wait', ms: 300 }
+                    ]
+                },
+                {
+                    name: 'Ayuda',
+                    actions: [
+                        { type: 'click', selector: '#menu-btn', desc: 'Abrir menú' },
+                        { type: 'wait', ms: 300 },
+                        { type: 'click', selector: '#help-btn', desc: 'Abrir ayuda' },
+                        { type: 'wait', ms: 500 },
+                        { type: 'click', selector: '#close-help-modal', desc: 'Cerrar ayuda' },
+                        { type: 'wait', ms: 300 }
+                    ]
+                }
+            ];
+        }
+
+        // Ejecutar acción
+        async function executeAction(action) {
+            try {
+                switch (action.type) {
+                    case 'click':
+                        const clickElement = document.querySelector(action.selector);
+                        if (clickElement) {
+                            log(`✅ Click: ${action.desc}`, 'success');
+                            clickElement.click();
+                            testState.buttonsTested++;
+                            
+                            // Detectar si es un modal
+                            if (action.selector.includes('modal') || action.desc.includes('modal') || action.desc.includes('Modal')) {
+                                testState.modalsOpened++;
+                            }
+                        } else {
+                            log(`⚠️  Elemento no encontrado: ${action.selector}`, 'warning');
+                        }
+                        break;
+
+                    case 'input':
+                        const inputElement = document.querySelector(action.selector);
+                        if (inputElement) {
+                            log(`✅ Input: ${action.desc} = "${action.value}"`, 'success');
+                            inputElement.value = action.value;
+                            inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+                            inputElement.dispatchEvent(new Event('change', { bubbles: true }));
+                        } else {
+                            log(`⚠️  Input no encontrado: ${action.selector}`, 'warning');
+                        }
+                        break;
+
+                    case 'wait':
+                        await new Promise(resolve => setTimeout(resolve, action.ms));
+                        break;
+                }
+            } catch (error) {
+                log(`❌ Error en acción: ${error.message}`, 'error');
+                testState.errors++;
+            }
+            
+            updateStats();
+        }
+
+        // Ejecutar test completo
+        async function startTest() {
+            if (testState.running) {
+                log('⚠️  Test ya está en ejecución', 'warning');
+                return;
+            }
+
+            // Verificar que estamos en la página correcta
+            if (!window.location.href.includes('mehaquedadobien') && !document.getElementById('menu-btn')) {
+                log('❌ Esta página de test debe abrirse junto con la aplicación mehaquedadobien', 'error');
+                alert('Por favor, abre esta página en una pestaña y la aplicación mehaquedadobien en otra pestaña del mismo navegador.');
+                return;
+            }
+
+            testState.running = true;
+            testState.buttonsTested = 0;
+            testState.functionsCalled.clear();
+            testState.modalsOpened = 0;
+            testState.errors = 0;
+
+            document.getElementById('status').className = 'status running';
+            document.getElementById('status').textContent = '▶️ Test en ejecución...';
+
+            log('🚀 Iniciando test de cobertura UI', 'info');
+            log('━'.repeat(50), 'info');
+
+            setupFunctionInterceptor();
+
+            const sequence = defineTestSequence();
+            const totalSteps = sequence.reduce((sum, section) => sum + section.actions.length, 0);
+            let currentStep = 0;
+
+            for (const section of sequence) {
+                log(`\n📦 Sección: ${section.name}`, 'info');
+                log('─'.repeat(40), 'info');
+
+                for (const action of section.actions) {
+                    await executeAction(action);
+                    currentStep++;
+                    updateProgress((currentStep / totalSteps) * 100);
+                }
+            }
+
+            testState.running = false;
+            document.getElementById('status').className = 'status success';
+            document.getElementById('status').textContent = '✅ Test completado';
+
+            log('━'.repeat(50), 'info');
+            log('✅ Test completado exitosamente', 'success');
+            log(`📊 Resumen:`, 'info');
+            log(`   - Botones probados: ${testState.buttonsTested}`, 'info');
+            log(`   - Funciones llamadas: ${testState.functionsCalled.size}`, 'info');
+            log(`   - Modales abiertos: ${testState.modalsOpened}`, 'info');
+            log(`   - Errores: ${testState.errors}`, 'info');
+
+            displayFunctionList();
+        }
+
+        function stopTest() {
+            testState.running = false;
+            document.getElementById('status').className = 'status';
+            document.getElementById('status').textContent = '⏹️ Test detenido';
+            log('⏹️ Test detenido por el usuario', 'warning');
+        }
+
+        function displayFunctionList() {
+            const container = document.getElementById('function-list');
+            container.innerHTML = '<h3>Funciones llamadas durante el test:</h3>';
+            
+            const sortedFunctions = Array.from(testState.functionsCalled).sort();
+            sortedFunctions.forEach(func => {
+                const item = document.createElement('div');
+                item.className = 'function-item called';
+                item.textContent = `✓ ${func}`;
+                container.appendChild(item);
+            });
+        }
+
+        function exportReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                summary: {
+                    buttonsTested: testState.buttonsTested,
+                    functionsCalled: testState.functionsCalled.size,
+                    modalsOpened: testState.modalsOpened,
+                    errors: testState.errors
+                },
+                functions: Array.from(testState.functionsCalled).sort()
+            };
+
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ui-coverage-report-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            log('📊 Reporte exportado', 'success');
+        }
+
+        // Inicializar
+        log('🎯 Test de cobertura UI cargado', 'info');
+        log('💡 Haz clic en "Iniciar Test Completo" para comenzar', 'info');
+    </script>
+</body>
+</html>

@@ -2,18 +2,19 @@
 
 /**
  * MenuManager - Manages weekly menus and their items
- * Follows the same pattern as ShoppingListManager for consistency
+ * Now extends BaseManager for load/save functionality
  */
-class MenuManager {
+class MenuManager extends BaseManager {
     // Constants
     static DEFAULT_DAY_NAME = 'Sin día específico';
     static DEFAULT_RECIPE = 'Sin receta';
     static COPY_SUFFIX = ' (copia)';
     static IMPORTED_MENU_NAME = 'Menú importado';
+    
     constructor() {
+        super('recetario_menus', []); // Call BaseManager constructor
         this.menus = [];
         this.currentMenuId = null;
-        this.storageKey = 'recetario_menus';
         this.idCounter = 0;
         // Note: loadMenus() should be called manually after recipes are loaded
         // to enable migration from name-based to ID-based format
@@ -43,76 +44,62 @@ class MenuManager {
 
     /**
      * Load menus from localStorage
+     * Now uses BaseManager.load()
      * @param {Function} getRecipeByName - Optional function to get recipe by name for migration
      */
     loadMenus(getRecipeByName = null) {
-        try {
-            const stored = localStorage.getItem(this.storageKey);
-            if (stored) {
-                this.menus = JSON.parse(stored);
+        this.menus = this.load();
 
-                // Migrate old menus without enabled property
-                this.menus.forEach(menu => {
-                    if (menu.enabled === undefined) {
-                        menu.enabled = true;
-                    }
-                    if (menu.isFilter === undefined) {
-                        menu.isFilter = false;
-                    }
+        // Migrate old menus without enabled property
+        this.menus.forEach(menu => {
+            if (menu.enabled === undefined) {
+                menu.enabled = true;
+            }
+            if (menu.isFilter === undefined) {
+                menu.isFilter = false;
+            }
 
-                    // Add _migrated flag if not present
-                    if (menu._migrated === undefined) {
-                        menu._migrated = false;
-                    }
-                });
+            // Add _migrated flag if not present
+            if (menu._migrated === undefined) {
+                menu._migrated = false;
+            }
+        });
 
-                // Migrate legacy menu items to ID-based format
-                if (getRecipeByName) {
-                    let migratedCount = 0;
-                    this.menus.forEach(menu => {
-                        // Skip if already migrated
-                        if (menu._migrated) {
-                            return;
-                        }
-
-                        // Migrate each item
-                        if (menu.items && Array.isArray(menu.items)) {
-                            menu.items.forEach(item => {
-                                this.migrateLegacyMenuItem(item, getRecipeByName);
-                            });
-                        }
-
-                        // Mark as migrated
-                        menu._migrated = true;
-                        migratedCount++;
-                    });
-
-                    if (migratedCount > 0) {
-                        console.log(`[MenuManager] Migrated ${migratedCount} menus to ID-based format`);
-                        // Save migrated menus
-                        this.saveMenus();
-                    }
+        // Migrate legacy menu items to ID-based format
+        if (getRecipeByName) {
+            let migratedCount = 0;
+            this.menus.forEach(menu => {
+                // Skip if already migrated
+                if (menu._migrated) {
+                    return;
                 }
 
-                console.log('[MenuManager] Loaded menus:', this.menus.length);
+                // Migrate each item
+                if (menu.items && Array.isArray(menu.items)) {
+                    menu.items.forEach(item => {
+                        this.migrateLegacyMenuItem(item, getRecipeByName);
+                    });
+                }
+
+                // Mark as migrated
+                menu._migrated = true;
+                migratedCount++;
+            });
+
+            if (migratedCount > 0) {
+                console.log(`[MenuManager] Migrated ${migratedCount} menus to ID-based format`);
+                // Save migrated menus
+                this.saveMenus();
             }
-        } catch (error) {
-            console.error('[MenuManager] Error loading menus:', error);
-            this.menus = [];
         }
     }
 
     /**
      * Save menus to localStorage
+     * Now uses BaseManager.save()
      */
     saveMenus() {
-        try {
-            localStorage.setItem(this.storageKey, JSON.stringify(this.menus));
-            console.log('[MenuManager] Saved menus:', this.menus.length);
-        } catch (error) {
-            console.error('[MenuManager] Error saving menus:', error);
-            throw new Error('No se pudieron guardar los menús');
-        }
+        this.save(this.menus);
     }
 
     /**
